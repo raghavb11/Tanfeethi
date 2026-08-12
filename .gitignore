@@ -26,3 +26,4 @@ dist-ssr
 # Local tooling & dev-runtime data
 .claude/
 apps/shell/collections-data.json
+apps/shell/cms-data.json

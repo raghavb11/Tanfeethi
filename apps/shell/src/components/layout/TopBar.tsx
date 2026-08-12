@@ -144,7 +144,7 @@ export function TopBar({ title, onOpenMobileNav }: { title?: string; onOpenMobil
         onClick={() => navigate("/employee")}
       >
         <Avatar className="size-8 ring-2 ring-border/60">
-          <AvatarImage src="/images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
+          <AvatarImage src="images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
           <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">KH</AvatarFallback>
         </Avatar>
       </Button>

@@ -94,7 +94,10 @@ function cmsFileApi(): Plugin {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Relative base so the built app works when served from a subpath
+  // (GitHub Pages project site, e.g. /Tanfeethi/). Root in dev.
+  base: mode === "production" ? "./" : "/",
   plugins: [react(), tailwindcss(), cmsFileApi(), collectionsFileApi()],
   server: {
     // Don't trigger an HMR reload when the data files are written.
@@ -122,4 +125,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

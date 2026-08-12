@@ -29,8 +29,8 @@ type Post = {
 type Comment = { id: string; who: string; initials: string; text: string; time: string }
 
 const POSTS: Post[] = [
-  { id: "p1", author: "Sara Al-Mutairi", authorAr: "سارة المطيري", initials: "SM", team: "Operations", time: "2h", body: "Proud of the team — we hit 68% on the terminal expansion ahead of schedule! 🏗️", bodyAr: "فخورة بالفريق — أنجزنا ٦٨٪ من توسعة المبنى قبل الموعد!", likes: 84, comments: 12, featured: true, img: "/images/cms/celebrate.jpg" },
-  { id: "p2", author: "Ahmed Hassan", authorAr: "أحمد حسن", initials: "AH", team: "People Ops", time: "5h", body: "Welcome to our 14 new joiners this month! Say hi 👋", bodyAr: "أهلًا بـ ١٤ زميلًا جديدًا هذا الشهر!", likes: 156, comments: 34, img: "/images/cms/teamwork.jpg" },
+  { id: "p1", author: "Sara Al-Mutairi", authorAr: "سارة المطيري", initials: "SM", team: "Operations", time: "2h", body: "Proud of the team — we hit 68% on the terminal expansion ahead of schedule! 🏗️", bodyAr: "فخورة بالفريق — أنجزنا ٦٨٪ من توسعة المبنى قبل الموعد!", likes: 84, comments: 12, featured: true, img: "images/cms/celebrate.jpg" },
+  { id: "p2", author: "Ahmed Hassan", authorAr: "أحمد حسن", initials: "AH", team: "People Ops", time: "5h", body: "Welcome to our 14 new joiners this month! Say hi 👋", bodyAr: "أهلًا بـ ١٤ زميلًا جديدًا هذا الشهر!", likes: 156, comments: 34, img: "images/cms/teamwork.jpg" },
   { id: "p3", author: "Layan Al Marwani", authorAr: "ليان المرواني", initials: "LM", team: "Digital", time: "1d", body: "Where should we host this year's team offsite? Vote below 👇", bodyAr: "أين نقيم رحلة الفريق هذا العام؟ صوّت أدناه 👇", likes: 92, comments: 21, poll: { options: [
     { id: "o1", text: "Mountain retreat", votes: 34 },
     { id: "o2", text: "Beach resort", votes: 51 },

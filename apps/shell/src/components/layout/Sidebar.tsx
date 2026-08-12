@@ -219,7 +219,7 @@ function SidebarFooter({
       {!collapsed ? (
         <NavLink to="/employee" aria-label={isAr ? "مركز الموظف" : "Employee Center"} className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 hover:bg-sidebar-accent/60 transition-colors">
           <Avatar className="size-7 shrink-0 ring-1 ring-primary/30">
-            <AvatarImage src="/images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
+            <AvatarImage src="images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
             <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold tracking-wide">KH</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
@@ -241,7 +241,7 @@ function SidebarFooter({
             }
           >
             <Avatar className="size-6 ring-1 ring-primary/30">
-              <AvatarImage src="/images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
+              <AvatarImage src="images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
               <AvatarFallback className="bg-primary/15 text-primary text-[9px] font-bold">KH</AvatarFallback>
             </Avatar>
           </TooltipTrigger>

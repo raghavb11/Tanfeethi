@@ -27,7 +27,7 @@ const CATEGORIES = ["Corporate", "People", "Operations", "Technology", "Events"]
 const COVERS = [
   "aviation", "conference", "office", "dashboard", "gathering",
   "training", "teamwork", "wellbeing", "celebrate", "ramadan",
-].map((n) => `/images/cms/${n}.jpg`)
+].map((n) => `images/cms/${n}.jpg`)
 
 type Opt = { id: string; label: string; ar: string }
 const USER_GROUPS: Opt[] = [

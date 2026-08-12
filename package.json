@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "npm run dev -w @reach/shell",
     "build": "npm run build -w @reach/shell",
+    "build:pages": "npm run build:pages -w @reach/shell",
     "lint": "eslint apps packages",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "preview": "npm run preview -w @reach/shell"

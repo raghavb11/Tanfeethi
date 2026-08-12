@@ -27,7 +27,7 @@ export const NEWS: NewsItem[] = [
     status: "Published",
     featured: true,
     tint: "#234024",
-    img: "/images/cms/aviation.jpg",
+    img: "images/cms/aviation.jpg",
     body: P(
       "ALTANFEETHI has been named <b>Best Aviation Services provider 2026</b> at the regional aviation excellence awards, recognizing the company's VIP terminal operations and private-aviation experience.",
       "The award celebrates a year of record guest satisfaction and the expansion of premium services across the Kingdom's key gateways.",
@@ -43,7 +43,7 @@ export const NEWS: NewsItem[] = [
     excerpt: "HR has published the adjusted schedule effective from the first of Ramadan.",
     status: "Published",
     tint: "#ce7b5b",
-    img: "/images/cms/ramadan.jpg",
+    img: "images/cms/ramadan.jpg",
     body: P(
       "People Operations has published the adjusted working hours for the holy month of Ramadan, effective from the first day of the month.",
       "Core hours will run from 10:00 to 16:00, with flexible arrangements available for operational teams. Full details are available in the HR circular.",
@@ -58,7 +58,7 @@ export const NEWS: NewsItem[] = [
     excerpt: "Phase 2 construction remains on track for the Q4 milestone.",
     status: "Published",
     tint: "#3d2031",
-    img: "/images/cms/office.jpg",
+    img: "images/cms/office.jpg",
     body: P(
       "The terminal expansion programme has reached <b>68% completion</b>, keeping Phase 2 firmly on track for its Q4 milestone.",
       "The expanded facility will add new premium lounges, streamlined arrival flows and expanded capacity for peak-season demand.",
@@ -73,7 +73,7 @@ export const NEWS: NewsItem[] = [
     excerpt: "A first look at the unified employee experience platform.",
     status: "Published",
     tint: "#ab8025",
-    img: "/images/cms/dashboard.jpg",
+    img: "images/cms/dashboard.jpg",
     body: P(
       "The <b>Wajha</b> employee portal brings news, services, approvals and self-service into one unified, bilingual experience.",
       "This first release covers the personalized home, work hub, employee center and the content modules — with more capabilities arriving each phase.",
@@ -88,7 +88,7 @@ export const NEWS: NewsItem[] = [
     excerpt: "Pending leadership approval before publishing to all staff.",
     status: "Draft",
     tint: "#9c7dde",
-    img: "/images/cms/gathering.jpg",
+    img: "images/cms/gathering.jpg",
     body: P("This announcement is a draft pending leadership approval before it is published to all staff."),
   },
   {
@@ -100,7 +100,7 @@ export const NEWS: NewsItem[] = [
     excerpt: "Join the leadership team for the Q3 review and open Q&A.",
     status: "Published",
     tint: "#234024",
-    img: "/images/cms/conference.jpg",
+    img: "images/cms/conference.jpg",
     body: P(
       "Join the leadership team for the <b>Q3 Town Hall</b> — a review of the quarter's milestones followed by an open Q&amp;A.",
       "The session will be held in the HQ auditorium and streamed for remote colleagues. Add it to your calendar from the Events page.",
