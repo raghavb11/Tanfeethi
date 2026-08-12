@@ -1,0 +1,17 @@
+{
+  "name": "@reach/domain-employee",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@reach/shared-ui": "*",
+    "framer-motion": "^12.41.0",
+    "lucide-react": "^1.21.0",
+    "react": "^19.2.7",
+    "react-router-dom": "^7.18.0"
+  }
+}

@@ -1,0 +1,579 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@source "../../../packages/**/*.{tsx,ts}";
+
+/* ── Brand typography (self-hosted, /public/fonts) ─────────────────────────
+   Aktiv Grotesk — body & content for BOTH English and Arabic.
+     One variable font (weight axis 100–900) covering Latin + Arabic glyphs.
+   Astoria — English headings only (Latin-only typeface).
+     Arabic headings fall through the stack to Aktiv Grotesk automatically. */
+
+@font-face {
+  font-family: "Aktiv Grotesk";
+  src: url("/fonts/aktiv-grotesk-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-extralight.woff2") format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-roman.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Astoria";
+  src: url("/fonts/astoria-extrabold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* Body & UI (English + Arabic): Aktiv Grotesk covers both scripts.
+       Headings: Astoria for Latin; Arabic glyphs (absent in Astoria) fall through to Aktiv Grotesk. */
+    --font-sans:
+      "Aktiv Grotesk",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Helvetica,
+      Arial,
+      sans-serif;
+    --font-arabic:
+      "Aktiv Grotesk",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    --font-heading:
+      "Astoria",
+      "Aktiv Grotesk",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-card-elevated: var(--card-elevated);
+    --color-soft-accent: var(--soft-accent);
+    --color-divider: var(--divider);
+    --color-secondary-surface: var(--secondary-surface);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+
+    /* ── ALTANFEETHI official brand palette — Visual Identity Guidelines §Brand Colors.
+       Raw values live in :root (so var(--rose-gold) works at runtime); these map them to
+       Tailwind utilities (bg-rose-gold, text-saudi-green, …). Usage ratio: Black 30 · Sand 30 ·
+       Rose Gold 15 · Saudi Green 15 · Dark Gold/Royal Purple/Lavender ≤5 (accents, never backgrounds). */
+    --color-rose-gold: var(--rose-gold);
+    --color-brand-black: var(--brand-black);
+    --color-saudi-green: var(--saudi-green);
+    --color-sand: var(--sand);
+    --color-dark-gold: var(--dark-gold);
+    --color-lavender: var(--lavender);
+    --color-royal-purple: var(--royal-purple);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    /* ALTANFEETHI brand constants (theme-independent) — see BRAND.md.
+       Primary: */
+    --rose-gold: #ce7b5b;      /* Pantone 2433 C */
+    --brand-black: #000000;    /* Pantone Black 6 C */
+    --saudi-green: #234024;    /* Pantone 2411 C */
+    --sand: #f3f0ee;           /* Pantone Cool Gray 1 C */
+    /* Secondary (accents only, ≤5%, never backgrounds): */
+    --dark-gold: #ab8025;      /* Pantone 7551 C */
+    --lavender: #9c7dde;       /* Pantone 2087 C */
+    --royal-purple: #3d2031;   /* Pantone 511 C */
+
+    /* ALTANFEETHI — Light · Ivory & Copper luxury. Warm ivory ground with
+       cream cards that float, and copper/gold metallic accents. */
+    --background: #efe8db;
+    --foreground: #241d15;
+    --card: #fdf8ef;
+    --card-elevated: #fffdf8;
+    --card-foreground: #241d15;
+    --popover: #fbf5eb;
+    --popover-foreground: #241d15;
+    --primary: #ce7b5b;
+    --primary-hover: #b86a4c;
+    --primary-foreground: #2b1608;
+    --secondary: #e7ddcd;
+    --secondary-surface: #ece4d6;
+    --secondary-foreground: #241d15;
+    --muted: #e7ddcd;
+    --muted-foreground: #7c705d;
+    --soft-accent: #f3d8cb;
+    --divider: rgba(156, 100, 60, 0.20);
+    --accent: #ce7b5b;
+    --accent-foreground: #2b1608;
+    --destructive: #c23b2f;
+    --border: rgba(156, 100, 60, 0.22);
+    --input: rgba(156, 100, 60, 0.28);
+    --ring: #ce7b5b;
+    --card-ring: rgba(156, 100, 60, 0.18);
+    --cop-hi: #c8825e;
+    --cop-lo: #7c3a1e;
+    --chart-1: #ce7b5b;
+    --chart-2: #c19a4a;
+    --chart-3: #9c5536;
+    --chart-4: #6f5742;
+    --chart-5: #2a221b;
+    --radius: 0.7rem;
+    --sidebar: #f0e9dd;
+    --sidebar-foreground: #241d15;
+    --sidebar-primary: #ce7b5b;
+    --sidebar-primary-foreground: #2b1608;
+    --sidebar-accent: #efe6d8;
+    --sidebar-accent-foreground: #241d15;
+    --sidebar-border: rgba(156, 100, 60, 0.20);
+    --sidebar-ring: #ce7b5b;
+}
+
+.dark {
+    /* ALTANFEETHI — Dark · Copper & Obsidian luxury. Warm obsidian ground with
+       copper metallic accents over slate-teal depth. */
+    --background: #0b0b0c;
+    --foreground: #f2e9db;
+    --card: #16130f;
+    --card-elevated: #1d1813;
+    --card-foreground: #f2e9db;
+    --popover: #16130f;
+    --popover-foreground: #f2e9db;
+    --primary: #d2815f;
+    --primary-hover: #dd8e6c;
+    --primary-foreground: #241209;
+    --secondary: #221d17;
+    --secondary-surface: #1a1611;
+    --secondary-foreground: #f2e9db;
+    --muted: #201b15;
+    --muted-foreground: #9a8f7e;
+    --soft-accent: #f3d1c6;
+    --divider: rgba(206, 123, 91, 0.18);
+    --accent: #221d17;
+    --accent-foreground: #f2e9db;
+    --destructive: #f05252;
+    --border: rgba(206, 123, 91, 0.18);
+    --input: rgba(206, 123, 91, 0.24);
+    --ring: #d2815f;
+    --card-ring: rgba(206, 123, 91, 0.16);
+    --cop-hi: #f4d3ab;
+    --cop-lo: #9c5536;
+    --chart-1: #d2815f;
+    --chart-2: #c19a4a;
+    --chart-3: #9c5536;
+    --chart-4: #b4bccb;
+    --chart-5: #f2e9db;
+    --sidebar: #0c0b0a;
+    --sidebar-foreground: #f2e9db;
+    --sidebar-primary: #d2815f;
+    --sidebar-primary-foreground: #241209;
+    --sidebar-accent: #17130f;
+    --sidebar-accent-foreground: #f2e9db;
+    --sidebar-border: rgba(206, 123, 91, 0.16);
+    --sidebar-ring: #d2815f;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply antialiased transition-colors duration-200;
+    }
+  html {
+    @apply font-sans;
+    }
+  [lang="ar"],
+  [dir="rtl"],
+  :lang(ar) {
+    font-family: var(--font-arabic);
+    letter-spacing: 0;
+    }
+}
+
+/* Brand scrollbars — slim, rounded, warm; rose-gold on hover. Unlayered so
+   they win over Tailwind's base layer. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.15s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--primary) 62%, var(--foreground));
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Filmic material — grain + vignette. Fixed overlays that live behind app
+   content (the shell root is `isolate`, these sit at z-index -1 above the
+   background but below every card/panel). Restores the depth from the approved
+   mockups; kept sub-6% so it textures without hazing. Unlayered. */
+.app-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .app-grain {
+  opacity: 0.06;
+}
+.app-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(120% 120% at 50% 38%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+}
+.dark .app-vignette {
+  opacity: 0.55;
+}
+
+/* Motion restraint — honour the OS "reduce motion" setting everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Themed page surface — UNLAYERED so it beats shadcn's baked `body { @apply
+   bg-background text-foreground }` (which @theme inline freezes to the LIGHT
+   literals). Driven by raw reactive vars so the .dark block actually switches. */
+html {
+  background-color: var(--background);
+}
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  background-image:
+    radial-gradient(1150px 740px at 84% -14%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 56%),
+    radial-gradient(1000px 820px at 4% 114%, color-mix(in oklab, var(--dark-gold) 30%, transparent), transparent 60%),
+    radial-gradient(680px 480px at 100% 100%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+.dark body {
+  background-image:
+    radial-gradient(1150px 720px at 84% -12%, color-mix(in oklab, var(--primary) 20%, transparent), transparent 56%),
+    radial-gradient(1000px 820px at 6% 112%, rgba(30, 43, 52, 0.60), transparent 60%),
+    radial-gradient(700px 500px at 100% 100%, rgba(129, 58, 31, 0.20), transparent 60%);
+}
+
+@layer utilities {
+  .surface-elevated {
+    background-color: var(--card-elevated);
+    box-shadow:
+      0 1px 0 0 color-mix(in oklab, var(--foreground) 5%, transparent),
+      0 4px 6px -2px color-mix(in oklab, #000 18%, transparent),
+      0 12px 40px -20px color-mix(in oklab, #000 30%, transparent);
+  }
+  .divide-divider > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--divider);
+  }
+  .border-divider {
+    border-color: var(--divider);
+  }
+  .glow-soft-accent {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--soft-accent) 35%, transparent),
+      0 12px 48px -12px color-mix(in oklab, var(--soft-accent) 25%, transparent);
+  }
+  .card-glass {
+    background: color-mix(in oklab, var(--card) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ── Unified glass surface system ─────────────────────────────────
+     ONE surface language. Light & dark are structurally identical —
+     same translucency + sheen + gradient — only the colors differ.
+     Pair with a `rounded-*` utility (corner radius stays in markup).
+       .panel         raised content card — frosted/translucent fill, soft
+                      top sheen, glassy top-edge highlight, gentle depth shadow.
+       .panel-chrome  shell chrome (sidebar / AI panel) — same sheen + a copper
+                      top wash, over the page background color (no float shadow).
+       .panel-tint    soft brand/colour tint over a panel (set --tint).
+       .panel-accent  shorthand: a soft copper tint (= .panel-tint with brand).
+       .ambient-page  page/chrome-level radial wash for depth.
+     Keep tints LIGHT — soft, not saturated. */
+  .panel {
+    position: relative;
+    /* Solid, crisp fill — no translucency, no backdrop blur. Definition comes
+       from the hairline border + a faint highlight "touch" along the top edge. */
+    background-color: var(--card);
+    box-shadow:
+      0 1px 2px -1px color-mix(in oklab, #2a211c 9%, transparent),
+      0 14px 34px -24px color-mix(in oklab, #2a211c 45%, transparent);
+  }
+  .dark .panel {
+    background-color: var(--card);
+    box-shadow: 0 1px 2px -1px color-mix(in oklab, #000 35%, transparent);
+  }
+  /* the "touch at the border" — a faint highlight along the top edge only */
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset-inline: 6%;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, #fff 55%, transparent), transparent);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .dark .panel::before {
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, #fff 13%, transparent), transparent);
+    opacity: 0.8;
+  }
+
+  /* Sidebar carries no edge wash — just a positioning context. */
+  .chrome-soft { position: relative; }
+
+  /* AI panel — a soft copper "edge wash": a tall, wide, smooth glow hugging the
+     OUTER (screen-facing) edge and fading gently inward. A vertical linear
+     gradient (full height, even) — not a radial blob — so it reads as a smooth
+     wash, never an oval. `--edge-dir` points inward and flips for RTL. Light
+     mode runs a touch higher since copper has less contrast on the light canvas. */
+  .chrome-light {                 /* AI panel — outer edge = inline-end */
+    position: relative;
+    --edge-op: 22%;
+    --edge-dir: left;
+    background-image: linear-gradient(
+      to var(--edge-dir),
+      color-mix(in oklab, var(--primary) var(--edge-op), transparent) 0%,
+      transparent 50%
+    );
+  }
+  .dark .chrome-light { --edge-op: 14%; }
+  [dir="rtl"] .chrome-light { --edge-dir: right; }
+
+  /* Soft colour tint over a .panel — Knowledge-hero style. Set --tint. */
+  .panel-tint {
+    background-image:
+      linear-gradient(180deg, color-mix(in oklab, #fff 42%, transparent) 0%, transparent 45%),
+      radial-gradient(135% 95% at 100% 0%, color-mix(in oklab, var(--tint, var(--primary)) 24%, transparent) 0%, transparent 58%),
+      linear-gradient(160deg, color-mix(in oklab, var(--tint, var(--primary)) 13%, transparent) 0%, transparent 60%);
+    border-color: color-mix(in oklab, var(--tint, var(--primary)) 34%, var(--border));
+  }
+  .dark .panel-tint {
+    background-image:
+      linear-gradient(180deg, color-mix(in oklab, #fff 5%, transparent) 0%, transparent 45%),
+      radial-gradient(135% 95% at 100% 0%, color-mix(in oklab, var(--tint, var(--primary)) 24%, transparent) 0%, transparent 58%),
+      linear-gradient(160deg, color-mix(in oklab, var(--tint, var(--primary)) 13%, transparent) 0%, transparent 60%);
+    border-color: color-mix(in oklab, var(--tint, var(--primary)) 34%, var(--border));
+  }
+  .panel-accent {
+    background-image:
+      linear-gradient(180deg, color-mix(in oklab, #fff 42%, transparent) 0%, transparent 45%),
+      radial-gradient(135% 95% at 100% 0%, color-mix(in oklab, var(--primary) 20%, transparent) 0%, transparent 58%);
+    border-color: color-mix(in oklab, var(--primary) 34%, var(--border));
+  }
+  .dark .panel-accent {
+    background-image:
+      linear-gradient(180deg, color-mix(in oklab, #fff 5%, transparent) 0%, transparent 45%),
+      radial-gradient(135% 95% at 100% 0%, color-mix(in oklab, var(--primary) 20%, transparent) 0%, transparent 58%);
+  }
+
+  /* Highlight / hero cards — ONE soft, dark, two-tone gradient for every page.
+     Theme-INDEPENDENT (fixed colours → identical in light & dark). Each card
+     sets its own soft hue via `--hl`; the hue only appears as a gentle glow +
+     tinted border, never as a sharp fill. Text inside must be light. */
+  .highlight-card {
+    position: relative;
+    color: #f4ece5;
+    /* warm espresso — on-brand, sits between light & dark so it suits both themes */
+    background-color: #2a201b;
+    background-image:
+      radial-gradient(130% 120% at 100% 0%, color-mix(in oklab, var(--hl, #ce7b5b) 34%, transparent) 0%, transparent 56%),
+      linear-gradient(155deg, #3a2c24 0%, #241b16 72%);
+    border: 1px solid color-mix(in oklab, var(--hl, #ce7b5b) 30%, #3a2c24);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, #fff 8%, transparent),
+      0 16px 42px -28px color-mix(in oklab, #000 55%, transparent);
+  }
+  /* shared dot pattern on EVERY hero card (sits behind the z-10 content) */
+  .highlight-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, color-mix(in oklab, #fff 7%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+    pointer-events: none;
+  }
+  /* per-page soft hue for the highlight card (paired with .highlight-card) */
+  .hl-green   { --hl: #22c55e; }
+  .hl-teal    { --hl: #14b8a6; }
+  .hl-sky     { --hl: #3b82f6; }
+  .hl-blue    { --hl: #5b8def; }
+  .hl-indigo  { --hl: #6366f1; }
+  .hl-violet  { --hl: #8b5cf6; }
+  .hl-fuchsia { --hl: #c850dd; }
+  .hl-amber   { --hl: #e0a23c; }
+  .hl-rose    { --hl: #ef6a8a; }
+
+  /* Sidebar active tab — ONE soft copper highlight + copper text, IDENTICAL
+     in light & dark (single rule, no white sheen → no light/dark asymmetry). */
+  .nav-active {
+    color: var(--primary);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--primary) 16%, transparent) 0%,
+      color-mix(in oklab, var(--primary) 8%, transparent) 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
+      0 6px 16px -8px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  /* Modern accents: gradient rose-gold CTA + accent chips. */
+  .btn-primary-grad {
+    color: var(--primary-foreground);
+    background-image: linear-gradient(
+      150deg,
+      color-mix(in oklab, var(--primary) 45%, #fff) 0%,
+      var(--primary) 52%,
+      color-mix(in oklab, var(--primary) 72%, #000) 100%
+    );
+    box-shadow: 0 8px 22px -9px color-mix(in oklab, var(--primary) 65%, transparent);
+  }
+  .btn-primary-grad:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 10px 26px -8px color-mix(in oklab, var(--primary) 75%, transparent);
+  }
+  .accent-chip {
+    color: var(--primary);
+    background-image: linear-gradient(
+      140deg,
+      color-mix(in oklab, var(--primary) 28%, transparent) 0%,
+      color-mix(in oklab, var(--primary) 9%, transparent) 100%
+    );
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 24%, transparent);
+  }
+  /* Copper/gold metallic gradient text — KPI numbers, accent words. */
+  .metal-text {
+    background: linear-gradient(135deg, var(--cop-hi), var(--primary) 48%, var(--cop-lo));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Wide-tracked gold small-caps label. */
+  .overline {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .panel-glass {
+    position: relative;
+    background-color: color-mix(in oklab, var(--card) 68%, transparent);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
+    box-shadow: 0 8px 30px -16px color-mix(in oklab, #000 30%, transparent);
+  }
+  .ambient-page {
+    background-image: radial-gradient(
+      ellipse 78% 42% at 50% -6%,
+      color-mix(in oklab, var(--primary) 20%, transparent) 0%,
+      transparent 58%
+    );
+  }
+  .dark .ambient-page {
+    background-image: radial-gradient(
+      ellipse 78% 42% at 50% -6%,
+      color-mix(in oklab, var(--primary) 14%, transparent) 0%,
+      transparent 58%
+    );
+  }
+}

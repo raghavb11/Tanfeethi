@@ -1,0 +1,26 @@
+{
+  "name": "reach-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @reach/shell",
+    "build": "npm run build -w @reach/shell",
+    "lint": "eslint apps packages",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "preview": "npm run preview -w @reach/shell"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.7.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.62.0"
+  }
+}

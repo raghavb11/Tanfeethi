@@ -1,0 +1,13 @@
+{
+  "name": "@reach/shell-context",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19"
+  }
+}
