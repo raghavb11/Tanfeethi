@@ -51,9 +51,11 @@ export default function Dashboard() {
   const toggleTask = (id: string) => setTasks((ts) => ts.map((x) => (x.id === id ? { ...x, done: !x.done } : x)))
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-5 px-4 py-6 md:px-8">
+    // @container: columns respond to the real content width, not the viewport —
+    // the sidebar and AI panel take ~320px, so viewport breakpoints lie.
+    <div className="@container mx-auto max-w-[1500px] space-y-5 px-4 py-6 md:px-8">
       {/* ── greeting + next meeting ── */}
-      <div className="grid items-start gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="grid items-start gap-5 @3xl:grid-cols-[minmax(0,1fr)_340px]">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="flex flex-wrap items-center gap-3 text-[13px]">
             <span className="font-medium text-primary">{t("Good morning", "صباح الخير")}</span>
@@ -134,7 +136,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── agenda · inbox · tasks · approvals ── */}
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 @2xl:grid-cols-2 @6xl:grid-cols-4">
         {/* daily agenda */}
         <Card className="p-5">
           <SectionTitle meta={`${agenda.length} ${t("appointments", "مواعيد")}`}>{t("Daily agenda", "جدول الأعمال اليومي")}</SectionTitle>
@@ -233,7 +235,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── project completion · active tasks ── */}
-      <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid gap-5 @4xl:grid-cols-[1.5fr_minmax(0,1fr)]">
         <Card className="p-5">
           <SectionTitle meta={`${projects.length + 7} ${t("projects", "مشروع")} · Q3 2026`}>{t("Project completion", "إكتمال المشاريع")}</SectionTitle>
           <div className="divide-y divide-border/60">
@@ -291,7 +293,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── quick services · announcements ── */}
-      <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid gap-5 @4xl:grid-cols-[1.5fr_minmax(0,1fr)]">
         <Card className="p-5">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
@@ -300,15 +302,17 @@ export default function Dashboard() {
             </div>
             <Button variant="outline" size="sm" className="gap-1">{t("Edit", "تعديل")}<ChevronLeft className={cn("size-3.5", !isAr && "rotate-180")} /></Button>
           </div>
-          <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-8">
+          {/* wrap rather than a fixed column count — the card is much narrower
+              here than in the 1440px comp */}
+          <div className="flex flex-wrap gap-x-3 gap-y-4">
             {quickServices.map((s) => {
               const Icon = SERVICE_ICONS[s.icon] ?? Car
               return (
-                <button key={s.id} className="group flex flex-col items-center gap-2">
-                  <span className="grid size-14 place-items-center rounded-full text-white shadow-sm transition-transform group-hover:scale-105" style={{ backgroundColor: s.tone }}>
+                <button key={s.id} className="group flex w-[76px] flex-col items-center gap-2">
+                  <span className="grid size-12 place-items-center rounded-full text-white shadow-sm transition-transform group-hover:scale-105" style={{ backgroundColor: s.tone }}>
                     <Icon className="size-5" />
                   </span>
-                  <span className="text-center text-[11px] leading-tight text-muted-foreground group-hover:text-foreground">{isAr ? s.ar : s.label}</span>
+                  <span className="text-center text-[10.5px] leading-tight text-muted-foreground group-hover:text-foreground">{isAr ? s.ar : s.label}</span>
                 </button>
               )
             })}
@@ -320,7 +324,7 @@ export default function Dashboard() {
             <img src={announcement.img} alt="" className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
           </div>
-          <div className="relative flex h-full min-h-[260px] flex-col p-5">
+          <div className="relative flex h-full min-h-[300px] flex-col p-5">
             <div>
               <h2 className="font-heading text-[15px] font-semibold leading-tight text-white">{t("Announcements", "الإعلانات")}</h2>
               <span className="mt-1.5 block h-[3px] w-8 rounded-full bg-primary" />
