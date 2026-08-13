@@ -9,7 +9,7 @@ import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Bell, Calendar, Check, Eye, FileText, ImageIcon, MapPin, Newspaper, Paperclip, PenLine, Star, Trash2, Upload, UserCircle2, Users, X } from "lucide-react"
 
-import { PersonPicker } from "./_ui"
+import { PeopleMultiPicker, PersonPicker } from "./_ui"
 import { addArticle, type ArticleAttachment, deleteArticle, updateArticle, useArticles } from "../store"
 import { usePortalUsers } from "../data/roles"
 import { logAudit } from "../data/audit"
@@ -40,14 +40,6 @@ const USER_GROUPS: Opt[] = [
   { id: "ops", label: "Operations", ar: "العمليات" },
   { id: "finance", label: "Finance", ar: "المالية" },
   { id: "commercial", label: "Commercial", ar: "التجاري" },
-]
-const SPECIFIC_USERS: Opt[] = [
-  { id: "u-khalid", label: "Khalid Al-Saadi", ar: "خالد السعدي" },
-  { id: "u-sara", label: "Sara Al-Mutairi", ar: "سارة المطيري" },
-  { id: "u-ahmed", label: "Ahmed Mohammed", ar: "أحمد محمد" },
-  { id: "u-layan", label: "Layan Al Marwani", ar: "ليان المرواني" },
-  { id: "u-mohammad", label: "Mohammad Iqbal", ar: "محمد إقبال" },
-  { id: "u-noura", label: "Noura Saleh", ar: "نورة صالح" },
 ]
 const LOCATIONS: Opt[] = [
   { id: "hq", label: "HQ · Riyadh", ar: "المقر · الرياض" },
@@ -289,7 +281,20 @@ export default function NewsEditorPage() {
             </div>
 
             <MultiSelect label={t("Specific user groups", "مجموعات مستخدمين محددة")} icon={Users} options={USER_GROUPS} value={userGroups} onChange={setUserGroups} isAr={isAr} placeholder={t("Select", "اختر")} />
-            <MultiSelect label={t("Specific users", "مستخدمون محددون")} icon={UserCircle2} options={SPECIFIC_USERS} value={specificUsers} onChange={setSpecificUsers} isAr={isAr} placeholder={t("Select", "اختر")} />
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <UserCircle2 className="size-3.5 text-primary" />{t("Specific users", "مستخدمون محددون")}
+              </label>
+              <PeopleMultiPicker
+                value={specificUsers}
+                onChange={setSpecificUsers}
+                people={people}
+                isAr={isAr}
+                placeholder={t("Select", "اختر")}
+                searchPlaceholder={t("Search by name or email…", "ابحث بالاسم أو البريد…")}
+                emptyLabel={t("No people match", "لا توجد نتائج")}
+              />
+            </div>
             <MultiSelect label={t("Locations", "المواقع")} icon={MapPin} options={LOCATIONS} value={locations} onChange={setLocations} isAr={isAr} placeholder={t("Select", "اختر")} />
 
             <div className="space-y-1 border-t border-border/60 pt-3">

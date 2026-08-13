@@ -89,6 +89,91 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
   )
 }
 
+/** Searchable multi-person picker — filter by name or email, tick several.
+ *  Selected people show as removable chips under the trigger. */
+export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, searchPlaceholder, emptyLabel }: {
+  value: string[]
+  onChange: (ids: string[]) => void
+  people: Person[]
+  isAr: boolean
+  placeholder: string
+  searchPlaceholder: string
+  emptyLabel: string
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [query, setQuery] = React.useState("")
+  const ref = React.useRef<HTMLDivElement>(null)
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener("mousedown", onDoc)
+    const id = window.setTimeout(() => inputRef.current?.focus(), 0)
+    return () => { document.removeEventListener("mousedown", onDoc); window.clearTimeout(id) }
+  }, [open])
+
+  const name = (p: Person) => (isAr ? p.nameAr : p.name)
+  const q = query.trim().toLowerCase()
+  const filtered = q
+    ? people.filter((p) => name(p).toLowerCase().includes(q) || (p.email ?? "").toLowerCase().includes(q))
+    : people
+  const selected = people.filter((p) => value.includes(p.id))
+  const toggle = (id: string) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id])
+
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
+        <span className={cn("truncate", value.length === 0 && "text-muted-foreground")}>
+          {value.length === 0 ? placeholder : `${value.length} ${isAr ? "محدّد" : "selected"}`}
+        </span>
+        <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+      </button>
+
+      {open && (
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+          <div className="flex items-center gap-2 border-b border-border px-3">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
+              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          </div>
+          <div className="max-h-60 overflow-y-auto p-1">
+            {filtered.map((p) => {
+              const on = value.includes(p.id)
+              return (
+                <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on}
+                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-start transition-colors hover:bg-muted">
+                  <span className={cn("grid size-4 shrink-0 place-items-center rounded border", on ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
+                    {on && <Check className="size-3" />}
+                  </span>
+                  <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{p.initials}</AvatarFallback></Avatar>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-medium">{name(p)}</span>
+                    {(p.email || p.dept) && <span className="block truncate text-[11px] text-muted-foreground">{[p.email, isAr ? p.deptAr : p.dept].filter(Boolean).join(" · ")}</span>}
+                  </span>
+                </button>
+              )
+            })}
+            {filtered.length === 0 && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
+          </div>
+        </div>
+      )}
+
+      {selected.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {selected.map((p) => (
+            <span key={p.id} className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 py-1 pe-1.5 ps-2.5 text-xs font-medium text-primary">
+              {name(p)}
+              <button type="button" aria-label={`remove ${p.name}`} onClick={() => toggle(p.id)} className="grid size-4 place-items-center rounded-full hover:bg-primary/20"><X className="size-3" /></button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** Multi-select department picker with an "All employees" shortcut. When `all`
  *  is true, the individual departments are ignored (everyone is targeted). */
 export function DepartmentPicker({ all, ids, onToggleAll, onToggleDept, isAr }: {
