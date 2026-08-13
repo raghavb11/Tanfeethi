@@ -1,4 +1,4 @@
-export type Status = "Published" | "Draft"
+export type Status = "Published" | "Draft" | "Scheduled" | "Archived"
 
 export type NewsItem = {
   id: string
@@ -12,6 +12,34 @@ export type NewsItem = {
   tint: string
   img: string
   body: string
+}
+
+/** Newsroom metadata shown on the News console (list + grid views). */
+export type NewsMeta = {
+  ref: string
+  author: string; authorAr: string; initials: string
+  views: number
+  rating: number; ratingCount: number
+  comments: number
+  status?: Status
+}
+
+export const NEWS_META: Record<string, NewsMeta> = {
+  n1: { ref: "N243547", author: "Sarah M.", authorAr: "سارة م.", initials: "SA", views: 1240, rating: 4.8, ratingCount: 126, comments: 24 },
+  n2: { ref: "N243512", author: "Ahmed H.", authorAr: "أحمد ح.", initials: "AH", views: 980, rating: 4.5, ratingCount: 88, comments: 12 },
+  n3: { ref: "N243498", author: "Sara Al-Mutairi", authorAr: "سارة المطيري", initials: "SM", views: 1465, rating: 4.7, ratingCount: 143, comments: 31 },
+  n4: { ref: "N243455", author: "Layan Al Marwani", authorAr: "ليان المرواني", initials: "LM", views: 2110, rating: 4.9, ratingCount: 205, comments: 46 },
+  n5: { ref: "N243401", author: "Khalid Al-Saadi", authorAr: "خالد السعدي", initials: "KS", views: 0, rating: 0, ratingCount: 0, comments: 0 },
+  n6: { ref: "N243377", author: "Noura Saleh", authorAr: "نورة صالح", initials: "NS", views: 640, rating: 4.4, ratingCount: 57, comments: 9, status: "Scheduled" },
+}
+
+/** Deterministic fallback so authored articles also render in the console. */
+export function metaFor(id: string, i = 0): NewsMeta {
+  return NEWS_META[id] ?? {
+    ref: `N${(243300 + (i + 1) * 7).toString()}`,
+    author: "Khalid Al-Saadi", authorAr: "خالد السعدي", initials: "KS",
+    views: 0, rating: 0, ratingCount: 0, comments: 0,
+  }
 }
 
 const P = (...paras: string[]) => paras.map((p) => `<p>${p}</p>`).join("")
