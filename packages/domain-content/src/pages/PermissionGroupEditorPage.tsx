@@ -35,7 +35,7 @@ export default function PermissionGroupEditorPage() {
       updateGroup(editing.id, { name: nm, nameAr: nm, desc: desc.trim(), descAr: desc.trim(), roles, updated: TODAY_LABEL, updatedAr: TODAY_LABEL_AR })
       logAudit("permission", `${t("Edited group", "عُدّلت مجموعة")} ${nm}`, "Roles")
     } else {
-      addGroup({ id: newGroupId(), name: nm, nameAr: nm, desc: desc.trim(), descAr: desc.trim(), roles, members: [], updated: TODAY_LABEL, updatedAr: TODAY_LABEL_AR })
+      addGroup({ id: newGroupId(), name: nm, nameAr: nm, desc: desc.trim(), descAr: desc.trim(), roles, members: [], memberSince: {}, updated: TODAY_LABEL, updatedAr: TODAY_LABEL_AR })
       logAudit("permission", `${t("Created group", "أُنشئت مجموعة")} ${nm}`, "Roles")
     }
     navigate("/admin/permission-groups")

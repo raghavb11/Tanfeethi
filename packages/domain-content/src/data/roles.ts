@@ -39,6 +39,8 @@ export type PortalUser = {
   dept: string; deptAr: string
   email: string
   roles: string[]
+  /** Account state — defaults to Active when omitted. */
+  status?: "Active" | "Inactive"
 }
 
 const SEED_USERS: PortalUser[] = [
@@ -63,6 +65,8 @@ export type PermissionGroup = {
   desc: string; descAr: string
   roles: string[]
   members: string[]
+  /** userId → the date that user was added to this group. */
+  memberSince: Record<string, { en: string; ar: string }>
   updated: string; updatedAr: string
 }
 
@@ -71,9 +75,9 @@ export const TODAY_LABEL = "Aug 12, 2026"
 export const TODAY_LABEL_AR = "١٢ أغسطس ٢٠٢٦"
 
 const SEED_GROUPS: PermissionGroup[] = [
-  { id: "g-content", name: "Content Team", nameAr: "فريق المحتوى", desc: "Owns news and announcements across the portal.", descAr: "مسؤول عن الأخبار والإعلانات في البوابة.", roles: ["news-admin", "announce-admin"], members: ["u-sara"], updated: "Aug 2, 2026", updatedAr: "٢ أغسطس ٢٠٢٦" },
-  { id: "g-engagement", name: "Engagement Team", nameAr: "فريق التفاعل", desc: "Runs events and employee engagement programs.", descAr: "يدير الفعاليات وبرامج تفاعل الموظفين.", roles: ["events-admin"], members: ["u-ahmed"], updated: "Jul 21, 2026", updatedAr: "٢١ يوليو ٢٠٢٦" },
-  { id: "g-beta1", name: "Beta Wave 1", nameAr: "الدفعة التجريبية 1", desc: "First cohort testing the new beta pages.", descAr: "الدفعة الأولى لاختبار الصفحات التجريبية الجديدة.", roles: ["beta"], members: ["u-fahad", "u-reem"], updated: "Aug 10, 2026", updatedAr: "١٠ أغسطس ٢٠٢٦" },
+  { id: "g-content", name: "Content Team", nameAr: "فريق المحتوى", desc: "Owns news and announcements across the portal.", descAr: "مسؤول عن الأخبار والإعلانات في البوابة.", roles: ["news-admin", "announce-admin"], members: ["u-sara"], memberSince: { "u-sara": { en: "Feb 2, 2026", ar: "٢ فبراير ٢٠٢٦" } }, updated: "Aug 2, 2026", updatedAr: "٢ أغسطس ٢٠٢٦" },
+  { id: "g-engagement", name: "Engagement Team", nameAr: "فريق التفاعل", desc: "Runs events and employee engagement programs.", descAr: "يدير الفعاليات وبرامج تفاعل الموظفين.", roles: ["events-admin"], members: ["u-ahmed"], memberSince: { "u-ahmed": { en: "Jan 10, 2026", ar: "١٠ يناير ٢٠٢٦" } }, updated: "Jul 21, 2026", updatedAr: "٢١ يوليو ٢٠٢٦" },
+  { id: "g-beta1", name: "Beta Wave 1", nameAr: "الدفعة التجريبية 1", desc: "First cohort testing the new beta pages.", descAr: "الدفعة الأولى لاختبار الصفحات التجريبية الجديدة.", roles: ["beta"], members: ["u-fahad", "u-reem"], memberSince: { "u-fahad": { en: "Aug 5, 2026", ar: "٥ أغسطس ٢٠٢٦" }, "u-reem": { en: "Aug 10, 2026", ar: "١٠ أغسطس ٢٠٢٦" } }, updated: "Aug 10, 2026", updatedAr: "١٠ أغسطس ٢٠٢٦" },
 ]
 
 /** Beta features currently gated behind the Beta Tester role's separate pages. */
@@ -115,9 +119,27 @@ export function updateGroup(id: string, patch: Partial<PermissionGroup>) {
 }
 export function deleteGroup(id: string) { groups = groups.filter((g) => g.id !== id); emit() }
 export function toggleGroupMember(groupId: string, userId: string) {
-  groups = groups.map((g) => (g.id === groupId
-    ? { ...g, members: g.members.includes(userId) ? g.members.filter((m) => m !== userId) : [...g.members, userId] }
-    : g))
+  groups = groups.map((g) => {
+    if (g.id !== groupId) return g
+    const since = { ...g.memberSince }
+    if (g.members.includes(userId)) {
+      delete since[userId]
+      return { ...g, members: g.members.filter((m) => m !== userId), memberSince: since }
+    }
+    since[userId] = { en: TODAY_LABEL, ar: TODAY_LABEL_AR }
+    return { ...g, members: [...g.members, userId], memberSince: since }
+  })
+  emit()
+}
+/** Add several users to a group at once, stamped with today's date. */
+export function addGroupMembers(groupId: string, userIds: string[]) {
+  groups = groups.map((g) => {
+    if (g.id !== groupId) return g
+    const since = { ...g.memberSince }
+    const add = userIds.filter((id) => !g.members.includes(id))
+    add.forEach((id) => { since[id] = { en: TODAY_LABEL, ar: TODAY_LABEL_AR } })
+    return { ...g, members: [...g.members, ...add], memberSince: since }
+  })
   emit()
 }
 export const newGroupId = () => `g-${Date.now().toString(36)}`
