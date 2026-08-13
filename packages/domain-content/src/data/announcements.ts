@@ -30,6 +30,26 @@ const SEED: Announcement[] = [
   { id: "a5", title: "Wellbeing Day — save the date", titleAr: "يوم الرفاهية — احجز الموعد", body: "Join us on September 2 for workshops, health checks and activities in the staff lounge.", bodyAr: "انضم إلينا في ٢ سبتمبر لورش العمل والفحوصات الصحية والأنشطة في استراحة الموظفين.", category: "Culture", categoryAr: "الثقافة", date: "Jul 24, 2026", dateAr: "٢٤ يوليو ٢٠٢٦", audience: "All employees", audienceAr: "جميع الموظفين" },
 ]
 
+/** Who an announcement is addressed to. Kept as a fixed list so the Arabic
+ *  label always matches the English one. */
+export const AUDIENCES: { en: string; ar: string }[] = [
+  { en: "All employees", ar: "جميع الموظفين" },
+  { en: "HQ staff", ar: "موظفو المقر" },
+  { en: "Terminal staff", ar: "موظفو المحطة" },
+  { en: "Managers", ar: "المدراء" },
+  { en: "People & Culture", ar: "الموظفون والثقافة" },
+  { en: "Finance", ar: "المالية" },
+  { en: "Operations", ar: "العمليات" },
+  { en: "IT & Security", ar: "تقنية المعلومات والأمن" },
+  { en: "Legal & Compliance", ar: "الشؤون القانونية والامتثال" },
+  { en: "Commercial", ar: "التجاري" },
+  { en: "Ground Services", ar: "الخدمات الأرضية" },
+  { en: "Executive Office", ar: "المكتب التنفيذي" },
+]
+export const AUDIENCE_NAMES = AUDIENCES.map((a) => a.en)
+/** Arabic label for an audience; falls back to the given value when custom. */
+export const audienceArFor = (en: string) => AUDIENCES.find((a) => a.en === en)?.ar ?? en
+
 export const ANN_CATS = ["All", "HR", "IT", "Facilities", "Culture"]
 export const ANN_CATS_AR: Record<string, string> = { All: "الكل", HR: "الموارد البشرية", IT: "تقنية المعلومات", Facilities: "المرافق", Culture: "الثقافة" }
 

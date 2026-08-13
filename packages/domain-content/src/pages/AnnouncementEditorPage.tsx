@@ -8,7 +8,8 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, Megaphone, Pin, Trash2 } from "lucide-react"
 
-import { addAnnouncement, ANN_CATS, ANN_CATS_AR, deleteAnnouncement, getAnnouncementById, newAnnouncementId, updateAnnouncement } from "../data/announcements"
+import { SearchSelect } from "./_ui"
+import { addAnnouncement, ANN_CATS, ANN_CATS_AR, AUDIENCE_NAMES, audienceArFor, deleteAnnouncement, getAnnouncementById, newAnnouncementId, updateAnnouncement } from "../data/announcements"
 import { logAudit } from "../data/audit"
 
 const EDIT_CATS = ANN_CATS.filter((c) => c !== "All")
@@ -38,7 +39,7 @@ export default function AnnouncementEditorPage() {
     const fields = {
       title: ttl, titleAr: ttl, body: body.trim(), bodyAr: body.trim(),
       category, categoryAr: ANN_CATS_AR[category] ?? category,
-      audience: audience.trim() || "All employees", audienceAr: audience.trim() || "جميع الموظفين",
+      audience: audience.trim() || "All employees", audienceAr: audienceArFor(audience.trim() || "All employees"),
       important, pinned,
     }
     if (editing) { updateAnnouncement(editing.id, fields); logAudit("edited", ttl, "Announcements") }
@@ -82,8 +83,15 @@ export default function AnnouncementEditorPage() {
             </select>
           </div>
           <div>
-            <label htmlFor="ann-aud" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Audience", "الجمهور")}</label>
-            <Input id="ann-aud" value={audience} onChange={(e) => setAudience(e.target.value)} className="h-11" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Audience", "الجمهور")}</label>
+            <SearchSelect
+              value={audience}
+              onChange={setAudience}
+              options={AUDIENCE_NAMES}
+              placeholder={t("Select an audience…", "اختر الجمهور…")}
+              searchPlaceholder={t("Search audiences…", "ابحث عن جمهور…")}
+              emptyLabel={t("No audiences match", "لا توجد نتائج")}
+            />
           </div>
         </div>
         <div className="flex flex-wrap gap-5 pt-1">
