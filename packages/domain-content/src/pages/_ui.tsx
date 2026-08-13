@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Avatar, AvatarFallback, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { Building2, Check, ChevronsUpDown, Search, Users, X } from "lucide-react"
+import { Building2, Check, ChevronsUpDown, Plus, Search, Users, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { DEPARTMENTS } from "../data/departments"
@@ -82,6 +82,73 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
               </button>
             ))}
             {filtered.length === 0 && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Searchable single-select over plain string options (departments, teams…).
+ *  Accepts a free-typed value too, so existing data is never orphaned. */
+export function SearchSelect({ value, onChange, options, placeholder, searchPlaceholder, emptyLabel, allowCustom = true }: {
+  value: string
+  onChange: (v: string) => void
+  options: string[]
+  placeholder: string
+  searchPlaceholder: string
+  emptyLabel: string
+  allowCustom?: boolean
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [query, setQuery] = React.useState("")
+  const ref = React.useRef<HTMLDivElement>(null)
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener("mousedown", onDoc)
+    const id = window.setTimeout(() => inputRef.current?.focus(), 0)
+    return () => { document.removeEventListener("mousedown", onDoc); window.clearTimeout(id) }
+  }, [open])
+
+  const q = query.trim()
+  const filtered = q ? options.filter((o) => o.toLowerCase().includes(q.toLowerCase())) : options
+  const canAddCustom = allowCustom && q.length > 0 && !options.some((o) => o.toLowerCase() === q.toLowerCase())
+  const pick = (v: string) => { onChange(v); setOpen(false); setQuery("") }
+
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
+        <span className={cn("truncate", !value && "text-muted-foreground")}>{value || placeholder}</span>
+        <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+      </button>
+
+      {open && (
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+          <div className="flex items-center gap-2 border-b border-border px-3">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
+              onKeyDown={(e) => { if (e.key === "Enter" && canAddCustom) { e.preventDefault(); pick(q) } }}
+              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          </div>
+          <div className="max-h-60 overflow-y-auto p-1">
+            {filtered.map((o) => (
+              <button key={o} type="button" onClick={() => pick(o)}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm transition-colors hover:bg-muted">
+                <span className="size-4 shrink-0">{value === o && <Check className="size-4 text-primary" />}</span>
+                <span className="truncate">{o}</span>
+              </button>
+            ))}
+            {canAddCustom && (
+              <button type="button" onClick={() => pick(q)}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm text-primary transition-colors hover:bg-muted">
+                <Plus className="size-4 shrink-0" /><span className="truncate">{q}</span>
+              </button>
+            )}
+            {filtered.length === 0 && !canAddCustom && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
           </div>
         </div>
       )}

@@ -5,7 +5,9 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { Archive, ArrowLeft, Upload } from "lucide-react"
 
+import { SearchSelect } from "./_ui"
 import { addDocument, useFolders } from "../data/documents"
+import { OWNER_TEAMS } from "../data/departments"
 import { logAudit } from "../data/audit"
 
 const TYPES = ["PDF", "XLSX", "DOCX"] as const
@@ -88,8 +90,15 @@ export default function DocumentEditorPage() {
           </div>
         </div>
         <div>
-          <label htmlFor="doc-dept" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Department", "الإدارة")}</label>
-          <Input id="doc-dept" value={dept} onChange={(e) => setDept(e.target.value)} className="h-11" />
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Department", "الإدارة")}</label>
+          <SearchSelect
+            value={dept}
+            onChange={setDept}
+            options={OWNER_TEAMS}
+            placeholder={t("Select a department…", "اختر الإدارة…")}
+            searchPlaceholder={t("Search departments…", "ابحث عن إدارة…")}
+            emptyLabel={t("No departments match", "لا توجد نتائج")}
+          />
         </div>
         <label className="inline-flex items-center gap-2 pt-1 text-sm"><input type="checkbox" checked={restricted} onChange={(e) => setRestricted(e.target.checked)} className="size-4 accent-[var(--primary)]" />{t("Restrict access by department", "تقييد الوصول حسب الإدارة")}</label>
 

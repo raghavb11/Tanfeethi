@@ -20,6 +20,18 @@ export function affectedCount(deptIds: string[], all: boolean): number {
   return DEPARTMENTS.filter((d) => deptIds.includes(d.id)).reduce((s, d) => s + d.headcount, 0)
 }
 
+/** Owning teams that can be picked as a policy owner, event organizer or
+ *  document owner — the real departments plus the standing functional teams. */
+export const OWNER_TEAMS: string[] = [
+  ...DEPARTMENTS.map((d) => d.name),
+  "HSE",
+  "Procurement",
+  "Marketing",
+  "Digital Workplace",
+  "Corporate",
+  "HR",
+].filter((v, i, a) => a.indexOf(v) === i)
+
 export function deptById(id: string): Department | undefined {
   return DEPARTMENTS.find((d) => d.id === id)
 }

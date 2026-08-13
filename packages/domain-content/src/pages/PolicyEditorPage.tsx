@@ -8,10 +8,10 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, CalendarClock, Check, ChevronsUpDown, Hash, Infinity as InfinityIcon, Library, Scale, Search, Trash2, Upload, Users, X } from "lucide-react"
 
-import { CategoryBadge, DepartmentPicker } from "./_ui"
+import { CategoryBadge, DepartmentPicker, SearchSelect as SearchSelectPlain } from "./_ui"
 import { RichTextEditor } from "./RichTextEditor"
 import { addPolicy, deletePolicy, getPolicyById, markSuperseded, POLICY_CATS, policyBody, policyCatAr, policyCatColor, suggestPolicyNumber, updatePolicy, usePolicies } from "../data/policies"
-import { affectedCount } from "../data/departments"
+import { affectedCount, OWNER_TEAMS } from "../data/departments"
 import { addDocument, type Doc, TYPE_STYLE, useDocuments } from "../data/documents"
 import { logAudit } from "../data/audit"
 
@@ -214,7 +214,16 @@ export default function PolicyEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>{label(t("Version", "الإصدار"))}<Input value={version} onChange={(e) => setVersion(e.target.value)} className="h-11" /></div>
-            <div>{label(t("Owner", "المالك"))}<Input value={owner} onChange={(e) => setOwner(e.target.value)} className="h-11" /></div>
+            <div>{label(t("Owner", "المالك"))}
+              <SearchSelectPlain
+                value={owner}
+                onChange={setOwner}
+                options={OWNER_TEAMS}
+                placeholder={t("Select an owning team…", "اختر الجهة المالكة…")}
+                searchPlaceholder={t("Search teams…", "ابحث عن جهة…")}
+                emptyLabel={t("No teams match", "لا توجد نتائج")}
+              />
+            </div>
           </div>
 
           {/* applicable period */}

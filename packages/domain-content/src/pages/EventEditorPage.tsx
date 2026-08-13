@@ -8,7 +8,9 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react"
 
+import { SearchSelect } from "./_ui"
 import { addEvent, deleteEvent, EVENT_CATEGORIES, EVENT_FORMATS, EVENT_IMAGES, type EventItem, formatAr, getEventById, updateEvent } from "../data/events"
+import { OWNER_TEAMS } from "../data/departments"
 import { logAudit } from "../data/audit"
 
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
@@ -91,7 +93,16 @@ export default function EventEditorPage() {
           {field("ev-fmt", t("Format", "الصيغة"), <select id="ev-fmt" value={format} onChange={(e) => setFormat(e.target.value as EventItem["format"])} className={selectCls}>{EVENT_FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}</select>)}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {field("ev-org", t("Organizer", "المنظّم"), <Input id="ev-org" value={organizer} onChange={(e) => setOrganizer(e.target.value)} className="h-11" />)}
+          {field("ev-org", t("Organizer", "المنظّم"), (
+            <SearchSelect
+              value={organizer}
+              onChange={setOrganizer}
+              options={OWNER_TEAMS}
+              placeholder={t("Select an organizing team…", "اختر الجهة المنظّمة…")}
+              searchPlaceholder={t("Search teams…", "ابحث عن جهة…")}
+              emptyLabel={t("No teams match", "لا توجد نتائج")}
+            />
+          ))}
           {field("ev-cap", t("Capacity", "السعة"), <Input id="ev-cap" type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} className="h-11" />)}
         </div>
         <div>
