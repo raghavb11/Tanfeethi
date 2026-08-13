@@ -23,4 +23,7 @@ export { default as AnnouncementDetailPage } from "./pages/AnnouncementDetailPag
 export { default as AnnouncementEditorPage } from "./pages/AnnouncementEditorPage"
 export { default as NotificationsAdminPage } from "./pages/NotificationsAdminPage"
 export { default as RolesPage } from "./pages/RolesPage"
+export { default as PermissionGroupsPage } from "./pages/PermissionGroupsPage"
+export { default as PermissionGroupEditorPage } from "./pages/PermissionGroupEditorPage"
+export { default as PermissionGroupMembersPage } from "./pages/PermissionGroupMembersPage"
 export { default as AuditLogPage } from "./pages/AuditLogPage"

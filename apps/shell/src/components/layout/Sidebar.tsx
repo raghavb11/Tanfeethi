@@ -39,6 +39,7 @@ const arLabels: Record<string, string> = {
   "Content Management": "إدارة المحتوى",
   Notifications: "الإشعارات",
   "Roles & Permissions": "الأدوار والصلاحيات",
+  "Permission Groups": "مجموعات الصلاحيات",
   "Audit Logs": "سجلات التدقيق",
 }
 
@@ -85,7 +86,7 @@ function DesktopSidebar() {
     <motion.aside
       animate={{ width }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="chrome-soft relative hidden h-svh shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex"
+      className="chrome-soft relative hidden h-svh shrink-0 flex-col overflow-hidden bg-sidebar text-sidebar-foreground lg:flex"
     >
       {/* Inner-edge divider — logical `end` (inner edge in LTR + RTL); starts
           below the top header (top-14), matching the AI panel's divider. */}
@@ -125,7 +126,7 @@ function SidebarBody({
         <SidebarBrandLogo collapsed={collapsed} />
       </div>
 
-      <ScrollArea className={cn("relative flex-1 py-3", collapsed ? "px-1.5" : "px-2")}>
+      <ScrollArea className={cn("relative min-h-0 flex-1 py-3", collapsed ? "px-1.5" : "px-2")}>
         <div className="flex flex-col gap-3">
           {/* Core */}
           <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>

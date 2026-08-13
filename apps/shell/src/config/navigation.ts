@@ -51,6 +51,7 @@ export const adminNav: NavItem[] = [
   { title: "Content Management", path: "/cms", icon: Gauge },
   { title: "Notifications", path: "/admin/notifications", icon: Bell },
   { title: "Roles & Permissions", path: "/admin/roles", icon: ShieldCheck },
+  { title: "Permission Groups", path: "/admin/permission-groups", icon: Users },
   { title: "Audit Logs", path: "/admin/audit", icon: History },
 ]
 
@@ -73,5 +74,6 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "Content Management", path: "/cms", group: "Administration" },
   { label: "Notifications", path: "/admin/notifications", group: "Administration" },
   { label: "Roles & Permissions", path: "/admin/roles", group: "Administration" },
+  { label: "Permission Groups", path: "/admin/permission-groups", group: "Administration" },
   { label: "Audit Logs", path: "/admin/audit", group: "Administration" },
 ]

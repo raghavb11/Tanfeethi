@@ -62,6 +62,9 @@ const AnnouncementDetailPage = lazy(() => import("@reach/domain-content").then((
 const AnnouncementEditorPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.AnnouncementEditorPage })))
 const NotificationsAdminPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.NotificationsAdminPage })))
 const RolesPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.RolesPage })))
+const PermissionGroupsPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.PermissionGroupsPage })))
+const PermissionGroupEditorPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.PermissionGroupEditorPage })))
+const PermissionGroupMembersPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.PermissionGroupMembersPage })))
 const AuditLogPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.AuditLogPage })))
 const PreviewHubPage = lazy(() =>
   import("@reach/domain-preview").then((m) => ({ default: m.PreviewHubPage })),
@@ -111,6 +114,10 @@ export default function App() {
         <Route path="admin/faq-categories" element={<FaqCategoriesPage />} />
         <Route path="admin/notifications" element={<NotificationsAdminPage />} />
         <Route path="admin/roles" element={<RolesPage />} />
+        <Route path="admin/permission-groups" element={<PermissionGroupsPage />} />
+        <Route path="admin/permission-groups/new" element={<PermissionGroupEditorPage />} />
+        <Route path="admin/permission-groups/edit/:id" element={<PermissionGroupEditorPage />} />
+        <Route path="admin/permission-groups/:id" element={<PermissionGroupMembersPage />} />
         <Route path="admin/audit" element={<AuditLogPage />} />
         <Route path="hubs/:hubId" element={<PreviewHubPage />} />
       </Route>
