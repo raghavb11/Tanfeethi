@@ -7,7 +7,7 @@ import {
 } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, Bell, Calendar, Check, Eye, FileText, ImageIcon, MapPin, Newspaper, Paperclip, PenLine, Pin, Star, Trash2, Upload, UserCircle2, Users, X } from "lucide-react"
+import { ArrowLeft, Bell, Calendar, Check, Eye, FileText, ImageIcon, MapPin, Newspaper, Paperclip, PenLine, Star, Trash2, Upload, UserCircle2, Users, X } from "lucide-react"
 
 import { addArticle, type ArticleAttachment, deleteArticle, updateArticle, useArticles } from "../store"
 import { logAudit } from "../data/audit"
@@ -81,7 +81,6 @@ export default function NewsEditorPage() {
   const [visibilityStart, setVisibilityStart] = React.useState(editing?.visibilityStart ?? "")
   const [visibilityEnd, setVisibilityEnd] = React.useState(editing?.visibilityEnd ?? "")
   const [important, setImportant] = React.useState(editing?.important ?? false)
-  const [featured, setFeatured] = React.useState(editing?.featured ?? false)
   const [emailNotify, setEmailNotify] = React.useState(editing?.emailNotify ?? true)
   const [mode, setMode] = React.useState<"write" | "preview">("write")
   const [confirmDelete, setConfirmDelete] = React.useState(false)
@@ -99,7 +98,7 @@ export default function NewsEditorPage() {
     setAttachments(editing.attachments ?? []); setUserGroups(editing.userGroups ?? [])
     setSpecificUsers(editing.specificUsers ?? []); setLocations(editing.locations ?? [])
     setVisibilityStart(editing.visibilityStart ?? ""); setVisibilityEnd(editing.visibilityEnd ?? "")
-    setImportant(editing.important ?? false); setFeatured(editing.featured ?? false)
+    setImportant(editing.important ?? false)
     setEmailNotify(editing.emailNotify ?? true); setFormKey(editing.id)
   }, [editing])
 
@@ -129,7 +128,7 @@ export default function NewsEditorPage() {
     const fields = {
       title: title.trim(), category,
       excerpt: excerpt.trim() || t("No summary provided.", "لا يوجد ملخص."),
-      cover, status, featured, body,
+      cover, status, body,
       date: status === "Published" ? "Just now" : "—",
       issueDate, author, attachments, userGroups, specificUsers, locations,
       visibilityStart, visibilityEnd: visibilityEnd || null, important, emailNotify,
@@ -272,14 +271,13 @@ export default function NewsEditorPage() {
             <MultiSelect label={t("Specific users", "مستخدمون محددون")} icon={UserCircle2} options={SPECIFIC_USERS} value={specificUsers} onChange={setSpecificUsers} isAr={isAr} placeholder={t("Select", "اختر")} />
             <MultiSelect label={t("Locations", "المواقع")} icon={MapPin} options={LOCATIONS} value={locations} onChange={setLocations} isAr={isAr} placeholder={t("Select", "اختر")} />
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>{fieldLabel(t("Visibility start", "بداية الظهور"))}<input type="date" value={visibilityStart} onChange={(e) => setVisibilityStart(e.target.value)} className={SELECT_CLS} /></div>
-              <div>{fieldLabel(t("Visibility end (optional)", "نهاية الظهور (اختياري)"))}<input type="date" value={visibilityEnd} min={visibilityStart || undefined} onChange={(e) => setVisibilityEnd(e.target.value)} className={SELECT_CLS} /></div>
+            <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+              <div className="flex flex-col">{fieldLabel(t("Visibility start", "بداية الظهور"))}<input type="date" value={visibilityStart} onChange={(e) => setVisibilityStart(e.target.value)} className={SELECT_CLS} /></div>
+              <div className="flex flex-col">{fieldLabel(t("Visibility end", "نهاية الظهور"))}<input type="date" value={visibilityEnd} min={visibilityStart || undefined} onChange={(e) => setVisibilityEnd(e.target.value)} className={SELECT_CLS} /></div>
             </div>
 
             <div className="space-y-1 border-t border-border/60 pt-3">
               <CheckRow icon={Star} label={t("Mark as important", "وضع علامة مهم")} checked={important} onChange={setImportant} />
-              <CheckRow icon={Pin} label={t("Pin to home dashboard", "تثبيت على الرئيسية")} checked={featured} onChange={setFeatured} />
               <CheckRow icon={Bell} label={t("Send email notifications", "إرسال إشعارات بريدية")} checked={emailNotify} onChange={setEmailNotify} />
             </div>
           </Card>
@@ -294,7 +292,6 @@ export default function NewsEditorPage() {
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <Badge variant="outline">{category}</Badge>
                 {important && <Badge className="bg-primary/15 text-primary"><Star className="me-1 size-3 fill-primary" />{t("Important", "مهم")}</Badge>}
-                {featured && <Badge variant="outline"><Pin className="me-1 size-3" />{t("Pinned", "مثبّت")}</Badge>}
               </div>
               <h1 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">{title.trim() || t("Untitled article", "مقال بدون عنوان")}</h1>
               {excerpt.trim() && <p className="mt-3 text-lg text-muted-foreground">{excerpt}</p>}

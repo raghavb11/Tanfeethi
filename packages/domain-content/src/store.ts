@@ -13,7 +13,8 @@ export type Article = {
   excerpt: string
   cover: string | null
   status: ArticleStatus
-  featured: boolean
+  /** Legacy — news articles are no longer featured/pinned. */
+  featured?: boolean
   date: string
   body?: string
   // extended authoring fields

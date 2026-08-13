@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Avatar, AvatarFallback, Badge, Button, Card, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, CalendarDays, Clock, Link2, MessageSquare, Newspaper, Pencil, Share2, Star } from "lucide-react"
+import { ArrowLeft, CalendarDays, Clock, Link2, MessageSquare, Newspaper, Pencil, Share2 } from "lucide-react"
 
 import { getMockArticle } from "../data/news"
 import { addComment, getArticleById, useComments } from "../store"
@@ -38,7 +38,6 @@ export default function ArticleReaderPage() {
         excerpt: authored.excerpt,
         cover: authored.cover,
         body: authored.body || "",
-        featured: authored.featured,
         status: authored.status,
       }
     : mock
@@ -49,7 +48,6 @@ export default function ArticleReaderPage() {
           excerpt: mock.excerpt,
           cover: mock.img,
           body: mock.body,
-          featured: mock.featured,
           status: mock.status,
         }
       : null
@@ -101,12 +99,6 @@ export default function ArticleReaderPage() {
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <Badge variant="outline">{article.category}</Badge>
               {article.status === "Draft" && <Badge className="bg-muted text-muted-foreground">{t("Draft", "مسودة")}</Badge>}
-              {article.featured && (
-                <span className="inline-flex items-center gap-1 text-primary">
-                  <Star className="size-3.5 fill-primary" />
-                  {t("Featured", "مميّز")}
-                </span>
-              )}
             </div>
 
             <h1 className="mt-4 font-heading text-[2rem] font-bold leading-[1.08] tracking-tight text-balance sm:text-[2.6rem] @2xl:text-[3rem]">{article.title}</h1>

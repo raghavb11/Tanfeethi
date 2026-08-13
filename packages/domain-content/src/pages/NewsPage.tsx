@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Badge, Button, Card, Input } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
-import { CalendarDays, FileText, History, Newspaper, Pencil, Search, Star } from "lucide-react"
+import { CalendarDays, FileText, History, Newspaper, Pencil, Search } from "lucide-react"
 
 import { PageHeader, StatCard } from "./_ui"
 import { useArticles } from "../store"
@@ -22,21 +22,10 @@ export default function NewsPage() {
   const [cat, setCat] = React.useState("All")
   const [q, setQ] = React.useState("")
 
-  const createdFeatured = created.find((a) => a.featured)
-  const mockFeatured = NEWS.find((n) => n.featured)!
-  const heroId = createdFeatured ? createdFeatured.id : mockFeatured.id
-  const hero = createdFeatured
-    ? {
-        title: createdFeatured.title,
-        titleAr: createdFeatured.title,
-        category: createdFeatured.category,
-        date: createdFeatured.date === "—" ? t("Draft", "مسودة") : createdFeatured.date,
-        excerpt: createdFeatured.excerpt,
-        img: createdFeatured.cover,
-        tint: "#234024",
-      }
-    : mockFeatured
-  const rest = NEWS.filter((n) => !n.featured).filter((n) => (cat === "All" || n.category === cat) && (q === "" || n.title.toLowerCase().includes(q.toLowerCase())))
+  // Lead story = the most recent article; the rest fall into the list below.
+  const hero = NEWS[0]
+  const heroId = hero.id
+  const rest = NEWS.filter((n) => n.id !== heroId).filter((n) => (cat === "All" || n.category === cat) && (q === "" || n.title.toLowerCase().includes(q.toLowerCase())))
 
   const open = (id: string) => navigate(`/news/${id}`)
 
@@ -56,20 +45,18 @@ export default function NewsPage() {
       />
 
       {isAdmin && (
-        <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <StatCard icon={Newspaper} value="128" label={t("Published", "منشورة")} sub={t("all time", "الإجمالي")} />
           <StatCard icon={FileText} value="3" label={t("Drafts", "مسودات")} sub={t("in review", "قيد المراجعة")} />
           <StatCard icon={CalendarDays} value="14" label={t("This month", "هذا الشهر")} sub={t("published", "منشورة")} />
-          <StatCard icon={Star} value="1" label={t("Featured", "مميزة")} sub={t("on home", "على الرئيسية")} />
         </div>
       )}
 
-      {/* featured */}
+      {/* lead story */}
       <Card className="mb-6 cursor-pointer overflow-hidden py-0 transition-shadow hover:shadow-md" onClick={() => open(heroId)}>
         <div className="grid md:grid-cols-2">
           <div className="relative min-h-[200px] bg-muted">
             {hero.img && <img src={hero.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }} />}
-            <span className="absolute left-4 top-4"><Badge className="bg-primary text-primary-foreground">{t("Featured", "مميزة")}</Badge></span>
           </div>
           <div className="p-6">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -98,10 +85,7 @@ export default function NewsPage() {
                     <Badge variant="outline">{a.category}</Badge>
                     {a.status === "Draft" ? <Badge className="bg-muted text-muted-foreground">{t("Draft", "مسودة")}</Badge> : <Badge className="bg-primary/15 text-primary">{t("Published", "منشور")}</Badge>}
                   </div>
-                  <h3 className="mt-2 font-medium leading-snug">
-                    {a.title}
-                    {a.featured && <Star className="ms-1 inline size-3.5 fill-primary text-primary" />}
-                  </h3>
+                  <h3 className="mt-2 font-medium leading-snug">{a.title}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{a.excerpt}</p>
                   <div className="mt-3 flex justify-end">
                     <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/news/edit/${a.id}`) }}>
