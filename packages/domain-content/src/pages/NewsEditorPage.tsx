@@ -9,7 +9,9 @@ import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Bell, Calendar, Check, Eye, FileText, ImageIcon, MapPin, Newspaper, Paperclip, PenLine, Star, Trash2, Upload, UserCircle2, Users, X } from "lucide-react"
 
+import { PersonPicker } from "./_ui"
 import { addArticle, type ArticleAttachment, deleteArticle, updateArticle, useArticles } from "../store"
+import { usePortalUsers } from "../data/roles"
 import { logAudit } from "../data/audit"
 import { RichTextEditor } from "./RichTextEditor"
 
@@ -65,6 +67,7 @@ export default function NewsEditorPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const articles = useArticles()
+  const people = usePortalUsers()
   const editing = id ? articles.find((a) => a.id === id) : undefined
 
   const [title, setTitle] = React.useState(editing?.title ?? "")
@@ -105,7 +108,7 @@ export default function NewsEditorPage() {
   const coverRef = React.useRef<HTMLInputElement>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
   const canSave = title.trim().length > 0
-  const authorLabel = SPECIFIC_USERS.find((u) => u.id === author)
+  const authorPerson = people.find((u) => u.id === author)
 
   const onCoverFile = (files: FileList | null) => {
     const f = files?.[0]
@@ -180,20 +183,38 @@ export default function NewsEditorPage() {
                 className={cn("w-full rounded-lg border bg-[var(--card-elevated)] px-3 py-2.5 font-heading text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                {fieldLabel(t("Issue date", "تاريخ الإصدار"))}
-                <div className="relative">
-                  <Calendar className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <div>
+              {fieldLabel(t("Author (optional)", "الكاتب (اختياري)"))}
+              <PersonPicker
+                value={author}
+                onChange={setAuthor}
+                people={people}
+                isAr={isAr}
+                placeholder={t("Search for a person…", "ابحث عن شخص…")}
+                searchPlaceholder={t("Search by name or email…", "ابحث بالاسم أو البريد…")}
+                emptyLabel={t("No people match", "لا توجد نتائج")}
+                clearLabel={t("Clear author", "مسح الكاتب")}
+              />
+            </div>
+
+            {/* dates — issue + visibility window, grouped */}
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-3.5">
+              <div className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <Calendar className="size-3.5 text-primary" />{t("Dates", "التواريخ")}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+                <div className="flex flex-col">
+                  <span className="mb-1 block text-[11px] text-muted-foreground">{t("Issue date", "تاريخ الإصدار")}</span>
                   <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={SELECT_CLS} />
                 </div>
-              </div>
-              <div>
-                {fieldLabel(t("Author (optional)", "الكاتب (اختياري)"))}
-                <select value={author} onChange={(e) => setAuthor(e.target.value)} className={SELECT_CLS}>
-                  <option value="">{t("Select", "اختر")}</option>
-                  {SPECIFIC_USERS.map((u) => <option key={u.id} value={u.id}>{isAr ? u.ar : u.label}</option>)}
-                </select>
+                <div className="flex flex-col">
+                  <span className="mb-1 block text-[11px] text-muted-foreground">{t("Visibility start", "بداية الظهور")}</span>
+                  <input type="date" value={visibilityStart} onChange={(e) => setVisibilityStart(e.target.value)} className={SELECT_CLS} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="mb-1 block text-[11px] text-muted-foreground">{t("Visibility end", "نهاية الظهور")}</span>
+                  <input type="date" value={visibilityEnd} min={visibilityStart || undefined} onChange={(e) => setVisibilityEnd(e.target.value)} className={SELECT_CLS} />
+                </div>
               </div>
             </div>
 
@@ -271,11 +292,6 @@ export default function NewsEditorPage() {
             <MultiSelect label={t("Specific users", "مستخدمون محددون")} icon={UserCircle2} options={SPECIFIC_USERS} value={specificUsers} onChange={setSpecificUsers} isAr={isAr} placeholder={t("Select", "اختر")} />
             <MultiSelect label={t("Locations", "المواقع")} icon={MapPin} options={LOCATIONS} value={locations} onChange={setLocations} isAr={isAr} placeholder={t("Select", "اختر")} />
 
-            <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
-              <div className="flex flex-col">{fieldLabel(t("Visibility start", "بداية الظهور"))}<input type="date" value={visibilityStart} onChange={(e) => setVisibilityStart(e.target.value)} className={SELECT_CLS} /></div>
-              <div className="flex flex-col">{fieldLabel(t("Visibility end", "نهاية الظهور"))}<input type="date" value={visibilityEnd} min={visibilityStart || undefined} onChange={(e) => setVisibilityEnd(e.target.value)} className={SELECT_CLS} /></div>
-            </div>
-
             <div className="space-y-1 border-t border-border/60 pt-3">
               <CheckRow icon={Star} label={t("Mark as important", "وضع علامة مهم")} checked={important} onChange={setImportant} />
               <CheckRow icon={Bell} label={t("Send email notifications", "إرسال إشعارات بريدية")} checked={emailNotify} onChange={setEmailNotify} />
@@ -296,7 +312,7 @@ export default function NewsEditorPage() {
               <h1 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">{title.trim() || t("Untitled article", "مقال بدون عنوان")}</h1>
               {excerpt.trim() && <p className="mt-3 text-lg text-muted-foreground">{excerpt}</p>}
               <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border pb-4 text-xs text-muted-foreground">
-                <span>{t("By", "بقلم")} {authorLabel ? (isAr ? authorLabel.ar : authorLabel.label) : t("Khalid", "خالد")}</span>
+                <span>{t("By", "بقلم")} {authorPerson ? (isAr ? authorPerson.nameAr : authorPerson.name) : t("Khalid", "خالد")}</span>
                 <span>·</span><span>{issueDate || t("Just now", "الآن")}</span>
                 <span>·</span><span>{category}</span>
                 {attachments.length > 0 && <><span>·</span><span className="inline-flex items-center gap-1"><Paperclip className="size-3" />{attachments.length} {t("files", "ملفات")}</span></>}
