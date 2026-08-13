@@ -51,7 +51,6 @@ export const adminNav: NavItem[] = [
   { title: "Content Management", path: "/cms", icon: Gauge },
   { title: "Notifications", path: "/admin/notifications", icon: Bell },
   { title: "Roles & Permissions", path: "/admin/roles", icon: ShieldCheck },
-  { title: "Permission Groups", path: "/admin/permission-groups", icon: Users },
   { title: "Audit Logs", path: "/admin/audit", icon: History },
 ]
 

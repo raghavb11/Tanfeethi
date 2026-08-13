@@ -3,9 +3,9 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Avatar, AvatarFallback, Badge, Button, Card, Input } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
-import { ChevronLeft, ChevronRight, Download, FlaskConical, Layers, ListFilter, Plus, Search, Shield, ShieldCheck, Trash2, UserPlus, Users, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, Layers, ListFilter, Plus, Search, Shield, Trash2, UserPlus, Users, X } from "lucide-react"
 
-import { addGroupMembers, roleById, toggleGroupMember, usePermissionGroups, usePortalUsers } from "../data/roles"
+import { addGroupMembers, toggleGroupMember, usePermissionGroups, usePortalUsers } from "../data/roles"
 import { logAudit } from "../data/audit"
 
 const PAGE_SIZE = 8
@@ -76,7 +76,7 @@ export default function PermissionGroupMembersPage() {
     a.click(); URL.revokeObjectURL(url)
   }
 
-  const th = "px-4 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+  const th = "px-4 py-3 text-start text-[12px] font-medium text-muted-foreground"
   const crumb = "text-[12px] text-muted-foreground transition-colors hover:text-foreground"
 
   return (
@@ -94,24 +94,11 @@ export default function PermissionGroupMembersPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="font-heading text-[28px] font-bold leading-tight tracking-tight sm:text-[32px]">
-            {t("Manage Users", "إدارة المستخدمين")} <span className="text-muted-foreground">—</span> {isAr ? group.nameAr : group.name}
+            {t("Manage Users", "إدارة المستخدمين")} - {isAr ? group.nameAr : group.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[13px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><Users className="size-4" />{t("Total users:", "إجمالي المستخدمين:")} <span className="font-semibold text-foreground">{group.members.length}</span></span>
-            <span className="inline-flex items-center gap-1.5"><Shield className="size-4" />{t("Roles:", "الأدوار:")} <span className="font-semibold text-foreground">{group.roles.length}</span></span>
-          </div>
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            {group.roles.map((rid) => {
-              const r = roleById(rid)
-              if (!r) return null
-              return (
-                <span key={rid} className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: `${r.color}1e`, color: r.color, borderColor: `${r.color}55` }}>
-                  {r.kind === "beta" && <FlaskConical className="size-3" />}
-                  {r.kind === "super" && <ShieldCheck className="size-3" />}
-                  {isAr ? r.nameAr : r.name}
-                </span>
-              )
-            })}
+            <span className="inline-flex items-center gap-1.5"><Users className="size-4" />{t("Total Users:", "إجمالي المستخدمين:")} {group.members.length}</span>
+            <span className="inline-flex items-center gap-1.5"><Shield className="size-4" />{t("Roles:", "الأدوار:")} {group.roles.length}</span>
           </div>
         </div>
         <Button size="lg" className="shrink-0 gap-1.5" onClick={() => setAdding((v) => !v)}>
@@ -184,11 +171,11 @@ export default function PermissionGroupMembersPage() {
           <table className="w-full min-w-[780px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className={th}>{t("User name", "اسم المستخدم")}</th>
+                <th className={th}>{t("User Name", "اسم المستخدم")}</th>
                 <th className={th}>{t("Email", "البريد الإلكتروني")}</th>
                 <th className={th}>{t("Department", "الإدارة")}</th>
                 <th className={th}>{t("Status", "الحالة")}</th>
-                <th className={th}>{t("Date added", "تاريخ الإضافة")}</th>
+                <th className={th}>{t("Date Added", "تاريخ الإضافة")}</th>
                 <th className={cn(th, "text-end")}>{t("Actions", "إجراءات")}</th>
               </tr>
             </thead>

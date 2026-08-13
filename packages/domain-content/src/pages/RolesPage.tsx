@@ -1,15 +1,19 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
-import { Avatar, AvatarFallback, Badge, Button, Card, Input } from "@reach/shared-ui"
+import { useLocation, useNavigate } from "react-router-dom"
+import {
+  Avatar, AvatarFallback, Badge, Button, Card, Input,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
-import { Check, ChevronDown, FlaskConical, Layers, Lock, Search, ShieldCheck, UserCog, Users } from "lucide-react"
+import { Check, ChevronDown, FlaskConical, Layers, Lock, Pencil, Plus, Search, ShieldCheck, Trash2, UserCog, UserPlus, Users } from "lucide-react"
 
 import { PageHeader, StatCard } from "./_ui"
-import { BETA_FEATURES, effectiveRoles, ROLE_DEFS, type RoleDef, roleById, roleMemberCount, rolesViaGroups, toggleUserRole, usePermissionGroups, usePortalUsers } from "../data/roles"
+import { BETA_FEATURES, deleteGroup, effectiveRoles, ROLE_DEFS, type RoleDef, roleById, roleMemberCount, rolesViaGroups, toggleUserRole, usePermissionGroups, usePortalUsers } from "../data/roles"
 import { logAudit } from "../data/audit"
 
-type Tab = "users" | "beta"
+type Tab = "users" | "groups" | "beta"
+const GROUP_PAGE_SIZE = 8
 
 function RoleChip({ role, isAr, locked }: { role: RoleDef; isAr: boolean; locked?: boolean }) {
   const c = locked ? "#8a8a8a" : role.color
@@ -28,12 +32,24 @@ export default function RolesPage() {
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const users = usePortalUsers()
   const groups = usePermissionGroups()
-  const [tab, setTab] = React.useState<Tab>("users")
+
+  // Landing on /admin/permission-groups opens straight on the Groups tab.
+  const [tab, setTab] = React.useState<Tab>(() => (location.pathname.includes("permission-groups") ? "groups" : "users"))
+
+  // users tab
   const [q, setQ] = React.useState("")
   const [expanded, setExpanded] = React.useState<string | null>(null)
+  // groups tab
+  const [groupQ, setGroupQ] = React.useState("")
+  const [groupPage, setGroupPage] = React.useState(0)
+  const [confirmId, setConfirmId] = React.useState<string | null>(null)
+  const confirmItem = groups.find((g) => g.id === confirmId)
+
+  React.useEffect(() => { setGroupPage(0) }, [groupQ])
 
   const betaCount = roleMemberCount(users, groups, "beta")
   const adminCount = users.filter((u) => effectiveRoles(u, groups).some((r) => roleById(r)?.kind === "feature")).length
@@ -41,6 +57,12 @@ export default function RolesPage() {
   const filteredUsers = users.filter((u) =>
     q === "" || (isAr ? u.nameAr : u.name).toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase()) || (isAr ? u.deptAr : u.dept).toLowerCase().includes(q.toLowerCase()),
   )
+  const filteredGroups = groups.filter((g) =>
+    groupQ === "" || (isAr ? g.nameAr : g.name).toLowerCase().includes(groupQ.toLowerCase()) || (isAr ? g.descAr : g.desc).toLowerCase().includes(groupQ.toLowerCase()),
+  )
+  const groupPageCount = Math.max(1, Math.ceil(filteredGroups.length / GROUP_PAGE_SIZE))
+  const gStart = groupPage * GROUP_PAGE_SIZE
+  const shownGroups = filteredGroups.slice(gStart, gStart + GROUP_PAGE_SIZE)
 
   const toggle = (userId: string, roleId: string) => {
     const u = users.find((x) => x.id === userId)
@@ -51,14 +73,25 @@ export default function RolesPage() {
     logAudit("permission", `${had ? t("Removed", "أزيل") : t("Granted", "مُنح")} ${r.name} · ${u.name}`, "Roles")
   }
 
+  const TABS: { id: Tab; label: string; ar: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: "users", label: "Users", ar: "المستخدمون", icon: Users },
+    { id: "groups", label: "Permission groups", ar: "مجموعات الصلاحيات", icon: Layers },
+    { id: "beta", label: "Beta program", ar: "البرنامج التجريبي", icon: FlaskConical },
+  ]
+  const th = "px-4 py-3 text-start text-[12px] font-medium text-muted-foreground"
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
         icon={ShieldCheck}
         eyebrow={t("Roles & Permissions", "الأدوار والصلاحيات")}
-        title={t("Assign roles to people", "إسناد الأدوار للأشخاص")}
-        desc={t("Grant individual roles here. Roles that come from a permission group are locked — manage those in the group itself.", "امنح الأدوار الفردية هنا. الأدوار القادمة من مجموعة صلاحيات مقفلة — تُدار من المجموعة نفسها.")}
-        action={<Button variant="outline" size="lg" onClick={() => navigate("/admin/permission-groups")}><Layers className="size-4" />{t("Permission groups", "مجموعات الصلاحيات")}</Button>}
+        title={t("Who can do what", "من يستطيع فعل ماذا")}
+        desc={t("Assign roles to people directly, or bundle roles into a permission group and add members. Roles inherited from a group are locked on the user.", "امنح الأدوار مباشرة، أو اجمعها في مجموعة صلاحيات وأضف الأعضاء. الأدوار الموروثة من مجموعة مقفلة على المستخدم.")}
+        action={tab === "groups" ? (
+          <Button size="lg" className="gap-1.5" onClick={() => navigate("/admin/permission-groups/new")}>
+            <Plus className="size-4" />{t("Create Permission Group", "إنشاء مجموعة صلاحيات")}
+          </Button>
+        ) : undefined}
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -69,14 +102,16 @@ export default function RolesPage() {
       </div>
 
       {/* tabs */}
-      <div className="mb-5 inline-flex rounded-xl border border-border p-0.5">
-        {([{ id: "users", label: "Users", ar: "المستخدمون", icon: Users }, { id: "beta", label: "Beta program", ar: "البرنامج التجريبي", icon: FlaskConical }] as const).map((tb) => (
+      <div className="mb-5 inline-flex flex-wrap rounded-xl border border-border p-0.5">
+        {TABS.map((tb) => (
           <button key={tb.id} onClick={() => setTab(tb.id)} aria-pressed={tab === tb.id} className={cn("inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors", tab === tb.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
             <tb.icon className="size-4" />{isAr ? tb.ar : tb.label}
+            {tb.id === "groups" && <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", tab === tb.id ? "bg-primary-foreground/20" : "bg-muted")}>{groups.length}</span>}
           </button>
         ))}
       </div>
 
+      {/* ── USERS ── */}
       {tab === "users" && (
         <>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -108,7 +143,6 @@ export default function RolesPage() {
                     <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
                   </button>
 
-                  {/* inline role editor */}
                   {isOpen && (
                     <div className="border-t border-border/60 bg-muted/20 px-4 py-3.5">
                       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/65">{t("Individual roles", "الأدوار الفردية")}</div>
@@ -158,6 +192,92 @@ export default function RolesPage() {
         </>
       )}
 
+      {/* ── PERMISSION GROUPS ── */}
+      {tab === "groups" && (
+        <>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{t("A group bundles roles and grants them to every member.", "تجمع المجموعة عدة أدوار وتمنحها لكل أعضائها.")}</p>
+            <div className="relative">
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={groupQ} onChange={(e) => setGroupQ(e.target.value)} placeholder={t("Search groups…", "ابحث في المجموعات…")} className="w-64 ps-9" />
+            </div>
+          </div>
+
+          <Card className="overflow-hidden py-0">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[820px] text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className={th}>{t("Group Name", "اسم المجموعة")}</th>
+                    <th className={th}>{t("Description", "الوصف")}</th>
+                    <th className={cn(th, "text-center")}>{t("Roles", "الأدوار")}</th>
+                    <th className={cn(th, "text-center")}>{t("Users", "المستخدمون")}</th>
+                    <th className={th}>{t("Last Updated", "آخر تحديث")}</th>
+                    <th className={cn(th, "text-end")}>{t("Actions", "إجراءات")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shownGroups.map((g) => (
+                    <tr key={g.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-primary/[0.03]">
+                      <td className="px-4 py-3.5">
+                        <button onClick={() => navigate(`/admin/permission-groups/${g.id}`)} className="text-start font-medium transition-colors hover:text-primary">
+                          {isAr ? g.nameAr : g.name}
+                        </button>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {g.roles.slice(0, 3).map((rid) => { const r = roleById(rid); return r ? <RoleChip key={rid} role={r} isAr={isAr} /> : null })}
+                          {g.roles.length > 3 && <span className="text-[10px] text-muted-foreground">+{g.roles.length - 3}</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-muted-foreground">{isAr ? g.descAr : g.desc}</td>
+                      <td className="px-4 py-3.5 text-center"><Badge variant="secondary" className="tabular-nums">{g.roles.length}</Badge></td>
+                      <td className="px-4 py-3.5 text-center">
+                        <button onClick={() => navigate(`/admin/permission-groups/${g.id}`)} className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary">
+                          <Users className="size-3.5" /><span className="tabular-nums">{g.members.length}</span>
+                        </button>
+                      </td>
+                      <td className="px-4 py-3.5 text-muted-foreground">{isAr ? g.updatedAr : g.updated}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon-sm" aria-label={t("Members", "الأعضاء")} onClick={() => navigate(`/admin/permission-groups/${g.id}`)}><UserPlus className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} onClick={() => navigate(`/admin/permission-groups/edit/${g.id}`)}><Pencil className="size-4" /></Button>
+                          <Button variant="ghost" size="icon-sm" aria-label={t("Delete", "حذف")} className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setConfirmId(g.id)}><Trash2 className="size-4" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {shownGroups.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-14 text-center">
+                        <Layers className="mx-auto size-8 text-muted-foreground/40" />
+                        <p className="mt-3 text-sm text-muted-foreground">{groupQ ? t("No groups match this search.", "لا توجد مجموعات مطابقة.") : t("No permission groups yet — create the first one.", "لا توجد مجموعات بعد — أنشئ الأولى.")}</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/20 px-4 py-3">
+              <p className="text-[12px] text-muted-foreground">
+                {filteredGroups.length === 0
+                  ? t("No entries", "لا توجد سجلات")
+                  : <>{t("Showing", "عرض")} <span className="font-medium text-foreground">{gStart + 1}</span> {t("to", "إلى")} <span className="font-medium text-foreground">{gStart + shownGroups.length}</span> {t("of", "من")} <span className="font-medium text-foreground">{filteredGroups.length}</span> {t("entries", "سجل")}</>}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled={groupPage === 0} onClick={() => setGroupPage((p) => Math.max(0, p - 1))}>{t("Previous", "السابق")}</Button>
+                <Button variant="outline" size="sm" disabled={groupPage >= groupPageCount - 1} onClick={() => setGroupPage((p) => Math.min(groupPageCount - 1, p + 1))}>{t("Next", "التالي")}</Button>
+              </div>
+            </div>
+          </Card>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            <Badge variant="outline" className="me-2">{t("Note", "ملاحظة")}</Badge>
+            {t("Roles granted through a group can only be revoked here — by removing the member or editing the group — never from the Users tab.", "الأدوار الممنوحة عبر مجموعة تُسحب من هنا فقط — بإزالة العضو أو تعديل المجموعة — وليس من تبويب المستخدمين.")}
+          </p>
+        </>
+      )}
+
+      {/* ── BETA ── */}
       {tab === "beta" && (
         <div className="grid gap-5 lg:grid-cols-2">
           <Card className="self-start p-5">
@@ -210,6 +330,19 @@ export default function RolesPage() {
         <Badge variant="outline" className="me-2">{t("Mendix mapping", "ربط Mendix")}</Badge>
         {t("Each role = a Mendix user role with fixed module-role capabilities. Permission groups and individual grants both resolve to the same user-role assignment; group-derived grants are system-managed.", "كل دور = دور مستخدم في Mendix بصلاحيات ثابتة. تُحل المجموعات والمنح الفردية إلى نفس إسناد الأدوار؛ المنح عبر المجموعات يديرها النظام.")}
       </p>
+
+      <Dialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
+        {confirmItem && (
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader><DialogTitle>{t("Delete this group?", "حذف هذه المجموعة؟")}</DialogTitle></DialogHeader>
+            <p className="text-sm text-muted-foreground">{t(`Members lose the roles this group grants (${confirmItem.members.length} member${confirmItem.members.length === 1 ? "" : "s"} affected). Direct roles are unaffected.`, `سيفقد الأعضاء الأدوار الممنوحة عبر المجموعة (${confirmItem.members.length} عضو). الأدوار المباشرة لا تتأثر.`)}</p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmId(null)}>{t("Cancel", "إلغاء")}</Button>
+              <Button className="bg-destructive text-white hover:bg-destructive/90" onClick={() => { deleteGroup(confirmItem.id); logAudit("permission", `${t("Deleted group", "حُذفت مجموعة")} ${confirmItem.name}`, "Roles"); setConfirmId(null) }}><Trash2 className="size-4" />{t("Delete", "حذف")}</Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </main>
   )
 }
