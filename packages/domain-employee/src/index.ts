@@ -1,2 +1,5 @@
 export { default as EmployeePage } from "./pages/EmployeeCenter"
 export { default as EmployeeHub } from "./pages/EmployeeHub"
+export { default as LeaveBalancesPage } from "./pages/LeaveBalancesPage"
+export { default as LeaveRequestPage } from "./pages/LeaveRequestPage"
+export { default as AttendancePage } from "./pages/AttendancePage"

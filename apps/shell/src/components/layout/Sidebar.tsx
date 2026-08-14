@@ -27,6 +27,8 @@ const arLabels: Record<string, string> = {
   Home: "الرئيسية",
   "Employee Center": "مركز الموظف",
   "My Tasks": "مهامي",
+  "Leave Balances": "أرصدة الإجازات",
+  Attendance: "الحضور",
   News: "الأخبار",
   Announcements: "الإعلانات",
   Events: "الفعاليات",

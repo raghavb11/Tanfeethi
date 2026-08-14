@@ -22,6 +22,15 @@ const TaskDetailPage = lazy(() =>
 const EmployeePage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.EmployeePage })),
 )
+const LeaveBalancesPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.LeaveBalancesPage })),
+)
+const LeaveRequestPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.LeaveRequestPage })),
+)
+const AttendancePage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.AttendancePage })),
+)
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
 )
@@ -78,6 +87,9 @@ export default function App() {
         <Route path="tasks" element={<MyTasksPage />} />
         <Route path="tasks/:id" element={<TaskDetailPage />} />
         <Route path="employee" element={<EmployeePage />} />
+        <Route path="leave" element={<LeaveBalancesPage />} />
+        <Route path="leave/request" element={<LeaveRequestPage />} />
+        <Route path="attendance" element={<AttendancePage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="intelligence" element={<IntelligencePage />} />
         <Route path="surveys" element={<SurveysPage />} />
