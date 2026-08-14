@@ -35,7 +35,7 @@ export default function NewsPage() {
 
   const [tab, setTab] = React.useState<Tab>("All")
   const [q, setQ] = React.useState("")
-  const [view, setView] = React.useState<"list" | "grid">("list")
+  const [view, setView] = React.useState<"list" | "grid">(role === "admin" ? "list" : "grid")
   const [page, setPage] = React.useState(0)
 
   React.useEffect(() => { setPage(0) }, [tab, q])
@@ -61,6 +61,9 @@ export default function NewsPage() {
 
   const filtered = all.filter((n, i) => {
     const s = statusOf(n, i)
+    // employees see published articles only — drafts, scheduled and archived
+    // items are editorial state and are not theirs to see
+    if (!isAdmin) return s === "Published" && (q === "" || (isAr ? n.titleAr : n.title).toLowerCase().includes(q.toLowerCase()))
     const inTab = tab === "All" || (tab === "Drafts" ? s === "Draft" : s === tab)
     const inSearch = q === "" || (isAr ? n.titleAr : n.title).toLowerCase().includes(q.toLowerCase())
     return inTab && inSearch
@@ -78,7 +81,9 @@ export default function NewsPage() {
         icon={Newspaper}
         eyebrow={t("News & Announcements", "الأخبار والإعلانات")}
         title={t("News", "الأخبار")}
-        desc={t("Create, schedule, and publish Altanfeethi news — from draft to auto-archive.", "أنشئ وجدول وانشر أخبار التنفيذي — من المسودة إلى الأرشفة التلقائية.")}
+        desc={isAdmin
+          ? t("Create, schedule, and publish Altanfeethi news — from draft to auto-archive.", "أنشئ وجدول وانشر أخبار التنفيذي — من المسودة إلى الأرشفة التلقائية.")
+          : t("The latest from across ALTANFEETHI.", "أحدث الأخبار من التنفيذي.")}
         action={isAdmin ? (
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="lg" onClick={() => navigate("/admin/audit?module=News")}><Tags className="size-4" />{t("Manage categories", "إدارة الفئات")}</Button>
@@ -98,7 +103,7 @@ export default function NewsPage() {
 
       {/* tabs + toolbar */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex flex-wrap rounded-xl border border-border p-0.5">
+        <div className={cn("inline-flex flex-wrap rounded-xl border border-border p-0.5", !isAdmin && "hidden")}>
           {TABS.map((tb) => (
             <button key={tb} onClick={() => setTab(tb)} aria-pressed={tab === tb}
               className={cn("rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors", tab === tb ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
@@ -131,17 +136,17 @@ export default function NewsPage() {
       {view === "list" && (
         <Card className="overflow-hidden py-0">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-sm">
+            <table className={cn("w-full text-sm", isAdmin ? "min-w-[980px]" : "min-w-[640px]")}>
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className={th}>{t("ID", "المعرّف")}</th>
+                  {isAdmin && <th className={th}>{t("ID", "المعرّف")}</th>}
                   <th className={th}>{t("Article title", "عنوان المقال")}</th>
-                  <th className={th}>{t("Created by", "أنشأه")}</th>
+                  {isAdmin && <th className={th}>{t("Created by", "أنشأه")}</th>}
                   <th className={th}>{t("Category", "الفئة")}</th>
                   <th className={th}>{t("Date", "التاريخ")}</th>
                   <th className={th}>{t("Ratings", "التقييمات")}</th>
-                  <th className={th}>{t("Status", "الحالة")}</th>
-                  <th className={cn(th, "text-end")}>{t("Actions", "إجراءات")}</th>
+                  {isAdmin && <th className={th}>{t("Status", "الحالة")}</th>}
+                  {isAdmin && <th className={cn(th, "text-end")}>{t("Actions", "إجراءات")}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -150,7 +155,7 @@ export default function NewsPage() {
                   const s = m.status ?? n.status
                   return (
                     <tr key={n.id} onClick={() => open(n.id)} className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-primary/[0.03]">
-                      <td className="px-4 py-3 font-mono text-[12px] text-muted-foreground">{m.ref}</td>
+                      {isAdmin && <td className="px-4 py-3 font-mono text-[12px] text-muted-foreground">{m.ref}</td>}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -159,27 +164,39 @@ export default function NewsPage() {
                           <span className="line-clamp-2 max-w-[20rem] font-medium leading-snug">{isAr ? n.titleAr : n.title}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{isAr ? m.authorAr : m.author}</td>
+                      {isAdmin && <td className="px-4 py-3 text-muted-foreground">{isAr ? m.authorAr : m.author}</td>}
                       <td className="px-4 py-3"><Badge variant="outline">{n.category}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{n.date}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Eye className="size-3.5" /><span className="tabular-nums">{m.views.toLocaleString()}</span></span>
+                        {m.ratingCount > 0 ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                            <span className="font-medium tabular-nums">{m.rating.toFixed(1)}</span>
+                            <span className="text-[12px] text-muted-foreground">({m.ratingCount})</span>
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">{t("Not rated yet", "لم يُقيَّم بعد")}</span>
+                        )}
                       </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className={cn("text-[11px]", STATUS_STYLE[s])}>{isAr ? STATUS_AR[s] : s}</Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon-sm" aria-label={t("Delete", "حذف")} className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="size-4" /></Button>
-                          <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} onClick={() => navigate(`/news/edit/${n.id}`)}><Pencil className="size-4" /></Button>
-                          <Button variant="ghost" size="icon-sm" aria-label={t("View", "عرض")} onClick={() => open(n.id)}><Eye className="size-4" /></Button>
-                        </div>
-                      </td>
+                      {isAdmin && (
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className={cn("text-[11px]", STATUS_STYLE[s])}>{isAr ? STATUS_AR[s] : s}</Badge>
+                        </td>
+                      )}
+                      {isAdmin && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon-sm" aria-label={t("Delete", "حذف")} className="text-destructive hover:bg-destructive/10 hover:text-destructive"><Trash2 className="size-4" /></Button>
+                            <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} onClick={() => navigate(`/news/edit/${n.id}`)}><Pencil className="size-4" /></Button>
+                            <Button variant="ghost" size="icon-sm" aria-label={t("View", "عرض")} onClick={() => open(n.id)}><Eye className="size-4" /></Button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   )
                 })}
                 {shown.length === 0 && (
-                  <tr><td colSpan={8} className="py-14 text-center">
+                  <tr><td colSpan={isAdmin ? 8 : 4} className="py-14 text-center">
                     <Newspaper className="mx-auto size-8 text-muted-foreground/40" />
                     <p className="mt-3 text-sm text-muted-foreground">{t("No articles in this view.", "لا توجد مقالات في هذا العرض.")}</p>
                   </td></tr>
@@ -204,11 +221,12 @@ export default function NewsPage() {
                 <div className="p-4">
                   <div className="flex items-center gap-2">
                     <Badge className="bg-primary/15 text-primary">{n.category}</Badge>
-                    <Badge variant="outline" className={cn("text-[11px]", STATUS_STYLE[s])}>{isAr ? STATUS_AR[s] : s}</Badge>
-                    <span className="font-mono text-[11px] text-muted-foreground">{m.ref}</span>
-                    <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} className="ms-auto" onClick={(e) => { e.stopPropagation(); navigate(`/news/edit/${n.id}`) }}><Pencil className="size-4" /></Button>
+                    {isAdmin && <Badge variant="outline" className={cn("text-[11px]", STATUS_STYLE[s])}>{isAr ? STATUS_AR[s] : s}</Badge>}
+                    {isAdmin && <span className="font-mono text-[11px] text-muted-foreground">{m.ref}</span>}
+                    {isAdmin && <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} className="ms-auto" onClick={(e) => { e.stopPropagation(); navigate(`/news/edit/${n.id}`) }}><Pencil className="size-4" /></Button>}
                   </div>
-                  <h3 className="mt-2 line-clamp-1 font-heading text-[15px] font-semibold">{isAr ? n.titleAr : n.title}</h3>
+                  <h3 className={cn("mt-2 font-heading text-[15px] font-semibold", isAdmin ? "line-clamp-1" : "line-clamp-2")}>{isAr ? n.titleAr : n.title}</h3>
+                  {!isAdmin && n.excerpt && <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-muted-foreground">{n.excerpt}</p>}
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarDays className="size-3.5" />
