@@ -29,6 +29,7 @@ const arLabels: Record<string, string> = {
   "My Tasks": "مهامي",
   "Leave Balances": "أرصدة الإجازات",
   Attendance: "الحضور",
+  "Org Chart": "الهيكل التنظيمي",
   News: "الأخبار",
   Announcements: "الإعلانات",
   Events: "الفعاليات",
