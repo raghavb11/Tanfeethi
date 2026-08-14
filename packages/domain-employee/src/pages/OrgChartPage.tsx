@@ -5,16 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, Input } from 
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  Building2, ChevronRight, Crosshair, Mail, MapPin, Maximize2, Minus, Network, Phone,
-  Plus, Search, Users, X,
+  ChevronRight, Crosshair, Mail, MapPin, Maximize2, Minus, Phone, Plus, Search, Users, X,
 } from "lucide-react"
 
 import {
-  chainTo, childrenOf, deptColor, deptCounts, ME_ID, ORG, type OrgPerson,
-  personById, ROOT, searchPeople, teamSize,
+  chainTo, childrenOf, deptColor, ME_ID, type OrgPerson, personById, ROOT, searchPeople, teamSize,
 } from "../data/mock/org"
-
-type View = "chart" | "list"
 
 // ── layout constants ─────────────────────────────────────────────────────────
 const NODE_W = 252
@@ -84,25 +80,23 @@ export default function OrgChartPage() {
   // ?person=<id> lets the directory deep-link straight to someone
   const [params] = useSearchParams()
   const deepLink = params.get("person")
-  const initial = deepLink && personById(deepLink) ? deepLink : ME_ID
-  const initialRoot = React.useMemo(() => {
-    const p = personById(initial)!
-    return childrenOf(initial).length ? initial : p.managerId ?? initial
-  }, [initial])
+  const linked = deepLink && personById(deepLink) ? deepLink : null
 
-  const [rootId, setRootId] = React.useState(deepLink ? initialRoot : ROOT.id)
-  const [selectedId, setSelectedId] = React.useState<string | null>(initial)
+  const [rootId, setRootId] = React.useState(() => {
+    if (!linked) return ROOT.id
+    const p = personById(linked)!
+    return childrenOf(linked).length ? linked : p.managerId ?? linked
+  })
+  // nothing is selected by default, so the chart starts completely unobstructed
+  const [selectedId, setSelectedId] = React.useState<string | null>(linked)
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set())
-  const [view, setView] = React.useState<View>("chart")
   const [zoom, setZoom] = React.useState(1)
   const [q, setQ] = React.useState("")
   const [openSearch, setOpenSearch] = React.useState(false)
 
-  const root = personById(rootId) ?? ROOT
   const trail = chainTo(rootId)
   const selected = selectedId ? personById(selectedId) : undefined
   const results = searchPeople(q, isAr)
-  const depts = deptCounts()
 
   const { nodes, edges, width, height } = React.useMemo(
     () => buildLayout(rootId, collapsed), [rootId, collapsed],
@@ -127,157 +121,109 @@ export default function OrgChartPage() {
     })
 
   return (
-    <main className="@container mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
-      {/* header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-primary">
-            <Network className="size-5" />
-            <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Organisation", "المنظمة")}</span>
-          </div>
-          <h1 className="mt-2 font-heading text-[28px] font-bold leading-tight tracking-tight sm:text-[32px]">{t("Org chart", "الهيكل التنظيمي")}</h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">{t("Who reports to whom across ALTANFEETHI — search anyone, or drill into a team.", "من يتبع لمن في التنفيذي — ابحث عن أي شخص أو تصفح فريقًا.")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="gap-1.5" onClick={() => focusOn(ME_ID)}>
-            <Crosshair className="size-4" />{t("Find me", "أين أنا")}
-          </Button>
-          <div className="inline-flex rounded-xl border border-border p-0.5">
-            {([{ id: "chart", label: "Chart", ar: "المخطط", icon: Network }, { id: "list", label: "Directory", ar: "الدليل", icon: Users }] as const).map((v) => (
-              <button key={v.id} onClick={() => setView(v.id)} aria-pressed={view === v.id}
-                className={cn("inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
-                  view === v.id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-                <v.icon className="size-4" />{isAr ? v.ar : v.label}
+    // fills the viewport below the 3.5rem top bar so the chart gets every pixel
+    <main className="flex h-[calc(100svh-3.5rem)] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
+      {/* one compact toolbar — breadcrumb, search, zoom */}
+      <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-1 text-[12.5px]">
+          {trail.map((p, i) => (
+            <React.Fragment key={p.id}>
+              {i > 0 && <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground/40", isAr && "rotate-180")} />}
+              <button onClick={() => setRootId(p.id)}
+                className={cn("truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-primary/10 hover:text-primary",
+                  i === trail.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground")}>
+                {isAr ? p.nameAr : p.name}
               </button>
-            ))}
-          </div>
+            </React.Fragment>
+          ))}
         </div>
-      </div>
 
-      {/* search */}
-      <div className="relative mb-5 max-w-md">
-        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setOpenSearch(true) }}
-          onFocus={() => setOpenSearch(true)}
-          placeholder={t("Search by name, title or department", "ابحث بالاسم أو المسمى أو الإدارة")}
-          className="h-11 ps-9 pe-9"
-        />
-        {q && (
-          <button onClick={() => { setQ(""); setOpenSearch(false) }} aria-label={t("Clear search", "مسح البحث")}
-            className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
-        )}
-        {openSearch && q && (
-          <Card className="absolute z-20 mt-1.5 w-full overflow-hidden p-0 shadow-lg">
-            {results.length === 0 ? (
-              <div className="px-4 py-3 text-[13px] text-muted-foreground">{t("No one found.", "لا توجد نتائج.")}</div>
-            ) : results.map((p) => (
-              <button key={p.id} onClick={() => focusOn(p.id)}
-                className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2.5 text-start transition-colors last:border-0 hover:bg-primary/[0.05]">
-                <PersonAvatar p={p} size="sm" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-semibold">{isAr ? p.nameAr : p.name}</span>
-                  <span className="block truncate text-[11.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
-                </span>
-                {p.isMe && <Badge variant="outline" className="shrink-0 border-primary/40 bg-primary/10 text-[10px] text-primary">{t("You", "أنت")}</Badge>}
-              </button>
-            ))}
-          </Card>
-        )}
-      </div>
-
-      {/* summary — the last two describe the chart's current root */}
-      <div className={cn("mb-5 grid grid-cols-2 gap-3", view === "chart" ? "@2xl:grid-cols-4" : "@2xl:grid-cols-2")}>
-        <Stat icon={Users} value={ORG.length} label={t("People", "موظفون")} />
-        <Stat icon={Building2} value={depts.length} label={t("Departments", "الإدارات")} />
-        {view === "chart" && (
-          <>
-            <Stat icon={Network} value={childrenOf(root.id).length} label={t("Direct reports", "التابعون المباشرون")} />
-            <Stat icon={Crosshair} value={teamSize(root.id)} label={t("In this team", "في هذا الفريق")} />
-          </>
-        )}
-      </div>
-
-      {view === "chart" ? (
-        <div className="grid gap-5 @5xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="min-w-0">
-            {/* toolbar: breadcrumb + zoom */}
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1 text-[12.5px]">
-                {trail.map((p, i) => (
-                  <React.Fragment key={p.id}>
-                    {i > 0 && <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground/40", isAr && "rotate-180")} />}
-                    <button onClick={() => setRootId(p.id)}
-                      className={cn("rounded-md px-1.5 py-0.5 transition-colors hover:bg-primary/10 hover:text-primary",
-                        i === trail.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground")}>
-                      {isAr ? p.nameAr : p.name}
-                    </button>
-                  </React.Fragment>
+        <div className="ms-auto flex flex-wrap items-center gap-2">
+          <div className="relative w-[220px]">
+            <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setOpenSearch(true) }}
+              onFocus={() => setOpenSearch(true)}
+              placeholder={t("Search people", "ابحث عن شخص")}
+              className="h-9 ps-8 pe-7 text-[13px]" />
+            {q && (
+              <button onClick={() => { setQ(""); setOpenSearch(false) }} aria-label={t("Clear search", "مسح البحث")}
+                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
+            )}
+            {openSearch && q && (
+              <Card className="absolute z-30 mt-1.5 w-[280px] overflow-hidden p-0 shadow-lg">
+                {results.length === 0 ? (
+                  <div className="px-4 py-3 text-[13px] text-muted-foreground">{t("No one found.", "لا توجد نتائج.")}</div>
+                ) : results.map((p) => (
+                  <button key={p.id} onClick={() => focusOn(p.id)}
+                    className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2.5 text-start transition-colors last:border-0 hover:bg-primary/[0.05]">
+                    <PersonAvatar p={p} size="sm" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-semibold">{isAr ? p.nameAr : p.name}</span>
+                      <span className="block truncate text-[11.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
+                    </span>
+                  </button>
                 ))}
-              </div>
-              <div className="inline-flex items-center gap-1 rounded-lg border border-border p-0.5">
-                <button onClick={() => setZoom((z) => Math.max(0.6, +(z - 0.15).toFixed(2)))} aria-label={t("Zoom out", "تصغير")}
-                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Minus className="size-3.5" /></button>
-                <span className="min-w-[3rem] text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
-                <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.15).toFixed(2)))} aria-label={t("Zoom in", "تكبير")}
-                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Plus className="size-3.5" /></button>
-                <span className="mx-0.5 h-4 w-px bg-border" />
-                <button onClick={() => { setZoom(1); setCollapsed(new Set()) }} aria-label={t("Reset view", "إعادة الضبط")}
-                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Maximize2 className="size-3.5" /></button>
-              </div>
-            </div>
-
-            {/* canvas */}
-            <Card className="overflow-x-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-6">
-              <div className="mx-auto" style={{ width: width * zoom, height: height * zoom }}>
-                <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>
-                  {/* connectors */}
-                  <svg width={width} height={height} className="pointer-events-none absolute inset-0 overflow-visible">
-                    {edges.map((e) => (
-                      <path key={`${e.from.id}-${e.to.id}`}
-                        d={edgePath(mcx(e.from.x + NODE_W / 2), e.from.y + NODE_H, mcx(e.to.x + NODE_W / 2), e.to.y)}
-                        fill="none" stroke="var(--border)" strokeWidth={1.5} strokeLinecap="round" />
-                    ))}
-                  </svg>
-                  {/* nodes */}
-                  {nodes.map((n) => {
-                    const p = personById(n.id)!
-                    return (
-                      <NodeCard key={n.id} p={p} x={mx(n.x)} y={n.y}
-                        selected={selectedId === n.id}
-                        atDepthLimit={n.depth >= MAX_DEPTH}
-                        collapsed={collapsed.has(n.id)}
-                        isAr={isAr} t={t}
-                        onSelect={() => setSelectedId(n.id)}
-                        onDrill={() => { setRootId(n.id); setSelectedId(n.id); setCollapsed(new Set()) }}
-                        onToggle={() => toggleCollapse(n.id)} />
-                    )
-                  })}
-                </div>
-              </div>
-            </Card>
-
-            {/* legend */}
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              {depts.map((d) => (
-                <span key={d.name} className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: deptColor(d.name) }} />
-                  {isAr ? d.nameAr : d.name} <span className="tabular-nums opacity-60">{d.count}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="@5xl:sticky @5xl:top-6 @5xl:self-start">
-            {selected ? <DetailPanel p={selected} isAr={isAr} t={t} onNavigate={focusOn} /> : (
-              <Card className="p-6 text-center text-[13px] text-muted-foreground">{t("Select someone to see their details.", "اختر شخصًا لعرض تفاصيله.")}</Card>
+              </Card>
             )}
           </div>
+
+          <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => focusOn(ME_ID)}>
+            <Crosshair className="size-3.5" />{t("Find me", "أين أنا")}
+          </Button>
+
+          <div className="inline-flex items-center gap-1 rounded-lg border border-border p-0.5">
+            <button onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.15).toFixed(2)))} aria-label={t("Zoom out", "تصغير")}
+              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Minus className="size-3.5" /></button>
+            <span className="min-w-[2.75rem] text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
+            <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.15).toFixed(2)))} aria-label={t("Zoom in", "تكبير")}
+              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Plus className="size-3.5" /></button>
+            <span className="mx-0.5 h-4 w-px bg-border" />
+            <button onClick={() => { setZoom(1); setCollapsed(new Set()); setRootId(ROOT.id); setSelectedId(null) }} aria-label={t("Reset view", "إعادة الضبط")}
+              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Maximize2 className="size-3.5" /></button>
+          </div>
         </div>
-      ) : (
-        <Directory isAr={isAr} t={t} onOpen={focusOn} />
-      )}
+      </div>
+
+      {/* the chart owns everything else */}
+      <Card className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-0">
+        <div className="h-full w-full overflow-auto p-6">
+          <div className="mx-auto" style={{ width: width * zoom, height: height * zoom }}>
+            <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>
+              <svg width={width} height={height} className="pointer-events-none absolute inset-0 overflow-visible">
+                {edges.map((e) => (
+                  <path key={`${e.from.id}-${e.to.id}`}
+                    d={edgePath(mcx(e.from.x + NODE_W / 2), e.from.y + NODE_H, mcx(e.to.x + NODE_W / 2), e.to.y)}
+                    fill="none" stroke="var(--border)" strokeWidth={1.5} strokeLinecap="round" />
+                ))}
+              </svg>
+              {nodes.map((n) => {
+                const p = personById(n.id)!
+                return (
+                  <NodeCard key={n.id} p={p} x={mx(n.x)} y={n.y}
+                    selected={selectedId === n.id}
+                    atDepthLimit={n.depth >= MAX_DEPTH}
+                    collapsed={collapsed.has(n.id)}
+                    isAr={isAr} t={t}
+                    onSelect={() => setSelectedId(n.id)}
+                    onDrill={() => { setRootId(n.id); setSelectedId(n.id); setCollapsed(new Set()) }}
+                    onToggle={() => toggleCollapse(n.id)} />
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* details float over the canvas, and only once you pick someone */}
+        {selected && (
+          <motion.aside
+            initial={{ opacity: 0, x: isAr ? -12 : 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}
+            className="absolute bottom-3 end-3 top-3 z-20 w-[290px] overflow-y-auto rounded-2xl border border-border bg-card/95 shadow-xl backdrop-blur">
+            <DetailPanel p={selected} isAr={isAr} t={t} onNavigate={focusOn} onClose={() => setSelectedId(null)} />
+          </motion.aside>
+        )}
+      </Card>
     </main>
   )
 }
@@ -367,16 +313,21 @@ function PersonAvatar({ p, size = "md" }: { p: OrgPerson; size?: "sm" | "md" }) 
 
 // ── detail panel ─────────────────────────────────────────────────────────────
 
-function DetailPanel({ p, isAr, t, onNavigate }: {
-  p: OrgPerson; isAr: boolean; t: (en: string, ar: string) => string; onNavigate: (id: string) => void
+function DetailPanel({ p, isAr, t, onNavigate, onClose }: {
+  p: OrgPerson; isAr: boolean; t: (en: string, ar: string) => string
+  onNavigate: (id: string) => void; onClose: () => void
 }) {
   const manager = p.managerId ? personById(p.managerId) : undefined
   const reports = childrenOf(p.id)
   const color = deptColor(p.department)
   return (
-    <Card className="overflow-hidden p-0">
+    <>
       <div className="relative p-5 text-center">
-        <span className="absolute inset-x-0 top-0 h-20" style={{ background: `linear-gradient(${color}1c, transparent)` }} />
+        <span className="absolute inset-x-0 top-0 h-20 rounded-t-2xl" style={{ background: `linear-gradient(${color}1c, transparent)` }} />
+        <button onClick={onClose} aria-label={t("Close", "إغلاق")}
+          className="absolute end-2.5 top-2.5 z-10 grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <X className="size-4" />
+        </button>
         <span className="relative">
           <Avatar className="mx-auto size-16 ring-2 ring-card">
             {p.photo && <AvatarImage src={p.photo} alt="" />}
@@ -416,7 +367,7 @@ function DetailPanel({ p, isAr, t, onNavigate }: {
           </div>
         </div>
       )}
-    </Card>
+    </>
   )
 }
 
@@ -439,74 +390,5 @@ function MiniPerson({ p, isAr, onClick }: { p: OrgPerson; isAr: boolean; onClick
         <span className="block truncate text-[11px] leading-tight text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
       </span>
     </button>
-  )
-}
-
-// ── directory ────────────────────────────────────────────────────────────────
-
-function Directory({ isAr, t, onOpen }: {
-  isAr: boolean; t: (en: string, ar: string) => string; onOpen: (id: string) => void
-}) {
-  const th = "px-4 py-3 text-start text-[12px] font-medium text-muted-foreground"
-  const sorted = [...ORG].sort((a, b) =>
-    a.department.localeCompare(b.department) || (isAr ? a.nameAr.localeCompare(b.nameAr) : a.name.localeCompare(b.name)))
-  return (
-    <Card className="overflow-hidden py-0">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/30">
-              <th className={th}>{t("Name", "الاسم")}</th>
-              <th className={th}>{t("Title", "المسمى الوظيفي")}</th>
-              <th className={th}>{t("Department", "الإدارة")}</th>
-              <th className={th}>{t("Reports to", "يتبع لـ")}</th>
-              <th className={th}>{t("Location", "الموقع")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((p) => {
-              const mgr = p.managerId ? personById(p.managerId) : undefined
-              return (
-                <tr key={p.id} onClick={() => onOpen(p.id)} tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === "Enter") onOpen(p.id) }}
-                  className={cn("cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-primary/[0.04]", p.isMe && "bg-primary/[0.05]")}>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center gap-2.5">
-                      <PersonAvatar p={p} size="sm" />
-                      <span className="font-medium">{isAr ? p.nameAr : p.name}</span>
-                      {p.isMe && <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[10px] text-primary">{t("You", "أنت")}</Badge>}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{isAr ? p.titleAr : p.title}</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-[12.5px]">
-                      <span className="size-2 rounded-full" style={{ backgroundColor: deptColor(p.department) }} />
-                      {isAr ? p.departmentAr : p.department}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{mgr ? (isAr ? mgr.nameAr : mgr.name) : "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{isAr ? p.locationAr : p.location}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="border-t border-border bg-muted/20 px-4 py-3 text-[12px] text-muted-foreground">
-        {ORG.length} {t("people", "موظفًا")}
-      </div>
-    </Card>
-  )
-}
-
-function Stat({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>; value: number; label: string }) {
-  return (
-    <Card className="flex items-center gap-3 p-4">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary"><Icon className="size-5" /></span>
-      <div>
-        <div className="text-[22px] font-bold tabular-nums leading-none">{value}</div>
-        <div className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/60">{label}</div>
-      </div>
-    </Card>
   )
 }
