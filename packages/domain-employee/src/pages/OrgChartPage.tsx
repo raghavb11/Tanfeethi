@@ -225,12 +225,8 @@ export default function OrgChartPage() {
           className={cn(
             "h-full w-full select-none overflow-x-auto overflow-y-hidden p-6",
             panning ? "cursor-grabbing" : "cursor-grab",
-            // Slim, quiet scrollbar — the chart is panned by dragging, not by
-            // chasing this. The standard properties are what take effect here:
-            // the app's global ::-webkit-scrollbar rule is unlayered, so it wins
-            // over Tailwind's layered utilities, and setting scrollbar-width /
-            // scrollbar-color overrides the webkit sizing in Chromium anyway.
-            "[scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]",
+            // Scrollbar styling is global (index.css) — don't set
+            // scrollbar-color here, it would disable the themed thumb.
           )}>
           <div className="mx-auto" style={{ width: width * zoom, height: height * zoom }}>
             <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>

@@ -298,10 +298,17 @@
 }
 
 /* Brand scrollbars — slim, rounded, warm; rose-gold on hover. Unlayered so
-   they win over Tailwind's base layer. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+   they win over Tailwind's base layer.
+
+   The standard `scrollbar-width` / `scrollbar-color` properties are scoped to
+   engines that have no ::-webkit-scrollbar support (Firefox). Setting them
+   unconditionally makes Chromium fall back to its native scrollbar and ignore
+   every ::-webkit-scrollbar rule below, which flattened the thumb everywhere. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+  }
 }
 ::-webkit-scrollbar {
   width: 12px;
