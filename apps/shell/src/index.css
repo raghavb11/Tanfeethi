@@ -192,6 +192,22 @@
     --chart-4: #6f5742;
     --chart-5: #2a221b;
     --radius: 0.7rem;
+
+    /* Button surfaces — taken from the Button page of the ALTANFEETHI Figma
+       design system. Kept as tokens (rather than hex in the component) so the
+       dark theme can supply its own values below. */
+    --btn-primary-hover: #c06f50;
+    --btn-primary-fg: #fff8f4;
+    --btn-outline-bg: #e9e1d8;
+    --btn-outline-border: #ddd3c6;
+    --btn-outline-hover: #d9cfc0;
+    --btn-secondary-bg: #d9cfc0;
+    --btn-secondary-hover: #dbd1c2;
+    --btn-neutral-fg: #221d17;
+    --btn-ghost-hover: #d9cfc0;
+    --btn-destructive-bg: #e3c5bc;
+    --btn-destructive-fg: #dc2626;
+
     --sidebar: #f0e9dd;
     --sidebar-foreground: #241d15;
     --sidebar-primary: #ce7b5b;
@@ -236,6 +252,23 @@
     --chart-3: #9c5536;
     --chart-4: #b4bccb;
     --chart-5: #f2e9db;
+
+    /* Dark equivalents of the Figma button surfaces. The Figma file specifies
+       the light theme only, so these mirror its structure using the dark
+       neutrals: the same near-white label on copper, muted fills for the
+       neutral variants, and a tinted destructive. */
+    --btn-primary-hover: #dd8e6c;
+    --btn-primary-fg: #fff8f4;
+    --btn-outline-bg: #1a1613;
+    --btn-outline-border: rgba(206, 123, 91, 0.24);
+    --btn-outline-hover: #221d17;
+    --btn-secondary-bg: #221d17;
+    --btn-secondary-hover: #2b2419;
+    --btn-neutral-fg: #f2e9db;
+    --btn-ghost-hover: #201b15;
+    --btn-destructive-bg: rgba(240, 82, 82, 0.16);
+    --btn-destructive-fg: #f05252;
+
     --sidebar: #0c0b0a;
     --sidebar-foreground: #f2e9db;
     --sidebar-primary: #d2815f;
