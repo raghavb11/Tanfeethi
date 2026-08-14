@@ -4,8 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, Input } from 
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  Building2, ChevronDown, ChevronRight, Crosshair, Mail, MapPin, Network, Phone,
-  Search, Users, X,
+  Building2, ChevronRight, Crosshair, Mail, MapPin, Maximize2, Minus, Network, Phone,
+  Plus, Search, Users, X,
 } from "lucide-react"
 
 import {
@@ -15,15 +15,76 @@ import {
 
 type View = "chart" | "list"
 
+// ── layout constants ─────────────────────────────────────────────────────────
+const NODE_W = 252
+const NODE_H = 108
+const H_GAP = 28
+const V_GAP = 76
+/** Levels drawn below the root before you have to drill in. */
+const MAX_DEPTH = 2
+
+type Placed = { id: string; x: number; y: number; depth: number }
+type Edge = { from: Placed; to: Placed }
+
+/** Tidy tree layout: leaves are packed left to right, every parent is centred
+ *  over its children. Returns absolute positions so the connectors can be
+ *  drawn as real curves instead of faked with borders. */
+function buildLayout(rootId: string, collapsed: Set<string>) {
+  const nodes: Placed[] = []
+  const edges: Edge[] = []
+  let cursor = 0
+
+  const walk = (id: string, depth: number): Placed => {
+    const kids = depth >= MAX_DEPTH || collapsed.has(id) ? [] : childrenOf(id)
+    const y = depth * (NODE_H + V_GAP)
+    if (kids.length === 0) {
+      const node: Placed = { id, x: cursor, y, depth }
+      cursor += NODE_W + H_GAP
+      nodes.push(node)
+      return node
+    }
+    const placedKids = kids.map((k) => walk(k.id, depth + 1))
+    const node: Placed = {
+      id, y, depth,
+      x: (placedKids[0].x + placedKids[placedKids.length - 1].x) / 2,
+    }
+    nodes.push(node)
+    placedKids.forEach((k) => edges.push({ from: node, to: k }))
+    return node
+  }
+
+  walk(rootId, 0)
+  const width = Math.max(cursor - H_GAP, NODE_W)
+  const depth = nodes.reduce((m, n) => Math.max(m, n.depth), 0)
+  return { nodes, edges, width, height: (depth + 1) * NODE_H + depth * V_GAP }
+}
+
+/** Rounded elbow from a parent's bottom edge to a child's top edge. */
+function edgePath(sx: number, sy: number, ex: number, ey: number) {
+  if (Math.abs(ex - sx) < 1) return `M ${sx} ${sy} L ${ex} ${ey}`
+  const mid = sy + (ey - sy) / 2
+  const dir = ex > sx ? 1 : -1
+  const r = Math.min(16, Math.abs(ex - sx) / 2, (ey - sy) / 2)
+  return [
+    `M ${sx} ${sy}`,
+    `V ${mid - r}`,
+    `Q ${sx} ${mid} ${sx + dir * r} ${mid}`,
+    `H ${ex - dir * r}`,
+    `Q ${ex} ${mid} ${ex} ${mid + r}`,
+    `V ${ey}`,
+  ].join(" ")
+}
+
 export default function OrgChartPage() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
-  /** The person whose subtree is drawn. Drilling in re-roots the chart. */
   const [rootId, setRootId] = React.useState(ROOT.id)
   const [selectedId, setSelectedId] = React.useState<string | null>(ME_ID)
+  const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set())
   const [view, setView] = React.useState<View>("chart")
+  const [zoom, setZoom] = React.useState(1)
   const [q, setQ] = React.useState("")
   const [openSearch, setOpenSearch] = React.useState(false)
 
@@ -33,7 +94,13 @@ export default function OrgChartPage() {
   const results = searchPeople(q, isAr)
   const depts = deptCounts()
 
-  /** Re-root on a person's manager so the person is visible as a child. */
+  const { nodes, edges, width, height } = React.useMemo(
+    () => buildLayout(rootId, collapsed), [rootId, collapsed],
+  )
+  // layout is computed left-to-right; mirror it for RTL
+  const mx = (x: number) => (isAr ? width - x - NODE_W : x)
+  const mcx = (x: number) => (isAr ? width - x : x)
+
   const focusOn = (id: string) => {
     const p = personById(id)
     if (!p) return
@@ -42,6 +109,12 @@ export default function OrgChartPage() {
     setQ("")
     setOpenSearch(false)
   }
+  const toggleCollapse = (id: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
 
   return (
     <main className="@container mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
@@ -63,7 +136,7 @@ export default function OrgChartPage() {
             {([{ id: "chart", label: "Chart", ar: "المخطط", icon: Network }, { id: "list", label: "Directory", ar: "الدليل", icon: Users }] as const).map((v) => (
               <button key={v.id} onClick={() => setView(v.id)} aria-pressed={view === v.id}
                 className={cn("inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
-                  view === v.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
+                  view === v.id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
                 <v.icon className="size-4" />{isAr ? v.ar : v.label}
               </button>
             ))}
@@ -86,7 +159,7 @@ export default function OrgChartPage() {
             className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
         )}
         {openSearch && q && (
-          <Card className="absolute z-20 mt-1.5 w-full overflow-hidden p-0">
+          <Card className="absolute z-20 mt-1.5 w-full overflow-hidden p-0 shadow-lg">
             {results.length === 0 ? (
               <div className="px-4 py-3 text-[13px] text-muted-foreground">{t("No one found.", "لا توجد نتائج.")}</div>
             ) : results.map((p) => (
@@ -104,8 +177,7 @@ export default function OrgChartPage() {
         )}
       </div>
 
-      {/* summary — the last two describe the chart's current root, so they only
-          make sense in chart view */}
+      {/* summary — the last two describe the chart's current root */}
       <div className={cn("mb-5 grid grid-cols-2 gap-3", view === "chart" ? "@2xl:grid-cols-4" : "@2xl:grid-cols-2")}>
         <Stat icon={Users} value={ORG.length} label={t("People", "موظفون")} />
         <Stat icon={Building2} value={depts.length} label={t("Departments", "الإدارات")} />
@@ -120,23 +192,60 @@ export default function OrgChartPage() {
       {view === "chart" ? (
         <div className="grid gap-5 @5xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0">
-            {/* breadcrumb */}
-            <div className="mb-3 flex flex-wrap items-center gap-1 text-[12.5px]">
-              {trail.map((p, i) => (
-                <React.Fragment key={p.id}>
-                  {i > 0 && <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground/50", isAr && "rotate-180")} />}
-                  <button onClick={() => setRootId(p.id)}
-                    className={cn("rounded-md px-1.5 py-0.5 transition-colors hover:bg-primary/10 hover:text-primary",
-                      i === trail.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground")}>
-                    {isAr ? p.nameAr : p.name}
-                  </button>
-                </React.Fragment>
-              ))}
+            {/* toolbar: breadcrumb + zoom */}
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1 text-[12.5px]">
+                {trail.map((p, i) => (
+                  <React.Fragment key={p.id}>
+                    {i > 0 && <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground/40", isAr && "rotate-180")} />}
+                    <button onClick={() => setRootId(p.id)}
+                      className={cn("rounded-md px-1.5 py-0.5 transition-colors hover:bg-primary/10 hover:text-primary",
+                        i === trail.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground")}>
+                      {isAr ? p.nameAr : p.name}
+                    </button>
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="inline-flex items-center gap-1 rounded-lg border border-border p-0.5">
+                <button onClick={() => setZoom((z) => Math.max(0.6, +(z - 0.15).toFixed(2)))} aria-label={t("Zoom out", "تصغير")}
+                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Minus className="size-3.5" /></button>
+                <span className="min-w-[3rem] text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
+                <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.15).toFixed(2)))} aria-label={t("Zoom in", "تكبير")}
+                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Plus className="size-3.5" /></button>
+                <span className="mx-0.5 h-4 w-px bg-border" />
+                <button onClick={() => { setZoom(1); setCollapsed(new Set()) }} aria-label={t("Reset view", "إعادة الضبط")}
+                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Maximize2 className="size-3.5" /></button>
+              </div>
             </div>
 
-            <Card className="overflow-x-auto p-5 sm:p-6">
-              <Tree root={root} selectedId={selectedId} isAr={isAr} t={t}
-                onSelect={setSelectedId} onDrill={(id) => { setRootId(id); setSelectedId(id) }} />
+            {/* canvas */}
+            <Card className="overflow-x-auto bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-6">
+              <div className="mx-auto" style={{ width: width * zoom, height: height * zoom }}>
+                <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>
+                  {/* connectors */}
+                  <svg width={width} height={height} className="pointer-events-none absolute inset-0 overflow-visible">
+                    {edges.map((e) => (
+                      <path key={`${e.from.id}-${e.to.id}`}
+                        d={edgePath(mcx(e.from.x + NODE_W / 2), e.from.y + NODE_H, mcx(e.to.x + NODE_W / 2), e.to.y)}
+                        fill="none" stroke="var(--border)" strokeWidth={1.5} strokeLinecap="round" />
+                    ))}
+                  </svg>
+                  {/* nodes */}
+                  {nodes.map((n) => {
+                    const p = personById(n.id)!
+                    return (
+                      <NodeCard key={n.id} p={p} x={mx(n.x)} y={n.y}
+                        selected={selectedId === n.id}
+                        atDepthLimit={n.depth >= MAX_DEPTH}
+                        collapsed={collapsed.has(n.id)}
+                        isAr={isAr} t={t}
+                        onSelect={() => setSelectedId(n.id)}
+                        onDrill={() => { setRootId(n.id); setSelectedId(n.id); setCollapsed(new Set()) }}
+                        onToggle={() => toggleCollapse(n.id)} />
+                    )
+                  })}
+                </div>
+              </div>
             </Card>
 
             {/* legend */}
@@ -150,7 +259,6 @@ export default function OrgChartPage() {
             </div>
           </div>
 
-          {/* detail panel */}
           <div className="@5xl:sticky @5xl:top-6 @5xl:self-start">
             {selected ? <DetailPanel p={selected} isAr={isAr} t={t} onNavigate={focusOn} /> : (
               <Card className="p-6 text-center text-[13px] text-muted-foreground">{t("Select someone to see their details.", "اختر شخصًا لعرض تفاصيله.")}</Card>
@@ -164,143 +272,85 @@ export default function OrgChartPage() {
   )
 }
 
-// ── chart ────────────────────────────────────────────────────────────────────
+// ── node ─────────────────────────────────────────────────────────────────────
 
-/** Two levels below the root: the root's reports, and each report's reports.
- *  Deeper levels are reached by drilling in, which keeps the chart legible at
- *  any org size. */
-function Tree({ root, selectedId, isAr, t, onSelect, onDrill }: {
-  root: OrgPerson; selectedId: string | null; isAr: boolean
-  t: (en: string, ar: string) => string
-  onSelect: (id: string) => void; onDrill: (id: string) => void
-}) {
-  const reports = childrenOf(root.id)
-  return (
-    <div className="flex min-w-max flex-col items-center">
-      <NodeCard p={root} selected={selectedId === root.id} isAr={isAr} t={t} onSelect={onSelect} onDrill={onDrill} lead />
-      {reports.length > 0 && (
-        <>
-          <Connector />
-          <div className="flex items-start gap-6">
-            {reports.map((r, i) => (
-              <Branch key={r.id} p={r} first={i === 0} last={i === reports.length - 1} only={reports.length === 1}
-                selectedId={selectedId} isAr={isAr} t={t} onSelect={onSelect} onDrill={onDrill} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-function Branch({ p, first, last, only, selectedId, isAr, t, onSelect, onDrill }: {
-  p: OrgPerson; first: boolean; last: boolean; only: boolean; selectedId: string | null
+function NodeCard({ p, x, y, selected, atDepthLimit, collapsed, isAr, t, onSelect, onDrill, onToggle }: {
+  p: OrgPerson; x: number; y: number; selected: boolean; atDepthLimit: boolean; collapsed: boolean
   isAr: boolean; t: (en: string, ar: string) => string
-  onSelect: (id: string) => void; onDrill: (id: string) => void
-}) {
-  const kids = childrenOf(p.id)
-  const [open, setOpen] = React.useState(true)
-  return (
-    <div className="flex flex-col items-center">
-      {/* horizontal rail joining siblings, clipped at the ends */}
-      <div className="relative h-5 w-full">
-        <span className={cn("absolute top-0 h-px bg-border", only ? "start-1/2 w-0" : first ? "start-1/2 end-0" : last ? "start-0 end-1/2" : "inset-x-0")} />
-        <span className="absolute start-1/2 top-0 h-5 w-px -translate-x-1/2 bg-border rtl:translate-x-1/2" />
-      </div>
-
-      <NodeCard p={p} selected={selectedId === p.id} isAr={isAr} t={t} onSelect={onSelect} onDrill={onDrill} />
-
-      {kids.length > 0 && (
-        <>
-          <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
-            className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[10.5px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary">
-            <ChevronDown className={cn("size-3 transition-transform", !open && "-rotate-90 rtl:rotate-90")} />
-            {kids.length} {t(kids.length === 1 ? "report" : "reports", kids.length === 1 ? "تابع" : "تابعين")}
-          </button>
-          {open && (
-            <>
-              <Connector short />
-              <div className="flex flex-col gap-2">
-                {kids.map((k) => (
-                  <LeafCard key={k.id} p={k} selected={selectedId === k.id} isAr={isAr} t={t}
-                    onSelect={onSelect} onDrill={onDrill} />
-                ))}
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-const Connector = ({ short }: { short?: boolean }) => <span className={cn("w-px bg-border", short ? "h-3" : "h-5")} />
-
-function NodeCard({ p, selected, isAr, t, onSelect, onDrill, lead }: {
-  p: OrgPerson; selected: boolean; isAr: boolean; t: (en: string, ar: string) => string
-  onSelect: (id: string) => void; onDrill: (id: string) => void; lead?: boolean
+  onSelect: () => void; onDrill: () => void; onToggle: () => void
 }) {
   const color = deptColor(p.department)
   const reports = childrenOf(p.id).length
-  return (
-    <motion.button
-      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
-      onClick={() => onSelect(p.id)} onDoubleClick={() => reports && onDrill(p.id)}
-      className={cn("relative w-[210px] rounded-2xl border bg-card p-3 text-start transition-all hover:-translate-y-0.5 hover:shadow-md",
-        selected ? "border-primary ring-2 ring-primary/25" : "border-border",
-        p.isMe && !selected && "border-primary/50", lead && "w-[230px]")}>
-      <span className="absolute inset-x-3 top-0 h-[3px] rounded-b-full" style={{ backgroundColor: color }} />
-      <div className="flex items-center gap-2.5">
-        <PersonAvatar p={p} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-[13px] font-semibold leading-tight">{isAr ? p.nameAr : p.name}</span>
-            {p.isMe && <span className="shrink-0 rounded-full bg-primary px-1.5 py-px text-[9px] font-bold text-primary-foreground">{t("YOU", "أنت")}</span>}
-          </div>
-          <div className="truncate text-[11px] leading-tight text-muted-foreground">{isAr ? p.titleAr : p.title}</div>
-        </div>
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="truncate text-[10px] font-medium uppercase tracking-wide" style={{ color }}>{isAr ? p.departmentAr : p.department}</span>
-        {reports > 0 && (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
-            <Users className="size-2.5" />{reports}
-          </span>
-        )}
-      </div>
-    </motion.button>
-  )
-}
+  const total = teamSize(p.id)
+  // at the depth limit the only way further down is to re-root the chart
+  const hasHidden = reports > 0 && (atDepthLimit || collapsed)
 
-function LeafCard({ p, selected, isAr, t, onSelect, onDrill }: {
-  p: OrgPerson; selected: boolean; isAr: boolean; t: (en: string, ar: string) => string
-  onSelect: (id: string) => void; onDrill: (id: string) => void
-}) {
-  const reports = childrenOf(p.id).length
   return (
-    <button onClick={() => onSelect(p.id)} onDoubleClick={() => reports && onDrill(p.id)}
-      className={cn("flex w-[210px] items-center gap-2 rounded-xl border bg-card px-2.5 py-2 text-start transition-colors hover:border-primary/50",
-        selected ? "border-primary ring-2 ring-primary/25" : "border-border", p.isMe && !selected && "border-primary/50")}>
-      <span className="h-7 w-[3px] shrink-0 rounded-full" style={{ backgroundColor: deptColor(p.department) }} />
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5">
-          <span className="truncate text-[12px] font-semibold leading-tight">{isAr ? p.nameAr : p.name}</span>
-          {p.isMe && <span className="shrink-0 rounded-full bg-primary px-1.5 py-px text-[9px] font-bold text-primary-foreground">{t("YOU", "أنت")}</span>}
-        </span>
-        <span className="block truncate text-[10.5px] leading-tight text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
-      </span>
-      {reports > 0 && <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">+{reports}</span>}
-    </button>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.22 }}
+      className="absolute" style={{ left: x, top: y, width: NODE_W, height: NODE_H }}>
+      <button
+        onClick={onSelect}
+        onDoubleClick={() => reports && onDrill()}
+        className={cn(
+          "group relative flex h-full w-full flex-col justify-between rounded-2xl border bg-card p-3.5 text-start shadow-sm transition-all duration-200",
+          "hover:-translate-y-0.5 hover:shadow-lg",
+          selected ? "border-primary/60 shadow-md ring-2 ring-primary/20" : "border-border/80 hover:border-border",
+          p.isMe && !selected && "border-primary/40",
+        )}>
+        <div className="flex items-start gap-3">
+          <span className="relative shrink-0">
+            <Avatar className="size-11 ring-2 ring-offset-2 ring-offset-card" style={{ ["--tw-ring-color" as string]: `${color}66` }}>
+              {p.photo && <AvatarImage src={p.photo} alt="" />}
+              <AvatarFallback className="text-[12px] font-bold" style={{ backgroundColor: `${color}1f`, color }}>{p.initials}</AvatarFallback>
+            </Avatar>
+            {p.isMe && (
+              <span className="absolute -bottom-0.5 -end-0.5 rounded-full bg-primary px-1.5 py-px text-[8.5px] font-bold uppercase tracking-wide text-primary-foreground ring-2 ring-card">
+                {t("You", "أنت")}
+              </span>
+            )}
+          </span>
+          <span className="min-w-0 flex-1 pt-0.5">
+            <span className="block truncate text-[14px] font-semibold leading-tight">{isAr ? p.nameAr : p.name}</span>
+            <span className="mt-0.5 block truncate text-[11.5px] leading-snug text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${color}16`, color }}>
+            {isAr ? p.departmentAr : p.department}
+          </span>
+          {reports > 0 && (
+            <span className="inline-flex shrink-0 items-center gap-1 text-[10.5px] tabular-nums text-muted-foreground/70">
+              <Users className="size-3" />{reports}{total > reports && <span className="opacity-60">/{total}</span>}
+            </span>
+          )}
+        </div>
+      </button>
+
+      {/* expand / collapse handle sits on the bottom edge, the standard org-chart affordance */}
+      {reports > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); hasHidden && atDepthLimit ? onDrill() : onToggle() }}
+          aria-label={hasHidden ? t("Expand", "توسيع") : t("Collapse", "طي")}
+          className={cn(
+            "absolute -bottom-3 start-1/2 z-10 inline-flex h-6 -translate-x-1/2 items-center gap-0.5 rounded-full border bg-card px-2 text-[10px] font-semibold tabular-nums shadow-sm transition-colors rtl:translate-x-1/2",
+            hasHidden ? "border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary",
+          )}>
+          {hasHidden ? <Plus className="size-3" /> : <Minus className="size-3" />}
+          {hasHidden && reports}
+        </button>
+      )}
+    </motion.div>
   )
 }
 
 function PersonAvatar({ p, size = "md" }: { p: OrgPerson; size?: "sm" | "md" }) {
+  const color = deptColor(p.department)
   return (
     <Avatar className={cn("shrink-0", size === "sm" ? "size-8" : "size-9")}>
       {p.photo && <AvatarImage src={p.photo} alt="" />}
-      <AvatarFallback className="text-[11px] font-semibold" style={{ backgroundColor: `${deptColor(p.department)}22`, color: deptColor(p.department) }}>
-        {p.initials}
-      </AvatarFallback>
+      <AvatarFallback className="text-[11px] font-semibold" style={{ backgroundColor: `${color}22`, color }}>{p.initials}</AvatarFallback>
     </Avatar>
   )
 }
@@ -315,18 +365,21 @@ function DetailPanel({ p, isAr, t, onNavigate }: {
   const color = deptColor(p.department)
   return (
     <Card className="overflow-hidden p-0">
-      <div className="p-5 text-center" style={{ backgroundColor: `${color}12` }}>
-        <Avatar className="mx-auto size-16 ring-2 ring-card">
-          {p.photo && <AvatarImage src={p.photo} alt="" />}
-          <AvatarFallback className="text-[18px] font-bold" style={{ backgroundColor: `${color}26`, color }}>{p.initials}</AvatarFallback>
-        </Avatar>
-        <div className="mt-2.5 flex items-center justify-center gap-1.5">
-          <span className="font-heading text-[16px] font-bold leading-tight">{isAr ? p.nameAr : p.name}</span>
-          {p.isMe && <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[10px] text-primary">{t("You", "أنت")}</Badge>}
-        </div>
-        <p className="mt-0.5 text-[12.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</p>
-        <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide"
-          style={{ backgroundColor: `${color}1e`, color }}>{isAr ? p.departmentAr : p.department}</span>
+      <div className="relative p-5 text-center">
+        <span className="absolute inset-x-0 top-0 h-20" style={{ background: `linear-gradient(${color}1c, transparent)` }} />
+        <span className="relative">
+          <Avatar className="mx-auto size-16 ring-2 ring-card">
+            {p.photo && <AvatarImage src={p.photo} alt="" />}
+            <AvatarFallback className="text-[18px] font-bold" style={{ backgroundColor: `${color}26`, color }}>{p.initials}</AvatarFallback>
+          </Avatar>
+          <div className="mt-2.5 flex items-center justify-center gap-1.5">
+            <span className="font-heading text-[16px] font-bold leading-tight">{isAr ? p.nameAr : p.name}</span>
+            {p.isMe && <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[10px] text-primary">{t("You", "أنت")}</Badge>}
+          </div>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</p>
+          <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide"
+            style={{ backgroundColor: `${color}1e`, color }}>{isAr ? p.departmentAr : p.department}</span>
+        </span>
       </div>
 
       <div className="space-y-2.5 p-4">
