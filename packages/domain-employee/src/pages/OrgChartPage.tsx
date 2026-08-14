@@ -120,9 +120,36 @@ export default function OrgChartPage() {
       return next
     })
 
+  // drag anywhere on the canvas to pan, so the scrollbar is rarely needed
+  const scroller = React.useRef<HTMLDivElement>(null)
+  const drag = React.useRef({ x: 0, left: 0, active: false })
+  const [panning, setPanning] = React.useState(false)
+
+  const startPan = (e: React.PointerEvent) => {
+    const el = scroller.current
+    if (!el || e.button !== 0) return
+    // never steal a press meant for a card, handle, link or the detail panel
+    if ((e.target as HTMLElement).closest("button, a, input, aside")) return
+    drag.current = { x: e.clientX, left: el.scrollLeft, active: true }
+    setPanning(true)
+    el.setPointerCapture(e.pointerId)
+  }
+  const movePan = (e: React.PointerEvent) => {
+    const el = scroller.current
+    if (!el || !drag.current.active) return
+    el.scrollLeft = drag.current.left - (e.clientX - drag.current.x)
+  }
+  const endPan = (e: React.PointerEvent) => {
+    if (!drag.current.active) return
+    drag.current.active = false
+    setPanning(false)
+    try { scroller.current?.releasePointerCapture(e.pointerId) } catch { /* already released */ }
+  }
+
   return (
-    // fills the viewport below the 3.5rem top bar so the chart gets every pixel
-    <main className="flex h-[calc(100svh-3.5rem)] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
+    // at least fills the viewport below the 3.5rem top bar, and grows past it
+    // when the tree (or the zoom level) needs more room
+    <main className="flex min-h-[calc(100svh-3.5rem)] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
       {/* one compact toolbar — breadcrumb, search, zoom */}
       <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
         <div className="flex min-w-0 flex-wrap items-center gap-1 text-[12.5px]">
@@ -186,9 +213,25 @@ export default function OrgChartPage() {
         </div>
       </div>
 
-      {/* the chart owns everything else */}
-      <Card className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-0">
-        <div className="h-full w-full overflow-auto p-6">
+      {/* the chart owns everything else. The card is at least tall enough for the
+          whole tree, so it never scrolls vertically inside — it just makes the
+          page longer and the normal page scroll takes over. */}
+      <Card
+        className="relative flex-1 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-0"
+        style={{ minHeight: height * zoom + 48 }}>
+        <div
+          ref={scroller}
+          onPointerDown={startPan} onPointerMove={movePan} onPointerUp={endPan} onPointerCancel={endPan}
+          className={cn(
+            "h-full w-full select-none overflow-x-auto overflow-y-hidden p-6",
+            panning ? "cursor-grabbing" : "cursor-grab",
+            // Slim, quiet scrollbar — the chart is panned by dragging, not by
+            // chasing this. The standard properties are what take effect here:
+            // the app's global ::-webkit-scrollbar rule is unlayered, so it wins
+            // over Tailwind's layered utilities, and setting scrollbar-width /
+            // scrollbar-color overrides the webkit sizing in Chromium anyway.
+            "[scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]",
+          )}>
           <div className="mx-auto" style={{ width: width * zoom, height: height * zoom }}>
             <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>
               <svg width={width} height={height} className="pointer-events-none absolute inset-0 overflow-visible">
@@ -219,7 +262,7 @@ export default function OrgChartPage() {
         {selected && (
           <motion.aside
             initial={{ opacity: 0, x: isAr ? -12 : 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}
-            className="absolute bottom-3 end-3 top-3 z-20 w-[290px] overflow-y-auto rounded-2xl border border-border bg-card/95 shadow-xl backdrop-blur">
+            className="absolute end-3 top-3 z-20 max-h-[calc(100svh-8rem)] w-[290px] overflow-y-auto rounded-2xl border border-border bg-card/95 shadow-xl backdrop-blur">
             <DetailPanel p={selected} isAr={isAr} t={t} onNavigate={focusOn} onClose={() => setSelectedId(null)} />
           </motion.aside>
         )}
