@@ -28,7 +28,32 @@ export const allowances: Allowance[] = [
 ]
 export const allowanceTotal = allowances.reduce((s, a) => s + a.amount, 0)
 
+// ── total reward ─────────────────────────────────────────────────────────────
+/** What the package is worth over a year, cash and non-cash. The employer-paid
+ *  components are what a benefits page exists to make visible — they never show
+ *  up on a payslip. */
+export const reward = {
+  components: [
+    { id: "base", label: "Base salary", labelAr: "الراتب الأساسي", amount: 180000, note: "15,000 × 12", noteAr: "١٥٬٠٠٠ × ١٢" },
+    { id: "allowances", label: "Allowances", labelAr: "البدلات", amount: 90000, note: "7,500 × 12", noteAr: "٧٬٥٠٠ × ١٢" },
+    { id: "bonus", label: "Performance bonus", labelAr: "مكافأة الأداء", amount: 22500, note: "2025 cycle, variable", noteAr: "دورة ٢٠٢٥، متغيرة" },
+    { id: "benefits", label: "Employer-paid benefits", labelAr: "مزايا يتحملها صاحب العمل", amount: 74795, note: "GOSI, medical, life, tickets, end-of-service", noteAr: "التأمينات، الطبي، الحياة، التذاكر، نهاية الخدمة" },
+  ],
+  /** The employer-paid line above, itemised. */
+  employerPaid: [
+    { label: "GOSI employer share", labelAr: "حصة صاحب العمل بالتأمينات", amount: 27495 },
+    { label: "Medical premium", labelAr: "قسط التأمين الطبي", amount: 18000 },
+    { label: "End-of-service accrual", labelAr: "استحقاق نهاية الخدمة", amount: 19500 },
+    { label: "Annual air tickets", labelAr: "تذاكر السفر السنوية", amount: 7200 },
+    { label: "Life insurance premium", labelAr: "قسط التأمين على الحياة", amount: 2600 },
+  ],
+}
+export const rewardTotal = reward.components.reduce((s, c) => s + c.amount, 0)
+
 // ── benefit plans ────────────────────────────────────────────────────────────
+/** Claimable balance for benefits that run down over the year. */
+export type Utilisation = { used: number; total: number; unit: string; unitAr: string }
+
 export type PlanStatus = "active" | "eligible" | "not-enrolled"
 export type BenefitPlan = {
   id: string
@@ -41,6 +66,8 @@ export type BenefitPlan = {
   policyNo?: string
   /** Label/value rows shown when the plan is expanded. */
   details: { label: string; labelAr: string; value: string; valueAr: string }[]
+  /** Only on benefits you draw down; drives the progress bar. */
+  usage?: Utilisation
 }
 
 export const PLANS: BenefitPlan[] = [
@@ -74,6 +101,7 @@ export const PLANS: BenefitPlan[] = [
       { label: "Used this year", labelAr: "المستخدم هذا العام", value: "0", valueAr: "٠" },
       { label: "Route", labelAr: "الوجهة", value: "Point of origin", valueAr: "بلد المنشأ" },
     ],
+    usage: { used: 0, total: 4, unit: "tickets", unitAr: "تذاكر" },
   },
   {
     id: "gosi", name: "GOSI · social insurance", nameAr: "التأمينات الاجتماعية", category: "financial", icon: "landmark", status: "active",
@@ -98,14 +126,16 @@ export const PLANS: BenefitPlan[] = [
       { label: "Claimed", labelAr: "المطالب به", value: "SAR 0 of 3,000", valueAr: "٠ من ٣٬٠٠٠ ر.س" },
       { label: "Claim by", labelAr: "آخر موعد", value: "Dec 31, 2026", valueAr: "٣١ ديسمبر ٢٠٢٦" },
     ],
+    usage: { used: 0, total: 3000, unit: "SAR", unitAr: "ر.س" },
   },
   {
     id: "eap", name: "Employee assistance", nameAr: "برنامج مساندة الموظفين", category: "wellbeing", icon: "life-buoy", status: "active",
     summary: "Confidential counselling, 24/7", summaryAr: "استشارات سرية على مدار الساعة",
     details: [
-      { label: "Sessions", labelAr: "الجلسات", value: "8 per year, free", valueAr: "٨ سنويًا، مجانًا" },
+      { label: "Sessions", labelAr: "الجلسات", value: "2 of 8 used, free", valueAr: "٢ من ٨ مستخدمة، مجانًا" },
       { label: "Covers", labelAr: "يشمل", value: "You and household", valueAr: "أنت وأفراد أسرتك" },
     ],
+    usage: { used: 2, total: 8, unit: "sessions", unitAr: "جلسات" },
   },
   {
     id: "voluntary", name: "Voluntary critical illness", nameAr: "تأمين الأمراض الحرجة الاختياري", category: "protection", icon: "shield", status: "not-enrolled",

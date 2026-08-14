@@ -1,18 +1,22 @@
 import * as React from "react"
 import { motion } from "framer-motion"
-import { Avatar, AvatarFallback, Badge, Button, Card } from "@reach/shared-ui"
+import { useNavigate } from "react-router-dom"
+import { Avatar, AvatarFallback, Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
   BadgeCheck, CalendarClock, Car, ChevronDown, Download, Dumbbell, FileText, Gift,
   Heart, Home, Landmark, LifeBuoy, Phone, Plane, School, ShieldCheck, ShoppingBag,
-  Sofa, Users, Wallet,
+  Search, Sofa, Users, Wallet, X,
 } from "lucide-react"
 
 import {
   allowances, allowanceTotal, BENEFIT_DOCS, DEPENDANTS, enrolment, PERKS, PLANS,
-  type BenefitPlan, type PlanStatus, sar,
+  reward, rewardTotal, type BenefitPlan, type PlanStatus, sar,
 } from "../data/mock/benefits"
+
+/** Slice colours for the total-reward bar, darkest (cash) to lightest. */
+const REWARD_COLORS = ["var(--primary)", "#5b8fce", "#c9a227", "#5f9d52"]
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   home: Home, car: Car, phone: Phone, school: School, heart: Heart, shield: ShieldCheck,
@@ -40,10 +44,19 @@ export default function BenefitsPage() {
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
+  const navigate = useNavigate()
   const [cat, setCat] = React.useState<string>("all")
+  const [perkQuery, setPerkQuery] = React.useState("")
   const [openPlan, setOpenPlan] = React.useState<string | null>("medical")
 
   const plans = cat === "all" ? PLANS : PLANS.filter((p) => p.category === cat)
+  const perks = React.useMemo(() => {
+    const q = perkQuery.trim().toLowerCase()
+    if (!q) return PERKS
+    return PERKS.filter((k) => [isAr ? k.nameAr : k.name, isAr ? k.categoryAr : k.category, isAr ? k.offerAr : k.offer]
+      .some((f) => f.toLowerCase().includes(q)))
+  }, [perkQuery, isAr])
+  const basePct = Math.round((reward.components[0].amount / rewardTotal) * 100)
   const activeCount = PLANS.filter((p) => p.status === "active").length
   const medicalCovered = DEPENDANTS.filter((d) => d.medical).length
 
@@ -77,6 +90,65 @@ export default function BenefitsPage() {
         <div className="text-[12px] text-muted-foreground">
           <div className="tabular-nums">{isAr ? enrolment.opensAr : enrolment.opens} — {isAr ? enrolment.closesAr : enrolment.closes}</div>
         </div>
+      </Card>
+
+      {/* total reward — the headline a benefits page exists for: what the
+          package is worth once the employer-paid parts are counted */}
+      <Card className="mb-6 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("Total annual reward", "إجمالي المكافأة السنوية")}</div>
+            <div className="metal-text mt-1 text-[30px] font-bold tabular-nums leading-none">{sar(rewardTotal, isAr)}</div>
+            <p className="mt-1.5 max-w-[46ch] text-[12px] text-muted-foreground">
+              {t(
+                `Base salary is about ${basePct}% of it — the rest is allowances, bonus and cover the company pays for on your behalf.`,
+                `الراتب الأساسي يمثل نحو ${basePct}٪ منها — والباقي بدلات ومكافآت وتغطية يتحملها صاحب العمل نيابةً عنك.`,
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => navigate("/payslip")}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-[12.5px] font-medium transition-colors hover:border-primary/50 hover:text-primary">
+              <Wallet className="size-3.5" />{t("See payslips", "عرض كشوف الرواتب")}
+            </button>
+          </div>
+        </div>
+
+        {/* stacked split */}
+        <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-muted">
+          {reward.components.map((c, i) => (
+            <div key={c.id} className="h-full transition-all"
+              style={{ width: `${(c.amount / rewardTotal) * 100}%`, backgroundColor: REWARD_COLORS[i] }} />
+          ))}
+        </div>
+        <div className="mt-3 grid gap-x-5 gap-y-2 @xl:grid-cols-2 @4xl:grid-cols-4">
+          {reward.components.map((c, i) => (
+            <div key={c.id} className="min-w-0">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: REWARD_COLORS[i] }} />
+                <span className="truncate text-[11.5px] text-muted-foreground">{isAr ? c.labelAr : c.label}</span>
+              </span>
+              <div className="mt-0.5 ps-3.5 text-[14px] font-bold tabular-nums leading-none">{c.amount.toLocaleString("en-US")}</div>
+              <div className="ps-3.5 text-[10px] text-muted-foreground/60">{isAr ? c.noteAr : c.note}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* what the employer-paid slice is made of */}
+        <details className="group mt-4 border-t border-border/60 pt-3">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-[12px] font-medium text-primary hover:underline">
+            <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
+            {t("What's in the employer-paid share?", "مما تتكون حصة صاحب العمل؟")}
+          </summary>
+          <dl className="mt-2.5 grid gap-x-6 gap-y-1.5 @xl:grid-cols-2">
+            {reward.employerPaid.map((e) => (
+              <div key={e.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1.5">
+                <dt className="text-[12px] text-muted-foreground">{isAr ? e.labelAr : e.label}</dt>
+                <dd className="text-[12.5px] font-semibold tabular-nums">{e.amount.toLocaleString("en-US")}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       </Card>
 
       {/* summary */}
@@ -152,9 +224,23 @@ export default function BenefitsPage() {
 
           {/* perks */}
           <section>
-            <h2 className="mb-3 font-heading text-[16px] font-semibold">{t("Partner perks & discounts", "عروض وخصومات الشركاء")}</h2>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-heading text-[16px] font-semibold">{t("Partner perks & discounts", "عروض وخصومات الشركاء")}</h2>
+              <div className="relative w-[220px]">
+                <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input value={perkQuery} onChange={(e) => setPerkQuery(e.target.value)}
+                  placeholder={t("Search perks", "ابحث في العروض")} className="h-9 ps-8 pe-7 text-[13px]" />
+                {perkQuery && (
+                  <button onClick={() => setPerkQuery("")} aria-label={t("Clear", "مسح")}
+                    className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
+                )}
+              </div>
+            </div>
+            {perks.length === 0 && (
+              <Card className="p-8 text-center text-[13px] text-muted-foreground">{t("No perks match that search.", "لا توجد عروض مطابقة.")}</Card>
+            )}
             <div className="grid gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
-              {PERKS.map((k) => {
+              {perks.map((k) => {
                 const Icon = ICONS[k.icon] ?? Gift
                 return (
                   <Card key={k.id} className="p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -262,6 +348,18 @@ function PlanRow({ plan, i, open, isAr, t, onToggle }: {
               <Badge variant="outline" className={cn("text-[10px]", status.cls)}>{isAr ? status.ar : status.label}</Badge>
             </span>
             <span className="mt-0.5 block truncate text-[12px] text-muted-foreground">{isAr ? plan.summaryAr : plan.summary}</span>
+            {/* how much of a drawdown benefit is left */}
+            {plan.usage && (
+              <span className="mt-2 block max-w-[280px]">
+                <span className="flex items-center justify-between text-[10.5px] text-muted-foreground">
+                  <span>{t("Used", "المستخدم")} {plan.usage.used.toLocaleString("en-US")} {t("of", "من")} {plan.usage.total.toLocaleString("en-US")} {isAr ? plan.usage.unitAr : plan.usage.unit}</span>
+                  <span className="tabular-nums">{Math.round((plan.usage.used / plan.usage.total) * 100)}%</span>
+                </span>
+                <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-muted">
+                  <span className="block h-full rounded-full bg-primary" style={{ width: `${(plan.usage.used / plan.usage.total) * 100}%` }} />
+                </span>
+              </span>
+            )}
           </span>
           <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
         </button>
