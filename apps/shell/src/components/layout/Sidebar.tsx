@@ -30,6 +30,8 @@ const arLabels: Record<string, string> = {
   "Leave Balances": "أرصدة الإجازات",
   Attendance: "الحضور",
   "Org Chart": "الهيكل التنظيمي",
+  Directory: "دليل الموظفين",
+  Benefits: "المزايا",
   News: "الأخبار",
   Announcements: "الإعلانات",
   Events: "الفعاليات",

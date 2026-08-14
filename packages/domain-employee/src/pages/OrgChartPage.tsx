@@ -1,5 +1,6 @@
 import * as React from "react"
 import { motion } from "framer-motion"
+import { useSearchParams } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
@@ -80,8 +81,17 @@ export default function OrgChartPage() {
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
-  const [rootId, setRootId] = React.useState(ROOT.id)
-  const [selectedId, setSelectedId] = React.useState<string | null>(ME_ID)
+  // ?person=<id> lets the directory deep-link straight to someone
+  const [params] = useSearchParams()
+  const deepLink = params.get("person")
+  const initial = deepLink && personById(deepLink) ? deepLink : ME_ID
+  const initialRoot = React.useMemo(() => {
+    const p = personById(initial)!
+    return childrenOf(initial).length ? initial : p.managerId ?? initial
+  }, [initial])
+
+  const [rootId, setRootId] = React.useState(deepLink ? initialRoot : ROOT.id)
+  const [selectedId, setSelectedId] = React.useState<string | null>(initial)
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set())
   const [view, setView] = React.useState<View>("chart")
   const [zoom, setZoom] = React.useState(1)
