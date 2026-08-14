@@ -1,6 +1,6 @@
 import * as React from "react"
 import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
@@ -9,6 +9,8 @@ import { AlertTriangle, CalendarClock, Check, CheckCircle2, Circle, ClipboardLis
 import { countByStatus, isOverdue, type Task, type TaskStatus, toggleComplete, useTasks } from "../data/tasks"
 
 type Tab = "all" | "open" | "in-progress" | "completed" | "overdue"
+const TAB_IDS: Tab[] = ["all", "open", "in-progress", "completed", "overdue"]
+const isTab = (v: string | null): v is Tab => !!v && (TAB_IDS as string[]).includes(v)
 
 export default function MyTasksPage() {
   const { locale } = useShell()
@@ -18,7 +20,10 @@ export default function MyTasksPage() {
   const navigate = useNavigate()
   const tasks = useTasks()
   const counts = countByStatus(tasks)
-  const [tab, setTab] = React.useState<Tab>("open")
+  // ?tab=open lets the dashboard deep-link straight to a filter
+  const [params, setParams] = useSearchParams()
+  const tab: Tab = isTab(params.get("tab")) ? (params.get("tab") as Tab) : "open"
+  const setTab = (next: Tab) => setParams({ tab: next }, { replace: true })
   const [q, setQ] = React.useState("")
 
   const filtered = tasks

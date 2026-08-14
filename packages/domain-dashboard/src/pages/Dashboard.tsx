@@ -1,6 +1,6 @@
 import * as React from "react"
 import { motion } from "framer-motion"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 import { Avatar, AvatarFallback, Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
@@ -44,6 +44,7 @@ export default function Dashboard() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
   const [tasks, setTasks] = React.useState(myTasks)
   const [ask, setAsk] = React.useState("")
 
@@ -94,12 +95,22 @@ export default function Dashboard() {
           <div className="mt-4 flex flex-wrap gap-2.5">
             {kpiPills.map((k) => {
               const Icon = KPI_ICONS[k.icon] ?? CheckCheck
-              return (
-                <div key={k.id} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
+              const body = (
+                <>
                   <Icon className="size-4 text-primary" />
                   <span className="text-[12.5px] text-muted-foreground">{isAr ? k.ar : k.label}</span>
                   <span className="text-[14px] font-bold tabular-nums">{k.value}</span>
-                </div>
+                </>
+              )
+              const base = "inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2"
+              // pills that map to a page are clickable and deep-link to the right tab
+              return k.to ? (
+                <button key={k.id} type="button" onClick={() => navigate(k.to!)}
+                  className={cn(base, "cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/[0.04]")}>
+                  {body}
+                </button>
+              ) : (
+                <div key={k.id} className={base}>{body}</div>
               )
             })}
           </div>
@@ -331,7 +342,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-auto">
               <p className="font-heading text-[17px] font-semibold leading-snug text-white">{isAr ? announcement.titleAr : announcement.title}</p>
-              <Button asChild className="mt-3"><Link to="/announcements">{t("View details", "عرض التفاصيل")}</Link></Button>
+              <Button className="mt-3" onClick={() => navigate("/announcements")}>{t("View details", "عرض التفاصيل")}</Button>
             </div>
           </div>
           <button aria-label={t("Previous", "السابق")} className="absolute start-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60"><ChevronLeft className="size-4" /></button>

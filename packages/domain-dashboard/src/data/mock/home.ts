@@ -26,8 +26,8 @@ export const aiSuggestions = [
   { en: "Show transactions awaiting reply", ar: "عرض المعاملات بانتظار الرد" },
 ]
 
-export const kpiPills = [
-  { id: "tasks", label: "Open tasks", ar: "المهام المفتوحة", value: "250", icon: "check" },
+export const kpiPills: { id: string; label: string; ar: string; value: string; icon: string; to?: string }[] = [
+  { id: "tasks", label: "Open tasks", ar: "المهام المفتوحة", value: "250", icon: "check", to: "/tasks?tab=open" },
   { id: "requests", label: "Pending requests", ar: "الطلبات المعلقة", value: "250", icon: "inbox" },
   { id: "mail", label: "Important mail", ar: "البريد المهم", value: "12", icon: "mail" },
   { id: "projects", label: "Projects in progress", ar: "المشاريع قيد التنفيذ", value: "12", icon: "briefcase" },
