@@ -40,6 +40,9 @@ const DirectoryPage = lazy(() =>
 const BenefitsPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.BenefitsPage })),
 )
+const PayslipPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PayslipPage })),
+)
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
 )
@@ -102,6 +105,7 @@ export default function App() {
         <Route path="org-chart" element={<OrgChartPage />} />
         <Route path="directory" element={<DirectoryPage />} />
         <Route path="benefits" element={<BenefitsPage />} />
+        <Route path="payslip" element={<PayslipPage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="intelligence" element={<IntelligencePage />} />
         <Route path="surveys" element={<SurveysPage />} />

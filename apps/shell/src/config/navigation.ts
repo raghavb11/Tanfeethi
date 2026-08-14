@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   UserRound,
   Users,
+  Wallet,
 } from "lucide-react"
 
 import { previewNav as previewNavFromDomain } from "@reach/domain-preview/nav"
@@ -43,6 +44,7 @@ export const coreNav: NavItem[] = [
   { title: "Org Chart", path: "/org-chart", icon: Network },
   { title: "Directory", path: "/directory", icon: Contact },
   { title: "Benefits", path: "/benefits", icon: Gift },
+  { title: "Payslips", path: "/payslip", icon: Wallet },
   { title: "News", path: "/news", icon: Newspaper },
   { title: "Announcements", path: "/announcements", icon: Megaphone },
   { title: "Events", path: "/events", icon: CalendarDays },
@@ -77,6 +79,7 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "Org Chart", path: "/org-chart", group: "Core" },
   { label: "Directory", path: "/directory", group: "Core" },
   { label: "Benefits", path: "/benefits", group: "Core" },
+  { label: "Payslips", path: "/payslip", group: "Core" },
   { label: "News", path: "/news", group: "Core" },
   { label: "Announcements", path: "/announcements", group: "Core" },
   { label: "Events", path: "/events", group: "Core" },

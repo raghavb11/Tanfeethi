@@ -1,5 +1,6 @@
 import * as React from "react"
 import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 import { Avatar, AvatarFallback, Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
@@ -40,6 +41,7 @@ export default function EmployeeCenter() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
 
   const workedMin = today.workedMinutes
   const targetMin = today.targetHours * 60
@@ -55,12 +57,13 @@ export default function EmployeeCenter() {
   }
   const st = statusMeta[today.status]
 
-  const quickActions: { id: string; label: string; ar: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: "clock", label: today.checkOut ? "Clock in" : "Clock out", ar: today.checkOut ? "تسجيل حضور" : "تسجيل انصراف", icon: LogOut },
-    { id: "leave", label: "Request leave", ar: "طلب إجازة", icon: Plane },
-    { id: "expense", label: "Submit expense", ar: "تقديم مصروف", icon: Receipt },
-    { id: "payslip", label: "View payslip", ar: "عرض القسيمة", icon: Wallet },
-    { id: "letter", label: "Request letter", ar: "طلب خطاب", icon: FileText },
+  // `to` is set only where the destination actually exists
+  const quickActions: { id: string; label: string; ar: string; icon: React.ComponentType<{ className?: string }>; to?: string }[] = [
+    { id: "clock", label: today.checkOut ? "Clock in" : "Clock out", ar: today.checkOut ? "تسجيل حضور" : "تسجيل انصراف", icon: LogOut, to: "/attendance" },
+    { id: "leave", label: "Request leave", ar: "طلب إجازة", icon: Plane, to: "/leave/request" },
+    { id: "expense", label: "Submit expense", ar: "تقديم مصروف", icon: Receipt, to: "/services" },
+    { id: "payslip", label: "View payslip", ar: "عرض القسيمة", icon: Wallet, to: "/payslip" },
+    { id: "letter", label: "Request letter", ar: "طلب خطاب", icon: FileText, to: "/services" },
     { id: "profile", label: "Update profile", ar: "تحديث الملف", icon: UserCircle2 },
   ]
 
@@ -144,7 +147,8 @@ export default function EmployeeCenter() {
           <CardHead icon={Sparkles} title={t("Quick actions", "إجراءات سريعة")} />
           <div className="grid grid-cols-2 gap-2.5 p-4">
             {quickActions.map((a) => (
-              <button key={a.id} type="button" className="group flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-muted/15 p-3 text-start ring-1 ring-foreground/5 transition-all hover:border-primary/30 hover:bg-primary/[0.04]">
+              <button key={a.id} type="button" onClick={() => a.to && navigate(a.to)}
+                className="group flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-muted/15 p-3 text-start ring-1 ring-foreground/5 transition-all hover:border-primary/30 hover:bg-primary/[0.04]">
                 <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><a.icon className="size-4" /></span>
                 <span className="text-[12px] font-semibold leading-tight">{isAr ? a.ar : a.label}</span>
               </button>
@@ -282,7 +286,7 @@ export default function EmployeeCenter() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="mt-4 w-full gap-1.5"><FileText className="size-3.5" />{t("View full payslip", "عرض القسيمة كاملة")}<ArrowRight className={cn("size-3.5", isAr && "rotate-180")} /></Button>
+              <Button variant="outline" size="sm" className="mt-4 w-full gap-1.5" onClick={() => navigate("/payslip")}><FileText className="size-3.5" />{t("View full payslip", "عرض القسيمة كاملة")}<ArrowRight className={cn("size-3.5", isAr && "rotate-180")} /></Button>
             </div>
           </Card>
 

@@ -32,6 +32,7 @@ const arLabels: Record<string, string> = {
   "Org Chart": "الهيكل التنظيمي",
   Directory: "دليل الموظفين",
   Benefits: "المزايا",
+  Payslips: "كشوف الرواتب",
   News: "الأخبار",
   Announcements: "الإعلانات",
   Events: "الفعاليات",

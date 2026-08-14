@@ -137,7 +137,7 @@ export function InlineSearch({
         labelAr: "عرض كشف الراتب",
         group: "actions",
         icon: FileText,
-        path: "/employee",
+        path: "/payslip",
         keywords: "payslip salary راتب كشف",
       },
     ]
