@@ -6,10 +6,13 @@ import {
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
-import { BookText, Download, Eye, FileCheck2, History, Pencil, Scale, Search, ShieldCheck, Star, Trash2 } from "lucide-react"
+import { Archive, BookText, CalendarClock, Download, Eye, FileCheck2, History, ListFilter, Pencil, Scale, Search, SlidersHorizontal, Tags, Trash2 } from "lucide-react"
 
-import { CategoryBadge, PageHeader, StatCard } from "./_ui"
-import { ackCount, deletePolicy, POLICY_CATS, POLICY_CATS_AR, policyCatAr, policyCatColor, usePolicies } from "../data/policies"
+import { CategoryBadge } from "./_ui"
+import {
+  ackCount, deletePolicy, lifecycleOf, POLICY_CATS, POLICY_CATS_AR, POLICY_LIFECYCLE_AR,
+  POLICY_LIFECYCLES, type PolicyLifecycle, policyCatAr, policyCatColor, usePolicies,
+} from "../data/policies"
 import { affectedCount } from "../data/departments"
 import { logAudit } from "../data/audit"
 
@@ -21,6 +24,8 @@ export default function PoliciesPage() {
   const navigate = useNavigate()
   const [q, setQ] = React.useState("")
   const [cat, setCat] = React.useState("All")
+  const [status, setStatus] = React.useState<"All" | PolicyLifecycle>("All")
+  const [showCats, setShowCats] = React.useState(false)
 
   const items = usePolicies()
   const [confirmId, setConfirmId] = React.useState<string | null>(null)
@@ -30,75 +35,93 @@ export default function PoliciesPage() {
 
   const list = items.filter(
     (p) => (cat === "All" || (p.categories ?? []).includes(cat)) &&
+      (status === "All" || lifecycleOf(p) === status) &&
       (q === "" || (isAr ? p.titleAr : p.title).toLowerCase().includes(q.toLowerCase()) || p.number.toLowerCase().includes(q.toLowerCase())),
   )
-  const featured = list.filter((p) => p.featured)
+
+  const counts = {
+    published: items.filter((p) => lifecycleOf(p) === "Published").length,
+    drafts: items.filter((p) => lifecycleOf(p) === "Draft").length,
+    scheduled: items.filter((p) => lifecycleOf(p) === "Scheduled").length,
+    archived: items.filter((p) => lifecycleOf(p) === "Expired").length,
+  }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-      <PageHeader
-        icon={Scale}
-        eyebrow={t("Policy Library", "مكتبة السياسات")}
-        title={t("Policies & procedures", "السياسات والإجراءات")}
-        desc={t("A central, versioned repository of company policies with effective dates — always the current approved version.", "مستودع مركزي بإصدارات لسياسات الشركة مع تواريخ السريان — دائمًا الإصدار المعتمد الحالي.")}
-        action={isAdmin ? (
+    <main className="@container mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+      {/* header */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-[52ch]">
+          <div className="flex items-center gap-2">
+            <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary"><Scale className="size-4" /></span>
+            <span className="text-[13px] font-semibold text-primary">{t("Policy Library", "مكتبة السياسات")}</span>
+          </div>
+          <h1 className="mt-3 font-heading text-[32px] font-bold leading-tight tracking-tight sm:text-[38px]">
+            {t("Policies", "السياسات")}
+          </h1>
+          <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+            {t("A central, versioned repository of company policies with publish and expiry dates — always the current approved version.", "مستودع مركزي بإصدارات لسياسات الشركة مع تواريخ النشر والانتهاء — دائمًا الإصدار المعتمد الحالي.")}
+          </p>
+        </div>
+        {isAdmin && (
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="lg" onClick={() => navigate("/admin/audit?module=Policies")}><History className="size-4" />{t("Audit log", "سجل التدقيق")}</Button>
-            <Button size="lg" onClick={() => navigate("/policies/new")}><FileCheck2 className="size-4" />{t("Add policy", "إضافة سياسة")}</Button>
+            {/* no policy-category admin screen exists yet — Content Management is the nearest real destination */}
+            <Button variant="outline" onClick={() => navigate("/cms")}><Tags className="size-4" />{t("Manage Categories", "إدارة الفئات")}</Button>
+            <Button variant="outline" onClick={() => navigate("/admin/audit?module=Policies")}><History className="size-4" />{t("Audit log", "سجل التدقيق")}</Button>
+            <Button onClick={() => navigate("/policies/new")}><FileCheck2 className="size-4" />{t("New policy", "سياسة جديدة")}</Button>
           </div>
-        ) : undefined}
-      />
+        )}
+      </div>
 
+      {/* summary */}
       {isAdmin && (
-        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard icon={BookText} value={String(items.length)} label={t("Policies", "سياسات")} />
-          <StatCard icon={Star} value={String(items.filter((p) => p.featured).length)} label={t("Featured", "مميزة")} />
-          <StatCard icon={FileCheck2} value="6" label={t("Updated", "محدّثة")} sub={t("this quarter", "هذا الربع")} />
-          <StatCard icon={ShieldCheck} value={String(items.filter((p) => p.requiresAck).length)} label={t("Need acknowledgement", "تتطلب إقرارًا")} />
+        <div className="mb-6 grid grid-cols-2 gap-4 @3xl:grid-cols-4">
+          <Stat value={counts.published} label={t("Published", "منشورة")} sub={t("All time", "الإجمالي")} icon={BookText} />
+          <Stat value={counts.drafts} label={t("Drafts", "مسودات")} sub={t("In review", "قيد المراجعة")} icon={Pencil} />
+          <Stat value={counts.scheduled} label={t("Scheduled", "مجدولة")} sub={t("Upcoming", "قادمة")} icon={CalendarClock} />
+          <Stat value={counts.archived} label={t("Archived", "مؤرشفة")} sub={t("Expired", "منتهية")} icon={Archive} />
         </div>
       )}
 
-      {cat === "All" && q === "" && featured.length > 0 && (
-        <div className="mb-6">
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Essential reading", "قراءة أساسية")}</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {featured.map((p) => (
-              <Card key={p.id} onClick={() => open(p.id)} className="flex cursor-pointer flex-col gap-3 p-5 transition-colors hover:border-primary/50">
-                <div className="flex items-center gap-2">
-                  <span className="accent-chip flex size-9 items-center justify-center rounded-lg"><Scale className="size-4" /></span>
-                  <Badge className="bg-primary/15 text-primary">{t("Featured", "مميزة")}</Badge>
-                  <span className="ms-auto font-mono text-[11px] text-muted-foreground">{p.number}</span>
-                </div>
-                <div>
-                  <h3 className="font-heading text-lg font-semibold leading-snug">{isAr ? p.titleAr : p.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{isAr ? p.summaryAr : p.summary}</p>
-                </div>
-                <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">{p.version} · {t("Effective", "سارية من")} {isAr ? p.effectiveAr : p.effective}</span>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={(e) => { e.stopPropagation(); open(p.id) }}><Eye className="size-4" />{t("View", "عرض")}</Button>
-                    <Button variant="outline" size="sm" aria-label={t("Download", "تحميل")} onClick={(e) => e.stopPropagation()}><Download className="size-4" /></Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
+      {/* status pills + filters + search */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
+          {(["All", ...POLICY_LIFECYCLES] as const).map((sName) => (
+            <button key={sName} onClick={() => setStatus(sName as "All" | PolicyLifecycle)} aria-pressed={status === sName}
+              className={cn("rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+                status === sName
+                  ? "border-primary/45 bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground")}>
+              {sName === "All" ? t("All", "الكل") : (isAr ? POLICY_LIFECYCLE_AR[sName as PolicyLifecycle] : sName)}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setShowCats((v) => !v)} aria-pressed={showCats}>
+            <SlidersHorizontal className="size-4" />{t("Filters", "تصفية")}
+            {cat !== "All" && <span className="ms-1 rounded-full bg-primary/15 px-1.5 text-[11px] text-primary">1</span>}
+          </Button>
+          <div className="relative">
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search policies…", "ابحث في السياسات…")} className="w-56 ps-9" />
+          </div>
+        </div>
+      </div>
+
+      {/* category filter — revealed by the Filters button */}
+      {showCats && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-muted/20 p-3">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+            <ListFilter className="size-3.5" />{t("Category", "الفئة")}
+          </span>
           {POLICY_CATS.map((c) => (
-            <button key={c} onClick={() => setCat(c)} aria-pressed={cat === c} className={cn("rounded-full border px-3.5 py-1.5 text-sm transition-colors", cat === c ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60 hover:text-foreground")}>
+            <button key={c} onClick={() => setCat(c)} aria-pressed={cat === c}
+              className={cn("rounded-full border px-3 py-1 text-[12.5px] transition-colors",
+                cat === c ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60 hover:text-foreground")}>
               {isAr ? POLICY_CATS_AR[c] : c}
             </button>
           ))}
         </div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search policies…", "ابحث في السياسات…")} className="w-56 ps-9" />
-        </div>
-      </div>
+      )}
 
       <div className="space-y-2.5">
         {list.map((p) => (
@@ -109,7 +132,11 @@ export default function PoliciesPage() {
                 <span className="me-1 font-mono text-[11px] font-medium text-primary">{p.number}</span>
                 {(p.categories ?? []).map((c) => <CategoryBadge key={c} label={isAr ? policyCatAr(c) : c} color={policyCatColor(c)} />)}
                 <span className="text-xs text-muted-foreground">{p.version}</span>
-                {p.featured && <Badge className="bg-primary/15 text-primary">{t("Featured", "مميزة")}</Badge>}
+                {lifecycleOf(p) !== "Published" && (
+                  <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                    {isAr ? POLICY_LIFECYCLE_AR[lifecycleOf(p)] : lifecycleOf(p)}
+                  </Badge>
+                )}
                 {p.status === "sunset" && <Badge className="bg-destructive/15 text-destructive">{t("Sunset", "موقوفة")}</Badge>}
                 {p.supersededBy && p.status !== "sunset" && <Badge variant="outline">{t("Superseded", "حُلّت محلها")}</Badge>}
                 {p.requiresAck && <Badge variant="outline" className="text-primary">{t("Acknowledgement", "إقرار")}</Badge>}
@@ -164,5 +191,20 @@ export default function PoliciesPage() {
         )}
       </Dialog>
     </main>
+  )
+}
+
+function Stat({ value, label, sub, icon: Icon }: {
+  value: number; label: string; sub: string; icon: React.ComponentType<{ className?: string }>
+}) {
+  return (
+    <Card className="p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-[30px] font-bold leading-none tabular-nums text-primary">{value}</div>
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" /></span>
+      </div>
+      <div className="mt-3 text-[14px] font-semibold">{label}</div>
+      <div className="text-[12px] text-muted-foreground">{sub}</div>
+    </Card>
   )
 }

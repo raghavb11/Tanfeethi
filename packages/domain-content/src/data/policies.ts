@@ -1,5 +1,18 @@
 import { createCollection, newId } from "../collections"
 
+/** Publication states shown in the library's filter pills and summary cards. */
+export type PolicyLifecycle = "Published" | "Draft" | "Under review" | "Scheduled" | "Expired"
+export const POLICY_LIFECYCLES: PolicyLifecycle[] = ["Published", "Draft", "Under review", "Scheduled", "Expired"]
+export const POLICY_LIFECYCLE_AR: Record<PolicyLifecycle, string> = {
+  Published: "منشورة",
+  Draft: "مسودة",
+  "Under review": "قيد المراجعة",
+  Scheduled: "مجدولة",
+  Expired: "منتهية",
+}
+/** Policies default to Published when the field is absent. */
+export const lifecycleOf = (p: Policy): PolicyLifecycle => p.lifecycle ?? "Published"
+
 export type Policy = {
   id: string
   number: string
@@ -25,6 +38,8 @@ export type Policy = {
   supersedes?: string | null
   supersededBy?: string | null
   status?: "active" | "sunset"
+  /** Publication lifecycle, distinct from `status` (which tracks supersession). */
+  lifecycle?: PolicyLifecycle
   featured?: boolean
 }
 
@@ -45,10 +60,10 @@ const POLICIES: Policy[] = [
   { id: "p2", number: "TF-POL-014", title: "Travel & Expense Policy", titleAr: "سياسة السفر والمصروفات", categories: ["Finance", "Operations"], allDepartments: true, version: "v2.4", effective: "Aug 2, 2026", effectiveAr: "٢ أغسطس ٢٠٢٦", owner: "Finance", ownerAr: "المالية", summary: "Booking, limits and reimbursement rules for business travel and expenses.", summaryAr: "قواعد الحجز والحدود والاسترداد لسفر ومصروفات العمل.", featured: true },
   { id: "p3", number: "TF-POL-022", title: "Leave & Attendance Policy", titleAr: "سياسة الإجازات والحضور", categories: ["People"], allDepartments: true, version: "v1.9", effective: "Mar 15, 2026", effectiveAr: "١٥ مارس ٢٠٢٦", owner: "People & Culture", ownerAr: "الموظفون والثقافة", summary: "Annual, sick and special leave entitlements and how attendance is recorded.", summaryAr: "استحقاقات الإجازات السنوية والمرضية والخاصة وكيفية تسجيل الحضور." },
   { id: "p4", number: "TF-POL-031", title: "Information Security Policy", titleAr: "سياسة أمن المعلومات", categories: ["IT", "Governance"], allDepartments: true, version: "v4.0", effective: "Feb 1, 2026", effectiveAr: "١ فبراير ٢٠٢٦", owner: "IT & Security", ownerAr: "تقنية المعلومات والأمن", summary: "Acceptable use, data handling and access rules across company systems and devices.", summaryAr: "الاستخدام المقبول ومعالجة البيانات وقواعد الوصول عبر أنظمة وأجهزة الشركة.", requiresAck: true, ackBaseline: 781 },
-  { id: "p5", number: "TF-POL-018", title: "Procurement Policy", titleAr: "سياسة المشتريات", categories: ["Finance"], allDepartments: false, departments: ["dep-finance", "dep-commercial"], version: "v2.0", effective: "Jul 25, 2026", effectiveAr: "٢٥ يوليو ٢٠٢٦", owner: "Procurement", ownerAr: "المشتريات", summary: "The approval matrix and supplier rules governing purchases by value.", summaryAr: "مصفوفة الاعتماد وقواعد الموردين التي تحكم المشتريات حسب القيمة." },
-  { id: "p6", number: "TF-POL-009", title: "Health, Safety & Environment", titleAr: "الصحة والسلامة والبيئة", categories: ["Operations"], allDepartments: false, departments: ["dep-ops", "dep-ground"], version: "v1.5", effective: "Jun 10, 2026", effectiveAr: "١٠ يونيو ٢٠٢٦", owner: "HSE", ownerAr: "الصحة والسلامة", summary: "Safety standards and responsibilities across offices and operational sites.", summaryAr: "معايير السلامة والمسؤوليات عبر المكاتب والمواقع التشغيلية.", requiresAck: true, ackBaseline: 480 },
-  { id: "p7", number: "TF-POL-027", title: "Remote & Flexible Working", titleAr: "العمل عن بُعد والمرن", categories: ["People"], allDepartments: true, version: "v1.2", effective: "May 5, 2026", effectiveAr: "٥ مايو ٢٠٢٦", owner: "People & Culture", ownerAr: "الموظفون والثقافة", summary: "Eligibility and expectations for hybrid, remote and flexible arrangements.", summaryAr: "الأهلية والتوقعات لترتيبات العمل الهجين وعن بُعد والمرن." },
-  { id: "p8", number: "TF-POL-005", title: "Data Privacy & Protection", titleAr: "خصوصية وحماية البيانات", categories: ["Governance", "IT"], allDepartments: true, version: "v2.1", effective: "Apr 18, 2026", effectiveAr: "١٨ أبريل ٢٠٢٦", owner: "Legal & Compliance", ownerAr: "الشؤون القانونية والامتثال", summary: "How personal data is collected, used and protected in line with regulation.", summaryAr: "كيفية جمع البيانات الشخصية واستخدامها وحمايتها وفق اللوائح.", requiresAck: true, ackBaseline: 430 },
+  { id: "p5", number: "TF-POL-018", title: "Procurement Policy", titleAr: "سياسة المشتريات", categories: ["Finance"], allDepartments: false, departments: ["dep-finance", "dep-commercial"], version: "v2.0", effective: "Jul 25, 2026", effectiveAr: "٢٥ يوليو ٢٠٢٦", owner: "Procurement", ownerAr: "المشتريات", summary: "The approval matrix and supplier rules governing purchases by value.", summaryAr: "مصفوفة الاعتماد وقواعد الموردين التي تحكم المشتريات حسب القيمة.", lifecycle: "Draft" },
+  { id: "p6", number: "TF-POL-009", title: "Health, Safety & Environment", titleAr: "الصحة والسلامة والبيئة", categories: ["Operations"], allDepartments: false, departments: ["dep-ops", "dep-ground"], version: "v1.5", effective: "Jun 10, 2026", effectiveAr: "١٠ يونيو ٢٠٢٦", owner: "HSE", ownerAr: "الصحة والسلامة", summary: "Safety standards and responsibilities across offices and operational sites.", summaryAr: "معايير السلامة والمسؤوليات عبر المكاتب والمواقع التشغيلية.", requiresAck: true, ackBaseline: 480, lifecycle: "Under review" },
+  { id: "p7", number: "TF-POL-027", title: "Remote & Flexible Working", titleAr: "العمل عن بُعد والمرن", categories: ["People"], allDepartments: true, version: "v1.2", effective: "May 5, 2026", effectiveAr: "٥ مايو ٢٠٢٦", owner: "People & Culture", ownerAr: "الموظفون والثقافة", summary: "Eligibility and expectations for hybrid, remote and flexible arrangements.", summaryAr: "الأهلية والتوقعات لترتيبات العمل الهجين وعن بُعد والمرن.", lifecycle: "Scheduled" },
+  { id: "p8", number: "TF-POL-005", title: "Data Privacy & Protection", titleAr: "خصوصية وحماية البيانات", categories: ["Governance", "IT"], allDepartments: true, version: "v2.1", effective: "Apr 18, 2026", effectiveAr: "١٨ أبريل ٢٠٢٦", owner: "Legal & Compliance", ownerAr: "الشؤون القانونية والامتثال", summary: "How personal data is collected, used and protected in line with regulation.", summaryAr: "كيفية جمع البيانات الشخصية واستخدامها وحمايتها وفق اللوائح.", requiresAck: true, ackBaseline: 430, lifecycle: "Expired" },
 ]
 
 const store = createCollection<Policy>(POLICIES, "policies")
