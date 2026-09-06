@@ -5,11 +5,13 @@ import { HashRouter } from "react-router-dom"
 import { TooltipProvider } from "@reach/shared-ui"
 import { ShellProvider } from "@reach/shell-context"
 import { ThemeProvider } from "./providers/theme-provider"
+import { ErrorBoundary } from "./components/ErrorBoundary"
 import App from "./App.tsx"
 import "./index.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    <ErrorBoundary label="root">
     <ThemeProvider>
       <TooltipProvider>
         <ShellProvider>
@@ -19,5 +21,6 @@ createRoot(document.getElementById("root")!).render(
         </ShellProvider>
       </TooltipProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>
 )

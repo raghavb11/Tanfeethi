@@ -94,6 +94,9 @@ const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
 
+/** Non-hook read of the user store — for modules that need it outside React. */
+export const getPortalUsers = () => users
+
 export function usePortalUsers(): PortalUser[] {
   return React.useSyncExternalStore(subscribe, () => users)
 }

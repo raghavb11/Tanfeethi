@@ -144,3 +144,39 @@ export const hrNotifications: { id: string; kind: "info" | "action" | "success" 
   { id: "n3", kind: "info", icon: "gift", title: "Benefits enrolment opens Sep 1", titleAr: "التسجيل في المزايا يبدأ 1 سبتمبر", body: "Review and update your benefit selections for 2027.", bodyAr: "راجع وحدّث اختيارات مزاياك لعام 2027.", time: "1 day ago", timeAr: "قبل يوم" },
   { id: "n4", kind: "success", icon: "calendar-check", title: "Leave request approved", titleAr: "تمت الموافقة على طلب الإجازة", body: "Your Sep 14–18 annual leave was approved.", bodyAr: "تمت الموافقة على إجازتك السنوية 14–18 سبتمبر.", time: "2 days ago", timeAr: "قبل يومين" },
 ]
+
+// ─── 19 · digital business card ──────────────────────────────────────────────
+/** The digital employee / business card. Scope is deliberately narrow — view,
+ *  share, and show for identification. No access control, no authorisation:
+ *  door access and printer release are out of scope (SOW V4). */
+export const businessCard = {
+  mobile: "+966 55 213 4408",
+  extension: "4821",
+  office: "ALTANFEETHI HQ · King Khalid International Airport, Riyadh",
+  officeAr: "المقر الرئيسي · مطار الملك خالد الدولي، الرياض",
+  website: "altanfeethi.com.sa",
+  tagline: "The difference of every journey.",
+  taglineAr: "الفرق في كل رحلة.",
+  /** What a scanner resolves to — the employee's public profile card. */
+  qrPayload: "https://wajha.altanfeethi.com.sa/c/TF-04821",
+  issued: "Issued 12 Mar 2019",
+  issuedAr: "صدرت 12 مارس 2019",
+  validUntil: "Valid to 31 Dec 2027",
+  validUntilAr: "سارية حتى 31 ديسمبر 2027",
+}
+
+/** Share / view history for the card. In the Mendix build this is emitted to
+ *  the shared Audit module rather than held here. */
+export type CardEvent = {
+  id: string
+  kind: "shared" | "viewed" | "saved"
+  detail: string
+  detailAr: string
+  time: string
+  timeAr: string
+}
+export const cardEvents: CardEvent[] = [
+  { id: "c1", kind: "shared", detail: "Shared by link with Noura Al-Qahtani", detailAr: "تمت المشاركة عبر رابط مع نورة القحطاني", time: "Today · 09:14", timeAr: "اليوم · 09:14" },
+  { id: "c2", kind: "viewed", detail: "Shown for identification at HQ reception", detailAr: "عُرضت للتعريف في استقبال المقر", time: "Yesterday · 08:36", timeAr: "أمس · 08:36" },
+  { id: "c3", kind: "saved", detail: "Saved as a contact by Saud Al-Dosari", detailAr: "تم حفظها كجهة اتصال بواسطة سعود الدوسري", time: "27 Aug", timeAr: "27 أغسطس" },
+]

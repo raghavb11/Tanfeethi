@@ -18,7 +18,7 @@ import {
 } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { SidebarBrandLogo } from "@/components/BrandLogo"
-import { adminNav, coreNav, resourcesNav } from "@/config/navigation"
+import { adminNav, compareNav, coreNav, resourcesNav } from "@/config/navigation"
 import { useShell } from "@reach/shell-context"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -196,6 +196,31 @@ function SidebarBody({
               </div>
             </>
           )}
+
+          {/* dev-only: open the earlier build side by side */}
+          <div className={cn(collapsed ? "mx-auto w-6" : "mx-2")}>
+            <div className="h-px bg-border/60" />
+          </div>
+          <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
+            <SectionLabel collapsed={collapsed}>{isAr ? "مقارنة" : "Compare"}</SectionLabel>
+            {compareNav.map((item) => (
+              <a
+                key={item.url}
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={isAr ? item.titleAr : item.title}
+                className={cn(
+                  "flex items-center rounded-lg text-[13px] font-medium transition-all duration-150",
+                  "text-muted-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
+                  collapsed ? "mx-auto size-9 justify-center" : "gap-3 rounded-xl px-2.5 py-2",
+                )}
+              >
+                <item.icon className="size-[18px] shrink-0" />
+                {!collapsed && <span className="truncate">{isAr ? item.titleAr : item.title}</span>}
+              </a>
+            ))}
+          </div>
         </div>
       </ScrollArea>
     </>

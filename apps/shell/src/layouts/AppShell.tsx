@@ -3,6 +3,7 @@ import { motion } from "framer-motion"
 import { Outlet, useLocation } from "react-router-dom"
 
 import { CommandPalette } from "@/components/command-palette"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { AIAssistantPanel } from "@/components/layout/AIAssistantPanel"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
@@ -50,9 +51,11 @@ export function AppShell() {
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="min-h-full"
           >
-            <React.Suspense fallback={<PageFallback />}>
-              <Outlet />
-            </React.Suspense>
+            <ErrorBoundary label={location.pathname}>
+              <React.Suspense fallback={<PageFallback />}>
+                <Outlet />
+              </React.Suspense>
+            </ErrorBoundary>
           </motion.div>
         </main>
       </div>

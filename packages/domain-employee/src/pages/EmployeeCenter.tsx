@@ -7,10 +7,11 @@ import { useShell } from "@reach/shell-context"
 import {
   ArrowRight, BadgeCheck, Banknote, Bell, Building2, CalendarCheck, CalendarClock, CalendarDays, Car, Check,
   CheckCircle2, ClipboardList, Clock, Coffee, FileCheck2, FileText, Gift, GraduationCap, Heart, Home,
-  IdCard, LogOut, MapPin, Phone, Plane, Plus, Receipt, Shield, Sparkles, TrendingUp, UserCircle2, Users, Wallet, X,
+  IdCard, LogOut, MapPin, Phone, Plane, Plus, QrCode, Receipt, Share2, Shield, Sparkles, TrendingUp, UserCircle2, Users, Wallet, X,
 } from "lucide-react"
 
-import { allowances, approvals, attendanceSummary, emp, hrNotifications, leave, myRequests, payslip, today } from "../data/mock/center"
+import { allowances, approvals, attendanceSummary, businessCard, emp, hrNotifications, leave, myRequests, payslip, today } from "../data/mock/center"
+import { DigitalCard } from "../components/DigitalCard"
 
 // ─── shared bits ─────────────────────────────────────────────────────────────
 function CardHead({ icon: Icon, title, desc, action }: { icon: React.ComponentType<{ className?: string }>; title: string; desc?: string; action?: React.ReactNode }) {
@@ -64,6 +65,7 @@ export default function EmployeeCenter() {
     { id: "expense", label: "Submit expense", ar: "تقديم مصروف", icon: Receipt, to: "/services" },
     { id: "payslip", label: "View payslip", ar: "عرض القسيمة", icon: Wallet, to: "/payslip" },
     { id: "letter", label: "Request letter", ar: "طلب خطاب", icon: FileText, to: "/services" },
+    { id: "card", label: "Business card", ar: "بطاقة العمل", icon: IdCard, to: "/employee/card" },
     { id: "profile", label: "Update profile", ar: "تحديث الملف", icon: UserCircle2 },
   ]
 
@@ -268,6 +270,21 @@ export default function EmployeeCenter() {
 
         {/* right column */}
         <div className="space-y-6 lg:col-span-4">
+          {/* 19 · digital business card */}
+          <Card className="overflow-hidden ring-1 ring-foreground/10">
+            <CardHead icon={IdCard} title={t("Digital business card", "بطاقة العمل الرقمية")} desc={t("Show it to identify yourself, or share it", "اعرضها للتعريف بنفسك أو شاركها")}
+              action={<Badge variant="outline" className="gap-1 text-[11px]"><QrCode className="size-3" />{businessCard.extension}</Badge>} />
+            <div className="p-4">
+              <button type="button" onClick={() => navigate("/employee/card")} className="block w-full text-start transition-transform hover:-translate-y-0.5">
+                <DigitalCard isAr={isAr} />
+              </button>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <Button variant="outline" size="sm" onClick={() => navigate("/employee/card")}><IdCard className="size-4" />{t("Show card", "عرض البطاقة")}</Button>
+                <Button size="sm" onClick={() => navigate("/employee/card")}><Share2 className="size-4" />{t("Share", "مشاركة")}</Button>
+              </div>
+            </div>
+          </Card>
+
           {/* 14 · latest payslip */}
           <Card className="ring-1 ring-foreground/10">
             <CardHead icon={Wallet} title={t("Latest payslip", "آخر قسيمة راتب")} desc={isAr ? payslip.monthAr : payslip.month}

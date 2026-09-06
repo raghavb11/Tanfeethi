@@ -1,3 +1,4 @@
+import * as React from "react"
 import { lazy } from "react"
 import { Route, Routes } from "react-router-dom"
 
@@ -43,8 +44,30 @@ const BenefitsPage = lazy(() =>
 const PayslipPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.PayslipPage })),
 )
+const BusinessCardPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.BusinessCardPage })),
+)
+const ManagerDashboardPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.ManagerDashboardPage })),
+)
+const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
+)
+const CafeteriaPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.CafeteriaPage })),
+)
+const CafeteriaOrdersPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.CafeteriaOrdersPage })),
+)
+const CafeteriaAdminPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.CafeteriaAdminPage })),
+)
+const TeaBoyLoginPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.TeaBoyLoginPage })),
+)
+const TeaBoyQueuePage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.TeaBoyQueuePage })),
 )
 const IntelligencePage = lazy(() =>
   import("@reach/domain-intelligence").then((m) => ({ default: m.IntelligencePage })),
@@ -86,19 +109,37 @@ const RolesPage = lazy(() => import("@reach/domain-content").then((m) => ({ defa
 const PermissionGroupEditorPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.PermissionGroupEditorPage })))
 const PermissionGroupMembersPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.PermissionGroupMembersPage })))
 const AuditLogPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.AuditLogPage })))
+const ConfigurationPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.ConfigurationPage })))
+const RuleEngineListPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.RuleEngineListPage })))
+const RuleEditorPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.RuleEditorPage })))
 const PreviewHubPage = lazy(() =>
   import("@reach/domain-preview").then((m) => ({ default: m.PreviewHubPage })),
+)
+const KnowledgeCenterPage = lazy(() =>
+  import("@reach/domain-preview").then((m) => ({ default: m.KnowledgeCenterPage })),
 )
 
 export default function App() {
   return (
     <Routes>
+      <Route
+        path="v2"
+        element={
+          <React.Suspense fallback={null}>
+            <HomeV2 />
+          </React.Suspense>
+        }
+      />
+      <Route path="tea-boy/login" element={<React.Suspense fallback={null}><TeaBoyLoginPage /></React.Suspense>} />
+      <Route path="tea-boy" element={<React.Suspense fallback={null}><TeaBoyQueuePage /></React.Suspense>} />
       <Route element={<AppShell />}>
         <Route index element={<DashboardPage />} />
         <Route path="work" element={<WorkPage />} />
         <Route path="tasks" element={<MyTasksPage />} />
         <Route path="tasks/:id" element={<TaskDetailPage />} />
         <Route path="employee" element={<EmployeePage />} />
+        <Route path="employee/card" element={<BusinessCardPage />} />
+        <Route path="manager" element={<ManagerDashboardPage />} />
         <Route path="leave" element={<LeaveBalancesPage />} />
         <Route path="leave/request" element={<LeaveRequestPage />} />
         <Route path="attendance" element={<AttendancePage />} />
@@ -107,6 +148,9 @@ export default function App() {
         <Route path="benefits" element={<BenefitsPage />} />
         <Route path="payslip" element={<PayslipPage />} />
         <Route path="services" element={<ServicesPage />} />
+        <Route path="cafeteria" element={<CafeteriaPage />} />
+        <Route path="cafeteria/orders" element={<CafeteriaOrdersPage />} />
+        <Route path="cafeteria/admin" element={<CafeteriaAdminPage />} />
         <Route path="intelligence" element={<IntelligencePage />} />
         <Route path="surveys" element={<SurveysPage />} />
         <Route path="surveys/new" element={<SurveyBuilderPage />} />
@@ -131,6 +175,9 @@ export default function App() {
         <Route path="links" element={<QuickLinksPage />} />
         <Route path="community" element={<CommunityPage />} />
         <Route path="cms" element={<CmsAdminPage />} />
+        <Route path="config" element={<ConfigurationPage />} />
+        <Route path="config/rules" element={<RuleEngineListPage />} />
+        <Route path="config/rules/:id" element={<RuleEditorPage />} />
         <Route path="announcements" element={<AnnouncementsPage />} />
         <Route path="announcements/new" element={<AnnouncementEditorPage />} />
         <Route path="announcements/edit/:id" element={<AnnouncementEditorPage />} />
@@ -146,6 +193,7 @@ export default function App() {
         <Route path="admin/permission-groups/edit/:id" element={<PermissionGroupEditorPage />} />
         <Route path="admin/permission-groups/:id" element={<PermissionGroupMembersPage />} />
         <Route path="admin/audit" element={<AuditLogPage />} />
+        <Route path="knowledge" element={<KnowledgeCenterPage />} />
         <Route path="hubs/:hubId" element={<PreviewHubPage />} />
       </Route>
     </Routes>

@@ -1,1 +1,6 @@
 export { default as ServicesPage } from "./pages/ServicesHub"
+export { default as CafeteriaPage } from "./pages/CafeteriaPage"
+export { default as CafeteriaOrdersPage } from "./pages/CafeteriaOrdersPage"
+export { default as CafeteriaAdminPage } from "./pages/CafeteriaAdminPage"
+export { default as TeaBoyLoginPage } from "./pages/TeaBoyLoginPage"
+export { default as TeaBoyQueuePage } from "./pages/TeaBoyQueuePage"
