@@ -3,12 +3,12 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { AlertTriangle, ArrowLeft, CalendarClock, Check, CheckCircle2, Circle, ClipboardList, Flag, FolderKanban, ListChecks, MessageSquare, Pencil, RotateCcw, Send, TrendingUp, UserCircle2 } from "lucide-react"
+import { AlertTriangle, ArrowLeft, CalendarClock, Check, ClipboardList, Flag, FolderKanban, MessageSquare, Pencil, RotateCcw, Send, TrendingUp, UserCircle2 } from "lucide-react"
 import { Textarea } from "@reach/shared-ui"
 
 import {
   addTaskComment, isOverdue, setTaskDue, setTaskStatus, TASK_TODAY_ISO,
-  type TaskEvent, type TaskStatus, toggleChecklistItem, toggleComplete,
+  type TaskEvent, type TaskStatus, toggleComplete,
   useTaskEvents, useTasks,
 } from "../data/tasks"
 
@@ -59,9 +59,6 @@ export default function TaskDetailPage() {
 
   const done = task.status === "completed"
   const overdue = isOverdue(task)
-  const checklist = task.checklist ?? []
-  const checkDone = checklist.filter((c) => c.done).length
-  const checkPct = checklist.length ? Math.round((checkDone / checklist.length) * 100) : 0
 
   const priorityMeta = task.priority === "high"
     ? { cls: "text-rose-500", dot: "bg-rose-400", label: t("High", "عالية") }
@@ -143,25 +140,6 @@ export default function TaskDetailPage() {
             <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/60">{t("Description", "الوصف")}</div>
             <p className="max-w-[68ch] text-[15px] leading-relaxed text-foreground/85">{description}</p>
           </div>
-
-          {/* checklist */}
-          {checklist.length > 0 && (
-            <div className="mt-8">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 font-heading text-lg font-semibold"><ListChecks className="size-5 text-primary" />{t("Checklist", "قائمة المهام الفرعية")}</h2>
-                <span className="text-xs text-muted-foreground">{checkDone}/{checklist.length} · {checkPct}%</span>
-              </div>
-              <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted/50"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${checkPct}%` }} /></div>
-              <div className="space-y-1">
-                {checklist.map((c) => (
-                  <button key={c.id} onClick={() => toggleChecklistItem(task.id, c.id)} className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-start text-sm transition-colors hover:bg-muted/40">
-                    {c.done ? <CheckCircle2 className="size-4.5 shrink-0 text-emerald-500" /> : <Circle className="size-4.5 shrink-0 text-muted-foreground/40" />}
-                    <span className={cn(c.done && "text-muted-foreground line-through")}>{isAr ? c.labelAr : c.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* progress updates */}
           <div className="mt-8">

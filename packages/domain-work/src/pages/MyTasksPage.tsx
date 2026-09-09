@@ -316,8 +316,6 @@ function BoardCard({ task, isAr, t, showWho, dragging, onDragStart, onDragEnd, o
 }) {
   const overdue = isOverdue(task)
   const done = task.status === "completed"
-  const checklist = task.checklist ?? []
-  const ticked = checklist.filter((c) => c.done).length
   const comments = commentCount(task.id)
   return (
     <div
@@ -354,11 +352,6 @@ function BoardCard({ task, isAr, t, showWho, dragging, onDragStart, onDragEnd, o
         <span className={cn("inline-flex items-center gap-1", overdue && !done ? "font-semibold text-rose-500" : "text-muted-foreground/70")}>
           <CalendarClock className="size-3" />{isAr ? task.dueAr : task.due}
         </span>
-        {checklist.length > 0 && (
-          <span className="inline-flex items-center gap-1 text-muted-foreground/70">
-            <CheckCircle2 className="size-3" />{ticked}/{checklist.length}
-          </span>
-        )}
         {comments > 0 && (
           <span className="inline-flex items-center gap-1 text-muted-foreground/70">
             <MessageSquare className="size-3" />{comments}
@@ -405,7 +398,7 @@ function TaskRow({ task, isAr, t, first, showWho, onOpen }: { task: Task; isAr: 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className={cn("text-[13px] font-medium leading-snug transition-colors group-hover:text-primary", done && "text-muted-foreground line-through group-hover:text-muted-foreground")}>{isAr ? task.titleAr : task.title}</span>
-          <StatusBadge status={task.status} overdue={overdue} isAr={isAr} t={t} />
+          <StatusBadge status={task.status} overdue={overdue} t={t} />
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground/70">
           <span>{isAr ? task.projectAr : task.project}</span>
@@ -419,7 +412,7 @@ function TaskRow({ task, isAr, t, first, showWho, onOpen }: { task: Task; isAr: 
 
       {/* priority + action */}
       <div className="flex shrink-0 items-center gap-2">
-        <PriorityChip priority={task.priority} isAr={isAr} t={t} />
+        <PriorityChip priority={task.priority} t={t} />
         {done
           ? <Button variant="ghost" size="sm" className="gap-1.5" onClick={(e) => { stop(e); toggleComplete(task.id) }}><RotateCcw className="size-3.5" />{t("Reopen", "فتح")}</Button>
           : <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { stop(e); toggleComplete(task.id) }}><Check className="size-3.5" />{t("Complete", "إنجاز")}</Button>}
@@ -428,14 +421,14 @@ function TaskRow({ task, isAr, t, first, showWho, onOpen }: { task: Task; isAr: 
   )
 }
 
-function StatusBadge({ status, overdue, isAr, t }: { status: TaskStatus; overdue: boolean; isAr: boolean; t: (en: string, ar: string) => string }) {
+function StatusBadge({ status, overdue, t }: { status: TaskStatus; overdue: boolean; t: (en: string, ar: string) => string }) {
   if (overdue) return <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-[10px] text-rose-500"><AlertTriangle className="me-1 size-2.5" />{t("Overdue", "متأخرة")}</Badge>
   if (status === "completed") return <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-[10px] text-emerald-500">{t("Completed", "مكتملة")}</Badge>
   if (status === "in-progress") return <Badge variant="outline" className="border-sky-500/40 bg-sky-500/10 text-[10px] text-sky-500">{t("In progress", "قيد التنفيذ")}</Badge>
   return <Badge variant="outline" className="text-[10px] text-muted-foreground/70">{t("Open", "مفتوحة")}</Badge>
 }
 
-function PriorityChip({ priority, isAr, t }: { priority: Task["priority"]; isAr: boolean; t: (en: string, ar: string) => string }) {
+function PriorityChip({ priority, t }: { priority: Task["priority"]; t: (en: string, ar: string) => string }) {
   const meta = priority === "high"
     ? { cls: "text-rose-500", label: t("High", "عالية") }
     : priority === "medium"

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Button, Card, Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, Check, Plus, X } from "lucide-react"
+import { ArrowLeft, Check } from "lucide-react"
 
 import {
   TASK_TODAY_ISO, addTask, newTaskId, type TaskPriority, type TaskStatus,
@@ -70,8 +70,6 @@ export default function TaskEditorPage() {
   }, [params])
 
   const [description, setDescription] = React.useState("")
-  const [checklist, setChecklist] = React.useState<string[]>([])
-  const [draftItem, setDraftItem] = React.useState("")
 
   const canSave = title.trim() !== "" && dueISO !== ""
 
@@ -93,9 +91,6 @@ export default function TaskEditorPage() {
       assignedByAr: assignee ? MANAGER.nameAr : "شخصي",
       description: description.trim() || undefined,
       descriptionAr: description.trim() || undefined,
-      checklist: checklist.length
-        ? checklist.map((label, i) => ({ id: `c${i + 1}`, label, labelAr: label, done: false }))
-        : undefined,
     })
     navigate(back)
   }
@@ -227,45 +222,6 @@ export default function TaskEditorPage() {
             {label(t("Description", "الوصف"))}
             <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)}
                       placeholder={t("Any detail worth keeping with the task.", "أي تفاصيل تستحق الحفظ مع المهمة.")} />
-          </div>
-
-          <div>
-            {label(t("Checklist", "قائمة التحقق"))}
-            {checklist.length > 0 && (
-              <div className="mb-2 divide-y divide-border/50 rounded-xl border border-border/60">
-                {checklist.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2">
-                    <span className="size-4 shrink-0 rounded-full border border-border" />
-                    <span className="min-w-0 flex-1 truncate text-[12.5px]">{item}</span>
-                    <button onClick={() => setChecklist(checklist.filter((_, j) => j !== i))}
-                            aria-label={t("Remove", "إزالة")}
-                            className="text-muted-foreground hover:text-rose-500">
-                      <X className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-2">
-              <Input
-                value={draftItem}
-                onChange={(e) => setDraftItem(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && draftItem.trim()) {
-                    e.preventDefault()
-                    setChecklist([...checklist, draftItem.trim()]); setDraftItem("")
-                  }
-                }}
-                placeholder={t("Add a step and press Enter", "أضف خطوة ثم اضغط Enter")}
-              />
-              <Button
-                variant="outline"
-                disabled={!draftItem.trim()}
-                onClick={() => { setChecklist([...checklist, draftItem.trim()]); setDraftItem("") }}
-              >
-                <Plus className="size-4" />{t("Add", "إضافة")}
-              </Button>
-            </div>
           </div>
         </div>
       </Card>
