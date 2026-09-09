@@ -1,10 +1,13 @@
 import * as React from "react"
 import { motion } from "framer-motion"
+
+import { ClockAction } from "../components/ClockAction"
+import { dayStatus, hm as fmtHM, hoursWord, remainingMinutes, useClock, workedMinutes } from "../data/mock/clock"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  CalendarClock, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock, Coffee,
+  CalendarClock, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock,
   Download, Home, LogOut, MapPin, Plane, TrendingUp,
 } from "lucide-react"
 
@@ -34,17 +37,22 @@ export default function AttendancePage() {
   const [selected, setSelected] = React.useState<AttendanceDay | null>(null)
 
   const s = monthStats()
-  const targetMin = today.targetHours * 60
-  const remainingMin = Math.max(0, targetMin - today.workedMinutes)
-  const hm = (m: number) => (isAr ? `${Math.floor(m / 60)}س ${String(m % 60).padStart(2, "0")}د` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m`)
-  const dayProgress = Math.min(100, Math.round((today.workedMinutes / targetMin) * 100))
+  // the day is whatever the clock store says — it may not have started yet
+  const clock = useClock()
+  const status = dayStatus(clock)
+  const started = status !== "not-started"
+  const workedMin = workedMinutes(clock)
+  const targetMin = clock.targetHours * 60
+  const remainingMin = remainingMinutes(clock)
+  const hm = (m: number) => fmtHM(m, isAr)
+  const dayProgress = Math.min(100, Math.round((workedMin / targetMin) * 100))
 
   // leading blanks so day 1 lands on its weekday column
   const lead = Array.from({ length: MONTH.firstWeekday }, (_, i) => i)
   // the log is a record of what already happened — nothing past today
   const logged = DAYS.filter((d) => d.day <= TODAY_DAY)
   /** "8.2h" in English, "٨٫٢ س" in Arabic. */
-  const hrs = (n: number) => (isAr ? `${n} س` : `${n}h`)
+  const hrs = (n: number) => hoursWord(n, isAr)
 
   const th = "px-4 py-3 text-start text-[12px] font-medium text-muted-foreground"
 
@@ -70,16 +78,26 @@ export default function AttendancePage() {
             <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/60">{t("Today", "اليوم")}</div>
             <div className="mt-0.5 text-[15px] font-semibold">{isAr ? today.dayLabelAr : today.dayLabel}</div>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/35 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-            <span className="size-1.5 rounded-full bg-emerald-500" />{t("Present", "حاضر")}
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+            started
+              ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400")}>
+            <span className={cn("size-1.5 rounded-full", started ? "bg-emerald-500" : "bg-amber-500")} />
+            {status === "not-started"
+              ? t("Not clocked in", "لم يُسجّل الحضور")
+              : status === "done" ? t("Day complete", "اكتمل اليوم") : t("Present", "حاضر")}
           </span>
         </div>
 
         <div className="mt-4 grid gap-3 @xl:grid-cols-4">
-          <Tile icon={Clock} label={t("Check-in", "الحضور")} value={today.checkIn} sub={t("On time", "في الوقت")} tone="primary" />
-          <Tile icon={LogOut} label={t("Check-out", "الانصراف")} value={today.checkOut ?? "—"} sub={today.checkOut ? "" : t("Still working", "ما زلت أعمل")} tone="muted" />
-          <Tile icon={CheckCircle2} label={t("Worked", "ساعات العمل")} value={hm(today.workedMinutes)} sub={`${t("of", "من")} ${hrs(today.targetHours)}`} tone="emerald" />
-          <Tile icon={CalendarClock} label={t("Remaining", "المتبقي")} value={hm(remainingMin)} sub={isAr ? today.locationAr : today.location} tone="amber" />
+          <Tile icon={Clock} label={t("Check-in", "الحضور")} value={clock.checkIn ?? "—"}
+            sub={started ? t("On time", "في الوقت") : t("Not yet", "لم يتم بعد")} tone={started ? "primary" : "muted"} />
+          <Tile icon={LogOut} label={t("Check-out", "الانصراف")} value={clock.checkOut ?? "—"}
+            sub={clock.checkOut ? "" : started ? t("Still working", "ما زلت أعمل") : ""} tone="muted" />
+          <Tile icon={CheckCircle2} label={t("Worked", "ساعات العمل")} value={started ? hm(workedMin) : "—"}
+            sub={`${t("of", "من")} ${hrs(clock.targetHours)}`} tone={started ? "emerald" : "muted"} />
+          <Tile icon={CalendarClock} label={t("Remaining", "المتبقي")} value={hm(remainingMin)}
+            sub={isAr ? clock.locationAr : clock.location} tone="amber" />
         </div>
 
         <div className="mt-4">
@@ -89,9 +107,8 @@ export default function AttendancePage() {
           <div className="h-2 overflow-hidden rounded-full bg-muted">
             <motion.div initial={{ width: 0 }} animate={{ width: `${dayProgress}%` }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary" />
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" className="gap-1.5"><LogOut className="size-3.5" />{t("Clock out", "تسجيل انصراف")}</Button>
-            <Button size="sm" variant="outline" className="gap-1.5"><Coffee className="size-3.5" />{t("Take break", "استراحة")}</Button>
+          <div className="mt-4">
+            <ClockAction />
           </div>
         </div>
       </Card>

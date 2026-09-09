@@ -59,7 +59,15 @@ export default function ManagerDashboardPage() {
   const approvals = useApprovals()
   const audit = useManagerAudit()
   const [returning, setReturning] = React.useState<string | null>(null)
+  const [confirming, setConfirming] = React.useState<string | null>(null)
   const [comment, setComment] = React.useState("")
+
+  // today, in both calendars — Saudi offices work to the Hijri date as well
+  const now = new Date()
+  const today = now.toLocaleDateString(isAr ? "ar-SA" : "en-GB",
+    { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+  const todayHijri = now.toLocaleDateString(isAr ? "ar-SA-u-ca-islamic" : "en-GB-u-ca-islamic",
+    { day: "numeric", month: "long", year: "numeric" })
 
   const pending = approvals.filter((a) => a.state === "Pending")
   const counts = team.reduce<Record<TodayState, number>>((acc, r) => {
@@ -79,7 +87,15 @@ export default function ManagerDashboardPage() {
     <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1.5">
-          <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Manager dashboard", "لوحة المدير")}</h1>
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Manager dashboard", "لوحة المدير")}</h1>
+            {/* the day everything on this page is "today" for */}
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[12px] font-medium">
+              <CalendarDays className="size-3.5 text-primary" />
+              <span className="tabular-nums">{today}</span>
+              <span className="text-muted-foreground">· {todayHijri}</span>
+            </span>
+          </div>
           <p className="max-w-3xl text-[13px] text-muted-foreground">
             {t("Your team today, what is waiting on your decision, and where the pressure is.", "فريقك اليوم، وما ينتظر قرارك، وأين يقع الضغط.")}
           </p>
@@ -147,7 +163,15 @@ export default function ManagerDashboardPage() {
               {pending.map((a) => {
                 const Icon = KIND_ICON[a.kind]
                 return (
-                  <div key={a.id} className="px-5 py-4">
+                  <div
+                    key={a.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/manager/approvals/${a.id}`)}
+                    onKeyDown={(e) => { if (e.key === "Enter") navigate(`/manager/approvals/${a.id}`) }}
+                    aria-label={t("Open request", "فتح الطلب") + " " + a.ref}
+                    className="cursor-pointer px-5 py-4 outline-none transition-colors hover:bg-muted/25 focus-visible:bg-muted/25"
+                  >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex min-w-0 gap-3">
                         <Avatar className="size-9 shrink-0">
@@ -172,18 +196,39 @@ export default function ManagerDashboardPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-2">
+                      <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/manager/approvals/${a.id}`)}>
+                          {t("Details", "التفاصيل")}
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => { setReturning(returning === a.id ? null : a.id); setComment("") }}>
                           <CornerUpLeft className="size-3.5" />{t("Return", "إعادة")}
                         </Button>
-                        <Button size="sm" onClick={() => decideApproval(a.id, "Approved")}>
+                        <Button size="sm" onClick={() => setConfirming(confirming === a.id ? null : a.id)}>
                           <Check className="size-3.5" />{t("Approve", "اعتماد")}
                         </Button>
                       </div>
                     </div>
 
+                    {confirming === a.id && (
+                      <div className="mt-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-3" onClick={(e) => e.stopPropagation()}>
+                        <p className="text-[12.5px] font-semibold">{t("Approve this request?", "اعتماد هذا الطلب؟")}</p>
+                        <p className="mt-0.5 text-[12px] text-muted-foreground">
+                          {a.ref} · {isAr ? a.titleAr : a.title}
+                          {a.amount !== undefined ? ` · ${sar(a.amount, isAr)}` : ""}
+                          {" — "}
+                          {t("the decision is recorded against your name.", "سيُسجَّل القرار باسمك.")}
+                        </p>
+                        <div className="mt-2 flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setConfirming(null)}>{t("Cancel", "إلغاء")}</Button>
+                          <Button size="sm" onClick={() => { decideApproval(a.id, "Approved"); setConfirming(null) }}>
+                            <Check className="size-3.5" />{t("Yes, approve", "نعم، اعتمد")}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     {returning === a.id && (
-                      <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-3">
+                      <div className="mt-3 rounded-xl border border-border/60 bg-muted/20 p-3" onClick={(e) => e.stopPropagation()}>
                         <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                           {t("Why are you returning it?", "لماذا تعيد الطلب؟")}
                         </label>
@@ -221,8 +266,8 @@ export default function ManagerDashboardPage() {
               {team.map((r) => {
                 const st = STATE[r.state]
                 return (
-                  <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-                    <div className="flex min-w-0 items-center gap-3">
+                  <div key={r.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                       <Avatar className="size-9 shrink-0">
                         <AvatarFallback className="bg-primary/12 text-[12px] font-bold text-primary">{r.initials}</AvatarFallback>
                       </Avatar>
@@ -232,10 +277,7 @@ export default function ManagerDashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                      <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", st.cls)}>
-                        <span className={cn("size-1.5 rounded-full", st.dot)} />{isAr ? st.ar : st.en}
-                      </span>
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-4">
                       <span className="hidden text-[11.5px] text-muted-foreground sm:inline">
                         {r.checkIn ?? "—"} · {isAr ? r.locationAr : r.location}
                       </span>
@@ -251,6 +293,9 @@ export default function ManagerDashboardPage() {
                           />
                         </span>
                         <span className="text-[11px] tabular-nums text-muted-foreground">{r.utilisation}%</span>
+                      </span>
+                      <span className={cn("inline-flex w-[5.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", st.cls)}>
+                        <span className={cn("size-1.5 shrink-0 rounded-full", st.dot)} />{isAr ? st.ar : st.en}
                       </span>
                     </div>
                   </div>

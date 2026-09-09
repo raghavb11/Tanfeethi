@@ -5,12 +5,12 @@ import { Badge, Button, Card, Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  Check, ClipboardList, Coffee, MapPin, Minus, Plus, Search, Send, ShieldCheck, Sparkles, Clock,
-  Bookmark, BookmarkCheck, RotateCcw, Star,
+  Bookmark, BookmarkCheck, Check, ClipboardList, Clock, Coffee, MapPin, Minus, Plus, RotateCcw, Search, Send, ShieldCheck, Sparkles, Star, X,
 } from "lucide-react"
 
 import {
-  SUGAR, addOrder, itemById, locations, menu, menuGroups, newOrderId, newOrderRef, nowMin,
+  MAX_USUALS, SUGAR, addOrder, itemById, locations, menu, menuGroups, newOrderId, newOrderRef,
+  nowMin, removeUsual, replaceUsual, type SavedUsual, servesAt,
   saveUsual, setPrefs, slots, sugarLabel, useOrders, usePrefs,
   type MenuGroupId, type OrderLine, type SugarLevel,
 } from "../data/mock/cafeteria"
@@ -50,19 +50,34 @@ export default function CafeteriaPage() {
   const setSugar = (id: string, sugar: SugarLevel) =>
     setLines((prev) => prev.map((l) => (l.itemId === id ? { ...l, sugar } : l)))
 
-  const applyUsual = () => {
-    if (!prefs.usual) return
-    setLines(prefs.usual.map((l) => ({ ...l })))
+  const applyUsual = (u: SavedUsual) => {
+    setLines(u.lines.map((l) => ({ ...l })))
     setLocationId(prefs.locationId)
-    if (prefs.usualNote) setNote(prefs.usualNote)
+    setNote(u.note ?? "")
   }
 
+  // naming a basket before it is kept, and which saved order to overwrite
+  const [usualName, setUsualName] = React.useState("")
+  /** The usual being confirmed, and the place it will go to — the default
+   *  unless the person changes it here. */
+  const [confirmUsual, setConfirmUsual] = React.useState<SavedUsual | null>(null)
+  const [confirmLoc, setConfirmLoc] = React.useState(prefs.locationId)
+  const [confirmQuery, setConfirmQuery] = React.useState("")
+  const [replacing, setReplacing] = React.useState(false)
+  const shelfFull = prefs.usuals.length >= MAX_USUALS
+
+  // only what the chosen place is actually served
+  const chosenPlace = locations.find((l) => l.id === locationId)
   const visible = menu.filter((m) => {
     const inGroup = group === "all" || m.group === group
     const q = query.trim().toLowerCase()
     const hit = !q || m.name.toLowerCase().includes(q) || m.nameAr.includes(query.trim())
-    return inGroup && hit
+    return inGroup && hit && servesAt(m, chosenPlace)
   })
+  /** Items that place cannot get — worth saying, rather than quietly hiding. */
+  const hiddenByPlace = chosenPlace
+    ? menu.filter((m) => m.available && !servesAt(m, chosenPlace)).length
+    : 0
 
   /** Searchable location list — the guidelines require a searchable dropdown
    *  rather than a long unfiltered select. */
@@ -88,6 +103,28 @@ export default function CafeteriaPage() {
     setLines([]); setNote("")
     window.setTimeout(() => setPlaced(null), 4000)
   }
+
+  /** Reorder a usual as it stands — same shape as submit, minus the basket. */
+  const placeUsual = () => {
+    if (!confirmUsual || !confirmLoc) return
+    const ref = newOrderRef()
+    addOrder({
+      id: newOrderId(), ref, lines: confirmUsual.lines.map((l) => ({ ...l })),
+      locationId: confirmLoc, slotId,
+      note: confirmUsual.note?.trim() || undefined, status: "Received",
+      by: "Khalid Al-Saadi", byAr: "خالد السعدي", initials: "KS",
+      placed: "Just now", placedAr: "الآن", placedMin: nowMin(),
+    })
+    setPlaced(ref)
+    setConfirmUsual(null); setConfirmQuery("")
+    window.setTimeout(() => setPlaced(null), 4000)
+  }
+
+  const confirmOptions = locations.filter((l) => {
+    if (!l.active) return false
+    const q = confirmQuery.trim().toLowerCase()
+    return !q || l.name.toLowerCase().includes(q) || l.nameAr.includes(confirmQuery.trim())
+  })
 
   const mine = orders.filter((o) => o.by === "Khalid Al-Saadi" && (o.status === "Received" || o.status === "Accepted"))
 
@@ -132,32 +169,122 @@ export default function CafeteriaPage() {
         </motion.div>
       )}
 
-      {prefs.usual && prefs.usual.length > 0 && (
+      {prefs.usuals.length > 0 && (
         <Card className="mb-5 ring-1 ring-foreground/10">
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                <Star className="size-4" />
-              </span>
-              <div className="min-w-0">
-                <div className="text-[13px] font-semibold">{t("My usual", "طلبي المعتاد")}</div>
-                <div className="mt-0.5 flex flex-wrap gap-1.5">
-                  {prefs.usual.map((l) => {
-                    const m = itemById(l.itemId)
-                    if (!m) return null
-                    return (
-                      <span key={l.itemId} className="rounded-full border border-border/60 bg-muted/25 px-2.5 py-0.5 text-[11.5px] text-muted-foreground">
-                        <span className="font-semibold tabular-nums">{l.qty}×</span> {isAr ? m.nameAr : m.name}
-                        {l.sugar && ` · ${sugarLabel(l.sugar, isAr)}`}
-                      </span>
-                    )
-                  })}
+          <div className="flex items-center gap-2 border-b border-border/60 px-5 py-3">
+            <Star className="size-4 text-primary" />
+            <span className="text-[13px] font-semibold">{t("My usuals", "طلباتي المعتادة")}</span>
+            <span className="ms-auto text-[11.5px] tabular-nums text-muted-foreground">
+              {prefs.usuals.length}/{MAX_USUALS}
+            </span>
+          </div>
+          <div className="grid gap-px bg-border/40 sm:grid-cols-2">
+            {prefs.usuals.map((u) => (
+              <div key={u.id} className="flex flex-wrap items-start justify-between gap-3 bg-card px-5 py-3.5">
+                <div className="min-w-0">
+                  <div className="text-[13px] font-semibold">{u.name}</div>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {u.lines.map((l) => {
+                      const m = itemById(l.itemId)
+                      if (!m) return null
+                      return (
+                        <span key={l.itemId} className="rounded-full border border-border/60 bg-muted/25 px-2.5 py-0.5 text-[11.5px] text-muted-foreground">
+                          <span className="font-semibold tabular-nums">{l.qty}×</span> {isAr ? m.nameAr : m.name}
+                          {l.sugar && ` · ${sugarLabel(l.sugar, isAr)}`}
+                        </span>
+                      )
+                    })}
+                  </div>
                 </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => {
+                      setConfirmUsual(confirmUsual?.id === u.id ? null : u)
+                      setConfirmLoc(prefs.locationId)
+                      setConfirmQuery("")
+                    }}
+                  >
+                    <RotateCcw className="size-3.5" />{t("Order this", "اطلبه مرة أخرى")}
+                  </Button>
+                  <button
+                    onClick={() => removeUsual(u.id)}
+                    aria-label={t("Remove", "إزالة")}
+                    className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-rose-500"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+
+                {/* nothing is sent until this is confirmed */}
+                {confirmUsual?.id === u.id && (
+                  <div className="w-full rounded-xl border border-primary/30 bg-primary/[0.04] p-3">
+                    <p className="text-[12.5px] font-semibold">
+                      {t(`Send "${u.name}" now?`, `تأكيد الطلب: «${u.name}»`)}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
+                      <span className="text-muted-foreground">{t("Deliver to", "التوصيل إلى")}</span>
+                      <span className="font-semibold">
+                        {(() => {
+                          const l = locations.find((x) => x.id === confirmLoc)
+                          return l ? (isAr ? l.nameAr : l.name) : "—"
+                        })()}
+                      </span>
+                      {confirmLoc === prefs.locationId && (
+                        <Badge variant="outline" className="gap-1 border-primary/30 bg-primary/10 text-[10px] text-primary">
+                          <Star className="size-2.5" />{t("Your default", "موقعك الافتراضي")}
+                        </Badge>
+                      )}
+                      <span className="text-muted-foreground">· {t("As soon as possible", "في أقرب وقت")}</span>
+                    </div>
+
+                    {/* change it here, without leaving the confirmation */}
+                    <div className="mt-2">
+                      <Input
+                        value={confirmQuery} onChange={(e) => setConfirmQuery(e.target.value)}
+                        placeholder={t("Change the place — search locations…", "ابحث عن الموقع…")}
+                        className="h-9 text-[12.5px]"
+                      />
+                      {confirmQuery.trim() !== "" && (
+                        <div className="mt-1 max-h-36 space-y-1 overflow-y-auto rounded-lg border border-border/60 bg-card p-1">
+                          {confirmOptions.map((l) => (
+                            <button
+                              key={l.id} type="button"
+                              onClick={() => { setConfirmLoc(l.id); setConfirmQuery("") }}
+                              className={cn("block w-full rounded-md px-2.5 py-1.5 text-start text-[12px] transition-colors",
+                                confirmLoc === l.id ? "bg-primary/12 font-semibold text-primary" : "hover:bg-muted/40")}
+                            >
+                              {isAr ? l.nameAr : l.name}
+                            </button>
+                          ))}
+                          {confirmOptions.length === 0 && (
+                            <p className="px-2.5 py-2 text-center text-[12px] text-muted-foreground">
+                              {t("No matching location", "لا يوجد موقع مطابق")}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                      <button
+                        onClick={() => { applyUsual(u); setConfirmUsual(null) }}
+                        className="text-[11.5px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                      >
+                        {t("Edit before sending", "تعديل قبل الإرسال")}
+                      </button>
+                      <Button variant="outline" size="sm" onClick={() => setConfirmUsual(null)}>
+                        {t("Cancel", "إلغاء")}
+                      </Button>
+                      <Button size="sm" onClick={placeUsual}>
+                        <Send className="size-3.5" />{t("Confirm & send", "تأكيد وإرسال")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={applyUsual}>
-              <RotateCcw className="size-3.5" />{t("Order this again", "اطلبه مرة أخرى")}
-            </Button>
+            ))}
           </div>
         </Card>
       )}
@@ -250,6 +377,13 @@ export default function CafeteriaPage() {
             })}
           </div>
 
+          {hiddenByPlace > 0 && (
+            <p className="mt-3 text-center text-[11.5px] text-muted-foreground/75">
+              {t(`${hiddenByPlace} more items are not served at ${chosenPlace?.name}.`,
+                 `هناك ${hiddenByPlace} أصناف إضافية لا تُقدّم في ${chosenPlace?.nameAr}.`)}
+            </p>
+          )}
+
           {visible.length === 0 && (
             <Card className="ring-1 ring-foreground/10">
               <div className="px-5 py-10 text-center text-[13px] text-muted-foreground">
@@ -319,7 +453,19 @@ export default function CafeteriaPage() {
               )}
 
               <div>
-                {label(t("Deliver to", "التوصيل إلى"))}
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("Deliver to", "التوصيل إلى")}
+                  </label>
+                  {locationId && locationId !== prefs.locationId && (
+                    <button
+                      onClick={() => setPrefs({ locationId })}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                    >
+                      <Star className="size-3" />{t("Make this my default", "اجعله الافتراضي")}
+                    </button>
+                  )}
+                </div>
                 <div className="relative mb-2">
                   <MapPin className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/60" />
                   <Input
@@ -336,7 +482,12 @@ export default function CafeteriaPage() {
                         locationId === l.id ? "bg-primary/12 font-semibold text-primary" : "hover:bg-muted/40",
                       )}
                     >
-                      {isAr ? l.nameAr : l.name}
+                      <span className="inline-flex items-center gap-1.5">
+                        {isAr ? l.nameAr : l.name}
+                        {l.id === prefs.locationId && (
+                          <Star className="size-3 shrink-0 fill-primary/30 text-primary" />
+                        )}
+                      </span>
                     </button>
                   ))}
                   {locOptions.length === 0 && (
@@ -379,20 +530,73 @@ export default function CafeteriaPage() {
                 <Send className="size-4" />{t("Place order", "إرسال الطلب")}
               </Button>
 
-              <button
-                type="button"
-                disabled={lines.length === 0}
-                onClick={() => {
-                  saveUsual(lines, note.trim() || undefined)
-                  setPrefs({ locationId })
-                  setSavedUsual(true)
-                  window.setTimeout(() => setSavedUsual(false), 2400)
-                }}
-                className="flex w-full items-center justify-center gap-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-primary disabled:opacity-40"
-              >
-                {savedUsual ? <BookmarkCheck className="size-3.5" /> : <Bookmark className="size-3.5" />}
-                {savedUsual ? t("Saved as your usual", "تم الحفظ كطلبك المعتاد") : t("Save as my usual", "حفظ كطلبي المعتاد")}
-              </button>
+              {/* keep this basket, under a name, up to four of them */}
+              {lines.length > 0 && (
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                  {savedUsual ? (
+                    <p className="flex items-center justify-center gap-1.5 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      <BookmarkCheck className="size-3.5" />{t("Saved", "تم الحفظ")}
+                    </p>
+                  ) : shelfFull && !replacing ? (
+                    <div className="space-y-2">
+                      <p className="text-[11.5px] text-muted-foreground">
+                        {t(`You have ${MAX_USUALS} saved orders — replace one to keep this.`, "لديك 4 طلبات محفوظة — استبدل أحدها:")}
+                      </p>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => setReplacing(true)}>
+                        <Bookmark className="size-3.5" />{t("Replace one", "استبدال")}
+                      </Button>
+                    </div>
+                  ) : replacing ? (
+                    <div className="space-y-1.5">
+                      <p className="text-[11.5px] font-semibold text-muted-foreground">
+                        {t("Which one does this replace?", "لديك 4 طلبات محفوظة — استبدل أحدها:")}
+                      </p>
+                      {prefs.usuals.map((u) => (
+                        <button
+                          key={u.id}
+                          onClick={() => {
+                            replaceUsual(u.id, lines, note.trim() || undefined)
+                            setPrefs({ locationId })
+                            setReplacing(false); setSavedUsual(true)
+                            window.setTimeout(() => setSavedUsual(false), 2400)
+                          }}
+                          className="flex w-full items-center justify-between gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 text-[12px] transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          <span className="min-w-0 truncate font-medium">{u.name}</span>
+                          <span className="shrink-0 text-[11px] text-muted-foreground">
+                            {u.lines.length} {t("items", "أصناف")}
+                          </span>
+                        </button>
+                      ))}
+                      <button onClick={() => setReplacing(false)}
+                              className="w-full pt-1 text-[11.5px] text-muted-foreground hover:text-foreground">
+                        {t("Cancel", "إلغاء")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={usualName}
+                        onChange={(e) => setUsualName(e.target.value)}
+                        placeholder={t("Name it — Morning karak, Team round…", "سمِّ هذا الطلب")}
+                        className="h-9 flex-1 text-[12.5px]"
+                      />
+                      <Button
+                        size="sm"
+                        disabled={!usualName.trim()}
+                        onClick={() => {
+                          if (!saveUsual(usualName.trim(), lines, note.trim() || undefined)) return
+                          setPrefs({ locationId })
+                          setUsualName(""); setSavedUsual(true)
+                          window.setTimeout(() => setSavedUsual(false), 2400)
+                        }}
+                      >
+                        <Bookmark className="size-3.5" />{t("Save", "حفظ كطلب معتاد")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-center text-[11px] text-muted-foreground/70">
                 {t("Provided free to ALTANFEETHI employees.", "خدمة مجانية لمنسوبي التنفيذي.")}
               </p>

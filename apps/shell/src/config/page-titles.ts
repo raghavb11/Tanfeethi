@@ -23,6 +23,13 @@ const titlesEn: Record<string, string> = {
   "/admin/notifications": "Notifications",
   "/admin/roles": "Roles & Permissions",
   "/admin/audit": "Audit Logs",
+  "/projects": "Projects",
+  "/benefits/partners": "Partner Offers",
+  "/employee/dependants": "My Family",
+  "/config/holidays": "Holiday Calendar",
+  "/config/master-data": "Master Data",
+  "/config/cafeteria": "Cafeteria Settings",
+  "/projects/new": "New Project",
 }
 
 const titlesAr: Record<string, string> = {
@@ -48,6 +55,13 @@ const titlesAr: Record<string, string> = {
   "/admin/notifications": "الإشعارات",
   "/admin/roles": "الأدوار والصلاحيات",
   "/admin/audit": "سجلات التدقيق",
+  "/projects": "المشاريع",
+  "/benefits/partners": "عروض الشركاء",
+  "/employee/dependants": "عائلتي",
+  "/config/holidays": "تقويم الإجازات",
+  "/config/master-data": "البيانات الرئيسية",
+  "/config/cafeteria": "إعدادات الكافتيريا",
+  "/projects/new": "مشروع جديد",
 }
 
 export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): string {

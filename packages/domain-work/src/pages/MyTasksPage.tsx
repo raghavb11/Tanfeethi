@@ -4,13 +4,25 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { AlertTriangle, CalendarClock, Check, CheckCircle2, Circle, ClipboardList, ListTodo, Loader, RotateCcw, Search, UserCircle2 } from "lucide-react"
+import { AlertTriangle, CalendarClock, Check, CheckCircle2, Circle, ClipboardList, GripVertical, LayoutGrid, ListTodo, Loader, MessageSquare, Plus, RotateCcw, Rows3, Search, UserCircle2, UsersRound } from "lucide-react"
 
-import { countByStatus, isOverdue, type Task, type TaskStatus, toggleComplete, useTasks } from "../data/tasks"
+import { commentCount, countByStatus, isOverdue, myTasks, setTaskStatus, type Task, type TaskStatus, teamTasks, toggleComplete, useTasks } from "../data/tasks"
+import { team } from "../data/team"
 
 type Tab = "all" | "open" | "in-progress" | "completed" | "overdue"
 const TAB_IDS: Tab[] = ["all", "open", "in-progress", "completed", "overdue"]
 const isTab = (v: string | null): v is Tab => !!v && (TAB_IDS as string[]).includes(v)
+
+/** The board shows every task by status, so the column set is the status set. */
+type View = "list" | "board"
+const BOARD_COLUMNS: { id: TaskStatus; label: string; ar: string; dot: string; ring: string }[] = [
+  { id: "open", label: "Open", ar: "مفتوحة", dot: "bg-muted-foreground/40", ring: "ring-foreground/10" },
+  { id: "in-progress", label: "In progress", ar: "قيد التنفيذ", dot: "bg-sky-500", ring: "ring-sky-500/20" },
+  { id: "completed", label: "Completed", ar: "مكتملة", dot: "bg-emerald-500", ring: "ring-emerald-500/20" },
+]
+
+/** Whose work is on screen. The team scope only appears for a line manager. */
+type Scope = "mine" | "team"
 
 export default function MyTasksPage() {
   const { locale } = useShell()
@@ -18,13 +30,48 @@ export default function MyTasksPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
   const navigate = useNavigate()
-  const tasks = useTasks()
-  const counts = countByStatus(tasks)
+  const all = useTasks()
   // ?tab=open lets the dashboard deep-link straight to a filter
   const [params, setParams] = useSearchParams()
+
+  // mine and the team's live on the same page, behind this switch
+  const manages = team.length > 0
+  const scope: Scope = manages && params.get("scope") === "team" ? "team" : "mine"
+  const report = params.get("report") ?? "all"
+
+  const teamAll = teamTasks(all)
+  const tasks = scope === "mine"
+    ? myTasks(all)
+    : report === "all" ? teamAll : teamAll.filter((x) => x.assigneeId === report)
+  const counts = countByStatus(tasks)
+
+  /** Keep tab and view when the scope or the person changes. */
+  const setQuery = (next: Record<string, string | undefined>) => {
+    const merged: Record<string, string> = { tab, ...(view === "board" ? { view: "board" } : {}) }
+    if (scope === "team") merged.scope = "team"
+    if (scope === "team" && report !== "all") merged.report = report
+    Object.entries(next).forEach(([k, v]) => { if (v === undefined) delete merged[k]; else merged[k] = v })
+    setParams(merged, { replace: true })
+  }
+  const openCount = (id: string) => teamAll.filter((x) => x.assigneeId === id && x.status !== "completed").length
+  const overdueCount = (id: string) => teamAll.filter((x) => x.assigneeId === id && isOverdue(x)).length
   const tab: Tab = isTab(params.get("tab")) ? (params.get("tab") as Tab) : "open"
-  const setTab = (next: Tab) => setParams({ tab: next }, { replace: true })
+  const setTab = (next: Tab) => setQuery({ tab: next })
   const [q, setQ] = React.useState("")
+  // ?view=board deep-links straight to the Kanban
+  const view: View = params.get("view") === "board" ? "board" : "list"
+  const setView = (next: View) => setQuery({ view: next === "board" ? "board" : undefined })
+  const [dragId, setDragId] = React.useState<string | null>(null)
+  const [overCol, setOverCol] = React.useState<TaskStatus | null>(null)
+
+  /** The board ignores the status tabs — it is the status view. */
+  const boardTasks = tasks.filter(
+    (x) => q === "" || (isAr ? x.titleAr : x.title).toLowerCase().includes(q.toLowerCase()))
+
+  const drop = (status: TaskStatus) => {
+    if (dragId) setTaskStatus(dragId, status)
+    setDragId(null); setOverCol(null)
+  }
 
   const filtered = tasks
     .filter((x) => {
@@ -47,14 +94,91 @@ export default function MyTasksPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       {/* header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 text-primary">
-          <ClipboardList className="size-5" />
-          <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("My Tasks", "مهامي")}</span>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-primary">
+            <ClipboardList className="size-5" />
+            <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Tasks", "المهام")}</span>
+          </div>
+          <h1 className="mt-2 font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+            {scope === "mine" ? t("Your tasks & to-dos", "مهامك وأعمالك") : t("Your team's tasks", "مهام فريقك")}
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {scope === "mine"
+              ? t("Everything assigned to you \u2014 open, in progress, overdue and completed, in one place.", "كل ما هو مُسند إليك — مفتوح، قيد التنفيذ، متأخر ومكتمل، في مكان واحد.")
+              : t("See what your team is carrying, move work between states, and assign new tasks.", "اطّلع على ما ينجزه فريقك، وانقل الأعمال بين الحالات، وأسند مهامًا جديدة.")}
+          </p>
         </div>
-        <h1 className="mt-2 font-heading text-2xl font-bold tracking-tight sm:text-3xl">{t("Your tasks & to-dos", "مهامك وأعمالك")}</h1>
-        <p className="mt-1 text-[13px] text-muted-foreground">{t("Everything assigned to you — open, in progress, overdue and completed, in one place.", "كل ما هو مُسند إليك — مفتوح، قيد التنفيذ، متأخر ومكتمل، في مكان واحد.")}</p>
+        <Button
+          className="shrink-0"
+          onClick={() => navigate(scope === "team"
+            ? `/tasks/new?from=manager${report !== "all" ? `&assignee=${report}` : ""}`
+            : view === "board" ? "/tasks/new?view=board" : "/tasks/new")}
+        >
+          <Plus className="size-4" />
+          {scope === "team" ? t("Assign task", "إسناد مهمة") : t("Add task", "إضافة مهمة")}
+        </Button>
       </div>
+
+      {/* whose tasks \u2014 only a manager sees the second option */}
+      {manages && (
+        <div className="mb-5 inline-flex rounded-xl border border-border p-0.5">
+          {([["mine", ClipboardList, t("My tasks", "مهامي"), myTasks(all).filter((x) => x.status !== "completed").length],
+             ["team", UsersRound, t("Team tasks", "مهام الفريق"), teamAll.filter((x) => x.status !== "completed").length]] as const).map(
+            ([id, Icon, text, n]) => (
+              <button
+                key={id}
+                onClick={() => setParams(id === "team" ? { scope: "team", tab } : { tab }, { replace: true })}
+                aria-pressed={scope === id}
+                className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  scope === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              >
+                <Icon className="size-4" />{text}
+                <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums",
+                  scope === id ? "bg-primary-foreground/20" : "bg-muted")}>{n}</span>
+              </button>
+            ))}
+        </div>
+      )}
+
+      {/* the reporting line, when looking at the team */}
+      {scope === "team" && (
+        <div className="mb-5 flex flex-wrap items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 pe-1 text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <UsersRound className="size-3.5" />{t("My team", "فريقي")}
+          </span>
+          <button
+            onClick={() => setQuery({ report: undefined })}
+            aria-pressed={report === "all"}
+            className={cn("rounded-full border px-2.5 py-1 text-[12px] transition-colors",
+              report === "all" ? "border-primary/40 bg-primary/12 font-medium text-primary"
+                               : "border-border text-muted-foreground hover:bg-muted/40")}
+          >
+            {t("Everyone", "الجميع")}
+          </button>
+          {team.map((m) => {
+            const late = overdueCount(m.id)
+            return (
+              <button
+                key={m.id}
+                onClick={() => setQuery({ report: m.id })}
+                aria-pressed={report === m.id}
+                className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition-colors",
+                  report === m.id ? "border-primary/40 bg-primary/12 font-medium text-primary"
+                                  : "border-border text-muted-foreground hover:bg-muted/40")}
+              >
+                <span className="flex size-5 items-center justify-center rounded-full bg-foreground/[0.06] text-[9.5px] font-semibold text-foreground/70">
+                  {m.initials}
+                </span>
+                {isAr ? m.nameAr : m.name}
+                {late > 0
+                  ? <span className="rounded-full bg-rose-500/15 px-1.5 text-[10.5px] font-semibold tabular-nums text-rose-500">{late}</span>
+                  : <span className="text-[10.5px] tabular-nums text-muted-foreground/70">{openCount(m.id)}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* stats */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -66,7 +190,7 @@ export default function MyTasksPage() {
 
       {/* toolbar: tabs + search */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex flex-wrap rounded-xl border border-border p-0.5">
+        <div className={cn("inline-flex flex-wrap rounded-xl border border-border p-0.5", view === "board" && "hidden")}>
           {TABS.map((tb) => (
             <button key={tb.id} onClick={() => setTab(tb.id)} aria-pressed={tab === tb.id}
               className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors", tab === tb.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
@@ -75,29 +199,187 @@ export default function MyTasksPage() {
             </button>
           ))}
         </div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search tasks…", "ابحث في المهام…")} className="w-56 ps-9" />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search tasks…", "ابحث في المهام…")} className="w-56 ps-9" />
+          </div>
+          {/* list / board switch */}
+          <div className="inline-flex rounded-xl border border-border p-0.5">
+            {([["list", Rows3, t("List", "قائمة")], ["board", LayoutGrid, t("Board", "لوحة")]] as const).map(
+              ([id, Icon, label]) => (
+                <button
+                  key={id} onClick={() => setView(id as View)} aria-pressed={view === id}
+                  className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                    view === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                >
+                  <Icon className="size-4" />{label}
+                </button>
+              ))}
+          </div>
         </div>
       </div>
 
+      {/* board */}
+      {view === "board" && (
+        <div className="grid gap-4 md:grid-cols-3">
+          {BOARD_COLUMNS.map((col) => {
+            const cards = boardTasks
+              .filter((x) => x.status === col.id)
+              .sort((a, b) => a.dueISO.localeCompare(b.dueISO))
+            return (
+              <div
+                key={col.id}
+                onDragOver={(e) => { e.preventDefault(); setOverCol(col.id) }}
+                onDragLeave={() => setOverCol((c) => (c === col.id ? null : c))}
+                onDrop={() => drop(col.id)}
+                className={cn(
+                  "rounded-2xl border p-2.5 transition-colors",
+                  overCol === col.id ? "border-primary/40 bg-primary/[0.04]" : "border-border/70 bg-muted/20",
+                )}
+              >
+                <div className="mb-2.5 flex items-center gap-2 px-1.5 pt-1">
+                  <span className={cn("size-2 rounded-full", col.dot)} />
+                  <span className="text-[13px] font-semibold">{isAr ? col.ar : col.label}</span>
+                  <span className="ms-auto rounded-full bg-muted px-2 text-[11px] font-medium tabular-nums text-muted-foreground">
+                    {cards.length}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {cards.map((task) => (
+                    <BoardCard
+                      key={task.id} task={task} isAr={isAr} t={t}
+                      showWho={scope === "team" && report === "all"}
+                      dragging={dragId === task.id}
+                      onDragStart={() => setDragId(task.id)}
+                      onDragEnd={() => { setDragId(null); setOverCol(null) }}
+                      onOpen={() => navigate(scope === "team" ? `/tasks/${task.id}?from=manager` : `/tasks/${task.id}`)}
+                    />
+                  ))}
+                  {cards.length === 0 && (
+                    <div className="rounded-xl border border-dashed border-border/70 py-8 text-center text-[12px] text-muted-foreground/70">
+                      {t("Drop a task here", "أفلت مهمة هنا")}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => navigate(scope === "team"
+                      ? `/tasks/new?status=${col.id}&from=manager${report !== "all" ? `&assignee=${report}` : ""}`
+                      : `/tasks/new?status=${col.id}&view=board`)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/70 py-2 text-[12px] font-medium text-muted-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    <Plus className="size-3.5" />
+                    {scope === "team" ? t("Assign task", "إسناد مهمة") : t("Add task", "إضافة مهمة")}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {view === "board" && (
+        <p className="mt-3 text-center text-[11.5px] text-muted-foreground/70">
+          {t("Drag a card between columns to change its status.", "اسحب البطاقة بين الأعمدة لتغيير حالتها.")}
+        </p>
+      )}
+
       {/* list */}
+      {view === "list" && (
       <Card className="overflow-hidden py-0">
         {filtered.map((task, i) => (
-          <TaskRow key={task.id} task={task} isAr={isAr} t={t} first={i === 0} onOpen={() => navigate(`/tasks/${task.id}`)} />
+          <TaskRow
+            key={task.id} task={task} isAr={isAr} t={t} first={i === 0}
+            showWho={scope === "team" && report === "all"}
+            onOpen={() => navigate(scope === "team" ? `/tasks/${task.id}?from=manager` : `/tasks/${task.id}`)}
+          />
         ))}
         {filtered.length === 0 && (
           <div className="py-14 text-center">
             <CheckCircle2 className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("Nothing here — you're all caught up.", "لا شيء هنا — أنجزت كل شيء.")}</p>
+            <Button variant="outline" className="mt-4" onClick={() => navigate("/tasks/new")}>
+              <Plus className="size-4" />{t("Add task", "إضافة مهمة")}
+            </Button>
           </div>
         )}
       </Card>
+      )}
     </main>
   )
 }
 
-function TaskRow({ task, isAr, t, first, onOpen }: { task: Task; isAr: boolean; t: (en: string, ar: string) => string; first: boolean; onOpen: () => void }) {
+/** A single card on the board. Draggable; the whole card opens the task. */
+function BoardCard({ task, isAr, t, showWho, dragging, onDragStart, onDragEnd, onOpen }: {
+  task: Task; isAr: boolean; t: (en: string, ar: string) => string; showWho?: boolean
+  dragging: boolean; onDragStart: () => void; onDragEnd: () => void; onOpen: () => void
+}) {
+  const overdue = isOverdue(task)
+  const done = task.status === "completed"
+  const checklist = task.checklist ?? []
+  const ticked = checklist.filter((c) => c.done).length
+  const comments = commentCount(task.id)
+  return (
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen() } }}
+      aria-label={isAr ? task.titleAr : task.title}
+      className={cn(
+        "group cursor-pointer rounded-xl border border-border/70 bg-card p-3 shadow-sm outline-none transition-all",
+        "hover:-translate-y-0.5 hover:border-primary/30 focus-visible:border-primary/40",
+        dragging && "opacity-40",
+        overdue && !done && "border-rose-500/35",
+      )}
+    >
+      <div className="flex items-start gap-2">
+        <GripVertical className="mt-0.5 size-3.5 shrink-0 cursor-grab text-muted-foreground/30" />
+        <span className={cn("min-w-0 flex-1 text-[12.5px] font-medium leading-snug",
+          done && "text-muted-foreground line-through")}>
+          {isAr ? task.titleAr : task.title}
+        </span>
+        <PriorityDot priority={task.priority} />
+      </div>
+
+      <div className="mt-2 ps-5 text-[11px] text-muted-foreground/70">
+        {showWho && task.assignee ? `${isAr ? task.assigneeAr : task.assignee} \u00b7 ` : ""}
+        {isAr ? task.projectAr : task.project}
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 ps-5 text-[11px]">
+        <span className={cn("inline-flex items-center gap-1", overdue && !done ? "font-semibold text-rose-500" : "text-muted-foreground/70")}>
+          <CalendarClock className="size-3" />{isAr ? task.dueAr : task.due}
+        </span>
+        {checklist.length > 0 && (
+          <span className="inline-flex items-center gap-1 text-muted-foreground/70">
+            <CheckCircle2 className="size-3" />{ticked}/{checklist.length}
+          </span>
+        )}
+        {comments > 0 && (
+          <span className="inline-flex items-center gap-1 text-muted-foreground/70">
+            <MessageSquare className="size-3" />{comments}
+          </span>
+        )}
+        {overdue && !done && (
+          <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-[9.5px] text-rose-500">
+            <AlertTriangle className="me-1 size-2.5" />{t("Overdue", "متأخرة")}
+          </Badge>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function PriorityDot({ priority }: { priority: Task["priority"] }) {
+  const cls = priority === "high" ? "bg-rose-400" : priority === "medium" ? "bg-amber-400" : "bg-muted-foreground/40"
+  return <span className={cn("mt-1 size-2 shrink-0 rounded-full", cls)} />
+}
+
+function TaskRow({ task, isAr, t, first, showWho, onOpen }: { task: Task; isAr: boolean; t: (en: string, ar: string) => string; first: boolean; showWho?: boolean; onOpen: () => void }) {
   const done = task.status === "completed"
   const overdue = isOverdue(task)
   const stop = (e: React.MouseEvent) => e.stopPropagation()
@@ -128,7 +410,10 @@ function TaskRow({ task, isAr, t, first, onOpen }: { task: Task; isAr: boolean; 
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground/70">
           <span>{isAr ? task.projectAr : task.project}</span>
           <span className="inline-flex items-center gap-1"><CalendarClock className="size-3" /><span className={cn(overdue && "font-semibold text-rose-500")}>{isAr ? task.dueAr : task.due}</span></span>
-          <span className="inline-flex items-center gap-1"><UserCircle2 className="size-3" />{isAr ? task.assignedByAr : task.assignedBy}</span>
+          <span className="inline-flex items-center gap-1">
+            <UserCircle2 className="size-3" />
+            {showWho && task.assignee ? (isAr ? task.assigneeAr : task.assignee) : (isAr ? task.assignedByAr : task.assignedBy)}
+          </span>
         </div>
       </div>
 

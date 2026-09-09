@@ -26,7 +26,15 @@ export type MenuItem = {
   available: boolean
   /** Hot drinks are ordered with a sugar level. */
   takesSugar?: boolean
+  /** Where it can be ordered to. "all" is the common case; a kitchen that
+   *  cannot plate a hot meal in a remote terminal is why the others exist. */
+  servedScope?: "all" | "sites" | "places"
+  /** Sites that serve it, when servedScope is "sites". */
+  servedSites?: string[]
+  /** Individual places that serve it, when servedScope is "places". */
+  servedPlaces?: string[]
 }
+
 
 /** How sweet — the single most-asked question for tea and coffee. */
 export type SugarLevel = "none" | "light" | "medium" | "sweet"
@@ -41,7 +49,7 @@ export const sugarLabel = (id: SugarLevel, isAr: boolean) => {
   return x ? (isAr ? x.labelAr : x.label) : id
 }
 
-export const menu: MenuItem[] = [
+export let menu: MenuItem[] = [
   // hot drinks
   { id: "m-arabic-coffee", group: "hot", name: "Arabic coffee (Gahwa)", nameAr: "قهوة عربية", note: "Served with dates", noteAr: "تُقدَّم مع التمر", popular: true, available: true },
   { id: "m-tea", group: "hot", name: "Tea", nameAr: "شاي", popular: true, available: true, takesSugar: true },
@@ -75,11 +83,11 @@ export const menu: MenuItem[] = [
   { id: "m-cake", group: "snacks", name: "Cake slice", nameAr: "قطعة كيك", available: true },
 
   // meals
-  { id: "m-sandwich", group: "meals", name: "Sandwich", nameAr: "ساندويتش", note: "Chicken, cheese or vegetable", noteAr: "دجاج، جبن أو خضار", popular: true, available: true },
+  { id: "m-sandwich", group: "meals", servedScope: "sites", servedSites: ["Headquarters", "Terminal 1", "Terminal 2"], name: "Sandwich", nameAr: "ساندويتش", note: "Chicken, cheese or vegetable", noteAr: "دجاج، جبن أو خضار", popular: true, available: true },
   { id: "m-club", group: "meals", name: "Club sandwich", nameAr: "كلوب ساندويتش", available: true },
-  { id: "m-salad", group: "meals", name: "Salad", nameAr: "سلطة", note: "Caesar or garden", noteAr: "سيزر أو خضراء", available: true },
+  { id: "m-salad", group: "meals", servedScope: "sites", servedSites: ["Headquarters"], name: "Salad", nameAr: "سلطة", note: "Caesar or garden", noteAr: "سيزر أو خضراء", available: true },
   { id: "m-lunch", group: "meals", name: "Daily lunch", nameAr: "غداء اليوم", note: "Today: chicken kabsa", noteAr: "اليوم: كبسة دجاج", popular: true, available: true },
-  { id: "m-shawarma", group: "meals", name: "Shawarma plate", nameAr: "صحن شاورما", available: true },
+  { id: "m-shawarma", group: "meals", servedScope: "sites", servedSites: ["Headquarters", "Terminal 1", "Terminal 2"], name: "Shawarma plate", nameAr: "صحن شاورما", available: true },
   { id: "m-soup", group: "meals", name: "Soup of the day", nameAr: "شوربة اليوم", note: "Today: lentil", noteAr: "اليوم: عدس", available: true },
   { id: "m-breakfast", group: "meals", name: "Breakfast box", nameAr: "علبة فطور", note: "Foul, eggs, bread", noteAr: "فول، بيض، خبز", available: false },
 
@@ -99,7 +107,7 @@ export type DeliveryLocation = {
   active: boolean
 }
 
-export const locations: DeliveryLocation[] = [
+export let locations: DeliveryLocation[] = [
   // headquarters — meeting rooms
   { id: "loc-hq-boardroom", name: "HQ · Boardroom (L12)", nameAr: "المقر · قاعة المجلس (ط12)", site: "Headquarters", siteAr: "المقر الرئيسي", active: true },
   { id: "loc-hq-majlis", name: "HQ · Al Majlis (L12)", nameAr: "المقر · المجلس (ط12)", site: "Headquarters", siteAr: "المقر الرئيسي", active: true },
@@ -261,6 +269,52 @@ const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
 
+// ── the menu and the places, as configuration ────────────────────────────────
+/** Both lists are administered under Configuration → Cafeteria menu & places.
+ *  They are exported as live bindings, so every screen picks up an edit. */
+export function useMenu(): MenuItem[] {
+  return React.useSyncExternalStore(subscribe, () => menu)
+}
+export function useLocations(): DeliveryLocation[] {
+  return React.useSyncExternalStore(subscribe, () => locations)
+}
+export const getMenuItem = (id: string) => menu.find((m) => m.id === id)
+export const getLocation = (id: string) => locations.find((l) => l.id === id)
+
+export const newMenuItemId = (name: string) =>
+  `m-${name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || Date.now().toString(36)}`
+export const newLocationId = (name: string) =>
+  `loc-${name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || Date.now().toString(36)}`
+
+export function addMenuItem(item: MenuItem) { menu = [...menu, item]; emit() }
+export function updateMenuItem(id: string, patch: Partial<MenuItem>) {
+  menu = menu.map((m) => (m.id === id ? { ...m, ...patch } : m)); emit()
+}
+export function removeMenuItem(id: string) { menu = menu.filter((m) => m.id !== id); emit() }
+
+export function addLocation(loc: DeliveryLocation) { locations = [...locations, loc]; emit() }
+export function updateLocation(id: string, patch: Partial<DeliveryLocation>) {
+  locations = locations.map((l) => (l.id === id ? { ...l, ...patch } : l)); emit()
+}
+export function removeLocation(id: string) { locations = locations.filter((l) => l.id !== id); emit() }
+
+/** The sites locations are grouped under — itself a small master list. */
+export const sites = () => [...new Set(locations.map((l) => l.site))]
+
+/** Is this item orderable to that place? An item with no scope is served
+ *  everywhere, which keeps the seeded data and any import valid by default. */
+export function servesAt(item: MenuItem, location: DeliveryLocation | undefined): boolean {
+  if (!location) return true
+  if (!item.servedScope || item.servedScope === "all") return true
+  if (item.servedScope === "sites") return (item.servedSites ?? []).includes(location.site)
+  return (item.servedPlaces ?? []).includes(location.id)
+}
+
+/** How many of these items reach that place — for the places list. */
+export const itemsServedAt = (location: DeliveryLocation) =>
+  menu.filter((m) => m.available && servesAt(m, location))
+
+
 export function useOrders(): CafeteriaOrder[] {
   return React.useSyncExternalStore(subscribe, () => orders)
 }
@@ -388,16 +442,32 @@ export type Prefs = {
   sugar: SugarLevel
   /** Pre-selected delivery point. */
   locationId: string
-  /** The saved "usual" — reorder it in one tap. */
-  usual: OrderLine[] | null
-  usualNote?: string
+  /** Saved orders — reorder one in a tap. Up to MAX_USUALS of them. */
+  usuals: SavedUsual[]
 }
+
+/** A basket someone kept, under a name they chose. */
+export type SavedUsual = {
+  id: string
+  name: string
+  lines: OrderLine[]
+  note?: string
+}
+
+/** Four is enough to cover a morning drink, a desk snack and two rounds for
+ *  the room, without turning the top of the page into a list. */
+export const MAX_USUALS = 4
 
 let prefs: Prefs = {
   sugar: "light",
   locationId: "loc-hq-14",
-  usual: [{ itemId: "m-karak", qty: 1, sugar: "light" }, { itemId: "m-dates", qty: 1 }],
-  usualNote: undefined,
+  usuals: [
+    { id: "u1", name: "Morning karak",
+      lines: [{ itemId: "m-karak", qty: 1, sugar: "light" }, { itemId: "m-dates", qty: 1 }] },
+    { id: "u2", name: "Team round · 6",
+      lines: [{ itemId: "m-arabic-coffee", qty: 3 }, { itemId: "m-tea", qty: 3, sugar: "medium" }, { itemId: "m-dates", qty: 2 }],
+      note: "Boardroom — leave on the side table" },
+  ],
 }
 
 export const usePrefs = () => React.useSyncExternalStore(subscribe, () => prefs)
@@ -408,9 +478,30 @@ export function setPrefs(patch: Partial<Prefs>) {
   emit()
   logCafeteria("preferences updated", Object.keys(patch).join(", "))
 }
-/** Save the current basket as the usual order. */
-export function saveUsual(lines: OrderLine[], note?: string) {
-  prefs = { ...prefs, usual: lines.length ? lines : null, usualNote: note }
+export const newUsualId = () => `u-${Date.now().toString(36)}`
+
+/** Keep the current basket under a name. Returns false when the shelf is full. */
+export function saveUsual(name: string, lines: OrderLine[], note?: string): boolean {
+  if (!lines.length || prefs.usuals.length >= MAX_USUALS) return false
+  prefs = { ...prefs, usuals: [...prefs.usuals, { id: newUsualId(), name, lines, note }] }
   emit()
-  logCafeteria(lines.length ? "usual order saved" : "usual order cleared", `${lines.length} item(s)`)
+  logCafeteria("usual saved", `${name} · ${lines.length} item(s)`)
+  return true
+}
+/** Overwrite one of the saved orders with what is in the basket now. */
+export function replaceUsual(id: string, lines: OrderLine[], note?: string) {
+  prefs = { ...prefs, usuals: prefs.usuals.map((u) => (u.id === id ? { ...u, lines, note } : u)) }
+  emit()
+  logCafeteria("usual replaced", `${prefs.usuals.find((u) => u.id === id)?.name ?? id}`)
+}
+export function renameUsual(id: string, name: string) {
+  prefs = { ...prefs, usuals: prefs.usuals.map((u) => (u.id === id ? { ...u, name } : u)) }
+  emit()
+  logCafeteria("usual renamed", name)
+}
+export function removeUsual(id: string) {
+  const gone = prefs.usuals.find((u) => u.id === id)
+  prefs = { ...prefs, usuals: prefs.usuals.filter((u) => u.id !== id) }
+  emit()
+  logCafeteria("usual removed", gone?.name ?? id)
 }

@@ -226,6 +226,9 @@ export default function BenefitsPage() {
           <section>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-heading text-[16px] font-semibold">{t("Partner perks & discounts", "عروض وخصومات الشركاء")}</h2>
+              <Button variant="outline" size="sm" className="ms-2" onClick={() => navigate("/benefits/partners")}>
+                {t("All partner offers", "كل عروض الشركاء")}
+              </Button>
               <div className="relative w-[220px]">
                 <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input value={perkQuery} onChange={(e) => setPerkQuery(e.target.value)}

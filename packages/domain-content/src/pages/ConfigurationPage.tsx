@@ -3,10 +3,13 @@ import { Badge, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  ArrowRight, Bell, Building2, Coffee, FolderTree, GitBranch, ShieldCheck, Tags,
+  ArrowRight, Bell, Building2, CalendarDays, Coffee, FolderTree, GitBranch,
+  ShieldCheck, Tags,
 } from "lucide-react"
 
 import { useRules } from "../data/rules"
+import { daysInYear, holidayYears, useHolidays } from "../data/holidays"
+import { useHolidayTypes } from "../data/master-data"
 
 /** Configuration hub — where an administrator sets up how the portal behaves.
  *  The Approval Rule Engine is the live area; the rest are placeholders so the
@@ -17,6 +20,11 @@ export default function ConfigurationPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const rules = useRules().filter((r) => !r.archived)
   const active = rules.filter((r) => r.active).length
+  const holidays = useHolidays()
+  const years = holidayYears()
+  const thisYear = years.includes(2026) ? 2026 : years[0]
+  const thisYearCount = holidays.filter((h) => h.year === thisYear).length
+  const types = useHolidayTypes()
 
   const areas: {
     to?: string
@@ -35,22 +43,35 @@ export default function ConfigurationPage() {
       ready: true,
     },
     {
+      to: "/config/holidays", icon: CalendarDays,
+      label: "Holiday calendar", labelAr: "تقويم الإجازات",
+      desc: "The non-working days for each year — leave and attendance read from it.",
+      descAr: "أيام العطل لكل سنة — تعتمد عليها الإجازات والحضور.",
+      meta: `${thisYearCount} holidays · ${daysInYear(thisYear)} days off · ${thisYear}`,
+      metaAr: `${thisYearCount} إجازة · ${daysInYear(thisYear)} يوم · ${thisYear}`,
+      ready: true,
+    },
+    {
       icon: Building2, label: "Organisation", labelAr: "الهيكل التنظيمي",
       desc: "Departments, sectors and sites that drive folders and audiences.",
       descAr: "الإدارات والقطاعات والمواقع التي تُبنى عليها المجلدات والجماهير.",
       ready: false,
     },
     {
-      icon: Tags, label: "Master data", labelAr: "البيانات الرئيسية",
+      to: "/config/master-data", icon: Tags,
+      label: "Master data", labelAr: "البيانات الرئيسية",
       desc: "Categories, tags, priorities and other configurable lists.",
       descAr: "التصنيفات والوسوم والأولويات والقوائم القابلة للضبط.",
-      ready: false,
+      meta: `${types.length} holiday types · ${types.filter((x) => x.active).length} active`,
+      metaAr: `${types.length} أنواع إجازات · ${types.filter((x) => x.active).length} مفعّلة`,
+      ready: true,
     },
     {
-      icon: Coffee, label: "Cafeteria menu & places", labelAr: "قائمة الكافتيريا والمواقع",
-      desc: "Menu items and delivery locations — loaded from the client's list.",
-      descAr: "أصناف القائمة ومواقع التوصيل — تُحمَّل من قائمة العميل.",
-      ready: false,
+      to: "/config/cafeteria", icon: Coffee,
+      label: "Cafeteria menu & places", labelAr: "قائمة الكافتيريا والمواقع",
+      desc: "What can be ordered, and where it can be delivered.",
+      descAr: "ما يمكن طلبه، وأين يمكن توصيله.",
+      ready: true,
     },
     {
       icon: Bell, label: "Notifications", labelAr: "الإشعارات",
@@ -117,8 +138,8 @@ export default function ConfigurationPage() {
 
       <Card className="ring-1 ring-foreground/10">
         <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
-          {t("Cafeteria menu items and delivery places will be loaded from the list ALTANFEETHI provides; the tea-boy fulfilment screen is already live under Cafeteria → Service queue.",
-             "سيتم تحميل أصناف قائمة الكافتيريا ومواقع التوصيل من القائمة التي يوفّرها التنفيذي؛ شاشة خدمة الضيافة متاحة بالفعل ضمن الكافتيريا ← قائمة الخدمة.")}
+          {t("The cafeteria menu and places are seeded with a working list and can be edited here; the client's own list will replace it. The tea-boy fulfilment screen is live under Cafeteria → Service queue.",
+             "قائمة الكافتيريا والمواقع محمّلة بقائمة أولية وقابلة للتعديل هنا؛ وستحل محلها قائمة العميل. شاشة خدمة الضيافة متاحة ضمن الكافتيريا ← قائمة الخدمة.")}
         </div>
       </Card>
     </div>

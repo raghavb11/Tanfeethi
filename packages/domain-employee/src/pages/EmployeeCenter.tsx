@@ -5,13 +5,14 @@ import { Avatar, AvatarFallback, Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  ArrowRight, BadgeCheck, Banknote, Bell, Building2, CalendarCheck, CalendarClock, CalendarDays, Car, Check,
-  CheckCircle2, ClipboardList, Clock, Coffee, FileCheck2, FileText, Gift, GraduationCap, Heart, Home,
-  IdCard, LogOut, MapPin, Phone, Plane, Plus, QrCode, Receipt, Share2, Shield, Sparkles, TrendingUp, UserCircle2, Users, Wallet, X,
+  ArrowRight, BadgeCheck, Banknote, Bell, Building2, CalendarCheck, CalendarClock, CalendarDays, Car, Check, CheckCircle2, ClipboardList, Clock, FileCheck2, FileText, Gift, GraduationCap, Heart, Home, IdCard, LogOut, MapPin, Phone, Plane, Plus, QrCode, Receipt, Share2, Shield, Sparkles, TrendingUp, UserCircle2, Users, Wallet, X,
 } from "lucide-react"
 
 import { allowances, approvals, attendanceSummary, businessCard, emp, hrNotifications, leave, myRequests, payslip, today } from "../data/mock/center"
+import { ageOf, RELATION, STATUS, useDependants } from "../data/mock/dependants"
 import { DigitalCard } from "../components/DigitalCard"
+import { ClockAction } from "../components/ClockAction"
+import { arNum, dayStatus, hm, hoursWord, remainingMinutes, useClock, workedMinutes } from "../data/mock/clock"
 
 // ─── shared bits ─────────────────────────────────────────────────────────────
 function CardHead({ icon: Icon, title, desc, action }: { icon: React.ComponentType<{ className?: string }>; title: string; desc?: string; action?: React.ReactNode }) {
@@ -43,11 +44,16 @@ export default function EmployeeCenter() {
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
+  const dependants = useDependants()
 
-  const workedMin = today.workedMinutes
-  const targetMin = today.targetHours * 60
-  const remainingMin = Math.max(0, targetMin - workedMin)
-  const fmtHM = (m: number) => (isAr ? `${Math.floor(m / 60)}س ${String(m % 60).padStart(2, "0")}د` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m`)
+  // today reads the clock store, so the card shows an unstarted day honestly
+  const clock = useClock()
+  const status = dayStatus(clock)
+  const started = status !== "not-started"
+  const workedMin = workedMinutes(clock)
+  const targetMin = clock.targetHours * 60
+  const remainingMin = remainingMinutes(clock)
+  const fmtHM = (m: number) => hm(m, isAr)
   const dayProgress = Math.min(100, Math.round((workedMin / targetMin) * 100))
 
   const statusMeta: Record<string, { label: string; ar: string; cls: string; dot: string }> = {
@@ -56,11 +62,14 @@ export default function EmployeeCenter() {
     leave: { label: "On leave", ar: "في إجازة", cls: "border-amber-500/35 bg-amber-500/10 text-amber-500", dot: "bg-amber-500" },
     absent: { label: "Absent", ar: "غائب", cls: "border-rose-500/35 bg-rose-500/10 text-rose-500", dot: "bg-rose-500" },
   }
-  const st = statusMeta[today.status]
+  const st = started
+    ? statusMeta[today.status]
+    : { label: "Not clocked in", ar: "لم يُسجّل الحضور",
+        cls: "border-amber-500/35 bg-amber-500/10 text-amber-500", dot: "bg-amber-500" }
 
   // `to` is set only where the destination actually exists
   const quickActions: { id: string; label: string; ar: string; icon: React.ComponentType<{ className?: string }>; to?: string }[] = [
-    { id: "clock", label: today.checkOut ? "Clock in" : "Clock out", ar: today.checkOut ? "تسجيل حضور" : "تسجيل انصراف", icon: LogOut, to: "/attendance" },
+    { id: "clock", label: status === "working" ? "Clock out" : "Clock in", ar: status === "working" ? "تسجيل انصراف" : "تسجيل حضور", icon: LogOut, to: "/attendance" },
     { id: "leave", label: "Request leave", ar: "طلب إجازة", icon: Plane, to: "/leave/request" },
     { id: "expense", label: "Submit expense", ar: "تقديم مصروف", icon: Receipt, to: "/services" },
     { id: "payslip", label: "View payslip", ar: "عرض القسيمة", icon: Wallet, to: "/payslip" },
@@ -126,20 +135,19 @@ export default function EmployeeCenter() {
           <CardHead icon={CalendarCheck} title={t("Today at work", "اليوم في العمل")} desc={`${isAr ? today.dayNameAr : today.dayName} · ${isAr ? today.dateLabelAr : today.dateLabel}`}
             action={<span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold", st.cls)}><span className={cn("size-1.5 rounded-full", st.dot)} />{isAr ? st.ar : st.label}</span>} />
           <div className="grid gap-4 p-5 sm:grid-cols-4">
-            <TodayTile icon={CheckCircle2} label={t("Status", "الحالة")} value={isAr ? st.ar : st.label} sub={`${isAr ? today.locationAr : today.location}`} tone="emerald" />
-            <TodayTile icon={Clock} label={t("Check-in", "الحضور")} value={today.checkIn} sub={t("On time", "في الوقت")} tone="primary" />
-            <TodayTile icon={LogOut} label={t("Check-out", "الانصراف")} value={today.checkOut ?? "—"} sub={today.checkOut ? "" : t("Still working", "ما زلت أعمل")} tone="muted" />
-            <TodayTile icon={CalendarClock} label={t("Remaining", "المتبقي")} value={fmtHM(remainingMin)} sub={`${t("of", "من")} ${today.targetHours}h`} tone="amber" />
+            <TodayTile icon={CheckCircle2} label={t("Status", "الحالة")} value={isAr ? st.ar : st.label} sub={`${isAr ? clock.locationAr : clock.location}`} tone={started ? "emerald" : "amber"} />
+            <TodayTile icon={Clock} label={t("Check-in", "الحضور")} value={clock.checkIn ?? "—"} sub={started ? t("On time", "في الوقت") : t("Not yet", "لم يتم بعد")} tone={started ? "primary" : "muted"} />
+            <TodayTile icon={LogOut} label={t("Check-out", "الانصراف")} value={clock.checkOut ?? "—"} sub={clock.checkOut ? "" : started ? t("Still working", "ما زلت أعمل") : ""} tone="muted" />
+            <TodayTile icon={CalendarClock} label={t("Remaining", "المتبقي")} value={fmtHM(remainingMin)} sub={`${t("of", "من")} ${hoursWord(clock.targetHours, isAr)}`} tone="amber" />
           </div>
           <div className="px-5 pb-5">
             <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground/70">
               <span>{t("Today's progress", "تقدّم اليوم")}</span>
-              <span className="tabular-nums">{fmtHM(workedMin)} / {today.targetHours}h · {dayProgress}%</span>
+              <span className="tabular-nums">{fmtHM(workedMin)} / {hoursWord(clock.targetHours, isAr)} · {isAr ? arNum(dayProgress) : dayProgress}%</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted/50"><motion.div initial={{ width: 0 }} animate={{ width: `${dayProgress}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary" /></div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm" className="gap-1.5"><LogOut className="size-3.5" />{t("Clock out", "تسجيل انصراف")}</Button>
-              <Button size="sm" variant="outline" className="gap-1.5"><Coffee className="size-3.5" />{t("Take break", "استراحة")}</Button>
+            <div className="mt-4">
+              <ClockAction />
             </div>
           </div>
         </Card>
@@ -270,6 +278,53 @@ export default function EmployeeCenter() {
 
         {/* right column */}
         <div className="space-y-6 lg:col-span-4">
+          {/* my family */}
+          <Card className="ring-1 ring-foreground/10">
+            <CardHead
+              icon={Users} title={t("My family", "عائلتي")}
+              desc={t("Dependants on your HR record", "المعالون في ملفك")}
+              action={
+                <Button variant="outline" size="sm" onClick={() => navigate("/employee/dependants/new")}>
+                  <Plus className="size-3.5" />{t("Add", "إضافة")}
+                </Button>
+              }
+            />
+            <div className="p-4">
+              <div className="space-y-2">
+                {dependants.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => navigate(`/employee/dependants/${d.id}`)}
+                    className="flex w-full items-center gap-2.5 rounded-xl border border-border/60 px-3 py-2 text-start transition-colors hover:border-primary/30 hover:bg-muted/30"
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[11px] font-bold text-primary">
+                      {d.initials}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[12.5px] font-medium">{isAr ? d.nameAr : d.name}</span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {isAr ? RELATION[d.relation].ar : RELATION[d.relation].en} · {ageOf(d)}
+                      </span>
+                    </span>
+                    {d.status !== "verified" && (
+                      <Badge variant="outline" className={cn("shrink-0 text-[9.5px]", STATUS[d.status].chip)}>
+                        {isAr ? STATUS[d.status].ar : STATUS[d.status].en}
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+                {dependants.length === 0 && (
+                  <p className="py-6 text-center text-[12.5px] text-muted-foreground">
+                    {t("No dependants registered yet.", "لا يوجد معالون مسجّلون بعد.")}
+                  </p>
+                )}
+              </div>
+              <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => navigate("/employee/dependants")}>
+                {t("Manage family", "إدارة العائلة")}
+              </Button>
+            </div>
+          </Card>
+
           {/* 19 · digital business card */}
           <Card className="overflow-hidden ring-1 ring-foreground/10">
             <CardHead icon={IdCard} title={t("Digital business card", "بطاقة العمل الرقمية")} desc={t("Show it to identify yourself, or share it", "اعرضها للتعريف بنفسك أو شاركها")}

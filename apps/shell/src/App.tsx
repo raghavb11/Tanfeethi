@@ -1,6 +1,6 @@
 import * as React from "react"
 import { lazy } from "react"
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes, Navigate } from "react-router-dom"
 
 import { AppShell } from "@/layouts/AppShell"
 
@@ -19,6 +19,18 @@ const MyTasksPage = lazy(() =>
 )
 const TaskDetailPage = lazy(() =>
   import("@reach/domain-work").then((m) => ({ default: m.TaskDetailPage })),
+)
+const TaskEditorPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.TaskEditorPage })),
+)
+const ProjectsPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.ProjectsPage })),
+)
+const ProjectEditorPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.ProjectEditorPage })),
+)
+const ProjectDetailPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.ProjectDetailPage })),
 )
 const EmployeePage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.EmployeePage })),
@@ -41,6 +53,18 @@ const DirectoryPage = lazy(() =>
 const BenefitsPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.BenefitsPage })),
 )
+const PartnerOffersPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerOffersPage })),
+)
+const PartnerOfferPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerOfferPage })),
+)
+const DependantsPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.DependantsPage })),
+)
+const DependantEditorPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.DependantEditorPage })),
+)
 const PayslipPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.PayslipPage })),
 )
@@ -49,6 +73,9 @@ const BusinessCardPage = lazy(() =>
 )
 const ManagerDashboardPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.ManagerDashboardPage })),
+)
+const ApprovalDetailPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.ApprovalDetailPage })),
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const ServicesPage = lazy(() =>
@@ -112,6 +139,24 @@ const AuditLogPage = lazy(() => import("@reach/domain-content").then((m) => ({ d
 const ConfigurationPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.ConfigurationPage })))
 const RuleEngineListPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.RuleEngineListPage })))
 const RuleEditorPage = lazy(() => import("@reach/domain-content").then((m) => ({ default: m.RuleEditorPage })))
+const HolidayCalendarPage = lazy(() =>
+  import("@reach/domain-content").then((m) => ({ default: m.HolidayCalendarPage })),
+)
+const HolidayEditorPage = lazy(() =>
+  import("@reach/domain-content").then((m) => ({ default: m.HolidayEditorPage })),
+)
+const MasterDataPage = lazy(() =>
+  import("@reach/domain-content").then((m) => ({ default: m.MasterDataPage })),
+)
+const MasterRowEditorPage = lazy(() =>
+  import("@reach/domain-content").then((m) => ({ default: m.MasterRowEditorPage })),
+)
+const CafeteriaConfigPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.CafeteriaConfigPage })),
+)
+const CafeteriaItemEditorPage = lazy(() =>
+  import("@reach/domain-services").then((m) => ({ default: m.CafeteriaItemEditorPage })),
+)
 const PreviewHubPage = lazy(() =>
   import("@reach/domain-preview").then((m) => ({ default: m.PreviewHubPage })),
 )
@@ -136,16 +181,29 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="work" element={<WorkPage />} />
         <Route path="tasks" element={<MyTasksPage />} />
+        <Route path="tasks/new" element={<TaskEditorPage />} />
         <Route path="tasks/:id" element={<TaskDetailPage />} />
         <Route path="employee" element={<EmployeePage />} />
         <Route path="employee/card" element={<BusinessCardPage />} />
+        <Route path="employee/dependants" element={<DependantsPage />} />
+        <Route path="employee/dependants/new" element={<DependantEditorPage />} />
+        <Route path="employee/dependants/:id" element={<DependantEditorPage />} />
         <Route path="manager" element={<ManagerDashboardPage />} />
+        {/* team tasks merged into /tasks — keep old links working */}
+        <Route path="manager/tasks" element={<Navigate to="/tasks?scope=team" replace />} />
+        <Route path="projects" element={<ProjectsPage />} />
+        <Route path="projects/new" element={<ProjectEditorPage />} />
+        <Route path="projects/:id" element={<ProjectDetailPage />} />
+        <Route path="projects/:id/edit" element={<ProjectEditorPage />} />
+        <Route path="manager/approvals/:id" element={<ApprovalDetailPage />} />
         <Route path="leave" element={<LeaveBalancesPage />} />
         <Route path="leave/request" element={<LeaveRequestPage />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="org-chart" element={<OrgChartPage />} />
         <Route path="directory" element={<DirectoryPage />} />
         <Route path="benefits" element={<BenefitsPage />} />
+        <Route path="benefits/partners" element={<PartnerOffersPage />} />
+        <Route path="benefits/partners/:id" element={<PartnerOfferPage />} />
         <Route path="payslip" element={<PayslipPage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="cafeteria" element={<CafeteriaPage />} />
@@ -178,6 +236,17 @@ export default function App() {
         <Route path="config" element={<ConfigurationPage />} />
         <Route path="config/rules" element={<RuleEngineListPage />} />
         <Route path="config/rules/:id" element={<RuleEditorPage />} />
+        <Route path="config/holidays" element={<HolidayCalendarPage />} />
+        <Route path="config/holidays/new" element={<HolidayEditorPage />} />
+        <Route path="config/holidays/:id" element={<HolidayEditorPage />} />
+        <Route path="config/master-data" element={<MasterDataPage />} />
+        <Route path="config/master-data/:list/new" element={<MasterRowEditorPage />} />
+        <Route path="config/master-data/:list/:id" element={<MasterRowEditorPage />} />
+        <Route path="config/cafeteria" element={<CafeteriaConfigPage />} />
+        <Route path="config/cafeteria/items/new" element={<CafeteriaItemEditorPage kind="item" />} />
+        <Route path="config/cafeteria/items/:id" element={<CafeteriaItemEditorPage kind="item" />} />
+        <Route path="config/cafeteria/places/new" element={<CafeteriaItemEditorPage kind="place" />} />
+        <Route path="config/cafeteria/places/:id" element={<CafeteriaItemEditorPage kind="place" />} />
         <Route path="announcements" element={<AnnouncementsPage />} />
         <Route path="announcements/new" element={<AnnouncementEditorPage />} />
         <Route path="announcements/edit/:id" element={<AnnouncementEditorPage />} />

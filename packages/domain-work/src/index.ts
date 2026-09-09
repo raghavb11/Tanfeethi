@@ -1,3 +1,7 @@
 export { default as WorkPage } from "./pages/WorkHub"
 export { default as MyTasksPage } from "./pages/MyTasksPage"
 export { default as TaskDetailPage } from "./pages/TaskDetailPage"
+export { default as TaskEditorPage } from "./pages/TaskEditorPage"
+export { default as ProjectsPage } from "./pages/ProjectsPage"
+export { default as ProjectEditorPage } from "./pages/ProjectEditorPage"
+export { default as ProjectDetailPage } from "./pages/ProjectDetailPage"
