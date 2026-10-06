@@ -9,7 +9,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@reach/shared-ui"
-import { cn } from "@reach/shared-core"
+import { cn, formatItemCount } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { KanbanBoard } from "../components/KanbanBoard"
 import {
@@ -422,8 +422,8 @@ function TodayFocusHero({
             </h2>
             <p className="mt-1 text-[12.5px] text-white/70">
               {isAr
-                ? `${focusSummary.tasks.count + focusSummary.emails.count + focusSummary.projectsAtRisk.count} عنصر تحتاج إجراء · ${focusSummary.meetings.count} اجتماعات`
-                : `${focusSummary.tasks.count + focusSummary.emails.count + focusSummary.projectsAtRisk.count} items need action · ${focusSummary.meetings.count} meetings ahead`}
+                ? `${formatItemCount(focusSummary.tasks.count + focusSummary.emails.count + focusSummary.projectsAtRisk.count, true)} تحتاج إجراء · ${focusSummary.meetings.count} اجتماعات`
+                : `${formatItemCount(focusSummary.tasks.count + focusSummary.emails.count + focusSummary.projectsAtRisk.count, false)} ${focusSummary.tasks.count + focusSummary.emails.count + focusSummary.projectsAtRisk.count === 1 ? "needs" : "need"} action · ${focusSummary.meetings.count} meetings ahead`}
             </p>
           </div>
         </div>
@@ -494,7 +494,7 @@ function TodayFocusHero({
                         </span>
                         <span>{isAr ? tile.labelAr : tile.label}</span>
                         <span className="text-white/55 font-normal">
-                          · {focusDetails[openKey].length} {isAr ? "عنصر" : "items"}
+                          · {formatItemCount(focusDetails[openKey].length, isAr)}
                         </span>
                       </div>
                     )

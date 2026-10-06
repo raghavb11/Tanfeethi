@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
+import { formatItemCount } from "@reach/shared-core"
 import {
   CalendarDays,
   CheckCircle2,
@@ -73,7 +74,7 @@ export default function CmsAdminPage() {
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><m.icon className="size-5" /></div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{isAr ? m.nameAr : m.name}</div>
-                  <div className="text-xs text-muted-foreground">{m.count.toLocaleString()} {t("items", "عنصر")}</div>
+                  <div className="text-xs text-muted-foreground">{formatItemCount(m.count, isAr)}</div>
                 </div>
                 {m.draft > 0 && <Badge className="bg-muted text-muted-foreground">{m.draft} {t("draft", "مسودة")}</Badge>}
               </Card>
