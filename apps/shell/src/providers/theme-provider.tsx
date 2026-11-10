@@ -3,7 +3,7 @@ import type * as React from "react"
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="wijha.theme">
       {children}
     </NextThemesProvider>
   )

@@ -1,11 +1,9 @@
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
-import { NavLink } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   ScrollArea,
   Sheet,
   SheetContent,
@@ -17,42 +15,19 @@ import {
   TooltipTrigger,
 } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { SidebarBrandLogo } from "@/components/BrandLogo"
-import { adminNav, compareNav, coreNav, resourcesNav } from "@/config/navigation"
+import { WijhaLockup } from "@/components/BrandLogo"
+import { compareNav, railGroups, railItemForPath, type RailItem } from "@/config/navigation"
 import { useShell } from "@reach/shell-context"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ShieldCheck, UserRound } from "lucide-react"
 
-const arLabels: Record<string, string> = {
-  Home: "الرئيسية",
-  "Employee Center": "مركز الموظف",
-  Tasks: "المهام",
-  "Leave Balances": "أرصدة الإجازات",
-  Attendance: "الحضور",
-  "Org Chart": "الهيكل التنظيمي",
-  Directory: "دليل الموظفين",
-  Benefits: "المزايا",
-  "Partner Offers": "عروض الشركاء",
-  Payslips: "كشوف الرواتب",
-  News: "الأخبار",
-  Announcements: "الإعلانات",
-  Events: "الفعاليات",
-  "Surveys & Polls": "الاستبيانات والتصويت",
-  Cafeteria: "الكافتيريا",
-  "Manager Dashboard": "لوحة المدير",
-  Projects: "المشاريع",
-  Policies: "السياسات",
-  FAQs: "الأسئلة الشائعة",
-  "Document Library": "مكتبة المستندات",
-  "Employee Community": "مجتمع الموظفين",
-  "Quick Links": "روابط سريعة",
-  "Content Management": "إدارة المحتوى",
-  Notifications: "الإشعارات",
-  "Roles & Permissions": "الأدوار والصلاحيات",
-  "Permission Groups": "مجموعات الصلاحيات",
-  "Audit Logs": "سجلات التدقيق",
-}
-
+/**
+ * WIJHA side bar — the Figma "Side Bar" component. Two states, as in the file:
+ *   Minimize (default) — 131px rail, icon over label, sub-pages in a flyout.
+ *   Expanded           — 248px, icon beside label, sub-pages nested under the
+ *                        active item.
+ * The rail sits on the inline-start edge, so it is on the right in Arabic.
+ */
 export function Sidebar({
   mobileOpen,
   onMobileOpenChange,
@@ -64,19 +39,23 @@ export function Sidebar({
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const isAr = locale === "ar"
 
-  // On mobile, render the same nav inside a Sheet (always expanded layout for usability)
   if (!isDesktop) {
     return (
       <Sheet open={!!mobileOpen} onOpenChange={onMobileOpenChange}>
         <SheetContent
           side={isAr ? "right" : "left"}
-          className="chrome-soft flex w-72 flex-col gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
+          className="flex w-72 flex-col gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>{isAr ? "القائمة" : "Navigation"}</SheetTitle>
             <SheetDescription>{isAr ? "تنقّل بين أقسام التطبيق" : "Navigate between sections"}</SheetDescription>
           </SheetHeader>
-          <SidebarBody collapsed={false} isAr={isAr} onNavigate={() => onMobileOpenChange?.(false)} />
+          <div className="flex h-[72px] shrink-0 items-center px-5">
+            <WijhaLockup />
+          </div>
+          <ScrollArea className="min-h-0 flex-1 px-3 pb-4">
+            <ExpandedNav isAr={isAr} onNavigate={() => onMobileOpenChange?.(false)} />
+          </ScrollArea>
         </SheetContent>
       </Sheet>
     )
@@ -85,276 +64,329 @@ export function Sidebar({
   return <DesktopSidebar />
 }
 
-// ─── desktop static sidebar ──────────────────────────────────────────────────
-
 function DesktopSidebar() {
-  const { sidebarCollapsed, setSidebarCollapsed, locale } = useShell()
+  const { sidebarCollapsed, locale } = useShell()
   const isAr = locale === "ar"
-  const width = sidebarCollapsed ? 60 : 248
+  const minimized = sidebarCollapsed
 
   return (
     <motion.aside
-      animate={{ width }}
+      animate={{ width: minimized ? 131 : 248 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      className="chrome-soft relative hidden h-svh shrink-0 flex-col overflow-hidden bg-sidebar text-sidebar-foreground lg:flex"
+      className="relative hidden h-svh shrink-0 flex-col border-e border-page-stroke bg-sidebar text-sidebar-foreground lg:flex"
     >
-      {/* Inner-edge divider — logical `end` (inner edge in LTR + RTL); starts
-          below the top header (top-14), matching the AI panel's divider. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-14 bottom-0 end-0 z-10 w-px bg-border/60"
-      />
-      <SidebarBody collapsed={sidebarCollapsed} isAr={isAr} />
-      <SidebarFooter collapsed={sidebarCollapsed} isAr={isAr} onToggleCollapse={() => setSidebarCollapsed((c) => !c)} />
+      <div className={cn("flex h-[72px] shrink-0 items-center px-5", minimized && "justify-center")}>
+        <WijhaLockup />
+      </div>
+      <ScrollArea className="min-h-0 flex-1">
+        {minimized ? (
+          <RailNav isAr={isAr} />
+        ) : (
+          <div className="px-3 pt-6 pb-6">
+            <ExpandedNav isAr={isAr} />
+          </div>
+        )}
+      </ScrollArea>
+      <div className="flex shrink-0 justify-center py-5">
+        <ProfileButton isAr={isAr} />
+      </div>
     </motion.aside>
   )
 }
 
-// ─── shared body (logo + nav lists) ──────────────────────────────────────────
+// ─── Minimize state: the rail ────────────────────────────────────────────────
 
-function SidebarBody({
-  collapsed,
-  isAr,
-  onNavigate,
-}: {
-  collapsed: boolean
-  isAr: boolean
-  onNavigate?: () => void
-}) {
-  const navLabel = (title: string) => (isAr ? arLabels[title] ?? title : title)
-  const isAdmin = useShell().role === "admin"
+function RailNav({ isAr }: { isAr: boolean }) {
+  const { pathname } = useLocation()
+  const active = railItemForPath(pathname)
+  const { role } = useShell()
+  const groups = visibleGroups(role === "admin")
 
   return (
-    <>
-      {/* Logo */}
-      <div
+    <nav aria-label={isAr ? "التنقل الرئيسي" : "Main navigation"} className="flex flex-col items-center gap-1 pt-6 pb-6">
+      {groups.map((group, gi) => (
+        <React.Fragment key={gi}>
+          {gi > 0 && <div aria-hidden className="my-2 h-px w-[85px] bg-border" />}
+          {group.map((item) => (
+            <RailTile key={item.key} item={item} active={active?.key === item.key} isAr={isAr} />
+          ))}
+        </React.Fragment>
+      ))}
+      <div aria-hidden className="my-2 h-px w-[85px] bg-border" />
+      <RoleSwitchTile isAr={isAr} />
+      <CompareTiles isAr={isAr} />
+    </nav>
+  )
+}
+
+const tileClass =
+  "relative flex w-[85px] flex-col items-center gap-1.5 rounded-lg px-1 py-2.5 text-center text-[12px] leading-[1.25] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+
+function RailTile({ item, active, isAr }: { item: RailItem; active: boolean; isAr: boolean }) {
+  const label = isAr ? item.titleAr : item.title
+  const ref = React.useRef<HTMLAnchorElement>(null)
+  const [flyout, setFlyout] = React.useState<DOMRect | null>(null)
+  const closeTimer = React.useRef<number | undefined>(undefined)
+
+  const open = () => {
+    window.clearTimeout(closeTimer.current)
+    if (item.children?.length && ref.current) setFlyout(ref.current.getBoundingClientRect())
+  }
+  const close = () => {
+    closeTimer.current = window.setTimeout(() => setFlyout(null), 120)
+  }
+
+  if (item.inert) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={<span aria-disabled="true" className={cn(tileClass, "cursor-not-allowed text-icon opacity-50")} />}
+        >
+          <item.icon className="size-5" strokeWidth={1.6} />
+          <span>{label}</span>
+        </TooltipTrigger>
+        <TooltipContent side={isAr ? "left" : "right"}>
+          {isAr ? "لا يوجد تصميم لهذه الصفحة بعد" : "No design for this page yet"}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return (
+    <div onMouseEnter={open} onMouseLeave={close} onFocus={open} onBlur={close}>
+      <NavLink
+        ref={ref}
+        to={item.path}
+        end={item.path === "/"}
+        aria-current={active ? "page" : undefined}
         className={cn(
-          "relative flex h-14 shrink-0 items-center justify-center border-b border-border/60",
-          collapsed ? "px-0" : "px-3"
+          tileClass,
+          active ? "nav-active" : "text-icon hover:bg-[var(--btn-ghost-hover)] hover:text-foreground",
         )}
       >
-        <SidebarBrandLogo collapsed={collapsed} />
-      </div>
+        <span className="relative">
+          <item.icon className="size-5" strokeWidth={1.6} />
+          {item.badge ? (
+            <span className="absolute -top-1.5 -end-3 flex size-4 items-center justify-center rounded-full bg-[#a997c7] text-[10px] font-semibold text-[#0f0e0e]">
+              {item.badge}
+            </span>
+          ) : null}
+        </span>
+        <span className={cn(active ? "text-primary" : "text-muted-foreground")}>{label}</span>
+      </NavLink>
+      {flyout &&
+        item.children &&
+        createPortal(
+          <Flyout rect={flyout} isAr={isAr} title={label} items={item.children} onEnter={open} onLeave={close} />,
+          document.body,
+        )}
+    </div>
+  )
+}
 
-      <ScrollArea className={cn("relative min-h-0 flex-1 py-3", collapsed ? "px-1.5" : "px-2")}>
-        <div className="flex flex-col gap-3">
-          {/* Core */}
-          <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
-            <SectionLabel collapsed={collapsed}>{isAr ? "الأساسية" : "Core"}</SectionLabel>
-            {coreNav.map((item) => (
-              <SidebarLink
-                key={item.path}
-                collapsed={collapsed}
-                to={item.path}
-                title={navLabel(item.title)}
-                onNavigate={onNavigate}
-              >
-                <item.icon className="size-[18px] shrink-0" />
-                {!collapsed && <span className="truncate">{navLabel(item.title)}</span>}
-              </SidebarLink>
-            ))}
-          </div>
-
-          {/* Section divider */}
-          <div className={cn(collapsed ? "mx-auto w-6" : "mx-2")}>
-            <div className="h-px bg-border/60" />
-          </div>
-
-          {/* Resources */}
-          <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
-            <SectionLabel collapsed={collapsed}>{isAr ? "المصادر" : "Resources"}</SectionLabel>
-            {resourcesNav.map((item) => (
-              <SidebarLink
-                key={item.path}
-                collapsed={collapsed}
-                to={item.path}
-                title={navLabel(item.title)}
-                onNavigate={onNavigate}
-              >
-                <item.icon className="size-[18px] shrink-0" />
-                {!collapsed && <span className="truncate">{navLabel(item.title)}</span>}
-              </SidebarLink>
-            ))}
-          </div>
-
-          {/* Administration — admin role only */}
-          {isAdmin && (
-            <>
-              <div className={cn(collapsed ? "mx-auto w-6" : "mx-2")}>
-                <div className="h-px bg-border/60" />
-              </div>
-              <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
-                <SectionLabel collapsed={collapsed}>{isAr ? "الإدارة" : "Administration"}</SectionLabel>
-                {adminNav.map((item) => (
-                  <SidebarLink
-                    key={item.path}
-                    collapsed={collapsed}
-                    to={item.path}
-                    title={navLabel(item.title)}
-                    onNavigate={onNavigate}
-                  >
-                    <item.icon className="size-[18px] shrink-0" />
-                    {!collapsed && <span className="truncate">{navLabel(item.title)}</span>}
-                  </SidebarLink>
-                ))}
-              </div>
-            </>
+function Flyout({
+  rect,
+  isAr,
+  title,
+  items,
+  onEnter,
+  onLeave,
+}: {
+  rect: DOMRect
+  isAr: boolean
+  title: string
+  items: NonNullable<RailItem["children"]>
+  onEnter: () => void
+  onLeave: () => void
+}) {
+  const { pathname } = useLocation()
+  // Opens towards the content: left of the rail in RTL, right of it in LTR.
+  const style: React.CSSProperties = isAr
+    ? { top: rect.top, right: window.innerWidth - rect.left + 14 }
+    : { top: rect.top, left: rect.right + 14 }
+  return (
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      style={style}
+      className="fixed z-50 min-w-52 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-2xl"
+    >
+      <div className="px-2.5 pt-1.5 pb-2 text-[11px] font-semibold text-muted-foreground">{title}</div>
+      {items.map((c) => (
+        <NavLink
+          key={c.path}
+          to={c.path}
+          className={cn(
+            "block rounded-lg px-2.5 py-2 text-[13px] transition-colors",
+            pathname === c.path ? "bg-soft-accent text-primary" : "hover:bg-[var(--btn-ghost-hover)]",
           )}
+        >
+          {isAr ? c.titleAr : c.title}
+        </NavLink>
+      ))}
+    </div>
+  )
+}
 
-          {/* dev-only: open the earlier build side by side */}
-          <div className={cn(collapsed ? "mx-auto w-6" : "mx-2")}>
-            <div className="h-px bg-border/60" />
-          </div>
-          <div className={cn("flex flex-col gap-0.5", collapsed && "items-center")}>
-            <SectionLabel collapsed={collapsed}>{isAr ? "مقارنة" : "Compare"}</SectionLabel>
-            {compareNav.map((item) => (
+/** Figma "التبديل إلى واجهة المسؤول" — flips the demo role. */
+function RoleSwitchTile({ isAr }: { isAr: boolean }) {
+  const { role, setRole } = useShell()
+  const toAdmin = role !== "admin"
+  const label = toAdmin
+    ? isAr ? "التبديل إلى واجهة المسؤول" : "Switch to admin view"
+    : isAr ? "التبديل إلى واجهة الموظف" : "Switch to employee view"
+  return (
+    <button
+      type="button"
+      onClick={() => setRole(toAdmin ? "admin" : "user")}
+      className={cn(tileClass, "text-icon hover:bg-[var(--btn-ghost-hover)] hover:text-foreground")}
+    >
+      {toAdmin ? <ShieldCheck className="size-5" strokeWidth={1.6} /> : <UserRound className="size-5" strokeWidth={1.6} />}
+      <span className="text-muted-foreground">{label}</span>
+    </button>
+  )
+}
+
+/** Dev-only links to the other builds (kept from v1, demoted below the rail). */
+function CompareTiles({ isAr }: { isAr: boolean }) {
+  return (
+    <div className="mt-2 flex flex-col items-center gap-1">
+      {compareNav.map((item) => (
+        <Tooltip key={item.url}>
+          <TooltipTrigger
+            render={
               <a
-                key={item.url}
                 href={item.url}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={isAr ? item.titleAr : item.title}
-                className={cn(
-                  "flex items-center rounded-lg text-[13px] font-medium transition-all duration-150",
-                  "text-muted-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
-                  collapsed ? "mx-auto size-9 justify-center" : "gap-3 rounded-xl px-2.5 py-2",
-                )}
-              >
-                <item.icon className="size-[18px] shrink-0" />
-                {!collapsed && <span className="truncate">{isAr ? item.titleAr : item.title}</span>}
-              </a>
-            ))}
-          </div>
-        </div>
-      </ScrollArea>
-    </>
-  )
-}
-
-// ─── desktop footer (avatar + collapse) ──────────────────────────────────────
-
-function SidebarFooter({
-  collapsed,
-  isAr,
-  onToggleCollapse,
-}: {
-  collapsed: boolean
-  isAr: boolean
-  onToggleCollapse: () => void
-}) {
-  // In RTL the sidebar sits on the right, so the chevron meaning flips:
-  // collapsed → expand (point inward = left in RTL, right in LTR)
-  const ExpandIcon = isAr ? ChevronLeft : ChevronRight
-  const CollapseIcon = isAr ? ChevronRight : ChevronLeft
-
-  return (
-    <div className={cn(
-      "border-t border-border/60",
-      collapsed ? "flex flex-col items-center gap-1 px-1.5 py-1.5" : "space-y-1 p-2",
-    )}>
-      {!collapsed ? (
-        <NavLink to="/employee" aria-label={isAr ? "مركز الموظف" : "Employee Center"} className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 hover:bg-sidebar-accent/60 transition-colors">
-          <Avatar className="size-7 shrink-0 ring-1 ring-primary/30">
-            <AvatarImage src="images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
-            <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold tracking-wide">KH</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[12px] font-semibold leading-tight">{isAr ? "خالد" : "Khalid"}</div>
-            <div className="truncate text-[10px] text-muted-foreground/80 leading-tight mt-0.5">
-              {isAr ? "موظف" : "Employee"}
-            </div>
-          </div>
-        </NavLink>
-      ) : (
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <NavLink
-                to="/employee"
-                aria-label={isAr ? "مركز الموظف" : "Employee Center"}
-                className="flex size-9 items-center justify-center rounded-lg mx-auto transition-colors hover:bg-sidebar-accent/60"
+                className="flex size-8 items-center justify-center rounded-lg text-icon opacity-60 transition-colors hover:bg-[var(--btn-ghost-hover)] hover:opacity-100"
               />
             }
           >
-            <Avatar className="size-6 ring-1 ring-primary/30">
-              <AvatarImage src="images/avatar-khalid.jpg" alt="" className="object-cover object-top" />
-              <AvatarFallback className="bg-primary/15 text-primary text-[9px] font-bold">KH</AvatarFallback>
-            </Avatar>
+            <item.icon className="size-4" strokeWidth={1.6} />
           </TooltipTrigger>
-          <TooltipContent side="right">{isAr ? "خالد" : "Khalid"}</TooltipContent>
+          <TooltipContent side={isAr ? "left" : "right"}>{isAr ? item.titleAr : item.title}</TooltipContent>
         </Tooltip>
-      )}
-      <button
-        type="button"
-        onClick={onToggleCollapse}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className={cn(
-          "flex items-center justify-center rounded-lg text-muted-foreground/60 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-          collapsed ? "size-9 mx-auto" : "w-full h-9 rounded-xl",
-        )}
-      >
-        {collapsed ? <ExpandIcon className="size-4" /> : <CollapseIcon className="size-4" />}
-      </button>
+      ))}
     </div>
   )
 }
 
-// ─── small primitives ────────────────────────────────────────────────────────
+// ─── Expanded state (and the mobile sheet) ───────────────────────────────────
 
-function SectionLabel({ collapsed, children }: { collapsed: boolean; children: React.ReactNode }) {
-  if (collapsed) return null
+function ExpandedNav({ isAr, onNavigate }: { isAr: boolean; onNavigate?: () => void }) {
+  const { pathname } = useLocation()
+  const active = railItemForPath(pathname)
+  const { role } = useShell()
+  const groups = visibleGroups(role === "admin")
+
   return (
-    <div className="px-2 pb-1.5 text-[9px] font-semibold tracking-[0.12em] text-muted-foreground/50 uppercase select-none">
-      {children}
-    </div>
+    <nav aria-label={isAr ? "التنقل الرئيسي" : "Main navigation"} className="flex flex-col gap-1">
+      {groups.map((group, gi) => (
+        <React.Fragment key={gi}>
+          {gi > 0 && <div aria-hidden className="mx-2 my-2 h-px bg-border" />}
+          {group.map((item) => {
+            const isActive = active?.key === item.key
+            const label = isAr ? item.titleAr : item.title
+            if (item.inert) {
+              return (
+                <span
+                  key={item.key}
+                  aria-disabled="true"
+                  title={isAr ? "لا يوجد تصميم لهذه الصفحة بعد" : "No design for this page yet"}
+                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-icon opacity-50"
+                >
+                  <item.icon className="size-5 shrink-0" strokeWidth={1.6} />
+                  <span className="truncate">{label}</span>
+                </span>
+              )
+            }
+            return (
+              <div key={item.key}>
+                <NavLink
+                  to={item.path}
+                  end={item.path === "/"}
+                  onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-colors",
+                    isActive
+                      ? "bg-soft-accent text-primary"
+                      : "text-muted-foreground hover:bg-[var(--btn-ghost-hover)] hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="size-5 shrink-0" strokeWidth={1.6} />
+                  <span className="flex-1 truncate">{label}</span>
+                  {item.badge ? (
+                    <span className="flex size-5 items-center justify-center rounded-full bg-[#a997c7] text-[10px] font-semibold text-[#0f0e0e]">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </NavLink>
+                {isActive && item.children && (
+                  <div className="ms-8 mt-1 mb-1 flex flex-col gap-0.5 border-s border-border ps-2">
+                    {item.children.map((c) => (
+                      <NavLink
+                        key={c.path}
+                        to={c.path}
+                        end
+                        onClick={onNavigate}
+                        className={({ isActive: on }) =>
+                          cn(
+                            "rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors",
+                            on ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                          )
+                        }
+                      >
+                        {isAr ? c.titleAr : c.title}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </React.Fragment>
+      ))}
+      <div aria-hidden className="mx-2 my-2 h-px bg-border" />
+      <ExpandedRoleSwitch isAr={isAr} />
+    </nav>
   )
 }
 
-function SidebarLink({
-  to,
-  title,
-  collapsed,
-  children,
-  onNavigate,
-}: {
-  to: string
-  title: string
-  collapsed: boolean
-  children: React.ReactNode
-  onNavigate?: () => void
-}) {
-  const link = (
-    <NavLink
-      to={to}
-      onClick={onNavigate}
-      aria-label={title}
-      className={({ isActive }) => navLinkClass(isActive, collapsed)}
+function ExpandedRoleSwitch({ isAr }: { isAr: boolean }) {
+  const { role, setRole } = useShell()
+  const toAdmin = role !== "admin"
+  return (
+    <button
+      type="button"
+      onClick={() => setRole(toAdmin ? "admin" : "user")}
+      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-start text-[13px] text-muted-foreground transition-colors hover:bg-[var(--btn-ghost-hover)] hover:text-foreground"
     >
-      {children}
-    </NavLink>
+      {toAdmin ? <ShieldCheck className="size-5 shrink-0" strokeWidth={1.6} /> : <UserRound className="size-5 shrink-0" strokeWidth={1.6} />}
+      <span>
+        {toAdmin
+          ? isAr ? "التبديل إلى واجهة المسؤول" : "Switch to admin view"
+          : isAr ? "التبديل إلى واجهة الموظف" : "Switch to employee view"}
+      </span>
+    </button>
   )
-
-  if (collapsed) {
-    return (
-      <div className="block">
-        <Tooltip>
-          <TooltipTrigger render={link} />
-          <TooltipContent side="right">{title}</TooltipContent>
-        </Tooltip>
-      </div>
-    )
-  }
-
-  return link
 }
 
-function navLinkClass(isActive: boolean, collapsed: boolean) {
-  return cn(
-    "flex items-center rounded-lg text-[13px] font-medium transition-all duration-150",
-    "outline-none focus-visible:ring-2 focus-visible:ring-ring",
-    collapsed ? "size-9 justify-center mx-auto" : "gap-3 rounded-xl px-2.5 py-2",
-    isActive
-      ? "nav-active"
-      : cn("text-muted-foreground/80 hover:text-sidebar-foreground", "hover:bg-sidebar-accent/70")
+function visibleGroups(isAdmin: boolean) {
+  return railGroups.map((g) => g.filter((i) => !i.adminOnly || isAdmin)).filter((g) => g.length > 0)
+}
+
+function ProfileButton({ isAr }: { isAr: boolean }) {
+  return (
+    <NavLink
+      to="/employee"
+      aria-label={isAr ? "ملفي — فواز الغيلان" : "My profile — Fawaz Al-Ghaylan"}
+      className="flex size-[30px] items-center justify-center rounded-full border border-primary/40 bg-[var(--avatar-fill)] text-[11px] font-semibold text-primary"
+    >
+      FA
+    </NavLink>
   )
 }

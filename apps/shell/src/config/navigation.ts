@@ -2,6 +2,12 @@ import type { LucideIcon } from "lucide-react"
 import {
   Bell,
   BookOpen,
+  BriefcaseBusiness,
+  ChartNoAxesCombined,
+  GraduationCap,
+  LayoutDashboard,
+  Sparkles,
+  Wrench,
   CalendarClock,
   CalendarDays,
   ClipboardList,
@@ -144,3 +150,148 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "Permission Groups", path: "/admin/permission-groups", group: "Administration" },
   { label: "Audit Logs", path: "/admin/audit", group: "Administration" },
 ]
+
+// ─── WIJHA rail (Figma "Side Bar" component) ────────────────────────────────
+/** Module keys drive the per-module accent (html[data-module]) — see index.css. */
+export type ModuleKey = "home" | "work" | "employee" | "services" | "ai" | "knowledge" | "learning" | "operations" | "admin"
+
+export type RailChild = { title: string; titleAr: string; path: string }
+
+export type RailItem = {
+  key: string
+  title: string
+  titleAr: string
+  /** Where the rail tile itself navigates. */
+  path: string
+  icon: LucideIcon
+  module: ModuleKey
+  /** Path prefixes that light this tile up (in addition to `path` and children). */
+  match?: string[]
+  badge?: number
+  /** Sub-pages, shown in a flyout on the rail and nested when expanded. Keeps
+   *  every v1 page reachable now that the rail only has the Figma top-level items. */
+  children?: RailChild[]
+  /** In the design but with no screens and no page yet — rendered inert and
+   *  flagged (BUILD-GUIDELINES U5). */
+  inert?: boolean
+  adminOnly?: boolean
+}
+
+export const railGroups: RailItem[][] = [
+  [
+    { key: "home", title: "Home", titleAr: "الرئيسية", path: "/", icon: LayoutDashboard, module: "home" },
+    {
+      key: "calendar", title: "Calendar", titleAr: "التقويم", path: "/calendar", icon: CalendarDays, module: "work",
+      match: ["/events", "/config/holidays"],
+      children: [
+        { title: "My calendar", titleAr: "تقويمي", path: "/calendar" },
+        { title: "Events", titleAr: "الفعاليات", path: "/events" },
+        { title: "Holiday calendar", titleAr: "تقويم العطل", path: "/config/holidays" },
+      ],
+    },
+    {
+      key: "work", title: "Work", titleAr: "العمل", path: "/tasks", icon: BriefcaseBusiness, module: "work",
+      match: ["/work", "/tasks", "/projects", "/manager"],
+      children: [
+        { title: "Tasks", titleAr: "المهام", path: "/tasks" },
+        { title: "Projects", titleAr: "المشاريع", path: "/projects" },
+        { title: "Work hub", titleAr: "مركز العمل", path: "/work" },
+        { title: "Manager dashboard", titleAr: "لوحة المدير", path: "/manager" },
+      ],
+    },
+    {
+      key: "employee", title: "Employee", titleAr: "الموظف", path: "/employee", icon: UserRound, module: "employee",
+      match: ["/employee", "/leave", "/attendance", "/org-chart", "/directory", "/benefits", "/payslip"],
+      children: [
+        { title: "Employee center", titleAr: "مركز الموظف", path: "/employee" },
+        { title: "Leave", titleAr: "الإجازات", path: "/leave" },
+        { title: "Attendance", titleAr: "الحضور", path: "/attendance" },
+        { title: "Org chart", titleAr: "الهيكل التنظيمي", path: "/org-chart" },
+        { title: "Directory", titleAr: "دليل الموظفين", path: "/directory" },
+        { title: "Benefits", titleAr: "المزايا", path: "/benefits" },
+        { title: "Partner offers", titleAr: "عروض الشركاء", path: "/benefits/partners" },
+        { title: "Payslips", titleAr: "كشوف الرواتب", path: "/payslip" },
+        { title: "My family", titleAr: "عائلتي", path: "/employee/dependants" },
+        { title: "Business card", titleAr: "بطاقة العمل", path: "/employee/card" },
+      ],
+    },
+    {
+      key: "services", title: "Services", titleAr: "الخدمات", path: "/services", icon: Wrench, module: "services",
+      match: ["/services", "/cafeteria"],
+      children: [
+        { title: "Services", titleAr: "الخدمات", path: "/services" },
+        { title: "Cafeteria", titleAr: "الكافتيريا", path: "/cafeteria" },
+        { title: "My orders", titleAr: "طلباتي", path: "/cafeteria/orders" },
+      ],
+    },
+    { key: "assistant", title: "Assistant", titleAr: "المساعد", path: "/intelligence", icon: Sparkles, module: "ai", badge: 2 },
+  ],
+  [
+    {
+      key: "community", title: "Executive community", titleAr: "مجتمع التنفيذي", path: "/community", icon: Users, module: "knowledge",
+      match: ["/community", "/news", "/announcements", "/surveys", "/circulars"],
+      children: [
+        { title: "Community", titleAr: "المجتمع", path: "/community" },
+        { title: "News", titleAr: "الأخبار", path: "/news" },
+        { title: "Announcements", titleAr: "الإعلانات", path: "/announcements" },
+        { title: "Surveys & polls", titleAr: "الاستبيانات", path: "/surveys" },
+        { title: "Circulars", titleAr: "التعاميم", path: "/circulars" },
+      ],
+    },
+    {
+      key: "knowledge", title: "Knowledge", titleAr: "المعرفة", path: "/documents", icon: BookOpen, module: "knowledge",
+      match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs"],
+      children: [
+        { title: "Document library", titleAr: "مكتبة المستندات", path: "/documents" },
+        { title: "Policies", titleAr: "السياسات", path: "/policies" },
+        { title: "FAQs", titleAr: "الأسئلة الشائعة", path: "/faqs" },
+        { title: "Knowledge center", titleAr: "مركز المعرفة", path: "/knowledge" },
+        { title: "Quick links", titleAr: "روابط سريعة", path: "/links" },
+      ],
+    },
+    { key: "learning", title: "Learning", titleAr: "التعلم", path: "/learning", icon: GraduationCap, module: "learning" },
+  ],
+  [
+    { key: "operations", title: "Operations & Performance", titleAr: "العمليات والأداء", path: "/operations", icon: Gauge, module: "operations" },
+    {
+      key: "corporate", title: "Corporate performance", titleAr: "الأداء المؤسسي", path: "/corporate-performance",
+      icon: ChartNoAxesCombined, module: "operations", inert: true,
+    },
+    {
+      key: "admin", title: "Administration", titleAr: "الإدارة", path: "/config", icon: SlidersHorizontal, module: "admin", adminOnly: true,
+      match: ["/config", "/cms", "/admin", "/partner"],
+      children: [
+        { title: "Configuration", titleAr: "الإعدادات", path: "/config" },
+        { title: "Content management", titleAr: "إدارة المحتوى", path: "/cms" },
+        { title: "Notifications", titleAr: "الإشعارات", path: "/admin/notifications" },
+        { title: "Partners", titleAr: "الشركاء", path: "/config/partners" },
+        { title: "Roles & permissions", titleAr: "الأدوار والصلاحيات", path: "/admin/roles" },
+        { title: "Audit logs", titleAr: "سجلات التدقيق", path: "/admin/audit" },
+        { title: "Approval rules", titleAr: "قواعد الموافقات", path: "/config/rules" },
+        { title: "Master data", titleAr: "البيانات المرجعية", path: "/config/master-data" },
+      ],
+    },
+  ],
+]
+
+const railItems = railGroups.flat()
+
+function matchesPrefix(prefix: string, pathname: string) {
+  return prefix === "/" ? pathname === "/" : pathname === prefix || pathname.startsWith(prefix + "/")
+}
+
+/** Rail item that owns a route (most specific prefix wins). */
+export function railItemForPath(pathname: string): RailItem | undefined {
+  let best: { item: RailItem; len: number } | undefined
+  for (const item of railItems) {
+    const prefixes = [item.path, ...(item.match ?? []), ...(item.children ?? []).map((c) => c.path)]
+    for (const p of prefixes) {
+      if (matchesPrefix(p, pathname) && (!best || p.length > best.len)) best = { item, len: p.length }
+    }
+  }
+  return best?.item
+}
+
+export function moduleForPath(pathname: string): ModuleKey {
+  return railItemForPath(pathname)?.module ?? "home"
+}

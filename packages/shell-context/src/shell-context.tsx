@@ -20,25 +20,29 @@ type ShellContextValue = {
 
 const ShellContext = React.createContext<ShellContextValue | null>(null)
 
-const SIDEBAR_KEY = "reach.sidebar.collapsed"
-const LOCALE_KEY = "reach.locale"
-const ROLE_KEY = "reach.role"
+// v2 keys — v1 runs on the same localhost origin and must not leak its
+// stored English / expanded-sidebar state into the WIJHA build.
+const SIDEBAR_KEY = "wijha.sidebar.minimized"
+const LOCALE_KEY = "wijha.locale"
+const ROLE_KEY = "wijha.role"
 
 /** Read persisted shell state up-front so the first paint is already correct
  *  (avoids a hydration setState-in-effect and its flash/double-render). */
 function readStoredSidebar(): boolean {
   try {
-    return localStorage.getItem(SIDEBAR_KEY) === "1"
+    // The Figma side bar defaults to its "Minimize" (rail) state.
+    return localStorage.getItem(SIDEBAR_KEY) !== "0"
   } catch {
-    return false
+    return true
   }
 }
 
 function readStoredLocale(): Locale {
   try {
-    return localStorage.getItem(LOCALE_KEY) === "ar" ? "ar" : "en"
+    // Arabic-first: the WIJHA designs are RTL; English only when chosen.
+    return localStorage.getItem(LOCALE_KEY) === "en" ? "en" : "ar"
   } catch {
-    return "en"
+    return "ar"
   }
 }
 

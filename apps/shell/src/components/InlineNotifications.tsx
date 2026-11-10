@@ -89,23 +89,23 @@ export function InlineNotifications({ isAr }: { isAr: boolean }) {
           render={
             <Button
               ref={triggerRef}
-              variant="outline"
-              size="icon-sm"
-              className={cn("relative overflow-visible", open && "border-primary/40 bg-primary/5")}
+              variant="ghost"
+              size="icon"
+              className={cn("icon-tile relative size-9 overflow-visible", open && "ring-1 ring-primary/40")}
               onClick={() => setOpen((v) => !v)}
               aria-label={isAr ? "الإشعارات" : "Notifications"}
               aria-expanded={open}
             >
-              <Bell className="size-4" />
+              <Bell className="size-[18px]" strokeWidth={1.6} />
+              {/* Figma: a small gold dot on the bell, no count */}
               {unreadCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="absolute -top-1 -right-1 flex min-w-[16px] h-[16px] px-1 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-1 ring-background tabular-nums"
-                >
-                  {unreadCount}
-                </motion.span>
+                  aria-label={isAr ? `${unreadCount} غير مقروءة` : `${unreadCount} unread`}
+                  className="absolute top-2 end-2 size-2 rounded-full bg-primary ring-2 ring-secondary"
+                />
               )}
             </Button>
           }

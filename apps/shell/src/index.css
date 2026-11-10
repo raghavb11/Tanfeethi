@@ -82,7 +82,6 @@
       "Segoe UI",
       sans-serif;
     --font-heading:
-      "Astoria",
       "Aktiv Grotesk",
       -apple-system,
       BlinkMacSystemFont,
@@ -124,6 +123,17 @@
     --color-secondary-surface: var(--secondary-surface);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-success: var(--success);
+    --color-success-fill: var(--success-fill);
+    --color-warning: var(--warning);
+    --color-warning-fill: var(--warning-fill);
+    --color-error: var(--error);
+    --color-error-fill: var(--error-fill);
+    --color-info: var(--info);
+    --color-info-fill: var(--info-fill);
+    --color-module: var(--module-accent);
+    --color-icon: var(--icon);
+    --color-page-stroke: var(--page-stroke);
 
     /* ── ALTANFEETHI official brand palette — Visual Identity Guidelines §Brand Colors.
        Raw values live in :root (so var(--rose-gold) works at runtime); these map them to
@@ -158,126 +168,157 @@
     --lavender: #9c7dde;       /* Pantone 2087 C */
     --royal-purple: #3d2031;   /* Pantone 511 C */
 
-    /* ALTANFEETHI — Light · Ivory & Copper luxury. Warm ivory ground with
-       cream cards that float, and copper/gold metallic accents. */
-    --background: #efe8db;
-    --foreground: #241d15;
-    --card: #fdf8ef;
-    --card-elevated: #fffdf8;
-    --card-foreground: #241d15;
-    --popover: #fbf5eb;
-    --popover-foreground: #241d15;
-    --primary: #ce7b5b;
-    --primary-hover: #b86a4c;
-    --primary-foreground: #2b1608;
-    --secondary: #e7ddcd;
-    --secondary-surface: #ece4d6;
-    --secondary-foreground: #241d15;
-    --muted: #e7ddcd;
-    --muted-foreground: #7c705d;
-    --soft-accent: #f3d8cb;
-    --divider: rgba(156, 100, 60, 0.20);
-    --accent: #ce7b5b;
-    --accent-foreground: #2b1608;
-    --destructive: #c23b2f;
-    --border: rgba(156, 100, 60, 0.22);
-    --input: rgba(156, 100, 60, 0.28);
-    --ring: #ce7b5b;
-    --card-ring: rgba(156, 100, 60, 0.18);
-    --cop-hi: #c8825e;
-    --cop-lo: #7c3a1e;
-    --chart-1: #ce7b5b;
-    --chart-2: #c19a4a;
-    --chart-3: #9c5536;
-    --chart-4: #6f5742;
-    --chart-5: #2a221b;
-    --radius: 0.7rem;
+    /* WIJHA (وجهة) — Light. Values from the Figma "Color Pelette" collection,
+       Light mode (file "وجهة - WIJHA", page "Final Design 1.0"). */
+    --background: #f3f0ee;          /* Page/Fill */
+    --foreground: #0f0e0e;          /* Text/Primary */
+    --card: #f8f6f5;                /* Card/Fill/Primary (#fdfcfc @50%) over Page */
+    --card-elevated: #fdfcfc;
+    --card-foreground: #0f0e0e;
+    --popover: #fdfcfc;
+    --popover-foreground: #0f0e0e;
+    --primary: #ab8025;             /* Shape/Accent · Button/Fill/Primary */
+    --primary-hover: #9a7321;
+    --primary-foreground: #f3f0ee;  /* Text/On-color */
+    --secondary: #eae2cb;           /* Shape/Fill/Secondary */
+    --secondary-surface: #efe9dc;
+    --secondary-foreground: #0f0e0e;
+    --muted: #eae2cb;
+    --muted-foreground: rgba(15, 14, 14, 0.71);  /* Text/Secondary */
+    --soft-accent: rgba(171, 128, 37, 0.15);     /* Button/Fill/Primary 15% */
+    --divider: rgba(218, 209, 190, 0.6);         /* Card Separater/Center */
+    --accent: #eae2cb;
+    --accent-foreground: #0f0e0e;
+    --destructive: #b42318;         /* Status/Error/Text */
+    --border: rgba(30, 18, 24, 0.09);            /* Card/Stroke/On-Color */
+    --input: #eae2cb;               /* Button/Stroke/Secondary */
+    --ring: #ab8025;
+    --card-ring: rgba(30, 18, 24, 0.09);
+    --page-stroke: rgba(171, 128, 37, 0.15);     /* Page/Stroke */
+    --icon: rgba(15, 14, 14, 0.71);              /* Shape/Icons */
+    --avatar-fill: rgba(234, 226, 203, 0.5);
+    --cop-hi: #e5c583;              /* Button/Fill/Primary/Gradient/Up */
+    --cop-lo: #a8853b;              /* Button/Fill/Primary/Gradient/Down */
+    --chart-1: #ab8025;
+    --chart-2: #067647;
+    --chart-3: #b57808;
+    --chart-4: #175cd3;
+    --chart-5: #b42318;
+    --radius: 0.75rem;
 
-    /* Button surfaces — taken from the Button page of the ALTANFEETHI Figma
-       design system. Kept as tokens (rather than hex in the component) so the
-       dark theme can supply its own values below. */
-    --btn-primary-hover: #c06f50;
-    --btn-primary-fg: #fff8f4;
-    --btn-outline-bg: #e9e1d8;
-    --btn-outline-border: #ddd3c6;
-    --btn-outline-hover: #d9cfc0;
-    --btn-secondary-bg: #d9cfc0;
-    --btn-secondary-hover: #dbd1c2;
-    --btn-neutral-fg: #221d17;
-    --btn-ghost-hover: #d9cfc0;
-    --btn-destructive-bg: #e3c5bc;
-    --btn-destructive-fg: #dc2626;
+    /* Status — Figma Status/* (Light) */
+    --success: #067647;  --success-fill: #dffceb;
+    --warning: #b57808;  --warning-fill: #fcf3da;
+    --error:   #b42318;  --error-fill:   #f9e3e1;
+    --info:    #175cd3;  --info-fill:    #e0effa;
 
-    --sidebar: #f0e9dd;
-    --sidebar-foreground: #241d15;
-    --sidebar-primary: #ce7b5b;
-    --sidebar-primary-foreground: #2b1608;
-    --sidebar-accent: #efe6d8;
-    --sidebar-accent-foreground: #241d15;
-    --sidebar-border: rgba(156, 100, 60, 0.20);
-    --sidebar-ring: #ce7b5b;
+    /* Per-module second accent (Figma "Second Accent Color" collection). The
+       shell sets data-module on <html>; the top-bar wash and hero glow use it. */
+    --module-accent: #ab8025;
+    --module-glow: rgba(234, 226, 203, 0.9);
+
+    /* Button surfaces (Figma Button/*) */
+    --btn-primary-hover: #9a7321;
+    --btn-primary-fg: #f3f0ee;
+    --btn-outline-bg: transparent;
+    --btn-outline-border: #eae2cb;
+    --btn-outline-hover: rgba(171, 128, 37, 0.05);  /* Button/Fill/On-Hover */
+    --btn-secondary-bg: #eae2cb;
+    --btn-secondary-hover: #e1d7bb;
+    --btn-neutral-fg: #0f0e0e;
+    --btn-ghost-hover: rgba(171, 128, 37, 0.05);
+    --btn-destructive-bg: #f9e3e1;
+    --btn-destructive-fg: #b42318;
+
+    --sidebar: #f3f0ee;
+    --sidebar-foreground: #0f0e0e;
+    --sidebar-primary: #ab8025;
+    --sidebar-primary-foreground: #f3f0ee;
+    --sidebar-accent: rgba(171, 128, 37, 0.15);
+    --sidebar-accent-foreground: #0f0e0e;
+    --sidebar-border: rgba(171, 128, 37, 0.15);
+    --sidebar-ring: #ab8025;
 }
 
 .dark {
-    /* ALTANFEETHI — Dark · Copper & Obsidian luxury. Warm obsidian ground with
-       copper metallic accents over slate-teal depth. */
-    --background: #0b0b0c;
-    --foreground: #f2e9db;
-    --card: #16130f;
-    --card-elevated: #1d1813;
-    --card-foreground: #f2e9db;
-    --popover: #16130f;
-    --popover-foreground: #f2e9db;
-    --primary: #d2815f;
-    --primary-hover: #dd8e6c;
-    --primary-foreground: #241209;
-    --secondary: #221d17;
-    --secondary-surface: #1a1611;
-    --secondary-foreground: #f2e9db;
-    --muted: #201b15;
-    --muted-foreground: #9a8f7e;
-    --soft-accent: #f3d1c6;
-    --divider: rgba(206, 123, 91, 0.18);
-    --accent: #221d17;
-    --accent-foreground: #f2e9db;
-    --destructive: #f05252;
-    --border: rgba(206, 123, 91, 0.18);
-    --input: rgba(206, 123, 91, 0.24);
-    --ring: #d2815f;
-    --card-ring: rgba(206, 123, 91, 0.16);
-    --cop-hi: #f4d3ab;
-    --cop-lo: #9c5536;
-    --chart-1: #d2815f;
-    --chart-2: #c19a4a;
-    --chart-3: #9c5536;
-    --chart-4: #b4bccb;
-    --chart-5: #f2e9db;
+    /* WIJHA (وجهة) — Dark. Figma "Color Pelette" collection, Dark mode — the
+       mode every screen in "Final Design 1.0" is drawn in. */
+    --background: #0f0e0e;          /* Page/Fill */
+    --foreground: #f3eef1;          /* Text/Primary */
+    --card: #151414;                /* Card/Fill/Primary (#1b1a1a @50%) over Page */
+    --card-elevated: #1b1a1a;
+    --card-foreground: #f3eef1;
+    --popover: #1b1a1a;
+    --popover-foreground: #f3eef1;
+    --primary: #bc9951;             /* Shape/Accent · Text/Accent */
+    --primary-hover: #c9a865;
+    --primary-foreground: #0f0e0e;  /* Text/On-color */
+    --secondary: #2c2b2b;           /* Shape/Fill/Secondary */
+    --secondary-surface: #1b1a1a;
+    --secondary-foreground: #f3eef1;
+    --muted: #2c2b2b;
+    --muted-foreground: rgba(243, 238, 241, 0.7);  /* Text/Secondary */
+    --soft-accent: rgba(188, 153, 81, 0.15);       /* Button/Fill/Primary 15% */
+    --divider: rgba(97, 74, 27, 0.3);              /* Card Separater/Center */
+    --accent: #2c2b2b;
+    --accent-foreground: #f3eef1;
+    --destructive: #d14f45;         /* Status/Error/Text (Dark) */
+    --border: rgba(243, 238, 241, 0.09);           /* Card/Stroke/On-Color */
+    --input: #2c2b2b;               /* Button/Stroke/Secondary */
+    --ring: #bc9951;
+    --card-ring: rgba(243, 238, 241, 0.09);
+    --page-stroke: rgba(188, 153, 81, 0.15);       /* Page/Stroke */
+    --icon: rgba(243, 238, 241, 0.7);              /* Shape/Icons */
+    --avatar-fill: #2c2b2b;
+    --cop-hi: #e5c583;
+    --cop-lo: #8f743e;              /* Button/Stroke/Primary (Dark) */
+    --chart-1: #bc9951;
+    --chart-2: #2e9b62;
+    --chart-3: #e2a028;
+    --chart-4: #5b8def;
+    --chart-5: #d14f45;
 
-    /* Dark equivalents of the Figma button surfaces. The Figma file specifies
-       the light theme only, so these mirror its structure using the dark
-       neutrals: the same near-white label on copper, muted fills for the
-       neutral variants, and a tinted destructive. */
-    --btn-primary-hover: #dd8e6c;
-    --btn-primary-fg: #fff8f4;
-    --btn-outline-bg: #1a1613;
-    --btn-outline-border: rgba(206, 123, 91, 0.24);
-    --btn-outline-hover: #221d17;
-    --btn-secondary-bg: #221d17;
-    --btn-secondary-hover: #2b2419;
-    --btn-neutral-fg: #f2e9db;
-    --btn-ghost-hover: #201b15;
-    --btn-destructive-bg: rgba(240, 82, 82, 0.16);
-    --btn-destructive-fg: #f05252;
+    --success: #2e9b62;  --success-fill: rgba(46, 155, 98, 0.14);
+    --warning: #e2a028;  --warning-fill: rgba(226, 160, 40, 0.14);
+    --error:   #d14f45;  --error-fill:   rgba(209, 79, 69, 0.14);
+    --info:    #5b8def;  --info-fill:    rgba(91, 141, 239, 0.14);
 
-    --sidebar: #0c0b0a;
-    --sidebar-foreground: #f2e9db;
-    --sidebar-primary: #d2815f;
-    --sidebar-primary-foreground: #241209;
-    --sidebar-accent: #17130f;
-    --sidebar-accent-foreground: #f2e9db;
-    --sidebar-border: rgba(206, 123, 91, 0.16);
-    --sidebar-ring: #d2815f;
+    --module-accent: #bc9951;
+    --module-glow: rgba(188, 153, 81, 0.2);
+
+    --btn-primary-hover: #c9a865;
+    --btn-primary-fg: #0f0e0e;
+    --btn-outline-bg: transparent;
+    --btn-outline-border: #2c2b2b;
+    --btn-outline-hover: rgba(188, 153, 81, 0.05);
+    --btn-secondary-bg: #2c2b2b;
+    --btn-secondary-hover: #363535;
+    --btn-neutral-fg: #f3eef1;
+    --btn-ghost-hover: rgba(188, 153, 81, 0.08);
+    --btn-destructive-bg: rgba(209, 79, 69, 0.14);
+    --btn-destructive-fg: #d14f45;
+
+    --sidebar: #0f0e0e;
+    --sidebar-foreground: #f3eef1;
+    --sidebar-primary: #bc9951;
+    --sidebar-primary-foreground: #0f0e0e;
+    --sidebar-accent: rgba(188, 153, 81, 0.15);
+    --sidebar-accent-foreground: #f3eef1;
+    --sidebar-border: rgba(188, 153, 81, 0.15);
+    --sidebar-ring: #bc9951;
 }
+
+/* Module accents — Figma "Second Accent Color" + "First Card shadow generator".
+   Home/Work/Services stay gold; Employee is green; Knowledge/AI purple;
+   Learning rose gold; Operations royal purple. */
+html[data-module="employee"] { --module-accent: #007006; --module-glow: rgba(189, 241, 193, 0.5); }
+html.dark[data-module="employee"] { --module-glow: rgba(28, 51, 28, 0.8); }
+html[data-module="knowledge"], html[data-module="ai"] { --module-accent: #a997c7; --module-glow: rgba(224, 216, 233, 0.9); }
+html.dark[data-module="knowledge"], html.dark[data-module="ai"] { --module-glow: rgba(147, 125, 186, 0.25); }
+html[data-module="learning"] { --module-accent: #ce7a5b; --module-glow: rgba(239, 217, 205, 0.9); }
+html.dark[data-module="learning"] { --module-glow: rgba(206, 122, 91, 0.3); }
+html[data-module="operations"] { --module-accent: #652a4c; --module-glow: rgba(221, 192, 207, 0.5); }
+html.dark[data-module="operations"] { --module-glow: rgba(61, 32, 49, 0.8); }
 
 @layer base {
   * {
@@ -377,21 +418,11 @@
 html {
   background-color: var(--background);
 }
+/* Figma pages are a flat Page/Fill; the only wash is the module-tinted glow
+   behind the top bar (see .ambient-page). */
 body {
   background-color: var(--background);
   color: var(--foreground);
-  background-image:
-    radial-gradient(1150px 740px at 84% -14%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 56%),
-    radial-gradient(1000px 820px at 4% 114%, color-mix(in oklab, var(--dark-gold) 30%, transparent), transparent 60%),
-    radial-gradient(680px 480px at 100% 100%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-.dark body {
-  background-image:
-    radial-gradient(1150px 720px at 84% -12%, color-mix(in oklab, var(--primary) 20%, transparent), transparent 56%),
-    radial-gradient(1000px 820px at 6% 112%, rgba(30, 43, 52, 0.60), transparent 60%),
-    radial-gradient(700px 500px at 100% 100%, rgba(129, 58, 31, 0.20), transparent 60%);
 }
 
 @layer utilities {
@@ -434,13 +465,11 @@ body {
     /* Solid, crisp fill — no translucency, no backdrop blur. Definition comes
        from the hairline border + a faint highlight "touch" along the top edge. */
     background-color: var(--card);
-    box-shadow:
-      0 1px 2px -1px color-mix(in oklab, #2a211c 9%, transparent),
-      0 14px 34px -24px color-mix(in oklab, #2a211c 45%, transparent);
+    box-shadow: inset 0 0 0 1px var(--card-ring);
   }
   .dark .panel {
     background-color: var(--card);
-    box-shadow: 0 1px 2px -1px color-mix(in oklab, #000 35%, transparent);
+    box-shadow: inset 0 0 0 1px var(--card-ring);
   }
   /* the "touch at the border" — a faint highlight along the top edge only */
   .panel::before {
@@ -510,75 +539,63 @@ body {
      Theme-INDEPENDENT (fixed colours → identical in light & dark). Each card
      sets its own soft hue via `--hl`; the hue only appears as a gentle glow +
      tinted border, never as a sharp fill. Text inside must be light. */
+  /* Figma "Hero Section": Card/Special Card gradient — the module glow
+     (First Card shadow generator) in the top inline-start corner fading through
+     Special Card/Middle to the page fill. Radius 12, hairline stroke. */
   .highlight-card {
     position: relative;
-    color: #f4ece5;
-    /* warm espresso — on-brand, sits between light & dark so it suits both themes */
-    background-color: #2a201b;
-    background-image:
-      radial-gradient(130% 120% at 100% 0%, color-mix(in oklab, var(--hl, #ce7b5b) 34%, transparent) 0%, transparent 56%),
-      linear-gradient(155deg, #3a2c24 0%, #241b16 72%);
-    border: 1px solid color-mix(in oklab, var(--hl, #ce7b5b) 30%, #3a2c24);
-    box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, #fff 8%, transparent),
-      0 16px 42px -28px color-mix(in oklab, #000 55%, transparent);
+    color: var(--foreground);
+    background-color: var(--background);
+    background-image: linear-gradient(
+      var(--hero-angle, 200deg),
+      var(--hl-glow, var(--module-glow)) 0%,
+      color-mix(in oklab, var(--background) 30%, transparent) 45%,
+      var(--background) 100%
+    );
+    border: 1px solid var(--card-ring);
   }
-  /* shared dot pattern on EVERY hero card (sits behind the z-10 content) */
-  .highlight-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(circle, color-mix(in oklab, #fff 7%, transparent) 1px, transparent 1px);
-    background-size: 22px 22px;
-    pointer-events: none;
-  }
+  [dir="rtl"] .highlight-card { --hero-angle: 160deg; }
+  .highlight-card::after { content: none; }
   /* per-page soft hue for the highlight card (paired with .highlight-card) */
-  .hl-green   { --hl: #22c55e; }
-  .hl-teal    { --hl: #14b8a6; }
-  .hl-sky     { --hl: #3b82f6; }
-  .hl-blue    { --hl: #5b8def; }
-  .hl-indigo  { --hl: #6366f1; }
-  .hl-violet  { --hl: #8b5cf6; }
-  .hl-fuchsia { --hl: #c850dd; }
-  .hl-amber   { --hl: #e0a23c; }
-  .hl-rose    { --hl: #ef6a8a; }
+  .hl-green   { --hl: #007006; --hl-glow: color-mix(in oklab, #007006 22%, transparent); }
+  .hl-teal    { --hl: #14b8a6; --hl-glow: color-mix(in oklab, #14b8a6 18%, transparent); }
+  .hl-sky     { --hl: #5b8def; --hl-glow: color-mix(in oklab, #5b8def 18%, transparent); }
+  .hl-blue    { --hl: #5b8def; --hl-glow: color-mix(in oklab, #5b8def 18%, transparent); }
+  .hl-indigo  { --hl: #a997c7; --hl-glow: color-mix(in oklab, #a997c7 22%, transparent); }
+  .hl-violet  { --hl: #a997c7; --hl-glow: color-mix(in oklab, #a997c7 22%, transparent); }
+  .hl-fuchsia { --hl: #652a4c; --hl-glow: color-mix(in oklab, #652a4c 45%, transparent); }
+  .hl-amber   { --hl: #bc9951; --hl-glow: color-mix(in oklab, #bc9951 22%, transparent); }
+  .hl-rose    { --hl: #ce7a5b; --hl-glow: color-mix(in oklab, #ce7a5b 26%, transparent); }
 
   /* Sidebar active tab — ONE soft copper highlight + copper text, IDENTICAL
      in light & dark (single rule, no white sheen → no light/dark asymmetry). */
   .nav-active {
+    position: relative;
     color: var(--primary);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--primary) 16%, transparent) 0%,
-      color-mix(in oklab, var(--primary) 8%, transparent) 100%
-    );
-    box-shadow:
-      inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
-      0 6px 16px -8px color-mix(in oklab, var(--primary) 45%, transparent);
+    background-color: var(--soft-accent);
+  }
+  .nav-active::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -12px;
+    top: 50%;
+    height: 20px;
+    width: 3px;
+    translate: 0 -50%;
+    border-radius: 3px;
+    background: var(--primary);
   }
   /* Modern accents: gradient rose-gold CTA + accent chips. */
   .btn-primary-grad {
     color: var(--primary-foreground);
-    background-image: linear-gradient(
-      150deg,
-      color-mix(in oklab, var(--primary) 45%, #fff) 0%,
-      var(--primary) 52%,
-      color-mix(in oklab, var(--primary) 72%, #000) 100%
-    );
-    box-shadow: 0 8px 22px -9px color-mix(in oklab, var(--primary) 65%, transparent);
+    background-color: color-mix(in oklab, var(--primary) 80%, transparent);
   }
   .btn-primary-grad:hover {
-    filter: brightness(1.04);
-    box-shadow: 0 10px 26px -8px color-mix(in oklab, var(--primary) 75%, transparent);
+    background-color: var(--primary);
   }
   .accent-chip {
     color: var(--primary);
-    background-image: linear-gradient(
-      140deg,
-      color-mix(in oklab, var(--primary) 28%, transparent) 0%,
-      color-mix(in oklab, var(--primary) 9%, transparent) 100%
-    );
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 24%, transparent);
+    background-color: var(--soft-accent);
   }
   /* Copper/gold metallic gradient text — KPI numbers, accent words. */
   .metal-text {
@@ -602,18 +619,24 @@ body {
     border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
     box-shadow: 0 8px 30px -16px color-mix(in oklab, #000 30%, transparent);
   }
+  /* Module-tinted wash behind the top bar (Figma Page/Gradient/Up). */
   .ambient-page {
-    background-image: radial-gradient(
-      ellipse 78% 42% at 50% -6%,
-      color-mix(in oklab, var(--primary) 20%, transparent) 0%,
-      transparent 58%
-    );
+    background-image: linear-gradient(180deg, var(--module-glow) 0px, transparent 260px);
+    background-repeat: no-repeat;
   }
-  .dark .ambient-page {
-    background-image: radial-gradient(
-      ellipse 78% 42% at 50% -6%,
-      color-mix(in oklab, var(--primary) 14%, transparent) 0%,
-      transparent 58%
-    );
+
+  /* Figma "Card Separater": a hairline that fades out at both ends. */
+  .card-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--divider), transparent);
+  }
+  /* Figma secondary icon button (top bar, card actions): 36px, Shape/Fill/Secondary. */
+  .icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: var(--secondary);
+    color: var(--foreground);
   }
 }

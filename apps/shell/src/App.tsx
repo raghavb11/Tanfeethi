@@ -293,6 +293,10 @@ export default function App() {
         <Route path="admin/audit" element={<AuditLogPage />} />
         <Route path="knowledge" element={<KnowledgeCenterPage />} />
         <Route path="hubs/:hubId" element={<PreviewHubPage />} />
+        {/* WIJHA rail destinations — stand-ins until their pages land */}
+        <Route path="calendar" element={<Navigate to="/events" replace />} />
+        <Route path="learning" element={<Navigate to="/hubs/productivity" replace />} />
+        <Route path="operations" element={<Navigate to="/manager" replace />} />
       </Route>
     </Routes>
   )

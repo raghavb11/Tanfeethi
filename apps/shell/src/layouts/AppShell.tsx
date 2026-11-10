@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { AIAssistantPanel } from "@/components/layout/AIAssistantPanel"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
+import { railItemForPath } from "@/config/navigation"
 import { titleForPath } from "@/config/page-titles"
 import { useShell } from "@reach/shell-context"
 
@@ -33,17 +34,30 @@ export function AppShell() {
     setMobileNavOpen(false)
   }
 
+  // Per-module accent (Figma "Second Accent Color") — read by index.css.
+  const railItem = railItemForPath(location.pathname)
+  const module = railItem?.module ?? "home"
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-module", module)
+  }, [module])
+
+  // Breadcrumb: the owning rail section, unless we are on its landing page.
+  const isAr = locale === "ar"
+  const crumbs =
+    railItem && railItem.path !== location.pathname
+      ? [{ label: isAr ? railItem.titleAr : railItem.title, to: railItem.path }]
+      : undefined
+
   return (
     <div className="isolate flex h-svh bg-background text-foreground">
-      <div className="app-grain" aria-hidden="true" />
-      <div className="app-vignette" aria-hidden="true" />
       <Sidebar mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="ambient-page flex min-w-0 flex-1 flex-col">
         <TopBar
           title={titleForPath(location.pathname, locale)}
+          crumbs={crumbs}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
-        <main className="ambient-page relative min-h-0 flex-1 overflow-y-auto">
+        <main className="relative min-h-0 flex-1 overflow-y-auto">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 6 }}

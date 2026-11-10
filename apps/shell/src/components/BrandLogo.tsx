@@ -58,3 +58,30 @@ export function SidebarBrandLogo({ collapsed }: { collapsed: boolean }) {
     </Link>
   )
 }
+
+/**
+ * WIJHA gate mark — Figma "wijha-gate-4a-copper": two stroked arches, the outer
+ * in Shape/Accent gold, the inner in the purple second accent. Redrawn from the
+ * Figma node geometry (outer 21.6×31, inner 12.2×25 in a 36px box).
+ */
+export function WijhaMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 36 36" fill="none" className={className} aria-hidden focusable="false">
+      <path d="M7.2 34V13.6a10.8 10.8 0 0 1 21.6 0V34" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M11.9 34V14.9a6.1 6.1 0 0 1 12.2 0V34" stroke="#a997c7" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** Figma side-bar header: gate mark + "وجهة" (16px) over "WIJHA" (10px). */
+export function WijhaLockup() {
+  return (
+    <Link to="/" aria-label="وجهة — الرئيسية" className="flex items-center gap-1.5 text-foreground transition-opacity hover:opacity-90">
+      <WijhaMark className="size-9 shrink-0" />
+      <span className="flex flex-col leading-none">
+        <span className="text-[16px]">وجهة</span>
+        <span className="mt-[3px] text-[10px] tracking-wide text-muted-foreground">WIJHA</span>
+      </span>
+    </Link>
+  )
+}

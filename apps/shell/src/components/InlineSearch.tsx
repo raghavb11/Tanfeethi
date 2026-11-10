@@ -253,17 +253,18 @@ export function InlineSearch({
         aria-label="Open search"
         aria-expanded={open}
         className={cn(
-          "hidden md:flex items-center gap-2.5 rounded-xl border bg-[var(--card-elevated)] px-3.5 py-2 text-left transition-all w-72 lg:w-96",
-          "hover:border-primary/30 hover:shadow-sm",
+          // Figma top bar search: 447×36, Shape/Fill/Secondary-on-page, radius 8.
+          "hidden md:flex h-9 items-center gap-2.5 rounded-lg border bg-[var(--card-elevated)] px-3 text-start transition-colors w-72 lg:w-[447px]",
+          "hover:border-primary/30",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          open ? "border-primary/40 shadow-sm" : "border-border/60",
+          open ? "border-primary/40" : "border-border",
         )}
       >
-        <Search className={cn("size-3.5 shrink-0 transition-colors", open ? "text-primary" : "text-muted-foreground/50")} />
-        <span className="flex-1 truncate text-[13px] text-muted-foreground/60">
+        <Search className={cn("size-4 shrink-0 transition-colors", open ? "text-primary" : "text-icon")} />
+        <span className="flex-1 truncate text-[13px] text-muted-foreground">
           {placeholder}
         </span>
-        <kbd className="pointer-events-none shrink-0 rounded-md border border-border/60 bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground/60">
+        <kbd className="pointer-events-none shrink-0 font-sans text-[11px] text-muted-foreground">
           ⌘K
         </kbd>
       </button>
