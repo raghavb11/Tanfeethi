@@ -1,7 +1,7 @@
 import * as React from "react"
-import { Avatar, AvatarFallback, Card } from "@reach/shared-ui"
+import { Avatar, AvatarFallback, Card, MenuNoMatches, MenuSearchInput, SearchableSelect, useMenuSearch } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { Building2, Check, ChevronsUpDown, Plus, Search, Users, X } from "lucide-react"
+import { Building2, Check, ChevronDown, ChevronsUpDown, Plus, Users, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { DEPARTMENTS } from "../data/departments"
@@ -21,25 +21,20 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
   clearLabel: string
 }) {
   const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState("")
   const ref = React.useRef<HTMLDivElement>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener("mousedown", onDoc)
-    const id = window.setTimeout(() => inputRef.current?.focus(), 0)
-    return () => { document.removeEventListener("mousedown", onDoc); window.clearTimeout(id) }
+    return () => document.removeEventListener("mousedown", onDoc)
   }, [open])
 
   const selected = people.find((p) => p.id === value)
   const name = (p: Person) => (isAr ? p.nameAr : p.name)
-  const q = query.trim().toLowerCase()
-  const filtered = q
-    ? people.filter((p) => name(p).toLowerCase().includes(q) || (p.email ?? "").toLowerCase().includes(q))
-    : people
-  const pick = (id: string) => { onChange(id); setOpen(false); setQuery("") }
+  const pick = (id: string) => { onChange(id); setOpen(false) }
+  const s = useMenuSearch({ items: people, texts: (p) => [p.name, p.nameAr, p.email], open, onPick: (p) => pick(p.id), onClose: () => setOpen(false) })
+  const filtered = s.results
 
   return (
     <div ref={ref} className="relative">
@@ -63,16 +58,12 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
-          <div className="flex items-center gap-2 border-b border-border px-3">
-            <Search className="size-4 shrink-0 text-muted-foreground" />
-            <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
-              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {filtered.map((p) => (
-              <button key={p.id} type="button" onClick={() => pick(p.id)}
-                className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-start transition-colors hover:bg-muted">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-popover shadow-lg">
+          <div ref={(el) => { s.listRef.current = el }} className="max-h-72 overflow-y-auto p-1">
+            <MenuSearchInput value={s.query} onChange={s.setQuery} onKeyDown={s.onKeyDown} isAr={isAr} placeholder={searchPlaceholder} />
+            {filtered.map((p, i) => (
+              <button key={p.id} type="button" onClick={() => pick(p.id)} data-menu-idx={i} onMouseEnter={() => s.setActive(i)}
+                className={cn("flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-start transition-colors hover:bg-muted", i === s.active && "bg-muted")}>
                 <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{p.initials}</AvatarFallback></Avatar>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[13px] font-medium">{name(p)}</span>
@@ -81,7 +72,7 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
                 {value === p.id && <Check className="size-4 shrink-0 text-primary" />}
               </button>
             ))}
-            {filtered.length === 0 && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
+            {filtered.length === 0 && <MenuNoMatches isAr={isAr} text={emptyLabel} />}
           </div>
         </div>
       )}
@@ -89,34 +80,65 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
   )
 }
 
+/** Drop-in for a native <select> (same closed field: pass the select's classes) whose list opens with
+ *  a search row — people, departments and any list that can pass ~10 items (BUILD-GUIDELINES D3).
+ *  `value` "" shows `placeholder`; for "add from list" pickers keep value "" and add in onChange. */
+export function NativeSearchSelect({ value, onChange, options, placeholder, className, id, ariaLabel, isAr, searchable, minMenuWidth }: {
+  value: string
+  onChange: (v: string) => void
+  /** `alt` = the other-language name, matched by the search but not shown */
+  options: { value: string; label: string; alt?: string }[]
+  placeholder?: string
+  /** the classes the native <select> had */
+  className?: string
+  id?: string
+  ariaLabel?: string
+  isAr?: boolean
+  searchable?: boolean
+  minMenuWidth?: number
+}) {
+  const current = options.find((o) => o.value === value)
+  return (
+    <SearchableSelect
+      value={value} onChange={onChange} options={options} searchable={searchable ?? true} isAr={isAr} minMenuWidth={minMenuWidth}
+      renderTrigger={({ triggerProps }) => (
+        <button {...triggerProps} id={id} aria-label={ariaLabel} className={cn(className, "flex items-center gap-2 text-start")}>
+          <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? ""}</span>
+          <ChevronDown aria-hidden className="size-4 shrink-0 opacity-70" />
+        </button>
+      )}
+    />
+  )
+}
+
 /** Searchable single-select over plain string options (departments, teams…).
  *  Accepts a free-typed value too, so existing data is never orphaned. */
-export function SearchSelect({ value, onChange, options, placeholder, searchPlaceholder, emptyLabel, allowCustom = true }: {
+export function SearchSelect({ value, onChange, options, placeholder, searchPlaceholder, emptyLabel, allowCustom = true, altOf }: {
   value: string
   onChange: (v: string) => void
   options: string[]
+  /** other-language name of an option, matched by the search but not shown */
+  altOf?: (o: string) => string | undefined
   placeholder: string
   searchPlaceholder: string
   emptyLabel: string
   allowCustom?: boolean
 }) {
   const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState("")
   const ref = React.useRef<HTMLDivElement>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener("mousedown", onDoc)
-    const id = window.setTimeout(() => inputRef.current?.focus(), 0)
-    return () => { document.removeEventListener("mousedown", onDoc); window.clearTimeout(id) }
+    return () => document.removeEventListener("mousedown", onDoc)
   }, [open])
 
-  const q = query.trim()
-  const filtered = q ? options.filter((o) => o.toLowerCase().includes(q.toLowerCase())) : options
+  const pick = (v: string) => { onChange(v); setOpen(false) }
+  const s = useMenuSearch({ items: options, texts: (o) => [o, altOf?.(o)], open, onPick: pick, onClose: () => setOpen(false) })
+  const q = s.query.trim()
+  const filtered = s.results
   const canAddCustom = allowCustom && q.length > 0 && !options.some((o) => o.toLowerCase() === q.toLowerCase())
-  const pick = (v: string) => { onChange(v); setOpen(false); setQuery("") }
 
   return (
     <div ref={ref} className="relative">
@@ -127,17 +149,13 @@ export function SearchSelect({ value, onChange, options, placeholder, searchPlac
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
-          <div className="flex items-center gap-2 border-b border-border px-3">
-            <Search className="size-4 shrink-0 text-muted-foreground" />
-            <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
-              onKeyDown={(e) => { if (e.key === "Enter" && canAddCustom) { e.preventDefault(); pick(q) } }}
-              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {filtered.map((o) => (
-              <button key={o} type="button" onClick={() => pick(o)}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm transition-colors hover:bg-muted">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-popover shadow-lg">
+          <div ref={(el) => { s.listRef.current = el }} className="max-h-72 overflow-y-auto p-1">
+            <MenuSearchInput value={s.query} onChange={s.setQuery} placeholder={searchPlaceholder}
+              onKeyDown={(e) => { if (e.key === "Enter" && canAddCustom && filtered.length === 0) { e.preventDefault(); pick(q) } else s.onKeyDown(e) }} />
+            {filtered.map((o, i) => (
+              <button key={o} type="button" onClick={() => pick(o)} data-menu-idx={i} onMouseEnter={() => s.setActive(i)}
+                className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-sm transition-colors hover:bg-muted", i === s.active && "bg-muted")}>
                 <span className="size-4 shrink-0">{value === o && <Check className="size-4 text-primary" />}</span>
                 <span className="truncate">{o}</span>
               </button>
@@ -148,7 +166,7 @@ export function SearchSelect({ value, onChange, options, placeholder, searchPlac
                 <Plus className="size-4 shrink-0" /><span className="truncate">{q}</span>
               </button>
             )}
-            {filtered.length === 0 && !canAddCustom && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
+            {filtered.length === 0 && !canAddCustom && <MenuNoMatches text={emptyLabel} />}
           </div>
         </div>
       )}
@@ -168,25 +186,20 @@ export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, 
   emptyLabel: string
 }) {
   const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState("")
   const ref = React.useRef<HTMLDivElement>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener("mousedown", onDoc)
-    const id = window.setTimeout(() => inputRef.current?.focus(), 0)
-    return () => { document.removeEventListener("mousedown", onDoc); window.clearTimeout(id) }
+    return () => document.removeEventListener("mousedown", onDoc)
   }, [open])
 
   const name = (p: Person) => (isAr ? p.nameAr : p.name)
-  const q = query.trim().toLowerCase()
-  const filtered = q
-    ? people.filter((p) => name(p).toLowerCase().includes(q) || (p.email ?? "").toLowerCase().includes(q))
-    : people
   const selected = people.filter((p) => value.includes(p.id))
   const toggle = (id: string) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id])
+  const s = useMenuSearch({ items: people, texts: (p) => [p.name, p.nameAr, p.email], open, onPick: (p) => toggle(p.id), onClose: () => setOpen(false) })
+  const filtered = s.results
 
   return (
     <div ref={ref} className="relative">
@@ -199,18 +212,14 @@ export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, 
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
-          <div className="flex items-center gap-2 border-b border-border px-3">
-            <Search className="size-4 shrink-0 text-muted-foreground" />
-            <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
-              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {filtered.map((p) => {
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-popover shadow-lg">
+          <div ref={(el) => { s.listRef.current = el }} className="max-h-72 overflow-y-auto p-1">
+            <MenuSearchInput value={s.query} onChange={s.setQuery} onKeyDown={s.onKeyDown} isAr={isAr} placeholder={searchPlaceholder} />
+            {filtered.map((p, i) => {
               const on = value.includes(p.id)
               return (
-                <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on}
-                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-start transition-colors hover:bg-muted">
+                <button key={p.id} type="button" onClick={() => toggle(p.id)} aria-pressed={on} data-menu-idx={i} onMouseEnter={() => s.setActive(i)}
+                  className={cn("flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-start transition-colors hover:bg-muted", i === s.active && "bg-muted")}>
                   <span className={cn("grid size-4 shrink-0 place-items-center rounded border", on ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
                     {on && <Check className="size-3" />}
                   </span>
@@ -222,7 +231,7 @@ export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, 
                 </button>
               )
             })}
-            {filtered.length === 0 && <div className="px-2.5 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</div>}
+            {filtered.length === 0 && <MenuNoMatches isAr={isAr} text={emptyLabel} />}
           </div>
         </div>
       )}

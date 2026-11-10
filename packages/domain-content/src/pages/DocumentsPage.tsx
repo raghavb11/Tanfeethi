@@ -5,6 +5,7 @@ import * as React from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
+import { SearchableSelect } from "@reach/shared-ui"
 import {
   BadgeCheck, BookMarked, ChevronDown, ChevronUp, Download, Eye, FolderOpen, FolderUp,
   Lock, Megaphone, Newspaper, Plus, RotateCcw, Search, Trash2,
@@ -131,6 +132,8 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
   const needle = q.trim().toLowerCase()
   const subfolders = childrenOf(folder).filter((f) => !needle || name(f).toLowerCase().includes(needle))
   const owners = React.useMemo(() => Array.from(new Set(docs.map(ownerOf))).sort(), [docs, ownerOf])
+  // the other-language owner name, so the owner filter's search matches both
+  const ownerAlt = React.useMemo(() => new Map(docs.map((d): [string, string | undefined] => [ownerOf(d), isAr ? d.ownerPerson ?? d.owner : d.ownerPersonAr ?? d.ownerAr])), [docs, ownerOf, isAr])
 
   const rows = React.useMemo(() => {
     let out: Doc[]
@@ -175,7 +178,7 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
         <FilterSelect label={t("Type", "النوع")} value={typeFilter} onChange={(v) => setTypeFilter(v as Doc["type"] | "all")}
           options={[{ v: "all", l: t("Type", "النوع") }, ...TYPES.map((ty) => ({ v: ty, l: ty }))]} />
         <FilterSelect label={t("Owner", "المالك")} value={owner} onChange={setOwner}
-          options={[{ v: "all", l: t("Owner", "المالك") }, ...owners.map((o) => ({ v: o, l: o }))]} />
+          options={[{ v: "all", l: t("Owner", "المالك") }, ...owners.map((o) => ({ v: o, l: o, alt: ownerAlt.get(o) }))]} searchable />
         <FilterSelect label={t("Sort by", "الترتيب حسب")} value={sort} onChange={(v) => setSort(v as SortKey)}
           options={[
             { v: "recent", l: t("Sort by", "الترتيب حسب") },
@@ -286,7 +289,27 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
   )
 }
 
-function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
+function FilterSelect({ label, value, onChange, options, searchable }: {
+  label: string; value: string; onChange: (v: string) => void
+  options: { v: string; l: string; alt?: string }[]
+  /** owner / people / department lists — a search row at the top of the open list */
+  searchable?: boolean
+}) {
+  if (searchable) {
+    return (
+      <SearchableSelect
+        className="block w-[120px] shrink-0" value={value} onChange={onChange} searchable minMenuWidth={220}
+        options={options.map((o) => ({ value: o.v, label: o.l, alt: o.alt }))}
+        renderTrigger={({ triggerProps }) => (
+          <button {...triggerProps} aria-label={label}
+            className="relative flex h-9 w-full items-center truncate rounded-[8px] bg-card-elevated pe-8 ps-3 text-start text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-primary/60">
+            <span className="min-w-0 flex-1 truncate">{options.find((o) => o.v === value)?.l ?? ""}</span>
+            <ChevronDown className="pointer-events-none absolute end-2 top-1/2 size-4 -translate-y-1/2 text-icon" />
+          </button>
+        )}
+      />
+    )
+  }
   return (
     <span className="relative block w-[120px] shrink-0">
       <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}

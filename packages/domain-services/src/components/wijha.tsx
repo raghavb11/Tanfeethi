@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { cn } from "@reach/shared-core"
+import { SearchableSelect } from "@reach/shared-ui"
 import { Check, ChevronDown, type LucideIcon } from "lucide-react"
 
 import type { CategoryTone } from "../data/mock/services"
@@ -319,10 +320,11 @@ export function TextArea(p: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...p} className={cn(controlCls, "h-auto min-h-9 resize-y py-2.5 leading-[18px]", p.className)} />
 }
 
-export function SelectInput({ value, onChange, options, placeholder, id, className, disabled, prefix, invalid }: {
+export function SelectInput({ value, onChange, options, placeholder, id, className, disabled, prefix, invalid, searchable }: {
   value: string
   onChange: (v: string) => void
-  options: { value: string; label: string }[]
+  /** `alt` = the other-language name, matched by the search but not shown */
+  options: { value: string; label: string; alt?: string }[]
   placeholder?: string
   id?: string
   className?: string
@@ -330,7 +332,33 @@ export function SelectInput({ value, onChange, options, placeholder, id, classNa
   /** Small muted label inside the control, before the value (e.g. "Reassign:"). */
   prefix?: React.ReactNode
   invalid?: boolean
+  /** Searchable list (people / departments). Defaults to on above 10 options; the closed field looks the same. */
+  searchable?: boolean
 }) {
+  const { isAr } = useT()
+  if (searchable ?? options.length > 10) {
+    const current = options.find((o) => o.value === value)
+    return (
+      <SearchableSelect
+        className={cn("relative", className)} isAr={isAr} searchable disabled={disabled}
+        options={[{ value: "", label: placeholder ?? "—" }, ...options]} value={value} onChange={onChange}
+        renderTrigger={({ triggerProps }) => (
+          <>
+            {prefix && (
+              <span className="pointer-events-none absolute inset-y-0 start-3 z-[1] flex items-center gap-1 text-[11px] text-muted-foreground">{prefix}</span>
+            )}
+            <button
+              {...triggerProps} id={id} disabled={disabled} aria-invalid={invalid || undefined}
+              className={cn(controlCls, "flex items-center pe-8 text-start", invalid && "border-error/70", prefix && "ps-[92px]", !current && "text-[11.3px] text-muted-foreground")}
+            >
+              <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? "—"}</span>
+            </button>
+            <ChevronDown className="pointer-events-none absolute end-2 top-1/2 size-[13px] -translate-y-1/2 text-icon" />
+          </>
+        )}
+      />
+    )
+  }
   return (
     <div className={cn("relative", className)}>
       {prefix && (

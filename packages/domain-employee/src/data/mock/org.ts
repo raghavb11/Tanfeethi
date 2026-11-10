@@ -1,5 +1,6 @@
 /** Organisation chart — the reporting tree used by the Org Chart page.
  *  Demo-only fixtures; a real build reads these from the HR system. */
+import { matchesSearch } from "@reach/shared-ui"
 
 export type OrgPerson = {
   id: string
@@ -123,13 +124,10 @@ export function teamSize(id: string): number {
   return childrenOf(id).reduce((n, c) => n + 1 + teamSize(c.id), 0)
 }
 
-export function searchPeople(q: string, isAr: boolean): OrgPerson[] {
-  const needle = q.trim().toLowerCase()
-  if (!needle) return []
-  return ORG.filter((p) =>
-    [isAr ? p.nameAr : p.name, isAr ? p.titleAr : p.title, isAr ? p.departmentAr : p.department, p.email]
-      .some((f) => f.toLowerCase().includes(needle)),
-  ).slice(0, 8)
+/** Matches both languages, Arabic-normalised (hamza forms, ى/ي, ة/ه, tashkeel ignored). */
+export function searchPeople(q: string, _isAr: boolean): OrgPerson[] {
+  if (!q.trim()) return []
+  return ORG.filter((p) => matchesSearch(q, p.name, p.nameAr, p.title, p.titleAr, p.department, p.departmentAr, p.email)).slice(0, 8)
 }
 
 /** Headcount per department, for the legend and the summary strip. */

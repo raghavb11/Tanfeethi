@@ -8,7 +8,7 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, CalendarClock, Check, ChevronsUpDown, Hash, Infinity as InfinityIcon, Library, Scale, Search, Trash2, Upload, Users, X } from "lucide-react"
 
-import { CategoryBadge, DepartmentPicker, SearchSelect as SearchSelectPlain } from "./_ui"
+import { CategoryBadge, DepartmentPicker, NativeSearchSelect, SearchSelect as SearchSelectPlain } from "./_ui"
 import { RichTextEditor } from "./RichTextEditor"
 import { addPolicy, deletePolicy, getPolicyById, markSuperseded, POLICY_CATS, policyBody, policyCatAr, policyCatColor, suggestPolicyNumber, updatePolicy, usePolicies } from "../data/policies"
 import { affectedCount, OWNER_TEAMS } from "../data/departments"
@@ -317,10 +317,12 @@ export default function PolicyEditorPage() {
               <Library className="size-5 text-primary" />
               <span className="text-sm font-medium">{t("Attach from library", "إرفاق من المكتبة")}</span>
               {availableDocs.length > 0 ? (
-                <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="mt-1 h-9 w-full max-w-[16rem] rounded-[8px] border border-border bg-card px-2 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
-                  <option value="">{t("Choose a document…", "اختر مستندًا…")}</option>
-                  {availableDocs.map((d) => <option key={d.id} value={d.id}>{isAr ? d.nameAr : d.name} · {d.type}</option>)}
-                </select>
+                <div className="mt-1 w-full max-w-[16rem]">
+                  <NativeSearchSelect value="" onChange={(v) => { if (v) setRelatedDocs([...relatedDocs, v]) }} isAr={isAr} minMenuWidth={256}
+                    className="h-9 w-full rounded-[8px] border border-border bg-card px-2 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60"
+                    placeholder={t("Choose a document…", "اختر مستندًا…")}
+                    options={availableDocs.map((d) => ({ value: d.id, label: `${isAr ? d.nameAr : d.name} · ${d.type}`, alt: isAr ? d.name : d.nameAr }))} />
+                </div>
               ) : (
                 <span className="text-xs text-muted-foreground">{t("All library documents attached", "تم إرفاق جميع مستندات المكتبة")}</span>
               )}

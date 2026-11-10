@@ -6,6 +6,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { useLocation } from "react-router-dom"
 import { cn } from "@reach/shared-core"
+import { MenuNoMatches, MenuSearchInput, SearchableSelect, useMenuSearch } from "@reach/shared-ui"
 import { Check, ChevronDown, ChevronLeft, ChevronRight, CircleX, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -179,18 +180,50 @@ export function WSelect({ className, children, ...rest }: React.SelectHTMLAttrib
   )
 }
 
+/** WSelect's closed field over a searchable list — for people, departments and lists that can pass ~10. */
+export function WSearchSelect({ value, onChange, options, placeholder, isAr, className, disabled, searchable = true }: {
+  value: string
+  onChange: (v: string) => void
+  /** `alt` = the other-language name, matched by the search but not shown */
+  options: { value: string; label: string; alt?: string }[]
+  placeholder?: string
+  isAr?: boolean
+  className?: string
+  disabled?: boolean
+  searchable?: boolean
+}) {
+  const current = options.find((o) => o.value === value)
+  return (
+    <SearchableSelect
+      className={cn("block", className)} value={value} onChange={onChange} options={options} searchable={searchable} isAr={isAr} disabled={disabled}
+      renderTrigger={({ triggerProps }) => (
+        <>
+          <button {...triggerProps} disabled={disabled} className={cn(FIELD, "flex items-center pe-9 text-start", !current && "text-muted-foreground")}>
+            <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? ""}</span>
+          </button>
+          <ChevronDown className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-icon" />
+        </>
+      )}
+    />
+  )
+}
+
 /** Multi-select drawn as "الكل (4)": label + count badge + chevron; opens an
  *  inline checklist. Empty selection means everyone ("All"). */
-export function CountSelect({ options, value, onChange, allLabel, isAr, className }: {
-  options: { id: string; label: string }[]
+export function CountSelect({ options, value, onChange, allLabel, isAr, className, searchable = true }: {
+  /** `alt` = the other-language name, matched by the search but not shown */
+  options: { id: string; label: string; alt?: string }[]
   value: string[]
   onChange: (ids: string[]) => void
   allLabel: string
   isAr: boolean
   className?: string
+  /** search row at the top of the open list (departments / people) */
+  searchable?: boolean
 }) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
+  const btnRef = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -205,29 +238,40 @@ export function CountSelect({ options, value, onChange, allLabel, isAr, classNam
     const next = base.includes(id) ? base.filter((x) => x !== id) : [...base, id]
     onChange(next.length === options.length ? [] : next)
   }
+  const s = useMenuSearch({
+    items: options, texts: (o) => [o.label, o.alt], open, enabled: searchable,
+    onPick: (o) => toggle(o.id),
+    onClose: () => { setOpen(false); btnRef.current?.focus({ preventScroll: true }) },
+  })
+  const filtering = s.query.trim() !== ""
   return (
     <div ref={ref} className={cn("relative min-w-0", className)}>
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
+      <button ref={btnRef} type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         className={cn(FIELD, "flex items-center gap-[9px] pe-3 ps-2 text-start")}>
         <span className="grid size-6 shrink-0 place-items-center rounded-full bg-secondary text-[10px] font-medium text-primary tabular-nums">{count}</span>
         <span className="min-w-0 flex-1 truncate">{label}</span>
         <ChevronDown className="size-4 shrink-0 text-icon" />
       </button>
       {open && (
-        <div className="absolute inset-x-0 z-40 mt-1 max-h-60 overflow-y-auto rounded-[8px] bg-[var(--card-elevated)] p-1 shadow-lg ring-1 ring-[var(--card-ring)]">
-          <button type="button" onClick={() => onChange([])} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary">
-            <span className={cn("grid size-4 place-items-center rounded border", all ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{all && <Check className="size-3" />}</span>
-            {allLabel}
-          </button>
-          {options.map((o) => {
+        <div ref={(el) => { s.listRef.current = el }} className="absolute inset-x-0 z-40 mt-1 max-h-72 overflow-y-auto rounded-[8px] bg-[var(--card-elevated)] p-1 shadow-lg ring-1 ring-[var(--card-ring)]">
+          {searchable && <MenuSearchInput value={s.query} onChange={s.setQuery} onKeyDown={s.onKeyDown} isAr={isAr} className="bg-[var(--card-elevated)]" />}
+          {!filtering && (
+            <button type="button" onClick={() => onChange([])} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary">
+              <span className={cn("grid size-4 place-items-center rounded border", all ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{all && <Check className="size-3" />}</span>
+              {allLabel}
+            </button>
+          )}
+          {s.results.map((o, i) => {
             const on = all || value.includes(o.id)
             return (
-              <button key={o.id} type="button" onClick={() => toggle(o.id)} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary">
+              <button key={o.id} type="button" onClick={() => toggle(o.id)} data-menu-idx={i} onMouseEnter={() => s.setActive(i)}
+                className={cn("flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary", i === s.active && "bg-secondary")}>
                 <span className={cn("grid size-4 place-items-center rounded border", on ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{on && <Check className="size-3" />}</span>
                 <span className="truncate">{o.label}</span>
               </button>
             )
           })}
+          {s.results.length === 0 && <MenuNoMatches isAr={isAr} />}
           <p className="px-2 pb-1 pt-2 text-[11px] text-muted-foreground">{isAr ? "عدم التحديد يعني الجميع" : "No selection means everyone"}</p>
         </div>
       )}

@@ -3,12 +3,7 @@
  *  gold underline, 34px buttons, 36px inputs, 12.5px table headers, 13.5px cells). */
 import * as React from "react"
 import { Link } from "react-router-dom"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@reach/shared-ui"
+import { SearchableSelect } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { CalendarDays, ChevronDown, Inbox, Info } from "lucide-react"
 
@@ -257,6 +252,8 @@ export function Field({
   )
 }
 
+export type PickOption = { value: string; label: string; /** other-language name, matched by the search */ alt?: string }
+
 export function SelectBox({
   id,
   value,
@@ -269,11 +266,12 @@ export function SelectBox({
   className,
   controlClassName,
   ariaLabel,
+  searchable,
 }: {
   id?: string
   value: string
   onChange: (v: string) => void
-  options: { value: string; label: string }[]
+  options: PickOption[]
   placeholder?: string
   surface?: "page" | "card"
   disabled?: boolean
@@ -282,7 +280,27 @@ export function SelectBox({
   /** Extra classes for the <select> itself (e.g. the read-only fill). */
   controlClassName?: string
   ariaLabel?: string
+  /** Searchable list (people / departments). Defaults to on above 10 options; the closed field looks the same. */
+  searchable?: boolean
 }) {
+  const { isAr } = useT()
+  if (searchable ?? options.length > 10) {
+    const current = options.find((o) => o.value === value)
+    return (
+      <SearchableSelect
+        className={className} options={options} value={value} onChange={onChange} searchable isAr={isAr} disabled={disabled}
+        renderTrigger={({ triggerProps }) => (
+          <button
+            {...triggerProps} id={id} aria-label={ariaLabel} disabled={disabled}
+            className={cn(inputCls(surface, invalid), "relative flex items-center pe-8 text-start", !current && "text-muted-foreground", controlClassName)}
+          >
+            <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? ""}</span>
+            <ChevronDown aria-hidden className="pointer-events-none absolute end-3 top-1/2 size-[13px] -translate-y-1/2 text-foreground" />
+          </button>
+        )}
+      />
+    )
+  }
   return (
     <div className={cn("relative min-w-0", className)}>
       <select
@@ -366,7 +384,8 @@ export function DateBox({
 }
 
 /** Multi-select with the Figma "Selection container" look:
- *  [count badge] [muted label] [first value] … [caret]. */
+ *  [count badge] [muted label] [first value] … [caret]. Searchable when `searchable`
+ *  (people / departments) or above 10 options; the menu stays open while ticking. */
 export function MultiSelect({
   label,
   options,
@@ -375,64 +394,73 @@ export function MultiSelect({
   allLabel,
   className,
   invalid,
+  searchable,
 }: {
   label: string
-  options: { value: string; label: string }[]
+  options: PickOption[]
   value: string[]
   onChange: (v: string[]) => void
   /** Shown when nothing is selected (e.g. "الكل"). */
   allLabel?: string
   className?: string
   invalid?: boolean
+  searchable?: boolean
 }) {
+  const { isAr } = useT()
   const first = options.find((o) => o.value === value[0])?.label
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(inputCls("page", invalid), "flex items-center gap-[9px] text-start", className)}
-        aria-label={label}
-      >
-        {value.length > 0 && (
-          <span className="inline-flex size-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-            {value.length}
-          </span>
-        )}
-        <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>
-        <span className="min-w-0 flex-1 truncate">{first ?? allLabel ?? ""}</span>
-        <ChevronDown aria-hidden className="size-[13px] shrink-0" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-48">
-        {options.map((o) => (
-          <DropdownMenuCheckboxItem
-            key={o.value}
-            checked={value.includes(o.value)}
-            onCheckedChange={(checked) =>
-              onChange(checked ? [...value, o.value] : value.filter((v) => v !== o.value))
-            }
-          >
-            {o.label}
-          </DropdownMenuCheckboxItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <SearchableSelect
+      options={options} values={value} searchable={searchable} isAr={isAr} minMenuWidth={192}
+      onToggle={(v) => onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v])}
+      renderTrigger={({ triggerProps }) => (
+        <button {...triggerProps} aria-label={label} className={cn(inputCls("page", invalid), "flex items-center gap-[9px] text-start", className)}>
+          {value.length > 0 && (
+            <span className="inline-flex size-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+              {value.length}
+            </span>
+          )}
+          <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>
+          <span className="min-w-0 flex-1 truncate">{first ?? allLabel ?? ""}</span>
+          <ChevronDown aria-hidden className="size-[13px] shrink-0" />
+        </button>
+      )}
+    />
   )
 }
 
-/** Compact filter select used above the evaluation logs: [muted label] [value] … [caret]. */
+/** Compact filter select used above the evaluation logs: [muted label] [value] … [caret].
+ *  Searchable when `searchable` (people / departments) or above 10 options. */
 export function FilterSelect({
   label,
   value,
   onChange,
   options,
   className,
+  searchable,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
-  options: { value: string; label: string }[]
+  options: PickOption[]
   className?: string
+  searchable?: boolean
 }) {
+  const { isAr } = useT()
   const current = options.find((o) => o.value === value)?.label ?? ""
+  if (searchable ?? options.length > 10) {
+    return (
+      <SearchableSelect
+        className={className} options={options} value={value} onChange={onChange} searchable isAr={isAr}
+        renderTrigger={({ triggerProps }) => (
+          <button {...triggerProps} aria-label={label} className={cn(inputCls("page"), "relative flex cursor-pointer items-center gap-[9px] text-start")}>
+            <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>
+            <span className="min-w-0 flex-1 truncate font-semibold">{current}</span>
+            <ChevronDown aria-hidden className="size-[13px] shrink-0" />
+          </button>
+        )}
+      />
+    )
+  }
   return (
     <label className={cn(inputCls("page"), "relative flex cursor-pointer items-center gap-[9px]", className)}>
       <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>

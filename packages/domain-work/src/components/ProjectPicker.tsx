@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@reach/shared-core"
+import { matchesSearch } from "@reach/shared-ui"
 import { Check, ChevronsUpDown, FolderOpen, Plus, Search, X } from "lucide-react"
 
 import { STATUS_LABEL, useProjects } from "../data/projects"
@@ -32,10 +33,7 @@ export function ProjectPicker({ value, onChange, isAr, t, onCreate }: {
     return p ? (isAr ? p.nameAr : p.name) : ""
   }
   const selected = projects.find((p) => p.id === value)
-  const q = query.trim().toLowerCase()
-  const filtered = q
-    ? projects.filter((p) => (isAr ? p.nameAr : p.name).toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
-    : projects
+  const filtered = projects.filter((p) => matchesSearch(query, p.name, p.nameAr, p.code))
 
   const pick = (id: string) => { onChange(id); setOpen(false); setQuery("") }
 

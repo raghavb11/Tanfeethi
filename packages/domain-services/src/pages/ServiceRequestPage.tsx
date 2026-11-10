@@ -54,7 +54,8 @@ export default function ServiceRequestPage() {
               {t("Employee", "الموظف")}
             </>
           }
-          options={employees.map((e) => ({ value: e.id, label: isAr ? e.nameAr : e.name }))}
+          options={employees.map((e) => ({ value: e.id, label: isAr ? e.nameAr : e.name, alt: isAr ? e.name : e.nameAr }))}
+          searchable
         />
       )
     }

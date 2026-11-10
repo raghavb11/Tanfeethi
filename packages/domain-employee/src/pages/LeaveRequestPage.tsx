@@ -2,6 +2,7 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
+import { SearchableSelect } from "@reach/shared-ui"
 import { AlertTriangle, CalendarDays, ChevronDown, Info, Paperclip, Umbrella, Users, X } from "lucide-react"
 
 import {
@@ -111,13 +112,25 @@ export default function LeaveRequestPage() {
               </div>
               <div>
                 <FieldLabel htmlFor="lv-delegate" required className={lbl}>{t("Covering colleague", "الموظف المناب عنك")}</FieldLabel>
-                {selectWrap(
-                  <select id="lv-delegate" value={delegateId} onChange={(e) => setDelegateId(e.target.value)} required
-                    className={cn(fc, "appearance-none pe-9", !delegateId && "text-muted-foreground", tried && !delegateId && "border-error")}>
-                    <option value="" disabled>{t("Choose from the list", "اختر من القائمة")}</option>
-                    {delegates.map((p) => <option key={p.id} value={p.id}>{isAr ? p.nameAr : p.name} — {isAr ? p.titleAr : p.title}</option>)}
-                  </select>,
-                )}
+                {/* People picker: searchable (owner rule — "keep the name DD searchable everywhere"); same closed field as the native select. */}
+                <SearchableSelect
+                  value={delegateId} onChange={setDelegateId} searchable isAr={isAr}
+                  options={delegates.map((p) => ({
+                    value: p.id, label: `${isAr ? p.nameAr : p.name} — ${isAr ? p.titleAr : p.title}`,
+                    alt: `${isAr ? p.name : p.nameAr} ${isAr ? p.title : p.titleAr}`,
+                  }))}
+                  renderTrigger={({ triggerProps }) => (
+                    <>
+                      <button {...triggerProps} id="lv-delegate" aria-required
+                        className={cn(fc, "flex items-center pe-9 text-start", !delegate && "text-muted-foreground", tried && !delegateId && "border-error")}>
+                        <span className="min-w-0 flex-1 truncate">
+                          {delegate ? `${isAr ? delegate.nameAr : delegate.name} — ${isAr ? delegate.titleAr : delegate.title}` : t("Choose from the list", "اختر من القائمة")}
+                        </span>
+                      </button>
+                      <ChevronDown className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-icon" />
+                    </>
+                  )}
+                />
               </div>
               <div>
                 <FieldLabel htmlFor="lv-from" required className={lbl}>{t("Leave start date", "تاريخ بداية الإجازة")}</FieldLabel>

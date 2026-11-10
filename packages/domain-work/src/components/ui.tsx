@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@reach/shared-core"
+import { MenuNoMatches, MenuSearchInput, useMenuSearch } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { Check, ChevronDown } from "lucide-react"
 
@@ -144,11 +145,15 @@ export function TextCounter({ text, isAr }: { text: string; isAr: boolean }) {
   )
 }
 
-export type Option = { value: string; label: string; hint?: React.ReactNode; lead?: React.ReactNode }
+export type Option = {
+  value: string; label: string; hint?: React.ReactNode; lead?: React.ReactNode
+  /** other-language name — matched by the menu search, not shown */
+  alt?: string
+}
 
 /** Figma filter dropdown (h36 · radius 8 · Card/Fill · px 12 · gap 9):
  *  [leading mark] label  value ………… [count] ⌄ . Opens a small list inline. */
-export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue, triggerClassName, footer }: {
+export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue, triggerClassName, footer, searchable }: {
   lead?: React.ReactNode
   label?: string
   value: string
@@ -164,21 +169,33 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
   triggerClassName?: string
   /** a last row under the options (e.g. "Manage sprints"); clicking it closes the list */
   footer?: React.ReactNode
+  /** search row at the top of the open list — always on for people / departments; defaults to on above 10 options */
+  searchable?: boolean
 }) {
+  const { isAr } = useT()
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
+  const btnRef = React.useRef<HTMLButtonElement>(null)
+  const enabled = searchable ?? options.length > 10
+  const close = React.useCallback(() => setOpen(false), [])
+  const s = useMenuSearch({
+    items: options, texts: (o) => [o.label, o.alt], open, enabled,
+    onPick: (o) => { onChange(o.value); setOpen(false); btnRef.current?.focus({ preventScroll: true }) },
+    onClose: () => { setOpen(false); btnRef.current?.focus({ preventScroll: true }) },
+  })
   React.useEffect(() => {
     if (!open) return
-    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false) }
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) close() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close() }
     document.addEventListener("mousedown", onDoc)
     document.addEventListener("keydown", onKey)
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey) }
-  }, [open])
+  }, [open, close])
   const current = options.find((o) => o.value === value)
   return (
     <div ref={ref} className={cn("relative", className)}>
       <button
+        ref={btnRef}
         type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="listbox"
         aria-label={ariaLabel ?? label}
         className={cn("flex h-9 w-full items-center gap-[9px] rounded-[8px] bg-[var(--card-elevated)] ps-3 pe-3 text-start outline-none ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 focus-visible:ring-primary", triggerClassName)}
@@ -190,29 +207,35 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
         <ChevronDown className={cn("size-[13px] shrink-0 text-icon transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <ul
-          role="listbox"
+        <div
+          ref={(el) => { s.listRef.current = el }}
           className={cn("absolute inset-x-0 top-full z-30 mt-1 max-h-72 min-w-44 overflow-y-auto rounded-lg bg-popover p-1 shadow-lg ring-1 ring-[var(--card-ring)]", menuClassName)}
         >
-          {options.map((o) => (
-            <li key={o.value}>
-              <button
-                type="button" role="option" aria-selected={o.value === value}
-                onClick={() => { onChange(o.value); setOpen(false) }}
-                className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-[12.5px] transition-colors hover:bg-soft-accent",
-                  o.value === value && "text-primary")}
-              >
-                {o.lead}
-                <span className="min-w-0 flex-1 truncate">{o.label}</span>
-                {o.hint !== undefined && <span className="text-[11px] tabular-nums text-muted-foreground">{o.hint}</span>}
-                {o.value === value && <Check className="size-3.5 shrink-0" />}
-              </button>
-            </li>
-          ))}
+          {enabled && <MenuSearchInput value={s.query} onChange={s.setQuery} onKeyDown={s.onKeyDown} isAr={isAr} />}
+          <ul role="listbox">
+            {s.results.map((o, i) => (
+              <li key={o.value}>
+                <button
+                  type="button" role="option" aria-selected={o.value === value} data-menu-idx={i}
+                  onMouseEnter={() => enabled && s.setActive(i)}
+                  onClick={() => { onChange(o.value); setOpen(false) }}
+                  className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-[12.5px] transition-colors hover:bg-soft-accent",
+                    enabled && i === s.active && "bg-soft-accent",
+                    o.value === value && "text-primary")}
+                >
+                  {o.lead}
+                  <span className="min-w-0 flex-1 truncate">{o.label}</span>
+                  {o.hint !== undefined && <span className="text-[11px] tabular-nums text-muted-foreground">{o.hint}</span>}
+                  {o.value === value && <Check className="size-3.5 shrink-0" />}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {s.results.length === 0 && <MenuNoMatches isAr={isAr} />}
           {footer && (
-            <li className="mt-1 border-t border-border pt-1" onClick={() => setOpen(false)}>{footer}</li>
+            <div className="mt-1 border-t border-border pt-1" onClick={() => setOpen(false)}>{footer}</div>
           )}
-        </ul>
+        </div>
       )}
     </div>
   )

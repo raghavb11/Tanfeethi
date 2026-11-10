@@ -15,7 +15,7 @@ export function SurveyCreateModal({ open, onClose, isAr }: { open: boolean; onCl
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
   const created = React.useSyncExternalStore(subscribeCreated, getCreatedSurveys)
-  const deptOptions = React.useMemo(() => SURVEY_DEPTS.map((d) => ({ id: d.id, label: isAr ? d.ar : d.en })), [isAr])
+  const deptOptions = React.useMemo(() => SURVEY_DEPTS.map((d) => ({ id: d.id, label: isAr ? d.ar : d.en, alt: isAr ? d.en : d.ar })), [isAr])
 
   const [kind, setKind] = React.useState<"survey" | "poll">("survey")
   const [title, setTitle] = React.useState("")

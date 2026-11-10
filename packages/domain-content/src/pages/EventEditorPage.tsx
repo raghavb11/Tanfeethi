@@ -8,7 +8,7 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react"
 
-import { SearchSelect } from "./_ui"
+import { NativeSearchSelect, SearchSelect } from "./_ui"
 import { addEvent, deleteEvent, EVENT_CATEGORIES, EVENT_FORMATS, EVENT_IMAGES, type EventItem, formatAr, getEventById, updateEvent } from "../data/events"
 import { OWNER_TEAMS } from "../data/departments"
 import { logAudit } from "../data/audit"
@@ -84,7 +84,7 @@ export default function EventEditorPage() {
         {field("ev-desc", t("Description", "الوصف"), <Textarea id="ev-desc" rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} className="text-[15px] leading-relaxed" />)}
         <div className="grid gap-4 sm:grid-cols-3">
           {field("ev-day", t("Day", "اليوم"), <Input id="ev-day" value={day} onChange={(e) => setDay(e.target.value)} className="h-11" />)}
-          {field("ev-mon", t("Month", "الشهر"), <select id="ev-mon" value={mon} onChange={(e) => setMon(e.target.value)} className={selectCls}>{MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}</select>)}
+          {field("ev-mon", t("Month", "الشهر"), <NativeSearchSelect id="ev-mon" value={mon} onChange={setMon} className={selectCls} isAr={isAr} options={MONTHS.map((m) => ({ value: m, label: m }))} />)}
           {field("ev-time", t("Time", "الوقت"), <Input id="ev-time" value={time} onChange={(e) => setTime(e.target.value)} className="h-11" />)}
         </div>
         {field("ev-loc", t("Location", "المكان"), <Input id="ev-loc" value={location} onChange={(e) => setLocation(e.target.value)} className="h-11" />)}

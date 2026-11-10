@@ -370,8 +370,8 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   const taskTotal = create ? draft?.subtasks?.filter((x) => x.trim()).length ?? 0 : projectTasks.length
 
   const ownerOptions = [
-    { value: "me", label: isAr ? ME.nameAr : ME.name, lead: <Initials text={ME.initials} /> },
-    ...team.map((m) => ({ value: m.id, label: isAr ? m.nameAr : m.name, lead: <Initials text={m.initials} /> })),
+    { value: "me", label: isAr ? ME.nameAr : ME.name, alt: isAr ? ME.name : ME.nameAr, lead: <Initials text={ME.initials} /> },
+    ...team.map((m) => ({ value: m.id, label: isAr ? m.nameAr : m.name, alt: isAr ? m.name : m.nameAr, lead: <Initials text={m.initials} /> })),
   ]
 
   return (
@@ -392,7 +392,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                   lead={<UserRoundCog className="size-4 shrink-0 text-icon" />}
                   label={t("Reassign", "إعادة إسناد")}
                   value={fields.ownerId} options={ownerOptions} onChange={assign}
-                  menuClassName="w-64" hideValue triggerClassName="h-[34px] bg-foreground/[0.08]"
+                  menuClassName="w-64" hideValue triggerClassName="h-[34px] bg-foreground/[0.08]" searchable
                 />
                 {task && (
                   <FilterSelect
@@ -573,7 +573,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<UserRoundCog className="size-4 shrink-0 text-icon" />}
                     label={create ? t("Assign:", "إسناد:") : t("Reassign:", "إعادة إسناد:")} value={draft.ownerId}
-                    onChange={(v) => patch({ ownerId: v })} options={ownerOptions} />
+                    onChange={(v) => patch({ ownerId: v })} options={ownerOptions} searchable />
                 )} />
               <Row label={t("Due date", "تاريخ الاستحقاق")} edit={editing} error={err("due") ?? err("start")}
                 view={<span className={cn(task && task.status !== "completed" && task.dueISO < TASK_TODAY_ISO && "text-error")}>{shortDate(fields.dueISO, isAr)}</span>}

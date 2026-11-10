@@ -9,7 +9,7 @@ import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Bell, Calendar, Check, Eye, FileText, ImageIcon, MapPin, Newspaper, Paperclip, PenLine, Star, Trash2, Upload, UserCircle2, Users, X } from "lucide-react"
 
-import { PeopleMultiPicker, PersonPicker } from "./_ui"
+import { NativeSearchSelect, PeopleMultiPicker, PersonPicker } from "./_ui"
 import { addArticle, type ArticleAttachment, deleteArticle, updateArticle, useArticles } from "../store"
 import { usePortalUsers } from "../data/roles"
 import { logAudit } from "../data/audit"
@@ -355,10 +355,8 @@ function MultiSelect({ label, icon: Icon, options, value, onChange, isAr, placeh
   return (
     <div>
       <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"><Icon className="size-3.5 text-primary" />{label}</label>
-      <select value="" onChange={(e) => { if (e.target.value) onChange([...value, e.target.value]) }} className={SELECT_CLS}>
-        <option value="">{placeholder}</option>
-        {available.map((o) => <option key={o.id} value={o.id}>{isAr ? o.ar : o.label}</option>)}
-      </select>
+      <NativeSearchSelect value="" onChange={(v) => { if (v) onChange([...value, v]) }} className={SELECT_CLS} placeholder={placeholder} isAr={isAr}
+        options={available.map((o) => ({ value: o.id, label: isAr ? o.ar : o.label, alt: isAr ? o.label : o.ar }))} />
       {selected.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {selected.map((o) => (

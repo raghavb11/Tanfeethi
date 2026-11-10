@@ -1,6 +1,7 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { cn } from "@reach/shared-core"
+import { matchesSearch } from "@reach/shared-ui"
 import { Check, ChevronsUpDown, Handshake, Plus, Search, X } from "lucide-react"
 
 import { CATEGORY, PARTNER_STATUS, usePartners } from "../data/mock/partners"
@@ -64,13 +65,7 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
   }, [open, place])
 
   const selected = partners.find((p) => p.id === value)
-  const q = query.trim().toLowerCase()
-  const filtered = q
-    ? partners.filter((p) =>
-        (isAr ? p.nameAr : p.name).toLowerCase().includes(q) ||
-        p.name.toLowerCase().includes(q) ||
-        p.code.toLowerCase().includes(q))
-    : partners
+  const filtered = partners.filter((p) => matchesSearch(query, p.name, p.nameAr, p.code))
 
   const pick = (id: string) => { onChange(id); setOpen(false); setQuery("") }
 

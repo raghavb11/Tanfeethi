@@ -74,7 +74,8 @@ export function EvaluationLog({
             <MultiSelect
               label={t("Employees", "الموظفون")}
               allLabel={t("All", "الكل")}
-              options={peopleOptions.map(([id, name]) => ({ value: id, label: l(name) }))}
+              options={peopleOptions.map(([id, name]) => ({ value: id, label: l(name), alt: `${name.en} ${name.ar}` }))}
+              searchable
               value={people}
               onChange={setPeople}
             />

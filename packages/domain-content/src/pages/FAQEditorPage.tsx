@@ -8,7 +8,7 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, FileText, HelpCircle, Link2, Plus, Trash2, X } from "lucide-react"
 
-import { CategoryBadge, DepartmentPicker, RICH_PROSE } from "./_ui"
+import { CategoryBadge, DepartmentPicker, NativeSearchSelect, RICH_PROSE } from "./_ui"
 import { RichTextEditor } from "./RichTextEditor"
 import { addFaq, deleteFaq, type FaqLink, getFaqById, newFaqId, updateFaq } from "../data/faqs"
 import { findCategory, useCategories } from "../data/faqCategories"
@@ -137,10 +137,10 @@ export default function FAQEditorPage() {
               )
             })}
             {availableDocs.length > 0 && (
-              <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="h-10 w-full rounded-[8px] border border-dashed border-border bg-transparent px-3 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
-                <option value="">{t("+ Attach a document from the library", "+ إرفاق مستند من المكتبة")}</option>
-                {availableDocs.map((d) => <option key={d.id} value={d.id}>{isAr ? d.nameAr : d.name} · {d.type}</option>)}
-              </select>
+              <NativeSearchSelect value="" onChange={(v) => { if (v) setRelatedDocs([...relatedDocs, v]) }} isAr={isAr}
+                className="h-10 w-full rounded-[8px] border border-dashed border-border bg-transparent px-3 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60"
+                placeholder={t("+ Attach a document from the library", "+ إرفاق مستند من المكتبة")}
+                options={availableDocs.map((d) => ({ value: d.id, label: `${isAr ? d.nameAr : d.name} · ${d.type}`, alt: isAr ? d.name : d.nameAr }))} />
             )}
           </div>
         </div>

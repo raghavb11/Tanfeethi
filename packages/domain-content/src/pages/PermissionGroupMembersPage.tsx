@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Avatar, AvatarFallback, Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Avatar, AvatarFallback, Badge, Button, Card, Input, matchesSearch } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ChevronLeft, ChevronRight, Download, Layers, ListFilter, Plus, Search, Shield, Trash2, UserPlus, Users, X } from "lucide-react"
@@ -52,7 +52,7 @@ export default function PermissionGroupMembersPage() {
 
   const candidates = users.filter((u) =>
     !group.members.includes(u.id) &&
-    (addQ === "" || (isAr ? u.nameAr : u.name).toLowerCase().includes(addQ.toLowerCase()) || u.email.toLowerCase().includes(addQ.toLowerCase())),
+    matchesSearch(addQ, u.name, u.nameAr, u.email),
   )
 
   const remove = (userId: string) => {

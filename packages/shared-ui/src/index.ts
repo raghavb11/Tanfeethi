@@ -95,3 +95,13 @@ export {
 } from "./tooltip"
 export { ScrollArea, ScrollBar } from "./scroll-area"
 export { MotionCard, staggerContainer, staggerItem } from "./motion/MotionCard"
+export {
+  SearchableSelect,
+  MenuSearchInput,
+  MenuNoMatches,
+  useMenuSearch,
+  normalizeSearch,
+  matchesSearch,
+  menuSearchCopy,
+} from "./searchable-menu"
+export type { SearchableOption, SearchableTriggerProps } from "./searchable-menu"

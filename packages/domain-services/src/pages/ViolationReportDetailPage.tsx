@@ -101,22 +101,22 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
           : o(r.createdBy))}
         {edit
           ? row(t("Request Status", "حالة الطلب"), control(
-              <SelectInput value={status} onChange={(v) => setStatus(v as ViolationStatus)} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
+              <SelectInput value={status} onChange={(v) => setStatus(v as ViolationStatus)} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium [&>button]:bg-card [&>button]:text-[12.5px] [&>button]:font-medium"
                 options={(Object.keys(statusOptions) as ViolationStatus[]).map((s) => ({ value: s, label: o(statusOptions[s]) }))} />))
           : row(t("Request Status", "حالة الطلب"), o(statusOptions[r.status]))}
         {edit
           ? row(t("Assigned to Department", "مسند للإدارة"), control(
-              <SelectInput value={dept} onChange={setDept} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
-                options={departments.map((d) => ({ value: d.id, label: o(d) }))} />))
+              <SelectInput value={dept} onChange={setDept} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium [&>button]:bg-card [&>button]:text-[12.5px] [&>button]:font-medium"
+                options={departments.map((d) => ({ value: d.id, label: o(d), alt: `${d.en} ${d.ar}` }))} searchable />))
           : row(t("Assigned to Department", "مسند للإدارة"), o(deptById(r.assignedDeptId)))}
         {edit
           ? row(t("Assigned to Employee", "مسند للموظف"), control(
-              <SelectInput value={to} onChange={setTo} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
-                options={people.map((p) => ({ value: p.id, label: o(p) }))} />))
+              <SelectInput value={to} onChange={setTo} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium [&>button]:bg-card [&>button]:text-[12.5px] [&>button]:font-medium"
+                options={people.map((p) => ({ value: p.id, label: o(p), alt: `${p.en} ${p.ar}` }))} searchable />))
           : row(t("Assigned to Employee", "مسند للموظف"), o(personById(r.assignedToId)))}
         {edit
           ? row(t("Is legal consultation needed?", "هل يوجد حاجة للاستشارة القانونية"), control(
-              <SelectInput value={legal} onChange={(v) => setLegal(v as "yes" | "no")} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
+              <SelectInput value={legal} onChange={(v) => setLegal(v as "yes" | "no")} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium [&>button]:bg-card [&>button]:text-[12.5px] [&>button]:font-medium"
                 options={yesNo.map((y) => ({ value: y.id, label: o(y) }))} />), true)
           : row(t("Is legal consultation needed?", "هل يوجد حاجة للاستشارة القانونية"), o(yesNo.find((y) => y.id === r.legalConsultation)), true)}
       </div>
@@ -199,12 +199,12 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
           </label>
           {[
             { v: type, set: setType, ph: t("Type", "النوع"), opts: ["PDF", "IMG", "DOC"].map((x) => ({ value: x, label: x })) },
-            { v: owner, set: setOwner, ph: t("Owner", "المالك"), opts: owners.map((id) => ({ value: id, label: o(authorOf(id)) })) },
+            { v: owner, set: setOwner, ph: t("Owner", "المالك"), opts: owners.map((id) => ({ value: id, label: o(authorOf(id)), alt: `${authorOf(id)?.en ?? ""} ${authorOf(id)?.ar ?? ""}` })), people: true },
             { v: sort, set: setSort, ph: t("Sort by", "الترتيب حسب"), opts: [
               { value: "newest", label: t("Newest", "الأحدث") }, { value: "name", label: t("Name", "الاسم") }, { value: "size", label: t("Size", "الحجم") }] },
           ].map((f, i) => (
-            <SelectInput key={i} value={f.v} onChange={f.set} placeholder={f.ph} options={f.opts}
-              className="w-[120px] [&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium" />
+            <SelectInput key={i} value={f.v} onChange={f.set} placeholder={f.ph} options={f.opts} searchable={"people" in f}
+              className="w-[120px] [&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium [&>button]:bg-card [&>button]:text-[12.5px] [&>button]:font-medium" />
           ))}
         </div>
 

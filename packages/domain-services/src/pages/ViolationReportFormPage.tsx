@@ -1,9 +1,10 @@
 import * as React from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { cn } from "@reach/shared-core"
 import { EyeOff } from "lucide-react"
 
 import {
-  AttachmentsButton, Card, CardHeader, Checkbox, Field, FormActions, PageBody, SelectInput, TextInput, Toast } from "../components/wijha"
+  AttachmentsButton, Card, CardHeader, Checkbox, Field, FormActions, PageBody, SelectInput, TextArea, TextInput, Toast } from "../components/wijha"
 import { useT } from "../components/i18n"
 import { GridIcon } from "../components/kpi-icons"
 import { departments, people, reasons, submitReport, yesNo } from "../data/mock/violations"
@@ -73,11 +74,11 @@ export default function ViolationReportFormPage() {
           <div className="grid items-center gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Field label={t("Name", "الاسم")} required htmlFor="v-name">
               <SelectInput id="v-name" value={v.accused} onChange={set("accused")} placeholder={choose} invalid={bad("accused")}
-                options={people.map((p) => ({ value: p.id, label: o(p) }))} />
+                options={people.map((p) => ({ value: p.id, label: o(p), alt: `${p.en} ${p.ar}` }))} searchable />
             </Field>
             <Field label={t("Department", "الإدارة")} required htmlFor="v-dept">
               <SelectInput id="v-dept" value={v.dept} onChange={set("dept")} placeholder={choose} invalid={bad("dept")}
-                options={departments.map((d) => ({ value: d.id, label: o(d) }))} />
+                options={departments.map((d) => ({ value: d.id, label: o(d), alt: `${d.en} ${d.ar}` }))} searchable />
             </Field>
             <Field label={t("Do you have any evidence or proof you can provide?", "هل لديك أي دليل أو إثبات يمكنك تقديمه")} required htmlFor="v-ev">
               <SelectInput id="v-ev" value={v.evidence} onChange={set("evidence")} placeholder={choose} invalid={bad("evidence")}
@@ -89,8 +90,8 @@ export default function ViolationReportFormPage() {
             </Field>
           </div>
           <Field label={t("Report Details", "تفاصيل البلاغ")} hint={t("(how, when and where the violation occurred)", "( كيفية ووقت ومكان المخالفة )")} required htmlFor="v-details">
-            <TextInput id="v-details" value={v.details} onChange={(e) => set("details")(e.target.value)} placeholder={t("Text", "نص")}
-              className={bad("details") ? "border-error/70" : undefined} />
+            <TextArea id="v-details" rows={4} value={v.details} onChange={(e) => set("details")(e.target.value)} placeholder={t("Text", "نص")}
+              className={cn("min-h-[104px]", bad("details") && "border-error/70")} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Field label={t("Has the case been reported to the direct manager?", "هل تم الإبلاغ عن الحالة للمدير المباشر")} required htmlFor="v-mgr">

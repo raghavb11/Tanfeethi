@@ -1,6 +1,7 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { cn } from "@reach/shared-core"
+import { matchesSearch } from "@reach/shared-ui"
 import { Check, ChevronsUpDown, Flag, Plus, Search, X } from "lucide-react"
 
 import { milestonesFor, useMilestones } from "../data/milestones"
@@ -59,10 +60,7 @@ export function MilestonePicker({ projectId, value, onChange, isAr, t, onCreate,
   }, [open, place])
 
   const selected = options.find((m) => m.id === value)
-  const q = query.trim().toLowerCase()
-  const filtered = q
-    ? options.filter((m) => m.name.toLowerCase().includes(q) || m.nameAr.includes(query.trim()) || m.code.toLowerCase().includes(q))
-    : options
+  const filtered = options.filter((m) => matchesSearch(query, m.name, m.nameAr, m.code))
   const pick = (id: string) => { onChange(id); setOpen(false); setQuery("") }
   const off = disabled || !projectId
 

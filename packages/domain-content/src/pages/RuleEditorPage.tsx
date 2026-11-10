@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { Avatar, AvatarFallback, Badge, Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Avatar, AvatarFallback, Badge, Button, Card, Input, Textarea, matchesSearch } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { getPortalUsers } from "../data/roles"
+import { NativeSearchSelect } from "./_ui"
 import {
   FIELDS, ON_REJECT, OPERATORS, fieldById, newId, optionLabel, saveRule, setRuleActive, useRule,
   type Approver, type Condition, type FieldId, type Level, type OperatorId, type Rule,
@@ -154,8 +155,7 @@ export default function RuleEditorPage() {
   const candidates = getPortalUsers().filter((p) => {
     if (!level) return false
     if (level.approvers.some((a) => a.ref === p.id)) return false
-    const q = approverQuery.trim().toLowerCase()
-    return !q || p.name.toLowerCase().includes(q) || p.nameAr.includes(approverQuery.trim())
+    return matchesSearch(approverQuery, p.name, p.nameAr, p.email)
   })
   const addApprover = (userId: string) => {
     if (!level) return
@@ -292,20 +292,15 @@ export default function RuleEditorPage() {
                               </button>
                             </span>
                           ))}
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              const v = e.target.value
-                              if (!v) return
-                              setCondition(c.id, { values: multi ? [...c.values, v] : [v] })
-                            }}
-                            className="min-w-16 flex-1 bg-transparent text-[12.5px] outline-none"
-                          >
-                            <option value="">{c.values.length ? "" : t("Select…", "اختر…")}</option>
-                            {f.options.filter((o) => !c.values.includes(o.id)).map((o) => (
-                              <option key={o.id} value={o.id}>{isAr ? o.labelAr : o.label}</option>
-                            ))}
-                          </select>
+                          <div className="min-w-16 flex-1">
+                            <NativeSearchSelect
+                              value=""
+                              onChange={(v) => { if (v) setCondition(c.id, { values: multi ? [...c.values, v] : [v] }) }}
+                              className="h-7 w-full bg-transparent text-[12.5px] outline-none"
+                              placeholder={c.values.length ? "" : t("Select…", "اختر…")} isAr={isAr} minMenuWidth={200}
+                              options={f.options.filter((o) => !c.values.includes(o.id)).map((o) => ({ value: o.id, label: isAr ? o.labelAr : o.label, alt: isAr ? o.label : o.labelAr }))}
+                            />
+                          </div>
                         </div>
                       </div>
 

@@ -112,7 +112,7 @@ export default function MyTasksPage() {
     { value: "me", label: t("Only me", "أنا فقط") },
     { value: "team", label: t("My team", "فريقي") },
     ...team.map((m) => ({
-      value: m.id, label: isAr ? m.nameAr : m.name, lead: <Initials text={m.initials} />,
+      value: m.id, label: isAr ? m.nameAr : m.name, alt: isAr ? m.name : m.nameAr, lead: <Initials text={m.initials} />,
       hint: all.filter((x) => x.assigneeId === m.id && x.status !== "completed").length,
     })),
   ]
@@ -219,6 +219,7 @@ export default function MyTasksPage() {
             value={who}
             onChange={(v) => setQuery({ who: v === "all" ? undefined : v })}
             options={whoOptions}
+            searchable
           />
         </div>
       </div>

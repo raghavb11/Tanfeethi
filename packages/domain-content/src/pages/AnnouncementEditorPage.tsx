@@ -88,6 +88,7 @@ export default function AnnouncementEditorPage() {
               value={audience}
               onChange={setAudience}
               options={AUDIENCE_NAMES}
+              altOf={audienceArFor}
               placeholder={t("Select an audience…", "اختر الجمهور…")}
               searchPlaceholder={t("Search audiences…", "ابحث عن جمهور…")}
               emptyLabel={t("No audiences match", "لا توجد نتائج")}

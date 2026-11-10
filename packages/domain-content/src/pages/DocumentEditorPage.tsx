@@ -5,7 +5,7 @@ import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { Archive, ArrowLeft, Upload } from "lucide-react"
 
-import { SearchSelect } from "./_ui"
+import { NativeSearchSelect, SearchSelect } from "./_ui"
 import { addDocument, ROOT_FOLDER, useFolders } from "../data/documents"
 import { OWNER_TEAMS } from "../data/departments"
 import { logAudit } from "../data/audit"
@@ -85,10 +85,10 @@ export default function DocumentEditorPage() {
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="doc-folder" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Folder", "المجلد")}</label>
-            <select id="doc-folder" value={folder} onChange={(e) => setFolder(e.target.value)} className="h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
-              <option value={ROOT_FOLDER}>{t("Documents (top level)", "المستندات (المستوى الأعلى)")}</option>
-              {folders.filter((f) => !f.readOnly).map((f) => <option key={f.id} value={f.id}>{f.parent ? "— " : ""}{isAr ? f.nameAr : f.name}</option>)}
-            </select>
+            <NativeSearchSelect id="doc-folder" value={folder} onChange={setFolder} isAr={isAr}
+              className="h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
+              options={[{ value: ROOT_FOLDER, label: t("Documents (top level)", "المستندات (المستوى الأعلى)") },
+                ...folders.filter((f) => !f.readOnly).map((f) => ({ value: f.id, label: `${f.parent ? "— " : ""}${isAr ? f.nameAr : f.name}`, alt: isAr ? f.name : f.nameAr }))]} />
           </div>
         </div>
         <div>

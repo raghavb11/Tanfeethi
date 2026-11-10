@@ -6,6 +6,7 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { cn } from "@reach/shared-core"
+import { SearchableSelect } from "@reach/shared-ui"
 import {
   Check, ChevronDown, ChevronLeft, ChevronRight, Cpu, Gauge, Inbox, Search, Sparkles, TrendingUp, UsersRound,
   type LucideIcon,
@@ -336,11 +337,31 @@ export function EmptyState({ icon: Icon = Inbox, title, body, action, className 
 }
 
 // ── form controls (36px, radius 8, Page fill) ────────────────────────────────
-/** Compact filter select: [muted label] [value] … [caret]. */
-export function FilterSelect({ label, value, onChange, options, className, id }: {
-  label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; className?: string; id?: string
+/** Compact filter select: [muted label] [value] … [caret]. Searchable when `searchable`
+ *  (people / departments) or above 10 options — the closed field looks the same. */
+export function FilterSelect({ label, value, onChange, options, className, id, searchable }: {
+  label: string; value: string; onChange: (v: string) => void
+  /** `alt` = the other-language name, matched by the search but not shown */
+  options: { value: string; label: string; alt?: string }[]
+  className?: string; id?: string; searchable?: boolean
 }) {
+  const { isAr } = useT()
   const current = options.find((o) => o.value === value)?.label ?? ""
+  if (searchable ?? options.length > 10) {
+    return (
+      <SearchableSelect
+        className={className} options={options} value={value} onChange={onChange} searchable isAr={isAr}
+        renderTrigger={({ triggerProps }) => (
+          <button {...triggerProps} id={id} aria-label={label}
+            className={cn(inputCls(), "relative flex cursor-pointer items-center gap-[9px] text-start focus-visible:ring-2 focus-visible:ring-ring")}>
+            <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>
+            <span className="min-w-0 flex-1 truncate font-semibold">{current}</span>
+            <ChevronDown aria-hidden className="size-[13px] shrink-0" />
+          </button>
+        )}
+      />
+    )
+  }
   return (
     <label className={cn(inputCls(), "relative flex cursor-pointer items-center gap-[9px] focus-within:ring-2 focus-within:ring-ring", className)}>
       <span className="shrink-0 text-[11.3px] font-normal text-muted-foreground">{label}</span>

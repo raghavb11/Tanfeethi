@@ -136,7 +136,8 @@ export default function DelegationRequestPage() {
                 onChange={setDelegate}
                 placeholder={t("Employee", "الموظف")}
                 invalid={tried && !delegate}
-                options={delegates.map((d) => ({ value: d.id, label: l(d.name) }))}
+                options={delegates.map((d) => ({ value: d.id, label: l(d.name), alt: `${d.name.en} ${d.name.ar}` }))}
+                searchable
               />
             </Field>
           </div>

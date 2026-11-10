@@ -7,7 +7,7 @@ import { cn } from "@reach/shared-core"
 import { BadgeCheck, BookMarked, CalendarDays, FileText, FolderOpen, Newspaper, Trash2, X } from "lucide-react"
 
 import {
-  CountSelect, DraftsButton, Field, FIELD, MODAL_OUTLINE, WButton, WInput, WModal, WSelect, WTextarea,
+  CountSelect, DraftsButton, Field, FIELD, MODAL_OUTLINE, WButton, WInput, WModal, WSearchSelect, WSelect, WTextarea,
 } from "../_wijha"
 import { DEPARTMENTS } from "../../data/departments"
 import { addFolder, type FolderDef, newFolderId, ROOT_FOLDER } from "../../data/documents"
@@ -22,7 +22,7 @@ const ORDINALS_AR = ["الأول", "الثاني", "الثالث", "الرابع
 const ORDINALS_EN = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"]
 
 function useDeptOptions(isAr: boolean) {
-  return React.useMemo(() => DEPARTMENTS.map((d) => ({ id: d.id, label: isAr ? d.nameAr : d.name })), [isAr])
+  return React.useMemo(() => DEPARTMENTS.map((d) => ({ id: d.id, label: isAr ? d.nameAr : d.name, alt: isAr ? d.name : d.nameAr })), [isAr])
 }
 
 /** Date field drawn as "تاريخ" with a calendar glyph at the end; switches to
@@ -326,11 +326,12 @@ export function CreateFolderModal({ open, onClose, isAr, folders, currentId, onC
             {tried && !name.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a folder name", "أدخل اسم المجلد")}</span>}
           </Field>
           <Field label={t("Create in", "الإنشاء في")}>
-            <WSelect value={parent} onChange={(e) => setParent(e.target.value)}>
-              {currentId && <option value={currentId}>{t("Current folder", "المجلد الحالي")}</option>}
-              <option value={ROOT_FOLDER}>{t("Documents (top level)", "المستندات (المستوى الأعلى)")}</option>
-              {writable.filter((f) => f.id !== currentId).map((f) => <option key={f.id} value={f.id}>{isAr ? f.nameAr : f.name}</option>)}
-            </WSelect>
+            <WSearchSelect value={parent} onChange={setParent} isAr={isAr}
+              options={[
+                ...(currentId ? [{ value: currentId, label: t("Current folder", "المجلد الحالي") }] : []),
+                { value: ROOT_FOLDER, label: t("Documents (top level)", "المستندات (المستوى الأعلى)") },
+                ...writable.filter((f) => f.id !== currentId).map((f) => ({ value: f.id, label: isAr ? f.nameAr : f.name, alt: isAr ? f.name : f.nameAr })),
+              ]} />
           </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

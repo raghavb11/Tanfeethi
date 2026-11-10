@@ -73,7 +73,8 @@ export function ChecklistAnswers({
                     ) : (
                       <MultiSelect
                         label={t("Responsible people", "الأشخاص المسؤولون")}
-                        options={loungeStaff.map((s) => ({ value: s.id, label: l(s.name) }))}
+                        options={loungeStaff.map((s) => ({ value: s.id, label: l(s.name), alt: `${s.name.en} ${s.name.ar}` }))}
+                        searchable
                         value={a.responsible}
                         onChange={(v) => set({ responsible: v })}
                         invalid={missingPeople}
