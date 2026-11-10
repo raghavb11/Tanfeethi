@@ -230,7 +230,7 @@ export default function MilestoneEditorPage() {
           </Panel>
 
           <MilestoneTasks milestone={milestone} projectId={projectId} tasks={msTasks} isAr={isAr} t={t} />
-          <ChangeLog log={log} create={create} isAr={isAr} t={t} />
+          {!create && <ChangeLog log={log} create={create} isAr={isAr} t={t} />}
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">

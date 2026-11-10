@@ -26,7 +26,7 @@ import {
   type Project, type ProjectStatus, updateProject, useProjects,
 } from "../data/projects"
 import { MANAGER, memberById, team } from "../data/team"
-import { dismissSuggestion, useSuggestions } from "../data/suggestions"
+import { dismissSuggestion, draftProjectIdeas, useSuggestions } from "../data/suggestions"
 import { MilestonePicker } from "./MilestonePicker"
 import { ProjectPicker } from "./ProjectPicker"
 import { HealthPill } from "./HealthPill"
@@ -516,7 +516,8 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
           {create && isProject && draft && (
             <DraftSubTasks items={draft.subtasks ?? []} onChange={(subtasks) => patch({ subtasks })} isAr={isAr} t={t} />
           )}
-          <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} disabled={create} />
+          {/* nothing has happened yet on a new task/project — no Activity card while creating */}
+          {!create && <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} />}
 
           {/* kept from the earlier project page; below the drawn cards */}
           {project && <Milestones project={project} tasks={allTasks} isAr={isAr} t={t} />}
@@ -530,11 +531,12 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
         <div className="flex min-w-0 flex-col gap-6">
           {project && <Suggestions project={project} isAr={isAr} t={t} />}
-          {create && isProject && (
-            <Panel className="lg:min-h-[343px]">
-              <CardHeader icon={Sparkles} title={t("Assistant suggestion", "اقتراح المساعد")} />
-              <Empty icon={Sparkles} text={t("The assistant suggests subtasks once the project is created.", "يقترح المساعد مهامًا فرعية بعد إنشاء المشروع.")} />
-            </Panel>
+          {create && isProject && draft && (
+            <DraftSuggestions
+              category={draft.category ?? "operations"} name={draft.title ?? ""} added={draft.subtasks ?? []}
+              onAdd={(text) => patch({ subtasks: [...(draft.subtasks ?? []).filter((x) => x.trim()), text] })}
+              isAr={isAr} t={t}
+            />
           )}
 
           <Panel>
@@ -928,6 +930,36 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
       {ms.length === 0 && (
         <Empty icon={CalendarClock} text={t("Break the project into milestones to track it red, amber or green.", "قسّم المشروع إلى معالم لمتابعة حالته.")} />
       )}
+    </Panel>
+  )
+}
+
+/** "اقتراح المساعد" while creating a project — same card as on a project; ideas follow
+ *  the category and name as they are typed. "Add as subtask" puts it in the Subtasks
+ *  card (created with the project); "Reject" hides it for this draft. */
+function DraftSuggestions({ category, name, added, onAdd, isAr, t }: {
+  category: string; name: string; added: string[]; onAdd: (text: string) => void; isAr: boolean; t: TFn
+}) {
+  const [rejected, setRejected] = React.useState<string[]>([])
+  const taken = new Set(added.map((x) => x.trim()))
+  const ideas = draftProjectIdeas(category, name)
+    .filter((i) => !rejected.includes(i.key) && !taken.has(isAr ? i.textAr : i.text))
+    .slice(0, 2)
+  return (
+    <Panel>
+      <CardHeader icon={Sparkles} title={t("Assistant suggestion", "اقتراح المساعد")} />
+      <div className="mt-[18px] flex flex-col gap-4">
+        {ideas.map((i) => (
+          <div key={i.key} className="flex flex-col gap-3 rounded-[12px] bg-background/60 p-6 ring-1 ring-inset ring-input">
+            <p className="text-[14px]">{isAr ? i.textAr : i.text}</p>
+            <div className="grid grid-cols-2 gap-10 [&>button]:h-8">
+              <Btn variant="primary" onClick={() => onAdd(isAr ? i.textAr : i.text)}>{t("Add as subtask", "أضفه كمهمة فرعية")}</Btn>
+              <Btn onClick={() => setRejected((r) => [...r, i.key])}>{t("Reject", "رفض")}</Btn>
+            </div>
+          </div>
+        ))}
+        {ideas.length === 0 && <Empty icon={Sparkles} text={t("No more suggestions for this project.", "لا توجد اقتراحات أخرى لهذا المشروع.")} />}
+      </div>
     </Panel>
   )
 }
