@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import {
   AlertTriangle, CalendarClock, CheckCircle2, ChevronRight, Circle, CirclePause, CirclePlay, Clock,
-  Flag, Inbox, LayoutGrid, List, Plus, RotateCcw, Search, Sparkles,
+  Flag, FolderOpen, FolderPlus, Inbox, LayoutGrid, List, ListPlus, Plus, RotateCcw, Search, Sparkles,
 } from "lucide-react"
 
 import {
@@ -156,6 +156,13 @@ export default function MyTasksPage() {
               </button>
             ))}
           </div>
+          {/* create: the home "مهامي" card's gold "+ مهمة جديدة" button, in the free space after the toggle */}
+          <NewMenu
+            isAr={isAr} t={t}
+            onTask={() => newTask()}
+            onProject={() => navigate(`/projects/new?back=${encodeURIComponent(`/tasks${params.toString() ? `?${params}` : ""}`)}`)}
+            onProjects={() => navigate("/projects")}
+          />
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
@@ -320,6 +327,49 @@ export default function MyTasksPage() {
 
 /** The board track (2062:2570): 208px columns centred with 16px gaps, scrolling
  *  sideways inside itself, and the drawn 4px scroll indicator (2062:2923) under it. */
+/** "+ جديد" — a small menu: new task, new project, or the project list. */
+function NewMenu({ isAr, t, onTask, onProject, onProjects }: {
+  isAr: boolean; t: TFn; onTask: () => void; onProject: () => void; onProjects: () => void
+}) {
+  const [open, setOpen] = React.useState(false)
+  const ref = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false) }
+    document.addEventListener("mousedown", onDoc)
+    document.addEventListener("keydown", onKey)
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey) }
+  }, [open])
+  const items = [
+    { icon: ListPlus, label: t("New task", "مهمة جديدة"), run: onTask },
+    { icon: FolderPlus, label: t("New project", "مشروع جديد"), run: onProject },
+    { icon: FolderOpen, label: t("View projects", "عرض المشاريع"), run: onProjects, divider: true },
+  ]
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open}
+        className="btn-primary-grad inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Plus className="size-3.5" strokeWidth={2.2} />{t("New", "جديد")}
+      </button>
+      {open && (
+        <div role="menu" dir={isAr ? "rtl" : "ltr"}
+          className="absolute start-0 top-full z-30 mt-1 w-52 rounded-lg bg-popover p-1 shadow-lg ring-1 ring-[var(--card-ring)]">
+          {items.map(({ icon: Icon, label, run, divider }) => (
+            <button key={label} type="button" role="menuitem" onClick={() => { setOpen(false); run() }}
+              className={cn("flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-start text-[12.5px] transition-colors hover:bg-soft-accent",
+                divider && "mt-1 border-t border-border pt-2.5")}>
+              <Icon className="size-4 shrink-0 text-primary" />{label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function BoardScroller({ children }: { children: React.ReactNode }) {
   const ref = React.useRef<HTMLDivElement>(null)
   // thumb share and offset; the frame draws a 66% thumb at the start when nothing overflows

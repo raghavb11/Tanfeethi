@@ -5,7 +5,7 @@ import { usePageTitle } from "@reach/shell-context"
 import {
   ArrowLeft, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList,
   FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
-  Sparkles, Trash2, UserRoundCog,
+  Sparkles, Trash2, UserRoundCog, X,
 } from "lucide-react"
 
 import {
@@ -13,7 +13,7 @@ import {
   Page, Panel, StatusDot, TextCounter, useT, type TFn,
 } from "./ui"
 import {
-  CATEGORIES, categoryById, CURRENT_SPRINT, PRIORITIES, PRIORITY_META, SPRINTS, sprintById,
+  CATEGORIES, categoryById, CURRENT_SPRINT, isStatus, PRIORITIES, PRIORITY_META, SPRINTS, sprintById,
   STATUS_META, STATUS_ORDER, type CategoryId, type TaskPriority, type TaskStatus,
 } from "../data/meta"
 import {
@@ -22,11 +22,13 @@ import {
   updateTask, useTaskEvents, useTasks,
 } from "../data/tasks"
 import {
-  removeProject, STATUS_LABEL, type Project, type ProjectStatus, updateProject, useProjects,
+  addProject, getProjectById, newProjectId, nextProjectCode, removeProject, STATUS_LABEL,
+  type Project, type ProjectStatus, updateProject, useProjects,
 } from "../data/projects"
-import { memberById, team } from "../data/team"
+import { MANAGER, memberById, team } from "../data/team"
 import { dismissSuggestion, useSuggestions } from "../data/suggestions"
 import { MilestonePicker } from "./MilestonePicker"
+import { ProjectPicker } from "./ProjectPicker"
 import { HealthPill } from "./HealthPill"
 import { getMilestone, HEALTH, milestoneHealth, milestonesFor, useMilestones } from "../data/milestones"
 
@@ -41,6 +43,14 @@ type Fields = {
   // project-only extras kept from the earlier project editor
   startISO?: string
   projectStatus?: ProjectStatus
+  // create mode only — what the old routed editors asked for
+  title?: string           // in the current language
+  titleAlt?: string        // in the other language (optional)
+  projectId?: string
+  milestoneId?: string
+  status?: TaskStatus
+  releaseNote?: string
+  subtasks?: string[]      // a new project's first tasks
 }
 
 const ownerName = (id: string, isAr: boolean) => {
@@ -51,9 +61,47 @@ const ownerName = (id: string, isAr: boolean) => {
 const ownerInitials = (id: string) => (id === "me" ? ME.initials : memberById(id)?.initials ?? "")
 const firstName = (s: string) => s.split(" ")[0]
 
+/** A half-filled task survives a detour to create a project (?resume=1 brings it back). */
+const DRAFT_KEY = "wijha.work.task-draft"
+const stashDraft = (d: Fields) => { try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { /* private mode */ } }
+const readDraft = (): Partial<Fields> | undefined => {
+  try { const s = sessionStorage.getItem(DRAFT_KEY); return s ? JSON.parse(s) : undefined } catch { return undefined }
+}
+const clearDraft = () => { try { sessionStorage.removeItem(DRAFT_KEY) } catch { /* ignore */ } }
+
+/** The blank record a create screen starts from, prefilled from the query string. */
+function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
+  if (kind === "project") {
+    return {
+      title: "", titleAlt: "", description: "", releaseNote: "", subtasks: [],
+      category: "operations", sprint: CURRENT_SPRINT, ownerId: "me", priority: "medium",
+      startISO: TASK_TODAY_ISO, dueISO: "", projectStatus: "active",
+    }
+  }
+  const pid = params.get("project") ?? ""
+  const p = getProjectById(pid)
+  const st = params.get("status")
+  const d: Fields = {
+    title: "", titleAlt: "", description: "", releaseNote: "",
+    category: p?.category ?? "operations", sprint: CURRENT_SPRINT,
+    ownerId: params.get("assignee") ?? (params.get("from") === "manager" ? team[0].id : "me"),
+    dueISO: TASK_TODAY_ISO, priority: "medium",
+    projectId: p ? pid : "", milestoneId: params.get("milestone") ?? "",
+    status: isStatus(st) ? st : "open",
+  }
+  if (params.get("resume") === "1") {
+    const saved = readDraft()
+    if (saved) Object.assign(d, saved, p ? { projectId: pid, category: p.category } : {})
+  }
+  if (d.milestoneId && getMilestone(d.milestoneId)?.projectId !== d.projectId) d.milestoneId = ""
+  return d
+}
+
 /** Task and project detail — Figma 3580:8261 / 8521 (view), 3580:8667 / 8965
- *  (edit, inline on the same page), 3580:9156 / 9423 (release note edited inline). */
-export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: string }) {
+ *  (edit, inline on the same page), 3580:9156 / 9423 (release note edited inline).
+ *  `create` opens the same screen in edit mode over a blank record
+ *  (/tasks/new, /projects/new): one layout for new and edit, as the owner asked. */
+export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task" | "project"; id?: string; create?: boolean }) {
   const { isAr, t } = useT()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
@@ -61,24 +109,44 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
   const projects = useProjects()
   useMilestones()
 
-  const task = kind === "task" ? allTasks.find((x) => x.id === id) : undefined
-  const project = kind === "project" ? projects.find((p) => p.id === id) : undefined
-  const exists = kind === "task" ? !!task : !!project
+  const isTask = kind === "task"
+  const isProject = kind === "project"
+  const task = !create && isTask ? allTasks.find((x) => x.id === id) : undefined
+  const project = !create && isProject ? projects.find((p) => p.id === id) : undefined
+  const exists = create || (isTask ? !!task : !!project)
 
+  const from = params.get("from")
   // opened from the team board: the manager is working on someone else's task
-  const asManager = params.get("from") === "manager"
-  const backHref = kind === "project" ? "/projects" : asManager ? "/tasks?who=team" : "/tasks"
-  const backLabel = kind === "project" ? t("Back to projects", "العودة إلى المشاريع") : t("Back to tasks", "العودة إلى المهام")
+  const asManager = from === "manager"
+  const backParam = params.get("back")
+  const safeBack = backParam && backParam.startsWith("/") && !backParam.startsWith("//") ? backParam : undefined
+
+  // where Back / Cancel lead — create screens return to whichever view opened them
+  const backHref = create
+    ? isProject
+      ? safeBack ?? (from === "task" ? "/tasks/new" : "/projects")
+      : from === "project" && params.get("project")
+        ? `/projects/${params.get("project")}`
+        : asManager
+          ? (params.get("assignee") ? `/tasks?who=${params.get("assignee")}` : "/tasks?who=team")
+          : safeBack ?? (params.get("view") === "board" ? "/tasks" : "/tasks?view=list")
+    : isProject
+      ? "/projects"
+      : from === "project" && task?.projectId ? `/projects/${task.projectId}` : asManager ? "/tasks?who=team" : "/tasks"
+  const backLabel = backHref.startsWith("/projects/") ? t("Back to the project", "العودة إلى المشروع")
+    : backHref.startsWith("/projects") ? t("Back to projects", "العودة إلى المشاريع")
+      : backHref.startsWith("/tasks/new") ? t("Back to the task", "العودة إلى المهمة")
+        : t("Back to tasks", "العودة إلى المهام")
 
   // full edit mode lives on this page, as drawn; ?edit=1 deep-links straight in
-  const editing = params.get("edit") === "1"
+  const editing = create || params.get("edit") === "1"
   const setEditing = (on: boolean) => {
     const next = new URLSearchParams(params)
     if (on) next.set("edit", "1"); else next.delete("edit")
     setParams(next, { replace: true })
   }
 
-  const fields: Fields | undefined = task
+  const loaded: Fields | undefined = task
     ? { category: task.category, sprint: task.sprint, ownerId: task.assigneeId ?? "me", dueISO: task.dueISO,
         priority: task.priority, description: (isAr ? task.descriptionAr : task.description) ?? "" }
     : project
@@ -87,22 +155,63 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
           startISO: project.startISO, projectStatus: project.status }
       : undefined
 
-  const [draft, setDraft] = React.useState<Fields | undefined>(fields)
-  React.useEffect(() => { if (editing) setDraft(fields) }, [editing, id])  // eslint-disable-line react-hooks/exhaustive-deps
+  const [draft, setDraft] = React.useState<Fields | undefined>(() => (create ? blankDraft(kind, params) : loaded))
+  React.useEffect(() => { if (editing && !create) setDraft(loaded) }, [editing, id])  // eslint-disable-line react-hooks/exhaustive-deps
+  const fields = create ? draft : loaded
+  const patch = (p: Partial<Fields>) => setDraft((d) => (d ? { ...d, ...p } : d))
 
+  // the create screen stays mounted when a board column links back in, so follow the query string
+  const qs = params.toString()
+  React.useEffect(() => {
+    if (!create || !isTask) return
+    const st = params.get("status"), who = params.get("assignee"), pid = params.get("project"), mid = params.get("milestone")
+    setDraft((d) => {
+      if (!d) return d
+      const next = { ...d }
+      if (isStatus(st)) next.status = st
+      if (who) next.ownerId = who
+      if (pid && getProjectById(pid)) { next.projectId = pid; next.category = getProjectById(pid)?.category ?? next.category }
+      if (mid) next.milestoneId = mid
+      return next
+    })
+  }, [qs])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [code] = React.useState(() => (create && isProject ? nextProjectCode() : ""))
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [tried, setTried] = React.useState(false)
+  const titleRef = React.useRef<HTMLInputElement>(null)
+
+  const title = task ? (isAr ? task.titleAr : task.title) : project ? (isAr ? project.nameAr : project.name) : ""
+  // Figma top bar: "مهمة: <title>" / "المشروع: <name>"; create screens: "مهمة جديدة" / "مشروع جديد".
+  usePageTitle(
+    create ? (isTask ? "New task" : "New project") : task ? `Task: ${task.title}` : project ? `Project: ${project.name}` : undefined,
+    create ? (isTask ? "مهمة جديدة" : "مشروع جديد") : task ? `مهمة: ${task.titleAr}` : project ? `المشروع: ${project.nameAr}` : undefined,
+  )
 
   if (!exists || !fields) {
     return (
       <Page>
         <Empty
           icon={ClipboardList}
-          text={kind === "task" ? t("That task no longer exists.", "لم تعد هذه المهمة موجودة.") : t("That project no longer exists.", "لم يعد هذا المشروع موجودًا.")}
+          text={isTask ? t("That task no longer exists.", "لم تعد هذه المهمة موجودة.") : t("That project no longer exists.", "لم يعد هذا المشروع موجودًا.")}
           action={<Btn onClick={() => navigate(backHref)}>{backLabel}</Btn>}
         />
       </Page>
     )
   }
+
+  // ── validation (inline, shown after the first save attempt) ──────────────
+  const errors = {
+    title: create && draft && !draft.title?.trim()
+      ? (isTask ? t("Give the task a title.", "أدخل عنوانًا للمهمة.") : t("Give the project a name.", "أدخل اسمًا للمشروع."))
+      : undefined,
+    due: editing && draft && !draft.dueISO ? t("Pick a due date.", "اختر تاريخ الاستحقاق.") : undefined,
+    start: editing && draft && isProject && draft.startISO && draft.dueISO && draft.startISO > draft.dueISO
+      ? t("The due date is before the start date.", "تاريخ الاستحقاق قبل تاريخ البدء.")
+      : undefined,
+  }
+  const err = (k: keyof typeof errors) => (tried ? errors[k] : undefined)
+  const invalid = Object.values(errors).some(Boolean)
 
   // ── writes ────────────────────────────────────────────────────────────
   const assign = (ownerId: string) => {
@@ -117,8 +226,9 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
   }
 
   const save = () => {
-    if (!draft) return
-    if (draft.ownerId !== fields.ownerId) assign(draft.ownerId)
+    if (!draft || !loaded) return
+    if (invalid) { setTried(true); return }
+    if (draft.ownerId !== loaded.ownerId) assign(draft.ownerId)
     const descKey = isAr ? "descriptionAr" : "description"
     if (task) {
       updateTask(task.id, {
@@ -134,7 +244,72 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
         [descKey]: draft.description.trim() || undefined,
       })
     }
+    setTried(false)
     setEditing(false)
+  }
+
+  /** Create mode: add the record to the store, then open it. */
+  const createRecord = () => {
+    if (!draft) return
+    if (invalid) { setTried(true); if (errors.title) titleRef.current?.focus(); return }
+    const main = draft.title!.trim()
+    const alt = draft.titleAlt?.trim() || main
+    const en = isAr ? alt : main
+    const ar = isAr ? main : alt
+    const description = draft.description.trim() || undefined
+    const releaseNote = draft.releaseNote?.trim() || undefined
+    if (isTask) {
+      const m = memberById(draft.ownerId)
+      const p = getProjectById(draft.projectId ?? "")
+      const newId = newTaskId()
+      addTask({
+        id: newId, title: en, titleAr: ar,
+        projectId: p?.id, milestoneId: p && draft.milestoneId ? draft.milestoneId : undefined,
+        project: p ? p.name : "General", projectAr: p ? p.nameAr : "عام",
+        due: prettyDate(draft.dueISO), dueAr: prettyDateAr(draft.dueISO), dueISO: draft.dueISO,
+        priority: draft.priority, status: draft.status ?? "open",
+        category: draft.category, sprint: draft.sprint, createdISO: TASK_TODAY_ISO,
+        assigneeId: m?.id, assignee: m?.name, assigneeAr: m?.nameAr,
+        assignedBy: m ? MANAGER.name : "Self", assignedByAr: m ? MANAGER.nameAr : "شخصي",
+        description, descriptionAr: description, releaseNote,
+      })
+      clearDraft()
+      navigate(`/tasks/${newId}${from === "project" && p ? "?from=project" : m ? "?from=manager" : ""}`)
+    } else {
+      const newId = newProjectId()
+      addProject({
+        id: newId, code, name: en, nameAr: ar,
+        ownerId: draft.ownerId, owner: ownerName(draft.ownerId, false), ownerAr: ownerName(draft.ownerId, true),
+        status: draft.projectStatus ?? "active", category: draft.category, sprint: draft.sprint, priority: draft.priority,
+        start: prettyDate(draft.startISO ?? TASK_TODAY_ISO), startISO: draft.startISO ?? TASK_TODAY_ISO,
+        due: prettyDate(draft.dueISO), dueISO: draft.dueISO,
+        description, descriptionAr: description, createdISO: TASK_TODAY_ISO, releaseNote,
+      })
+      // the first subtasks, in the order they were typed (addTask puts new rows on top)
+      ;[...(draft.subtasks ?? [])].reverse().forEach((s, i) => addTask({
+        id: `${newTaskId()}-${i}`, title: s, titleAr: s, projectId: newId, project: en, projectAr: ar,
+        due: prettyDate(draft.dueISO), dueAr: prettyDateAr(draft.dueISO), dueISO: draft.dueISO,
+        priority: "medium", status: "open", assignedBy: "Self", assignedByAr: "شخصي",
+        category: draft.category, sprint: draft.sprint, createdISO: TASK_TODAY_ISO,
+      }))
+      // picked "create a new project" from a task form: go back to it with the project chosen
+      if (from === "task") navigate(`${backHref}${backHref.includes("?") ? "&" : "?"}project=${newId}`)
+      else navigate(`/projects/${newId}`)
+    }
+  }
+
+  const cancel = () => {
+    if (!create) { setTried(false); setEditing(false); return }
+    if (isTask) clearDraft()
+    navigate(backHref)
+  }
+
+  /** "Create a new project" from the task's project picker keeps this draft for the way back. */
+  const createProjectFromTask = () => {
+    if (draft) stashDraft(draft)
+    const ret = new URLSearchParams(params)
+    ret.set("resume", "1"); ret.delete("project"); ret.delete("milestone")
+    navigate(`/projects/new?from=task&back=${encodeURIComponent(`/tasks/new?${ret}`)}`)
   }
 
   const remove = () => {
@@ -144,7 +319,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
 
   // ── pager: "Task 7 of 13" over this sprint's board, "Project 7 of 13" over the master ──
   const order = (x: Task) => STATUS_ORDER.indexOf(x.status)
-  const siblings = kind === "task"
+  const siblings = create ? [] : isTask
     ? (() => {
         const sprintSet = allTasks.filter((x) => x.sprint === (task?.sprint ?? CURRENT_SPRINT))
         const list = sprintSet.some((x) => x.id === id) ? sprintSet : allTasks
@@ -154,17 +329,14 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
   const pos = siblings.indexOf(id)
   const go = (delta: number) => {
     const next = siblings[(pos + delta + siblings.length) % siblings.length]
-    navigate(kind === "task" ? `/tasks/${next}${asManager ? "?from=manager" : ""}` : `/projects/${next}`)
+    navigate(isTask ? `/tasks/${next}${asManager ? "?from=manager" : ""}` : `/projects/${next}`)
   }
 
-  const title = task ? (isAr ? task.titleAr : task.title) : project ? (isAr ? project.nameAr : project.name) : ""
-  // Figma top bar: "مهمة: <title>" / "المشروع: <name>".
-  usePageTitle(
-    task ? `Task: ${task.title}` : project ? `Project: ${project.name}` : undefined,
-    task ? `مهمة: ${task.titleAr}` : project ? `المشروع: ${project.nameAr}` : undefined,
-  )
   const projectTasks = project ? allTasks.filter((x) => x.projectId === project.id) : []
-  const statusCount = (s: TaskStatus) => projectTasks.filter((x) => x.status === s).length
+  const statusCount = (s: TaskStatus) => create
+    ? (s === "open" ? draft?.subtasks?.length ?? 0 : 0)
+    : projectTasks.filter((x) => x.status === s).length
+  const taskTotal = create ? draft?.subtasks?.length ?? 0 : projectTasks.length
 
   const ownerOptions = [
     { value: "me", label: isAr ? ME.nameAr : ME.name, lead: <Initials text={ME.initials} /> },
@@ -176,7 +348,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
       {/* ── header card ──────────────────────────────────────────────── */}
       <section className="highlight-card hl-green flex flex-col gap-8 rounded-2xl px-5 py-6 lg:ps-6 lg:pe-14">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <button onClick={() => navigate(backHref)}
+          <button onClick={() => (create ? cancel() : navigate(backHref))}
             className="inline-flex h-[34px] items-center gap-2 rounded-lg px-3.5 text-[13.5px] font-medium transition-colors hover:bg-foreground/5">
             <ArrowLeft className={cn("size-[14px]", isAr && "rotate-180")} />{backLabel}
           </button>
@@ -206,14 +378,16 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
               </>
             ) : (
               <>
-                <Btn variant="outline" className="bg-secondary" onClick={() => setEditing(false)}>{t("Cancel", "إلغاء")}</Btn>
-                <Btn variant="primary" onClick={save}>{t("Save changes", "حفظ التعديلات")}</Btn>
+                <Btn variant="outline" className="bg-secondary" onClick={cancel}>{t("Cancel", "إلغاء")}</Btn>
+                <Btn variant="primary" onClick={create ? createRecord : save}>
+                  {!create ? t("Save changes", "حفظ التعديلات") : isTask ? (asManager ? t("Assign task", "إسناد المهمة") : t("Create task", "إنشاء المهمة")) : t("Create project", "إنشاء المشروع")}
+                </Btn>
               </>
             )}
-            {siblings.length > 1 && pos >= 0 && (
+            {!create && siblings.length > 1 && pos >= 0 && (
               <div className="ms-1 flex items-center gap-2 border-s border-input ps-3">
                 <span className="text-[13px] tabular-nums text-muted-foreground">
-                  {kind === "task" ? t(`Task ${pos + 1} of ${siblings.length}`, `المهمة ${pos + 1} من ${siblings.length}`)
+                  {isTask ? t(`Task ${pos + 1} of ${siblings.length}`, `المهمة ${pos + 1} من ${siblings.length}`)
                     : t(`Project ${pos + 1} of ${siblings.length}`, `المشروع ${pos + 1} من ${siblings.length}`)}
                 </span>
                 <button onClick={() => go(-1)} aria-label={t("Previous", "السابق")}
@@ -230,18 +404,33 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-3">
-            <h1 className={cn("text-[27px] font-normal leading-[38px] tracking-[-0.27px]", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
+          <div className={cn("flex min-w-0 flex-col gap-3", create && "lg:flex-1")}>
+            {create && draft ? (
+              <div className="flex flex-col gap-1">
+                <input
+                  ref={titleRef} autoFocus value={draft.title ?? ""} onChange={(e) => patch({ title: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createRecord() } }}
+                  placeholder={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
+                  aria-label={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
+                  aria-invalid={!!err("title")}
+                  className={cn("h-[38px] w-full max-w-[640px] border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
+                    err("title") ? "border-error" : "border-input focus:border-primary/70")}
+                />
+                {err("title") && <p className="text-[12px] text-error">{err("title")}</p>}
+              </div>
+            ) : (
+              <h1 className={cn("text-[27px] font-normal leading-[38px] tracking-[-0.27px]", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
+            )}
             <div className="flex flex-wrap items-center gap-2.5 text-[14px]">
-              {task && <><CategoryChip id={task.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">·</span></>}
+              {isTask && <><CategoryChip id={fields.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">·</span></>}
               <Initials text={ownerInitials(fields.ownerId)} className="size-6 text-[9px]" />
               <span className="text-muted-foreground">{ownerName(fields.ownerId, isAr)}</span>
             </div>
           </div>
-          {project && (
+          {isProject && (
             <div className="flex items-center gap-10 self-center lg:self-auto">
               <Legend rows={STATUS_ORDER.map((s) => ({ label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: statusCount(s), dot: STATUS_META[s].dot }))} />
-              <Donut total={projectTasks.length} label={t("Tasks", "مهام")}
+              <Donut total={taskTotal} label={t("Tasks", "مهام")}
                 slices={STATUS_ORDER.map((s) => ({ value: statusCount(s), color: s === "completed" ? "color-mix(in oklab, var(--success) 70%, var(--background))" : STATUS_META[s].color }))} />
             </div>
           )}
@@ -254,14 +443,16 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
           {/* description */}
           <Panel>
             <CardHeader icon={FileText} title={t("Description", "الوصف")}
-              actions={editing ? <span className="text-[12px] text-warning">{t("Unsaved changes", "تغييرات غير محفوظة")}</span> : undefined} />
+              actions={editing && !create ? <span className="text-[12px] text-warning">{t("Unsaved changes", "تغييرات غير محفوظة")}</span> : undefined} />
             <div className="mt-[18px]">
               {editing && draft ? (
                 <div className="flex flex-col gap-4">
                   <textarea
-                    value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                    value={draft.description} onChange={(e) => patch({ description: e.target.value })}
                     rows={5} aria-label={t("Description", "الوصف")}
-                    className="min-h-[135px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none"
+                    placeholder={create ? (isTask ? t("What needs to be done, and any detail worth keeping with the task…", "ما المطلوب إنجازه، وأي تفاصيل تستحق الحفظ مع المهمة…")
+                      : t("What this project covers…", "ما الذي يغطيه هذا المشروع…")) : undefined}
+                    className="min-h-[135px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground"
                   />
                   <TextCounter text={draft.description} isAr={isAr} />
                 </div>
@@ -273,23 +464,42 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
             </div>
           </Panel>
 
-          {/* release note — edited inline in either mode */}
-          <ReleaseNote
-            key={id}
-            value={(task ? task.releaseNote : project?.releaseNote) ?? ""}
-            onSave={(v) => task ? updateTask(task.id, { releaseNote: v }) : project && updateProject(project.id, { releaseNote: v })}
-            isAr={isAr} t={t}
-          />
+          {/* release note — edited inline in either mode; part of the draft on a create screen */}
+          {create && draft ? (
+            <ReleaseNote value="" draftValue={draft.releaseNote ?? ""} onDraftChange={(v) => patch({ releaseNote: v })} onSave={() => {}} isAr={isAr} t={t} />
+          ) : (
+            <ReleaseNote
+              key={id}
+              value={(task ? task.releaseNote : project?.releaseNote) ?? ""}
+              onSave={(v) => task ? updateTask(task.id, { releaseNote: v }) : project && updateProject(project.id, { releaseNote: v })}
+              isAr={isAr} t={t}
+            />
+          )}
 
           {project && <SubTasks project={project} tasks={projectTasks} isAr={isAr} t={t} />}
-          <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} />
+          {create && isProject && draft && (
+            <DraftSubTasks items={draft.subtasks ?? []} onChange={(subtasks) => patch({ subtasks })} isAr={isAr} t={t} />
+          )}
+          <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} disabled={create} />
 
           {/* kept from the earlier project page; below the drawn cards */}
           {project && <Milestones project={project} tasks={allTasks} isAr={isAr} t={t} />}
+          {create && isProject && (
+            <Panel>
+              <CardHeader icon={CalendarClock} title={t("Milestones", "المعالم")} />
+              <Empty icon={CalendarClock} text={t("Milestones can be added once the project is created.", "يمكن إضافة المعالم بعد إنشاء المشروع.")} />
+            </Panel>
+          )}
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
           {project && <Suggestions project={project} isAr={isAr} t={t} />}
+          {create && isProject && (
+            <Panel className="lg:min-h-[343px]">
+              <CardHeader icon={Sparkles} title={t("Assistant suggestion", "اقتراح المساعد")} />
+              <Empty icon={Sparkles} text={t("The assistant suggests subtasks once the project is created.", "يقترح المساعد مهامًا فرعية بعد إنشاء المشروع.")} />
+            </Panel>
+          )}
 
           <Panel>
             <CardHeader icon={Info} title={t("Details", "التفاصيل")} />
@@ -299,7 +509,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<span className="size-[7px] shrink-0 rounded-full bg-primary" />}
                     label={t("Category", "الفئة")} value={draft.category ?? ""}
-                    onChange={(v) => setDraft({ ...draft, category: v as CategoryId })}
+                    onChange={(v) => patch({ category: v as CategoryId })}
                     options={CATEGORIES.map((c) => ({ value: c.id, label: isAr ? c.ar : c.en, lead: <span className={cn("size-2 rounded-full", c.dot)} /> }))} />
                 )} />
               <Row label={t("Sprint", "السبرنت")} edit={editing}
@@ -307,49 +517,70 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<RotateCcw className="size-[14px] shrink-0 text-icon" />}
                     label={t("Sprint", "السبرنت")} value={draft.sprint ?? ""}
-                    onChange={(v) => setDraft({ ...draft, sprint: v })}
+                    onChange={(v) => patch({ sprint: v })}
                     options={SPRINTS.map((s) => ({ value: s.id, label: isAr ? s.ar : s.en }))} />
                 )} />
               <Row label={t("Assignee", "المسؤول")} edit={editing}
                 view={firstName(ownerName(fields.ownerId, isAr))}
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<UserRoundCog className="size-4 shrink-0 text-icon" />}
-                    label={t("Reassign:", "إعادة إسناد:")} value={draft.ownerId}
-                    onChange={(v) => setDraft({ ...draft, ownerId: v })} options={ownerOptions} />
+                    label={create ? t("Assign:", "إسناد:") : t("Reassign:", "إعادة إسناد:")} value={draft.ownerId}
+                    onChange={(v) => patch({ ownerId: v })} options={ownerOptions} />
                 )} />
-              <Row label={t("Due date", "تاريخ الاستحقاق")} edit={editing}
+              <Row label={t("Due date", "تاريخ الاستحقاق")} edit={editing} error={err("due") ?? err("start")}
                 view={<span className={cn(task && task.status !== "completed" && task.dueISO < TASK_TODAY_ISO && "text-error")}>{shortDate(fields.dueISO, isAr)}</span>}
-                control={draft && <DateField value={draft.dueISO} onChange={(v) => setDraft({ ...draft, dueISO: v })} label={t("Date", "تاريخ")} />} />
-              {project && (
+                control={draft && <DateField value={draft.dueISO} onChange={(v) => patch({ dueISO: v })} label={t("Date", "تاريخ")} invalid={!!(err("due") ?? err("start"))} />} />
+              {isProject && (
                 <Row label={t("Start date", "تاريخ البدء")} edit={editing}
-                  view={shortDate(project.startISO, isAr)}
-                  control={draft && <DateField value={draft.startISO ?? ""} onChange={(v) => setDraft({ ...draft, startISO: v })} label={t("Date", "تاريخ")} />} />
+                  view={shortDate(fields.startISO ?? "", isAr)}
+                  control={draft && <DateField value={draft.startISO ?? ""} onChange={(v) => patch({ startISO: v })} label={t("Date", "تاريخ")} />} />
               )}
               <Row label={t("Created", "تاريخ الإنشاء")} edit={false}
-                view={shortDate((task ? task.createdISO : project?.createdISO) ?? "", isAr) || "—"} />
+                view={shortDate((create ? TASK_TODAY_ISO : task ? task.createdISO : project?.createdISO) ?? "", isAr) || "—"} />
               <Row label={t("Priority", "الأولوية")} edit={editing}
                 view={isAr ? PRIORITY_META[fields.priority].ar : PRIORITY_META[fields.priority].en}
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<span className={cn("size-[7px] shrink-0 rounded-full", PRIORITY_META[draft.priority].dot)} />}
                     label={t("Priority", "الأولوية")} value={draft.priority}
-                    onChange={(v) => setDraft({ ...draft, priority: v as TaskPriority })}
+                    onChange={(v) => patch({ priority: v as TaskPriority })}
                     options={PRIORITIES.map((p) => ({ value: p, label: isAr ? PRIORITY_META[p].ar : PRIORITY_META[p].en, lead: <span className={cn("size-2 rounded-full", PRIORITY_META[p].dot)} /> }))} />
                 )} />
-              {project && (
+              {isProject && (
                 <Row label={t("Project status", "حالة المشروع")} edit={editing}
-                  view={<span className={cn("rounded-full px-2 py-0.5 text-[11.5px]", STATUS_LABEL[project.status].chip)}>{isAr ? STATUS_LABEL[project.status].ar : STATUS_LABEL[project.status].en}</span>}
+                  view={project && <span className={cn("rounded-full px-2 py-0.5 text-[11.5px]", STATUS_LABEL[project.status].chip)}>{isAr ? STATUS_LABEL[project.status].ar : STATUS_LABEL[project.status].en}</span>}
                   control={draft && (
-                    <FilterSelect className="w-full max-w-[265px]" value={draft.projectStatus ?? project.status}
-                      onChange={(v) => setDraft({ ...draft, projectStatus: v as ProjectStatus })}
+                    <FilterSelect className="w-full max-w-[265px]" value={draft.projectStatus ?? project?.status ?? "active"}
+                      onChange={(v) => patch({ projectStatus: v as ProjectStatus })}
                       options={(Object.keys(STATUS_LABEL) as ProjectStatus[]).map((s) => ({ value: s, label: isAr ? STATUS_LABEL[s].ar : STATUS_LABEL[s].en }))} />
                   )} />
               )}
-              {project && <Row label={t("Reference", "الرقم المرجعي")} edit={false} view={<span className="tabular-nums">{project.code}</span>} />}
-              {task && (
-                <Row label={t("Project", "المشروع")} edit={false}
-                  view={task.projectId
+              {isProject && <Row label={t("Reference", "الرقم المرجعي")} edit={false} view={<span className="tabular-nums">{create ? code : project?.code}</span>} />}
+              {isTask && (
+                <Row label={t("Project", "المشروع")} edit={create}
+                  view={task && (task.projectId
                     ? <button onClick={() => navigate(`/projects/${task.projectId}`)} className="text-start hover:text-primary hover:underline">{isAr ? task.projectAr : task.project}</button>
-                    : (isAr ? task.projectAr : task.project)} />
+                    : (isAr ? task.projectAr : task.project))}
+                  control={draft && (
+                    <div className="w-full max-w-[265px]">
+                      <ProjectPicker value={draft.projectId ?? ""} isAr={isAr} t={t} onCreate={createProjectFromTask}
+                        onChange={(pid) => setDraft((d) => d && {
+                          ...d, projectId: pid,
+                          milestoneId: d.milestoneId && getMilestone(d.milestoneId)?.projectId === pid ? d.milestoneId : "",
+                          category: getProjectById(pid)?.category ?? d.category,
+                        })} />
+                    </div>
+                  )} />
+              )}
+              {create && isTask && draft && (
+                <Row label={t("Milestone", "المعلم")} edit
+                  view={null}
+                  control={
+                    <div className="w-full max-w-[265px]">
+                      <MilestonePicker projectId={draft.projectId ?? ""} value={draft.milestoneId ?? ""} isAr={isAr} t={t}
+                        onChange={(mid) => patch({ milestoneId: mid })}
+                        onCreate={draft.projectId ? () => navigate(`/projects/${draft.projectId}/milestones/new`) : undefined} />
+                    </div>
+                  } />
               )}
               {task && task.projectId && (
                 <Row label={t("Milestone", "المعلم")} edit={false}
@@ -361,7 +592,28 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                     </span>
                   } />
               )}
+              {create && isTask && draft && (
+                <Row label={t("Status", "الحالة")} edit
+                  view={null}
+                  control={
+                    <FilterSelect className="w-full max-w-[265px]" lead={<StatusDot status={draft.status ?? "open"} />}
+                      value={draft.status ?? "open"} onChange={(v) => patch({ status: v as TaskStatus })}
+                      options={STATUS_ORDER.map((s) => ({ value: s, label: isAr ? STATUS_META[s].ar : STATUS_META[s].en, lead: <StatusDot status={s} /> }))} />
+                  } />
+              )}
               {task && <Row label={t("Assigned by", "أُسندت من")} edit={false} view={isAr ? task.assignedByAr : task.assignedBy} />}
+              {create && draft && (
+                <Row edit view={null}
+                  label={isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")}
+                  control={
+                    <input
+                      value={draft.titleAlt ?? ""} onChange={(e) => patch({ titleAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
+                      placeholder={t("Optional", "اختياري")}
+                      aria-label={isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")}
+                      className="h-9 w-full max-w-[265px] rounded-lg bg-[var(--card-elevated)] px-3 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[var(--card-ring)] placeholder:font-normal placeholder:text-muted-foreground focus:ring-primary"
+                    />
+                  } />
+              )}
             </dl>
             {task && !editing && (
               <button
@@ -376,37 +628,42 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
         </div>
       </div>
 
-      <ConfirmDialog
-        open={confirmDelete}
-        title={kind === "task" ? t("Delete this task?", "حذف هذه المهمة؟") : t("Delete this project?", "حذف هذا المشروع؟")}
-        body={kind === "task"
-          ? t("The task and its activity will be removed. This cannot be undone.", "ستُحذف المهمة وسجل نشاطها. لا يمكن التراجع عن ذلك.")
-          : t("Its tasks stay, no longer linked to a project. This cannot be undone.", "تبقى مهامه دون ربطها بمشروع. لا يمكن التراجع عن ذلك.")}
-        confirm={t("Delete", "حذف")} cancel={t("Cancel", "إلغاء")}
-        onConfirm={() => { setConfirmDelete(false); remove() }}
-        onCancel={() => setConfirmDelete(false)}
-      />
+      {!create && (
+        <ConfirmDialog
+          open={confirmDelete}
+          title={isTask ? t("Delete this task?", "حذف هذه المهمة؟") : t("Delete this project?", "حذف هذا المشروع؟")}
+          body={isTask
+            ? t("The task and its activity will be removed. This cannot be undone.", "ستُحذف المهمة وسجل نشاطها. لا يمكن التراجع عن ذلك.")
+            : t("Its tasks stay, no longer linked to a project. This cannot be undone.", "تبقى مهامه دون ربطها بمشروع. لا يمكن التراجع عن ذلك.")}
+          confirm={t("Delete", "حذف")} cancel={t("Cancel", "إلغاء")}
+          onConfirm={() => { setConfirmDelete(false); remove() }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </Page>
   )
 }
 
 /** One key/value line of the Details card; becomes a control in edit mode. */
-function Row({ label, view, control, edit }: { label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean }) {
+function Row({ label, view, control, edit, error }: { label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean; error?: string }) {
   return (
-    <div className="flex min-h-[54px] items-center justify-between gap-4 border-b border-input px-4 py-2.5 last:border-b-0">
+    <div className={cn("flex min-h-[54px] items-center justify-between gap-4 border-b border-input px-4 py-2.5 last:border-b-0", error && "flex-wrap gap-y-1")}>
       <dt className="shrink-0 text-[12px] text-muted-foreground">{label}</dt>
       <dd className="flex min-w-0 flex-1 justify-end text-end text-[14px] text-foreground">{edit && control ? control : view}</dd>
+      {error && <p role="alert" className="w-full text-end text-[11.5px] text-error">{error}</p>}
     </div>
   )
 }
 
-function DateField({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+function DateField({ value, onChange, label, invalid }: { value: string; onChange: (v: string) => void; label: string; invalid?: boolean }) {
   return (
-    <label className="relative flex h-9 w-full max-w-[265px] items-center rounded-lg bg-[var(--card-elevated)] ring-1 ring-inset ring-[var(--card-ring)] focus-within:ring-primary">
+    <label className={cn("relative flex h-9 w-full max-w-[265px] items-center rounded-lg bg-[var(--card-elevated)] ring-1 ring-inset focus-within:ring-primary",
+      invalid ? "ring-error" : "ring-[var(--card-ring)]")}>
       <CalendarDays className="pointer-events-none absolute end-3 size-4 text-icon" />
       <input
-        type="date" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} aria-label={label}
-        className="h-full w-full rounded-lg bg-transparent ps-3 pe-9 text-[12.5px] font-medium tabular-nums outline-none [&::-webkit-calendar-picker-indicator]:opacity-0"
+        type="date" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} aria-label={label} aria-invalid={invalid}
+        className={cn("h-full w-full rounded-lg bg-transparent ps-3 pe-9 text-[12.5px] font-medium tabular-nums outline-none [&::-webkit-calendar-picker-indicator]:opacity-0",
+          !value && "text-muted-foreground")}
       />
     </label>
   )
@@ -418,13 +675,20 @@ const NOTE_DRAFT = {
   ar: "تم نشر الإصدار 2.4 على بيئة الإنتاج. التحقق: تشغيل فحوصات الجودة على بيانات أبريل. خطة التراجع: استعادة الإصدار 2.3",
 }
 
-function ReleaseNote({ value, onSave, isAr, t }: { value: string; onSave: (v: string) => void; isAr: boolean; t: TFn }) {
+function ReleaseNote({ value, onSave, isAr, t, draftValue, onDraftChange }: {
+  value: string; onSave: (v: string) => void; isAr: boolean; t: TFn
+  /** create screen: the note is part of the new record's draft — no Save / Cancel of its own */
+  draftValue?: string; onDraftChange?: (v: string) => void
+}) {
   // ?note=draft opens the note mid-edit with a sample draft (Figma 3580:9156 / 9423)
   const [params] = useSearchParams()
   const seeded = params.get("note") === "draft" ? (isAr ? NOTE_DRAFT.ar : NOTE_DRAFT.en) : value
-  const [text, setText] = React.useState(seeded)
-  React.useEffect(() => setText(seeded), [seeded])
-  const dirty = text !== value
+  const [own, setOwn] = React.useState(seeded)
+  React.useEffect(() => setOwn(seeded), [seeded])
+  const controlled = onDraftChange !== undefined
+  const text = controlled ? draftValue ?? "" : own
+  const setText = controlled ? onDraftChange : setOwn
+  const dirty = !controlled && text !== value
   return (
     <Panel>
       <CardHeader icon={NotebookPen} title={t("Release note", "ملاحظة النشر")}
@@ -490,6 +754,56 @@ function SubTasks({ project, tasks, isAr, t }: { project: Project; tasks: Task[]
         })}
       </ul>
       {rows.length === 0 && <Empty icon={ListChecks} text={t("No tasks under this project yet.", "لا توجد مهام تحت هذا المشروع بعد.")} />}
+    </Panel>
+  )
+}
+
+/** "المهام الفرعية" on a new project: type the first tasks; they are created with it. */
+function DraftSubTasks({ items, onChange, isAr, t }: { items: string[]; onChange: (v: string[]) => void; isAr: boolean; t: TFn }) {
+  const [text, setText] = React.useState("")
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  const add = () => {
+    const v = text.trim()
+    if (!v) { inputRef.current?.focus(); return }
+    onChange([...items, v]); setText(""); inputRef.current?.focus()
+  }
+  return (
+    <Panel>
+      <CardHeader icon={ListChecks} title={t("Subtasks", "المهام الفرعية")}
+        actions={
+          <button type="button" onClick={add}
+            className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
+            <Plus className="size-3.5" />{t("New task", "مهمة جديدة")}
+          </button>
+        } />
+      {/* room for the six rows drawn on the edit screen; longer lists scroll */}
+      <ul className="mt-[18px] max-h-[300px] min-h-[300px] overflow-y-auto [scrollbar-width:thin]">
+        {items.map((s, i) => (
+          <li key={`${i}-${s}`} className="flex min-h-[50px] items-center gap-3 border-b border-input py-2">
+            <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-foreground/70" />
+            <span className="min-w-0 flex-1 truncate text-start text-[14px]">{s}</span>
+            <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={t("Remove", "إزالة")}
+              className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
+              <X className="size-3.5" />
+            </button>
+          </li>
+        ))}
+        <li className="flex min-h-[50px] items-center gap-3 py-2">
+          <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-dashed border-foreground/40" />
+          <input
+            ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
+            placeholder={t("Add a subtask and press Enter — it is created with the project", "أضف مهمة فرعية واضغط Enter — تُنشأ مع المشروع")}
+            aria-label={t("New subtask", "مهمة فرعية جديدة")}
+            className="h-9 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[13px] placeholder:text-muted-foreground"
+          />
+        </li>
+      </ul>
+      {items.length > 0 && (
+        <p className="mt-2 text-[12px] text-muted-foreground">
+          {isAr ? `${items.length} مهمة فرعية ستُنشأ مع المشروع` : `${items.length} subtask${items.length === 1 ? "" : "s"} will be created with the project`}
+        </p>
+      )}
     </Panel>
   )
 }
@@ -584,7 +898,7 @@ function Suggestions({ project, isAr, t }: { project: Project; isAr: boolean; t:
 const STATUS_TEXT = (s: TaskStatus | undefined, isAr: boolean) => (s ? (isAr ? STATUS_META[s].ar : STATUS_META[s].en) : "")
 
 /** "النشاط" — the trail, oldest first, with the comment box at the bottom. */
-function Activity({ subjectId, isAr, t, asManager, task }: { subjectId: string; isAr: boolean; t: TFn; asManager: boolean; task?: Task }) {
+function Activity({ subjectId, isAr, t, asManager, task, disabled }: { subjectId: string; isAr: boolean; t: TFn; asManager: boolean; task?: Task; disabled?: boolean }) {
   const events = useTaskEvents(subjectId)
   const [draft, setDraft] = React.useState("")
   const [pct, setPct] = React.useState<number | null>(null)
@@ -605,22 +919,29 @@ function Activity({ subjectId, isAr, t, asManager, task }: { subjectId: string; 
       <ul className="mt-[18px]">
         {events.map((e) => <ActivityRow key={e.id} e={e} isAr={isAr} t={t} />)}
       </ul>
-      {events.length === 0 && <p className="py-6 text-center text-[13px] text-muted-foreground">{t("No activity yet.", "لا يوجد نشاط بعد.")}</p>}
+      {events.length === 0 && (
+        // a new record keeps the drawn trail's room (three rows) so the card sits as on the edit screen
+        <p className={cn("py-6 text-center text-[13px] text-muted-foreground", disabled && "flex min-h-[160px] items-center justify-center")}>
+          {disabled ? t("No activity yet — the trail starts once it is created.", "لا يوجد نشاط بعد — يبدأ السجل بعد الإنشاء.") : t("No activity yet.", "لا يوجد نشاط بعد.")}
+        </p>
+      )}
 
       <div className="mt-[23px] flex items-center gap-3">
         <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-background ps-2 pe-3 focus-within:border-primary/60">
           <Initials text={ME.initials} className="size-6" />
           <input
-            ref={inputRef} value={draft} onChange={(e) => setDraft(e.target.value)}
+            ref={inputRef} value={draft} onChange={(e) => setDraft(e.target.value)} disabled={disabled}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); post() } }}
-            placeholder={asManager && task?.assignee
-              ? t(`Leave a comment for ${task.assignee}…`, `اترك تعليقًا لـ ${task.assigneeAr}…`)
-              : t("Add a comment…", "أضف تعليقًا…")}
+            placeholder={disabled
+              ? t("Comments open once it is created", "يُتاح التعليق بعد الإنشاء")
+              : asManager && task?.assignee
+                ? t(`Leave a comment for ${task.assignee}…`, `اترك تعليقًا لـ ${task.assigneeAr}…`)
+                : t("Add a comment…", "أضف تعليقًا…")}
             aria-label={t("Add a comment", "أضف تعليقًا")}
-            className="h-full min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-muted-foreground"
+            className="h-full min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
           />
         </div>
-        <button onClick={post} disabled={!draft.trim()}
+        <button onClick={post} disabled={disabled || !draft.trim()}
           className="btn-primary-grad inline-flex h-10 w-20 shrink-0 items-center justify-center gap-1.5 rounded-[8px] text-[13.5px] font-medium disabled:cursor-not-allowed">
           {t("Send", "إرسال")}
         </button>
