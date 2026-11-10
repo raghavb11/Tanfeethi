@@ -17,6 +17,7 @@
     "@reach/domain-intelligence": "*",
     "@reach/domain-learning": "*",
     "@reach/domain-operations": "*",
+    "@reach/domain-performance": "*",
     "@reach/domain-preview": "*",
     "@reach/domain-services": "*",
     "@reach/domain-surveys": "*",
