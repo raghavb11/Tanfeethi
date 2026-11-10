@@ -1,8 +1,9 @@
 import { useSearchParams } from "react-router-dom"
-import { LayoutGrid, Laptop, Printer } from "lucide-react"
+import { Laptop } from "lucide-react"
 
 import { Card, CardHeader, GroupRow, PageBody, ServiceTile } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon, LaptopDuoIcon } from "../components/kpi-icons"
 import { serviceItemById, technicalGroups } from "../data/mock/services"
 
 /** IT → "Request a technical service": group list (Figma 3054:6015) and, once a
@@ -18,12 +19,12 @@ export default function TechnicalServicesPage() {
     <PageBody>
       <div className="grid items-start gap-5 lg:grid-cols-[397px_minmax(0,1fr)]">
         <Card>
-          <CardHeader icon={LayoutGrid} title={t("Request an IT service", "طلب خدمة تقنية")} />
+          <CardHeader icon={GridIcon} title={t("Request an IT service", "طلب خدمة تقنية")} />
           <div className="mt-8 flex flex-col gap-2">
             {technicalGroups.map((g) => (
               <GroupRow
                 key={g.id}
-                icon={Laptop}
+                icon={LaptopDuoIcon}
                 label={isAr ? g.nameAr : g.name}
                 selected={g.id === groupId}
                 onClick={() => setParams(g.id === groupId ? {} : { group: g.id }, { replace: true })}
@@ -34,7 +35,7 @@ export default function TechnicalServicesPage() {
 
         {group && (
           <Card className="px-4">
-            <CardHeader icon={LayoutGrid} title={isAr ? group.nameAr : group.name} />
+            <CardHeader icon={GridIcon} title={isAr ? group.nameAr : group.name} />
             <div className="mt-[18px] grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {group.items.map((id) => {
                 const item = serviceItemById(id)
@@ -42,9 +43,9 @@ export default function TechnicalServicesPage() {
                 return (
                   <ServiceTile
                     key={id}
-                    icon={id === "printers" ? Printer : Laptop}
+                    icon={Laptop}
                     title={isAr ? item.nameAr : item.name}
-                    actionLabel={t("Request the service", "طلب الخدمة")}
+                    actionLabel={t("Request service", "طلب الخدمة")}
                     to={`/services/request/${id}`}
                   />
                 )

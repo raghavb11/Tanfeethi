@@ -34,6 +34,7 @@
     {"ar": "4999:17400", "route": "services/violations", "area": "services"},
     {"ar": "4999:17869", "route": "services/violations?group=investigation", "area": "services"},
     {"ar": "4946:15932", "route": "services/violations/new", "area": "services"},
+    {"ar": "5003:19354", "route": "services/violations/new?policy=accepted", "area": "services"},
     {"ar": "4999:18052", "route": "services/violations/reports", "area": "services"},
     {"ar": "4999:19203", "route": "services/violations/queue", "area": "services"},
     {"ar": "4999:18721", "route": "services/violations/reports/BSRITM-0118845", "area": "services"},

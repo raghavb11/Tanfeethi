@@ -115,7 +115,7 @@ export default function TeaBoyQueuePage() {
 
         {/* unaccepted alert */}
         {overdue > 0 && tab === "new" && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-[12.5px] text-red-600 dark:text-red-400">
+          <div className="mt-4 flex items-start gap-2 rounded-[12px] border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-[12.5px] text-red-600 dark:text-red-400">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <span>{t(
               `${overdue} request(s) waiting more than ${ACCEPT_SLA_MIN} minutes. The supervisor has been notified.`,
@@ -125,7 +125,7 @@ export default function TeaBoyQueuePage() {
         )}
 
         {/* tabs */}
-        <div className="mt-4 grid grid-cols-3 gap-1.5 rounded-xl bg-muted/40 p-1">
+        <div className="mt-4 grid grid-cols-3 gap-1.5 rounded-[12px] bg-muted/40 p-1">
           {([
             ["new", t("New", "جديدة"), newOrders.length],
             ["mine", t("My orders", "طلباتي"), mine.length],
@@ -134,7 +134,7 @@ export default function TeaBoyQueuePage() {
             <button
               key={k} onClick={() => setTab(k)}
               className={cn(
-                "rounded-lg py-2.5 text-[13px] font-semibold transition-colors",
+                "rounded-[8px] py-2.5 text-[13px] font-semibold transition-colors",
                 tab === k ? "bg-card shadow-sm" : "text-muted-foreground",
               )}
             >
@@ -174,7 +174,7 @@ export default function TeaBoyQueuePage() {
                   <Where o={o} />
                   <div className="text-[12px] text-muted-foreground">{ar ? o.byAr : o.by}</div>
                   {o.note && (
-                    <p className="flex items-start gap-1.5 rounded-lg bg-muted/30 p-2 text-[12px] italic text-muted-foreground">
+                    <p className="flex items-start gap-1.5 rounded-[8px] bg-muted/30 p-2 text-[12px] italic text-muted-foreground">
                       <StickyNote className="mt-0.5 size-3.5 shrink-0" />{o.note}
                     </p>
                   )}
@@ -189,7 +189,7 @@ export default function TeaBoyQueuePage() {
                           <button
                             key={m} onClick={() => accept(o, m)}
                             className={cn(
-                              "min-w-16 rounded-xl border px-3 py-2.5 text-[13px] font-bold transition-colors",
+                              "min-w-16 rounded-[12px] border px-3 py-2.5 text-[13px] font-bold transition-colors",
                               m === suggestEta(o)
                                 ? "border-primary/40 bg-primary/12 text-primary"
                                 : "border-border/60 hover:bg-muted/40",
@@ -236,7 +236,7 @@ export default function TeaBoyQueuePage() {
                   <Where o={o} />
                   <div className="text-[12px] text-muted-foreground">{ar ? o.byAr : o.by}</div>
                   {o.note && (
-                    <p className="flex items-start gap-1.5 rounded-lg bg-muted/30 p-2 text-[12px] italic text-muted-foreground">
+                    <p className="flex items-start gap-1.5 rounded-[8px] bg-muted/30 p-2 text-[12px] italic text-muted-foreground">
                       <StickyNote className="mt-0.5 size-3.5 shrink-0" />{o.note}
                     </p>
                   )}
@@ -254,7 +254,7 @@ export default function TeaBoyQueuePage() {
           {tab === "done" && done.map((o) => (
             <Card key={o.id} className="ring-1 ring-foreground/10">
               <div className="flex items-center gap-3 p-4">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-500">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-emerald-500/12 text-emerald-500">
                   <PackageCheck className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -294,7 +294,7 @@ export default function TeaBoyQueuePage() {
 
       {toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
-          <div className="rounded-xl bg-foreground px-4 py-2.5 text-[13px] font-semibold text-background shadow-lg">
+          <div className="rounded-[12px] bg-foreground px-4 py-2.5 text-[13px] font-semibold text-background shadow-lg">
             {toast}
           </div>
         </div>

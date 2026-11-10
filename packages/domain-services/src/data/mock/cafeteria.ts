@@ -1,4 +1,5 @@
 import * as React from "react"
+import icedLatte from "../../assets/menu/iced-latte.png"
 
 /** Cafeteria & tea-boy service. A free internal service — refreshments and
  *  meals delivered to a desk, meeting room or terminal office. No pricing:
@@ -8,8 +9,8 @@ import * as React from "react"
 export type MenuGroupId = "hot" | "cold" | "snacks" | "meals" | "catering"
 
 export const menuGroups: { id: MenuGroupId; label: string; labelAr: string }[] = [
-  { id: "hot", label: "Hot drinks", labelAr: "المشروبات الساخنة" },
-  { id: "cold", label: "Cold drinks", labelAr: "المشروبات الباردة" },
+  { id: "hot", label: "Hot Drinks", labelAr: "المشروبات الساخنة" },
+  { id: "cold", label: "Cold Drinks", labelAr: "المشروبات الباردة" },
   { id: "snacks", label: "Snacks", labelAr: "الوجبات الخفيفة" },
   { id: "meals", label: "Meals", labelAr: "الوجبات" },
   { id: "catering", label: "Catering", labelAr: "ضيافة" },
@@ -26,6 +27,8 @@ export type MenuItem = {
   available: boolean
   /** Hot drinks are ordered with a sugar level. */
   takesSugar?: boolean
+  /** Product photo (the striped placeholder is drawn when absent, as in Figma). */
+  image?: string
   /** Where it can be ordered to. "all" is the common case; a kitchen that
    *  cannot plate a hot meal in a remote terminal is why the others exist. */
   servedScope?: "all" | "sites" | "places"
@@ -52,7 +55,7 @@ export const sugarLabel = (id: SugarLevel, isAr: boolean) => {
 export let menu: MenuItem[] = [
   // hot drinks
   // Figma 4915:17913 order-menu items
-  { id: "m-mint-saffron", group: "hot", name: "Mint with saffron", nameAr: "نعناع مع الزعفران", popular: true, available: true, takesSugar: true },
+  { id: "m-mint-saffron", group: "hot", name: "Mint with Saffron", nameAr: "نعناع مع الزعفران", popular: true, available: true, takesSugar: true },
   { id: "m-macchiato", group: "hot", name: "Macchiato", nameAr: "ماكياتو", available: true, takesSugar: true },
   { id: "m-arabic-coffee", group: "hot", name: "Arabic coffee (Gahwa)", nameAr: "قهوة عربية", note: "Served with dates", noteAr: "تُقدَّم مع التمر", popular: true, available: true },
   { id: "m-tea", group: "hot", name: "Tea", nameAr: "شاي", popular: true, available: true, takesSugar: true },
@@ -69,7 +72,7 @@ export let menu: MenuItem[] = [
   // cold drinks
   { id: "m-water", group: "cold", name: "Water", nameAr: "ماء", note: "Still or sparkling", noteAr: "عادي أو فوار", popular: true, available: true },
   { id: "m-iced-coffee", group: "cold", name: "Iced coffee", nameAr: "قهوة مثلجة", popular: true, available: true, takesSugar: true },
-  { id: "m-iced-latte", group: "cold", name: "Iced Latte", nameAr: "ايس لاتيه", popular: true, available: true, takesSugar: true },
+  { id: "m-iced-latte", group: "cold", name: "Iced Latte", nameAr: "ايس لاتيه", popular: true, available: true, takesSugar: true, image: icedLatte },
   { id: "m-fresh-juice", group: "cold", name: "Fresh juice", nameAr: "عصير طازج", note: "Orange, mango or mixed", noteAr: "برتقال، مانجو أو مشكّل", available: true },
   { id: "m-lemon-mint", group: "cold", name: "Lemon & mint", nameAr: "ليمون بالنعناع", popular: true, available: true },
   { id: "m-laban", group: "cold", name: "Laban", nameAr: "لبن", available: true },

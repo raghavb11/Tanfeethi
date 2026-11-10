@@ -29,10 +29,9 @@ export default function ViolationFollowUpPage({ mode = "reporter" }: { mode?: "r
                 action={mode === "reporter" ? <GoldLink to="/services/violations/new" className="mt-2">{t("Report a violation", "الإبلاغ عن مخالفة")}</GoldLink> : undefined} />
             </div>
           ) : (
-            <DataTable head={[
+            <DataTable cols={["46px", "295px", "200px", "200px", "200px", ""]} head={[
               t("No.", "ترقيم"), t("Report Title", "عنوان البلاغ"), t("Report No.", "رقم البلاغ"),
               t("Assigned to Department", "مسند للإدارة"), t("Assigned to Employee", "مسند للموظف"), t("Status", "الحالة"),
-              ...(mode === "investigator" ? [""] : []),
             ]}>
               {rows.map((r, i) => (
                 <tr key={r.id}
@@ -53,11 +52,10 @@ export default function ViolationFollowUpPage({ mode = "reporter" }: { mode?: "r
                           {t("Add Evidence", "إضافة دليل")}
                         </GoldButton>
                       )}
+                      {/* Figma 4999:19203 draws the open chevron at the far end of the status cell. */}
+                      {mode === "investigator" && <Chevron className="size-4 text-icon" aria-hidden />}
                     </div>
                   </td>
-                  {mode === "investigator" && (
-                    <td className="w-8 text-end"><Chevron className="inline size-4 text-icon" aria-hidden /></td>
-                  )}
                 </tr>
               ))}
             </DataTable>

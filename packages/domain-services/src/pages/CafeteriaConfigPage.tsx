@@ -72,13 +72,13 @@ export default function CafeteriaConfigPage() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-xl border border-border p-0.5">
+        <div className="inline-flex rounded-[12px] border border-border p-0.5">
           {([["menu", Coffee, t("Menu items", "أصناف القائمة"), menu.length],
              ["places", MapPin, t("Delivery places", "مواقع التوصيل"), locations.length]] as const).map(
             ([id, Icon, text, n]) => (
               <button
                 key={id} onClick={() => setTab(id as Tab)} aria-pressed={tab === id}
-                className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                className={cn("inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-sm font-medium transition-colors",
                   tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
               >
                 <Icon className="size-4" />{text}
@@ -238,7 +238,7 @@ export default function CafeteriaConfigPage() {
                       </div>
 
                       {openPlace === l.id && (
-                        <div className="mt-2 rounded-xl border border-border/60 bg-muted/20 p-3">
+                        <div className="mt-2 rounded-[12px] border border-border/60 bg-muted/20 p-3">
                           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                             {t("Served here", "يُقدّم هنا")}
                           </p>
@@ -311,7 +311,7 @@ function ConfirmRemove({ title, body, alt, onAlt, onCancel, onConfirm, t }: {
   t: (en: string, ar: string) => string
 }) {
   return (
-    <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/[0.05] p-3">
+    <div className="mt-3 rounded-[12px] border border-rose-500/30 bg-rose-500/[0.05] p-3">
       <p className="text-[12.5px] font-semibold">{title}</p>
       <p className="mt-0.5 text-[12px] text-muted-foreground">{body}</p>
       <div className="mt-2 flex flex-wrap justify-end gap-2">

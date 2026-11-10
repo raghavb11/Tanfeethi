@@ -203,13 +203,13 @@ const location: FieldDef = {
   ],
 }
 const requestType = (options: Option[]): FieldDef =>
-  ({ key: "type", kind: "select", label: "Request type", labelAr: "نوع الطلب", options })
+  ({ key: "type", kind: "select", label: "Request Type", labelAr: "نوع الطلب", options })
 
 export const serviceItems: ServiceItem[] = [
   { id: "printers", name: "Printer services", nameAr: "خدمات الطابعات", fields: [
     requester,
     requestType([{ en: "New printer", ar: "طابعة جديدة" }, { en: "Repair", ar: "إصلاح" }, { en: "Toner / supplies", ar: "حبر ومستلزمات" }, { en: "Move printer", ar: "نقل طابعة" }]),
-    { key: "model", kind: "text", label: "Printer model", labelAr: "طراز الطابعة" },
+    { key: "model", kind: "text", label: "Printer Model", labelAr: "طراز الطابعة" },
     location,
   ] },
   { id: "devices", name: "Device services", nameAr: "خدمات الأجهزة", fields: [
@@ -355,15 +355,12 @@ export const activeRequests: ServiceRequest[] = [
     requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "18 July", dateAr: "18 يوليو", iso: "2026/07/18", step: 2, flow: "standard" },
 ]
 
-/** Submitted services log — the history table (newest first). */
+/** Submitted services log — the history table (newest first). Figma 4777:25710 lists
+ *  three requests; the third keeps its own unique id (the design repeats #REQ-10412). */
 export const requestHistory: ServiceRequest[] = [
   activeRequests[0],
   activeRequests[3],
   activeRequests[4],
-  { id: "REQ-10377", categoryId: "it", title: "VPN access extension", titleAr: "تمديد الوصول عبر VPN",
-    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "21 July", dateAr: "21 يوليو", iso: "2026/07/21", step: 3, flow: "standard" },
-  { id: "REQ-10352", categoryId: "finance", title: "Conference travel advance", titleAr: "سلفة سفر لمؤتمر",
-    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "9 July", dateAr: "9 يوليو", iso: "2026/07/09", step: 2, flow: "standard" },
 ]
 
 /** Status label used by the history table. */

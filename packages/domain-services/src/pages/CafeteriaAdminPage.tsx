@@ -126,7 +126,7 @@ export default function CafeteriaAdminPage() {
         <div className="lg:col-span-4">
           <Card className="ring-1 ring-foreground/10">
             <div className="flex items-center gap-2.5 border-b border-border/60 px-5 py-4">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary">
+              <span className="flex size-8 items-center justify-center rounded-[8px] bg-primary/12 text-primary">
                 <History className="size-4" />
               </span>
               <div className="min-w-0">

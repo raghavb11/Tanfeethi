@@ -90,7 +90,7 @@ export default function CafeteriaOrdersPage() {
                   </div>
                   {/* waiting for someone to pick it up */}
                   {o.status === "Received" && (
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-600 dark:text-amber-400">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-600 dark:text-amber-400">
                       <span className="relative flex size-2.5">
                         <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-500/60" />
                         <span className="relative inline-flex size-2.5 rounded-full bg-amber-500" />
@@ -116,7 +116,7 @@ export default function CafeteriaOrdersPage() {
                     const late = isLate(o)
                     return (
                       <div className={cn(
-                        "space-y-2 rounded-lg border px-3 py-2.5 text-[12px]",
+                        "space-y-2 rounded-[8px] border px-3 py-2.5 text-[12px]",
                         late
                           ? "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400"
                           : "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",

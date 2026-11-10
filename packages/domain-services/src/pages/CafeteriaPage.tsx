@@ -1,26 +1,31 @@
 import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import {
-  Bookmark, BookmarkCheck, ChevronDown, ClipboardList, Clock, Coffee, ConciergeBell, Cookie, CupSoda, Heart, LayoutGrid, MapPin,
-  Minus, Plus, RotateCcw, Search, Send, ShieldCheck, ShoppingBag, Star, Trash2, UtensilsCrossed, X, type LucideIcon,
+  Bookmark, BookmarkCheck, ChevronDown, ClipboardList, Clock, Heart, MapPin,
+  Minus, Plus, RotateCcw, Search, Send, ShieldCheck, ShoppingBag, Star, Trash2, X,
 } from "lucide-react"
 import { cn } from "@reach/shared-core"
 
 import {
   Card, CardHeader, CardTitle, EmptyState, GoldButton, ImagePlaceholder, OutlineButton, PageBody, TextArea, TextInput, Toast } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon, TeaCupIcon } from "../components/kpi-icons"
 import {
   MAX_USUALS, addOrder, itemById, locations, menu, menuGroups, newOrderId, newOrderRef, nowMin, removeUsual,
   replaceUsual, saveUsual, servesAt, setPrefs, slots, sugarLabel, toggleFavorite, useOrders, usePrefs,
   type MenuGroupId, type MenuItem, type OrderLine, type SavedUsual, type SugarLevel,
 } from "../data/mock/cafeteria"
 
+/** The two items each "Browse …" section shows in the All overview (Figma 4915:17913). */
+const FEATURED: Partial<Record<MenuGroupId, string[]>> = {
+  hot: ["m-mint-saffron", "m-macchiato"],
+  cold: ["m-iced-tea", "m-iced-latte"],
+  snacks: ["m-kitco-chips", "m-memories-wafer"],
+}
+
 /** The three sugar levels the Figma segmented control offers (light stays valid data). */
 const SUGAR_UI: SugarLevel[] = ["none", "medium", "sweet"]
 
-const groupIcon: Record<MenuGroupId, LucideIcon> = {
-  hot: Coffee, cold: CupSoda, snacks: Cookie, meals: UtensilsCrossed, catering: ConciergeBell,
-}
 
 /** Hospitality → Order menu with basket — Figma 4915:17913. Route: /cafeteria.
  *  A free internal service: items, a delivery point and a time; no pricing. */
@@ -36,8 +41,8 @@ export default function CafeteriaPage() {
   const [params] = useSearchParams()
   const [lines, setLines] = React.useState<OrderLine[]>(() => params.get("basket") === "demo"
     ? [
-        { itemId: "m-macchiato", qty: 1, sugar: "medium" },
-        { itemId: "m-iced-latte", qty: 2, sugar: "medium" },
+        { itemId: "m-macchiato", qty: 1, sugar: "none" },
+        { itemId: "m-iced-latte", qty: 2, sugar: "sweet" },
         { itemId: "m-memories-wafer", qty: 1 },
       ]
     : [])
@@ -83,9 +88,17 @@ export default function CafeteriaPage() {
   const hiddenByPlace = chosenPlace ? menu.filter((m) => m.available && !servesAt(m, chosenPlace)).length : 0
 
   const favourites = menu.filter((m) => prefs.favorites.includes(m.id) && matches(m))
+  // "All" is the Figma overview: hot, cold and snacks, two featured items each (a search
+  // lists every match). Each group's tab — meals and catering included — lists it in full.
+  const overview = group === "all" && !q
   const sections = menuGroups
-    .filter((g) => group === "all" || g.id === group)
-    .map((g) => ({ ...g, items: menu.filter((m) => m.group === g.id && matches(m)) }))
+    .filter((g) => (group === "all" ? !overview || g.id in FEATURED : g.id === group))
+    .map((g) => ({
+      ...g,
+      items: overview
+        ? (FEATURED[g.id] ?? []).map(itemById).filter((m): m is MenuItem => !!m && matches(m))
+        : menu.filter((m) => m.group === g.id && matches(m)),
+    }))
     .filter((g) => g.items.length > 0)
   const nothing = sections.length === 0 && (group !== "all" || favourites.length === 0)
 
@@ -151,7 +164,7 @@ export default function CafeteriaPage() {
         <div className="space-y-6 lg:sticky lg:top-4">
           <Card>
             <div className="flex items-start justify-between gap-3">
-              <CardTitle icon={ShoppingBag}>{t("Requests", "الطلبات")}</CardTitle>
+              <CardTitle icon={TeaCupIcon}>{t("Requests", "الطلبات")}</CardTitle>
               <span className="text-[12px] leading-[18px] text-foreground">{countLabel(totalItems)}</span>
             </div>
 
@@ -163,19 +176,19 @@ export default function CafeteriaPage() {
                 const m = itemById(l.itemId)
                 if (!m) return null
                 return (
-                  <div key={l.itemId} className="flex gap-3 rounded-[10px] border border-[var(--card-ring)] bg-background px-4 py-6">
-                    <ImagePlaceholder icon={groupIcon[m.group]} className="size-[78px] shrink-0" />
-                    <div className="flex min-w-0 flex-1 flex-col gap-4">
+                  <div key={l.itemId} className="flex gap-3 rounded-[10px] border border-foreground/[0.09] bg-background px-4 pb-[25px] pt-6">
+                    <ImagePlaceholder className="size-[78px] shrink-0" />
+                    <div className="flex min-w-0 flex-1 flex-col gap-[17px]">
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-[14.5px] leading-[21.75px] text-foreground">{isAr ? m.nameAr : m.name}</span>
                         <HeartButton on={prefs.favorites.includes(m.id)} onClick={() => toggleFavorite(m.id)} size="sm" />
                       </div>
                       {m.takesSugar && (
-                        <div className="flex gap-1 rounded-lg bg-card p-1">
+                        <div className="flex gap-1 rounded-[8px] bg-card p-1">
                           {SUGAR_UI.map((s) => (
                             <button key={s} type="button" onClick={() => setSugar(m.id, s)} aria-pressed={l.sugar === s}
                               className={cn("h-[25px] flex-1 rounded px-1 text-[12px] transition-colors",
-                                l.sugar === s ? "bg-soft-accent font-medium text-primary" : "text-foreground hover:bg-secondary/60")}>
+                                l.sugar === s ? "bg-soft-accent font-medium text-primary" : "text-muted-foreground hover:bg-secondary/60")}>
                               {sugarLabel(s, isAr)}
                             </button>
                           ))}
@@ -191,7 +204,7 @@ export default function CafeteriaPage() {
               })}
 
               <GoldButton className="w-full" disabled={!canSubmit} onClick={submit}>
-                <Send className="size-3.5" />{t("Submit Request", "تقديم الطلب")}
+                {t("Submit Request", "تقديم الطلب")}
               </GoldButton>
 
               {/* Delivery place, time and note — kept from the existing ordering flow, folded
@@ -220,10 +233,10 @@ export default function CafeteriaPage() {
                     <MapPin className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-icon" />
                     <TextInput value={locQuery} onChange={(e) => setLocQuery(e.target.value)} placeholder={t("Search locations…", "ابحث عن الموقع…")} className="ps-8" />
                   </div>
-                  <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg bg-background p-1 [scrollbar-width:thin]">
+                  <div className="max-h-40 space-y-1 overflow-y-auto rounded-[8px] bg-background p-1 [scrollbar-width:thin]">
                     {locOptions.map((l) => (
                       <button key={l.id} type="button" onClick={() => setLocationId(l.id)}
-                        className={cn("flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-start text-[12px] transition-colors",
+                        className={cn("flex w-full items-center gap-1.5 rounded-[6px] px-2.5 py-1.5 text-start text-[12px] transition-colors",
                           locationId === l.id ? "bg-soft-accent font-semibold text-primary" : "text-foreground hover:bg-secondary/60")}>
                         {isAr ? l.nameAr : l.name}
                         {l.id === prefs.locationId && <Star className="size-3 shrink-0 fill-primary/30 text-primary" />}
@@ -269,7 +282,7 @@ export default function CafeteriaPage() {
                       {prefs.usuals.map((u) => (
                         <button key={u.id} type="button"
                           onClick={() => { replaceUsual(u.id, lines, note.trim() || undefined); setPrefs({ locationId }); setReplacing(false); keepSaved() }}
-                          className="flex w-full items-center justify-between gap-2 rounded-lg bg-card px-2.5 py-1.5 text-[12px] hover:text-primary">
+                          className="flex w-full items-center justify-between gap-2 rounded-[8px] bg-card px-2.5 py-1.5 text-[12px] hover:text-primary">
                           <span className="min-w-0 truncate font-medium">{u.name}</span>
                           <span className="shrink-0 text-[11px] text-muted-foreground">{u.lines.length} {t("items", "أصناف")}</span>
                         </button>
@@ -325,12 +338,12 @@ export default function CafeteriaPage() {
                           })}
                         </div>
                       </div>
-                      <button type="button" onClick={() => removeUsual(u.id)} aria-label={t("Remove", "إزالة")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:text-error">
+                      <button type="button" onClick={() => removeUsual(u.id)} aria-label={t("Remove", "إزالة")} className="grid size-7 place-items-center rounded-[6px] text-muted-foreground hover:text-error">
                         <X className="size-3.5" />
                       </button>
                     </div>
                     {confirmUsual?.id === u.id ? (
-                      <div className="mt-3 space-y-2 rounded-lg bg-soft-accent p-3">
+                      <div className="mt-3 space-y-2 rounded-[8px] bg-soft-accent p-3">
                         <p className="text-[12px] font-semibold text-foreground">{t(`Send "${u.name}" now?`, `تأكيد الطلب: «${u.name}»`)}</p>
                         <p className="text-[11.5px] text-muted-foreground">
                           {t("Deliver to", "التوصيل إلى")}{" "}
@@ -338,10 +351,10 @@ export default function CafeteriaPage() {
                         </p>
                         <TextInput value={confirmQuery} onChange={(e) => setConfirmQuery(e.target.value)} placeholder={t("Change the place — search locations…", "ابحث عن الموقع…")} />
                         {confirmQuery.trim() !== "" && (
-                          <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg bg-card p-1">
+                          <div className="max-h-32 space-y-1 overflow-y-auto rounded-[8px] bg-card p-1">
                             {confirmOptions.map((l) => (
                               <button key={l.id} type="button" onClick={() => { setConfirmLoc(l.id); setConfirmQuery("") }}
-                                className="block w-full rounded-md px-2 py-1 text-start text-[12px] hover:bg-secondary/60">{isAr ? l.nameAr : l.name}</button>
+                                className="block w-full rounded-[6px] px-2 py-1 text-start text-[12px] hover:bg-secondary/60">{isAr ? l.nameAr : l.name}</button>
                             ))}
                             {confirmOptions.length === 0 && <p className="px-2 py-2 text-center text-[12px] text-muted-foreground">{t("No matching location", "لا يوجد موقع مطابق")}</p>}
                           </div>
@@ -369,18 +382,20 @@ export default function CafeteriaPage() {
         {/* ── menu ── */}
         <div className="min-w-0 space-y-6">
           {/* search + filter */}
-          <div className="panel flex flex-wrap items-center justify-between gap-6 rounded-xl px-[18px] py-4">
-            <label className="relative flex h-[33px] min-w-[200px] max-w-[394px] flex-1 items-center gap-2 rounded-lg bg-background pe-3 ps-2">
+          {/* Figma: 72px bar, 394px search, a 358px tab strip (four 86×41 tabs). The meals and
+              catering filters stay reachable by scrolling the strip sideways. */}
+          <div className="panel flex min-h-[72px] flex-wrap items-center justify-between gap-6 rounded-[12px] px-[18px] py-[11px]">
+            <label className="relative flex h-[33px] min-w-[200px] max-w-[394px] flex-1 items-center gap-2 rounded-[8px] bg-background pe-3 ps-2">
               <Search className="size-4 shrink-0 text-icon" />
               <input value={query} onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("Search drinks, snacks", "أبحث عن المشروبات، الوجبات الخفيفة")}
+                placeholder={t("Search drinks, snacks", "ابحث عن المشروبات، الوجبات الخفيفة")}
                 className="h-full min-w-0 flex-1 bg-transparent text-[12px] text-foreground outline-none placeholder:text-foreground/90" />
             </label>
-            <div role="tablist" className="flex flex-wrap gap-0.5 rounded-[9px] bg-card p-1 shadow-[inset_0_0_0_1px_var(--card-ring)]">
+            <div role="tablist" className="flex w-[358px] max-w-full gap-0.5 overflow-x-auto rounded-[9px] bg-card p-1 shadow-[inset_0_0_0_1px_var(--card-ring)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {[{ id: "all" as const, label: "All", labelAr: "الكل" }, ...menuGroups].map((g) => (
                 <button key={g.id} type="button" role="tab" aria-selected={group === g.id} onClick={() => setGroup(g.id)}
-                  className={cn("min-h-[42px] w-[86px] rounded-md px-1 py-1 leading-tight transition-colors",
-                    group === g.id ? "bg-soft-accent text-[15px] font-semibold text-primary" : "text-[13px] text-foreground hover:bg-secondary/60")}>
+                  className={cn("h-[41px] w-[86px] shrink-0 rounded-[6px] px-1 leading-[16px] transition-colors",
+                    group === g.id ? "bg-soft-accent text-[15px] font-semibold text-primary" : "text-[13px] text-muted-foreground hover:bg-secondary/60")}>
                   {isAr ? g.labelAr : g.label}
                 </button>
               ))}
@@ -398,7 +413,8 @@ export default function CafeteriaPage() {
           )}
 
           {sections.map((g) => (
-            <MenuSection key={g.id} title={t(`Browse ${g.label.toLowerCase()}`, `تصفّح قائمة ${g.labelAr}`)}>
+            <MenuSection key={g.id} title={t(`Browse ${g.label.toLowerCase()}`, `تصفّح قائمة ${g.labelAr}`)}
+              onTitle={overview ? () => setGroup(g.id) : undefined}>
               {g.items.map((m) => (
                 <ProductCard key={m.id} m={m} line={lineOf(m.id)} sugar={sugarOf(m)} fav={prefs.favorites.includes(m.id)}
                   onFav={() => toggleFavorite(m.id)} onAdd={() => bump(m.id, 1)} onMinus={() => bump(m.id, -1)}
@@ -421,10 +437,13 @@ export default function CafeteriaPage() {
   )
 }
 
-function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
+function MenuSection({ title, children, onTitle }: { title: string; children: React.ReactNode; onTitle?: () => void }) {
   return (
     <Card className="px-4">
-      <CardHeader icon={LayoutGrid} title={title} />
+      {/* In the overview the title opens the full group (same look as Figma's header). */}
+      {onTitle
+        ? <button type="button" onClick={onTitle} className="block w-full text-start hover:opacity-90"><CardHeader icon={GridIcon} title={title} /></button>
+        : <CardHeader icon={GridIcon} title={title} />}
       <div className="grid gap-6 px-0 pb-6 pt-[18px] sm:grid-cols-2 sm:gap-8 sm:px-4">{children}</div>
     </Card>
   )
@@ -439,10 +458,12 @@ function ProductCard({ m, line, sugar, fav, onFav, onAdd, onMinus, onRemove, onS
   const { t, isAr } = useT()
   const isDrink = m.group === "hot" || m.group === "cold"
   return (
-    <article className={cn("flex flex-col gap-[29px] rounded-[10px] border border-[var(--card-ring)] bg-background p-6", !m.available && "opacity-60")}>
+    <article className={cn("flex flex-col gap-[29px] rounded-[10px] border border-foreground/[0.09] bg-background p-[23px]", !m.available && "opacity-60")}>
       <div className="relative">
-        <ImagePlaceholder icon={groupIcon[m.group]} className="aspect-[310/290] w-full" />
-        <HeartButton on={fav} onClick={onFav} className="absolute end-4 top-4" />
+        {m.image
+          ? <img src={m.image} alt="" className="aspect-[310/290] w-full rounded-[8px] object-cover" />
+          : <ImagePlaceholder className="aspect-[310/290] w-full" />}
+        <HeartButton on={fav} onClick={onFav} className="absolute end-6 top-6 bg-[#fdfcfc] dark:bg-[#1b1a1a]" />
       </div>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
@@ -465,7 +486,7 @@ function ProductCard({ m, line, sugar, fav, onFav, onAdd, onMinus, onRemove, onS
         <div className="flex gap-0.5 rounded-[9px] bg-card p-[3px]">
           {SUGAR_UI.map((s) => (
             <button key={s} type="button" onClick={() => onSugar(s)} aria-pressed={sugar === s}
-              className={cn("h-[30px] flex-1 rounded-md transition-colors",
+              className={cn("h-[30px] flex-1 rounded-[6px] transition-colors",
                 sugar === s ? "bg-soft-accent text-[15px] font-semibold text-primary" : "text-[13px] text-foreground hover:bg-secondary/60")}>
               {sugarLabel(s, isAr)}
             </button>
@@ -492,7 +513,7 @@ function TrashButton({ onClick, size = "md" }: { onClick: () => void; size?: "sm
   const { t } = useT()
   return (
     <button type="button" onClick={onClick} aria-label={t("Remove from the order", "إزالة من الطلب")}
-      className={cn("grid shrink-0 place-items-center rounded-full bg-error/35 text-error hover:bg-error/50", size === "sm" ? "size-7" : "size-8")}>
+      className={cn("grid shrink-0 place-items-center rounded-full bg-error-fill text-error hover:bg-error/40 dark:bg-[rgba(180,35,24,0.25)]", size === "sm" ? "size-[30px]" : "size-8")}>
       <Trash2 className="size-3.5" />
     </button>
   )
@@ -502,8 +523,9 @@ function HeartButton({ on, onClick, size = "md", className }: { on: boolean; onC
   const { t } = useT()
   return (
     <button type="button" onClick={onClick} aria-pressed={on} aria-label={on ? t("Remove from favourites", "إزالة من المفضلة") : t("Add to favourites", "إضافة إلى المفضلة")}
-      className={cn("grid shrink-0 place-items-center border border-secondary bg-background shadow-sm",
-        size === "sm" ? "size-[30px] rounded-lg" : "size-10 rounded-[9.4px]", className)}>
+      className={cn("grid shrink-0 place-items-center border border-secondary shadow-sm",
+        // basket size = Figma "Component 9" (gradient tile + inner highlight)
+        size === "sm" ? "size-[30px] rounded-[8px] bg-secondary dark:bg-[linear-gradient(180deg,#252424,#171616)] dark:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.12),0_1px_2px_rgba(0,0,0,0.24)]" : "size-10 rounded-[9.4px] bg-background", className)}>
       <Heart className={cn(size === "sm" ? "size-3.5" : "size-4", on ? "fill-error text-error" : "text-foreground")} />
     </button>
   )

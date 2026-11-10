@@ -35,8 +35,10 @@ function Detail({ r, mode }: { r: ViolationReport; mode: "reporter" | "investiga
   return (
     <PageBody className="space-y-4">
       {saved && <Toast>{t("Changes saved and logged in the comments.", "تم حفظ التعديلات وتسجيلها في التعليقات.")}</Toast>}
-      {mode === "reporter" && r.status === "needs-evidence" && (
-        <div role="status" className="rounded-xl bg-warning-fill px-4 py-3 text-[12.5px] text-warning">
+      {/* Shown when arriving from "Add Evidence" (?evidence=1); the status row says it otherwise,
+          so the page itself keeps the Figma 4999:18721 layout. */}
+      {mode === "reporter" && r.status === "needs-evidence" && params.get("evidence") === "1" && (
+        <div role="status" className="rounded-[12px] bg-warning-fill px-4 py-3 text-[12.5px] text-warning">
           {t("The investigator asked for more evidence — upload it under “Manage Evidence Documents & Violations”.",
             "طلب المحقق أدلة إضافية — ارفعها في «إدارة المستندات الأدلة والمخالفات».")}
         </div>
@@ -65,6 +67,7 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
   const dirty = status !== r.status || dept !== r.assignedDeptId || to !== r.assignedToId || legal !== r.legalConsultation
 
   const save = () => {
+    if (!dirty) return
     const changes: string[] = []
     const changesAr: string[] = []
     if (status !== r.status) { changes.push(`status → ${statusOptions[status].en}`); changesAr.push(`الحالة ← ${statusOptions[status].ar}`) }
@@ -86,9 +89,9 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
   const reassign = <span className="inline-flex items-center gap-1"><UserCog className="size-3" />{t("Reassign:", "إعادة إسناد:")}</span>
 
   return (
-    <section className="panel rounded-xl px-4 py-5">
+    <section className="panel rounded-[12px] px-4 py-5">
       <CardTitle icon={Info}>{t("Details", "التفاصيل")}</CardTitle>
-      <div className="mb-6 mt-[18px] overflow-hidden rounded-lg bg-background">
+      <div className={cn("mt-[18px] overflow-hidden rounded-[8px] bg-background", edit && "mb-6")}>
         {row(t("Report Title", "عنوان البلاغ"), o(r.title))}
         {row(t("Description", "وصف"), o(r.description))}
         {row(t("Report No.", "رقم البلاغ"), <span dir="ltr">#{r.id}</span>)}
@@ -119,7 +122,8 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
       </div>
       {edit && (
         <div className="flex flex-wrap items-center gap-4">
-          <GoldButton onClick={save} disabled={!dirty}>{t("Save Changes", "حفظ التعديلات")}</GoldButton>
+          {/* Figma draws Save at full strength; with nothing changed it is a no-op. */}
+          <GoldButton onClick={save}>{t("Save Changes", "حفظ التعديلات")}</GoldButton>
           <OutlineButton className="min-w-[84px]" onClick={() => navigate("/services/violations/queue")}>{t("Cancel", "إلغاء")}</OutlineButton>
         </div>
       )}
@@ -170,7 +174,7 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
     : `${n.folders} folder${n.folders === 1 ? "" : "s"} · ${n.files} file${n.files === 1 ? "" : "s"}`
 
   return (
-    <section className={cn("panel rounded-xl px-6 py-5 transition-shadow", highlight && "shadow-[inset_0_0_0_1px_var(--primary)]")}>
+    <section className={cn("panel rounded-[12px] px-6 py-5 transition-shadow", highlight && "shadow-[inset_0_0_0_1px_var(--primary)]")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <CardTitle icon={FolderOpen}>{t("Manage Evidence Documents & Violations", "إدارة المستندات الأدلة والمخالفات")}</CardTitle>
         <div className="flex items-center gap-3">
@@ -188,7 +192,7 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
       <div className="mt-4 flex flex-col gap-3">
         {/* search + filters */}
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-lg bg-background pe-3 ps-2 sm:max-w-[297px]">
+          <label className="flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-[8px] bg-background pe-3 ps-2 sm:max-w-[297px]">
             <Search className="size-4 shrink-0 text-icon" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Search", "البحث")}
               className="h-full min-w-0 flex-1 bg-transparent text-[12px] text-foreground outline-none placeholder:text-foreground/90" />
@@ -221,8 +225,8 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
           <div className="grid gap-3 pt-4 sm:grid-cols-2 xl:grid-cols-3">
             {subfolders.map((f) => (
               <button key={f.id} type="button" onClick={() => setFolder(f.id)}
-                className="flex h-[62px] items-center gap-3 rounded-lg bg-background p-3.5 text-start transition-colors hover:bg-secondary/40">
-                <span className="inline-flex size-[34px] shrink-0 items-center justify-center rounded-lg bg-primary/25 text-primary"><FolderOpen className="size-4" /></span>
+                className="flex h-[62px] items-center gap-3 rounded-[8px] bg-background p-3.5 text-start transition-colors hover:bg-secondary/40">
+                <span className="inline-flex size-[34px] shrink-0 items-center justify-center rounded-[8px] bg-primary/25 text-primary"><FolderOpen className="size-4" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[11.9px] font-medium leading-[13px] text-foreground">{o(f.name)}</span>
                   <span className="mt-[5px] block text-[10.8px] leading-[11.5px] text-muted-foreground">{filesLabel(countIn(f.id))}</span>
@@ -231,7 +235,7 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
               </button>
             ))}
             {newFolder !== null && (
-              <form className="flex h-[62px] items-center gap-2 rounded-lg bg-background p-2.5"
+              <form className="flex h-[62px] items-center gap-2 rounded-[8px] bg-background p-2.5"
                 onSubmit={(e) => { e.preventDefault(); if (newFolder.trim()) { addFolder(r.id, newFolder.trim(), folder); setNewFolder(null) } }}>
                 <FolderPlus className="size-4 shrink-0 text-primary" />
                 <TextInput autoFocus value={newFolder} onChange={(e) => setNewFolder(e.target.value)} placeholder={t("Folder name", "اسم المجلد")} className="h-8 bg-card" />
@@ -244,17 +248,19 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
 
         {/* مستندات هذا المجلد */}
         <div className="pt-6">
-          <h3 className="mb-3 text-[14px] font-medium text-foreground">{t("Documents in this folder", "مستندات هذا المجلد")}</h3>
+          <h3 className="mb-[9px] text-[14px] font-medium text-foreground">{t("Documents in this folder", "مستندات هذا المجلد")}</h3>
           <div className="overflow-x-auto border-t border-secondary">
-            <table className="w-full min-w-[560px] text-start">
+            {/* Figma columns: type 69 · name 155 · owner 126 · size 98 · date (rest) · actions 126. */}
+            <table className="w-full min-w-[560px] table-fixed text-start">
+              <colgroup><col className="w-[69px]" /><col className="w-[155px]" /><col className="w-[126px]" /><col className="w-[98px]" /><col /><col className="w-[126px]" /></colgroup>
               <thead>
                 <tr className="border-b border-secondary text-[11.5px] text-muted-foreground">
-                  <th className="w-12" />
-                  <th className="py-3 text-start font-normal">{t("File Name", "اسم الملف")}</th>
-                  <th className="py-3 text-start font-normal">{t("Owner", "المالك")}</th>
-                  <th className="py-3 text-start font-normal">{t("File Size", "حجم الملف")}</th>
-                  <th className="py-3 text-start font-normal">{t("Upload Date", "تاريخ الرفع")}</th>
-                  <th className="w-[126px]" />
+                  <th />
+                  <th className="py-[10px] text-start font-normal">{t("File Name", "اسم الملف")}</th>
+                  <th className="py-[10px] text-start font-normal">{t("Owner", "المالك")}</th>
+                  <th className="py-[10px] text-start font-normal">{t("File Size", "حجم الملف")}</th>
+                  <th className="py-[10px] text-start font-normal">{t("Upload Date", "تاريخ الرفع")}</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -280,7 +286,7 @@ function DocRow({ d, size, confirming, onDelete, onCancel, onConfirm }: {
   d: Doc; size: string; confirming: boolean; onDelete: () => void; onCancel: () => void; onConfirm: () => void
 }) {
   const { t, o, isAr } = useT()
-  const tile = "grid size-[34px] place-items-center rounded-lg border border-secondary text-foreground transition-colors hover:bg-secondary/60"
+  const tile = "grid size-[34px] place-items-center rounded-[8px] border border-secondary text-foreground transition-colors hover:bg-secondary/60"
   return (
     <tr className="text-foreground">
       <td className="py-3 pe-3">
@@ -295,14 +301,15 @@ function DocRow({ d, size, confirming, onDelete, onCancel, onConfirm }: {
         {confirming ? (
           <div role="alertdialog" aria-label={t("Delete this file?", "حذف هذا الملف؟")} className="flex items-center justify-end gap-1.5 text-[11px]">
             <span>{t("Delete?", "حذف؟")}</span>
-            <button type="button" onClick={onConfirm} className="rounded-md bg-error-fill px-2 py-1 font-semibold text-error">{t("Yes", "نعم")}</button>
-            <button type="button" onClick={onCancel} className="rounded-md border border-secondary px-2 py-1">{t("No", "لا")}</button>
+            <button type="button" onClick={onConfirm} className="rounded-[6px] bg-error-fill px-2 py-1 font-semibold text-error">{t("Yes", "نعم")}</button>
+            <button type="button" onClick={onCancel} className="rounded-[6px] border border-secondary px-2 py-1">{t("No", "لا")}</button>
           </div>
         ) : (
           <div className="flex items-center justify-end gap-3">
+            {/* Figma order from the inline start: delete, view, download. */}
+            <button type="button" onClick={onDelete} className={cn(tile, "text-error")} aria-label={t("Delete", "حذف")}><Trash2 className="size-4" /></button>
             <button type="button" className={tile} aria-label={t("View", "عرض")}><Eye className="size-4" /></button>
             <button type="button" className={tile} aria-label={t("Download", "تنزيل")}><Download className="size-4" /></button>
-            <button type="button" onClick={onDelete} className={cn(tile, "text-error")} aria-label={t("Delete", "حذف")}><Trash2 className="size-4" /></button>
           </div>
         )}
       </td>
@@ -312,13 +319,16 @@ function DocRow({ d, size, confirming, onDelete, onCancel, onConfirm }: {
 
 // ── التعليقات ────────────────────────────────────────────────────────────────
 function Comments({ r, authorId }: { r: ViolationReport; authorId: string }) {
-  const { t, o } = useT()
+  const { t, o, isAr } = useT()
+  /** Avatar letters: the Arabic initial, or the first letter(s) of the English name (Figma EN). */
+  const initials = (a: { en: string; initial: string }, n = 1) =>
+    isAr ? a.initial : a.en.split(/[\s-]+/).filter(Boolean).map((w) => w[0]).join("").slice(0, n).toUpperCase()
   const [text, setText] = React.useState("")
   const me = authorOf(authorId)
   const send = () => { if (!text.trim()) return; addComment(r.id, authorId, text.trim()); setText("") }
 
   return (
-    <section className="panel rounded-xl px-4 py-5">
+    <section className="panel rounded-[12px] px-4 py-5">
       <CardTitle icon={MessagesSquare}>{t("Comments", "التعليقات")}</CardTitle>
       <div className="mt-[18px] flex flex-col gap-6">
         {r.comments.length === 0 ? (
@@ -330,7 +340,7 @@ function Comments({ r, authorId }: { r: ViolationReport; authorId: string }) {
               const a = c.authorId === "me" && r.anonymous ? { ...ANONYMOUS, initial: "؟" } : authorOf(c.authorId)
               return (
                 <li key={c.id} className={cn("flex items-center gap-0 py-2", i < r.comments.length - 1 && "border-b border-secondary")}>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-[13px] text-foreground">{a.initial}</span>
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-[13px] text-foreground">{initials(a)}</span>
                   <span className="flex w-5 shrink-0 justify-center self-start pt-2">
                     {c.unread && <span className="size-1.5 rounded-full bg-primary" aria-label={t("Unread", "غير مقروء")} />}
                   </span>
@@ -338,21 +348,21 @@ function Comments({ r, authorId }: { r: ViolationReport; authorId: string }) {
                     <div className="text-[13.5px] leading-[20.25px] text-foreground">{o(a)}</div>
                     <div className="text-[12.5px] leading-[18.75px] text-muted-foreground">{o(c.text)}</div>
                   </div>
-                  <span className="shrink-0 self-start text-[12px] leading-[18px] text-foreground">{o(c.time)}</span>
+                  <span className="shrink-0 self-center text-[12px] leading-[18px] text-muted-foreground">{o(c.time)}</span>
                 </li>
               )
             })}
           </ul>
         )}
         <form className="flex items-center gap-4" onSubmit={(e) => { e.preventDefault(); send() }}>
-          <label className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-lg border border-secondary bg-background px-4 py-1">
+          <label className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-[8px] border border-secondary bg-background px-4 py-1">
             <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-[12px] text-foreground">
-              {authorId === "me" && r.anonymous ? "؟" : me.initial ?? ME.initial}
+              {authorId === "me" && r.anonymous ? "؟" : initials(me.initial ? me : ME, 2)}
             </span>
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder={t("Add a comment…", "أضف تعليقًا…")}
               className="h-full min-w-0 flex-1 bg-transparent text-[13px] font-medium text-foreground outline-none placeholder:text-foreground/90" />
           </label>
-          <GoldButton type="submit" className="h-10 px-6 font-medium" disabled={!text.trim()}>{t("Send", "إرسال")}</GoldButton>
+          <GoldButton type="submit" className="h-10 px-6 font-medium">{t("Send", "إرسال")}</GoldButton>
         </form>
       </div>
     </section>

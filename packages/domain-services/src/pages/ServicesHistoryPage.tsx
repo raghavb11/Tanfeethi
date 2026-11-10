@@ -21,7 +21,7 @@ export default function ServicesHistoryPage() {
                 hint={t("Requests you submit from the service catalog are listed here.", "الطلبات التي ترفعها من كتالوج الخدمات تظهر هنا.")} />
             </div>
           ) : (
-            <DataTable head={[
+            <DataTable cols={["46px", "228px", "228.5px", "228px", "228px", ""]} head={[
               t("No.", "ترقيم"), t("Request Type", "نوع الطلب"), t("From Department", "من قسم"),
               t("Request Date", "تاريخ طلب الخدمة"), t("Request No.", "رقم الطلب"), t("Status", "الحالة"),
             ]}>

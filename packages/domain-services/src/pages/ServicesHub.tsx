@@ -1,13 +1,14 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {
-  CirclePlay, FolderOpen, HeartPulse, Inbox, LayoutGrid, Laptop, Trash2, User, Wrench,
+  FolderOpen, HeartPulse, Laptop, Trash2, User, Wrench,
 } from "lucide-react"
 import { cn } from "@reach/shared-core"
 
 import {
   Card, CardHeader, CategoryChip, EmptyState, GoldButton, KpiTile, PageBody, ServiceTile, SplitLayout, Stepper } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon, PlayRingIcon, TrayIcon } from "../components/kpi-icons"
 import {
   assets, categories, categoryById, isComplete, serviceKpis, stepsFor, useActiveRequests,
   type ServiceRequest,
@@ -34,8 +35,8 @@ export default function ServicesHub() {
           <>
             {/* KPIs */}
             <div className="grid gap-6 sm:grid-cols-2">
-              <KpiTile icon={Inbox} value={serviceKpis.open} label={t("Open requests", "طلبات مفتوحة")} />
-              <KpiTile icon={CirclePlay} value={serviceKpis.inProgress} label={t("Requests in progress", "طلبات قيد التنفيذ")} />
+              <KpiTile icon={TrayIcon} value={serviceKpis.open} label={t("Open requests", "طلبات مفتوحة")} />
+              <KpiTile icon={PlayRingIcon} value={serviceKpis.inProgress} label={t("Requests in progress", "طلبات قيد التنفيذ")} />
             </div>
 
             {/* صحتي */}
@@ -46,7 +47,8 @@ export default function ServicesHub() {
                 actions={<GoldButton size="sm" onClick={() => navigate("/services/health")}>{t("View leaderboard", "عرض لوحة المتصدرين")}</GoldButton>}
               />
               <div className="mt-4 grid grid-cols-2 gap-6 xl:grid-cols-[1fr_1fr_192.25px_1fr]">
-                {homeTiles.map((tile, i) => <HealthTileView key={i} tile={tile} />)}
+                {/* EN home frame draws this whole row 76px tall. */}
+                {homeTiles.map((tile, i) => <HealthTileView key={i} tile={tile} className="ltr:h-[76px]" />)}
               </div>
             </Card>
 
@@ -60,7 +62,7 @@ export default function ServicesHub() {
               <ScrollTrackList className="mt-2" maxHeight={989}>
                 {visible.length === 0 ? (
                   <div className="py-6">
-                    <EmptyState icon={Inbox} title={t("No active requests", "لا توجد طلبات نشطة")}
+                    <EmptyState icon={TrayIcon} title={t("No active requests", "لا توجد طلبات نشطة")}
                       hint={t("Requests you raise from the catalog appear here.", "الطلبات التي ترفعها من الكتالوج تظهر هنا.")} />
                   </div>
                 ) : visible.map((r, i) => (
@@ -79,7 +81,7 @@ export default function ServicesHub() {
           <>
             {/* تصفّح الخدمات */}
             <Card className="px-4">
-              <CardHeader icon={LayoutGrid} title={t("Browse services", "تصفّح الخدمات")} />
+              <CardHeader icon={GridIcon} title={t("Browse services", "تصفّح الخدمات")} />
               <div className="mt-[18px] flex flex-col gap-4">
                 {categories.map((c) => (
                   <ServiceTile
@@ -90,6 +92,7 @@ export default function ServicesHub() {
                     meta={c.open ? countLabel(c.open) : undefined}
                     actionLabel={t("Open", "فتح")}
                     to={c.to}
+                    compactEn
                   />
                 ))}
               </div>
@@ -101,7 +104,7 @@ export default function ServicesHub() {
               <ul className="mt-8 flex flex-col gap-4">
                 {assets.map((a) => (
                   <li key={a.id} className="flex h-[62px] items-center gap-3 rounded-[10px] border border-[var(--card-ring)] bg-background px-[13px]">
-                    <span className="inline-flex size-[34px] shrink-0 items-center justify-center rounded-lg bg-soft-accent text-primary">
+                    <span className="inline-flex size-[34px] shrink-0 items-center justify-center rounded-[8px] bg-soft-accent text-primary">
                       <FolderOpen className="size-4" strokeWidth={1.7} />
                     </span>
                     <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
@@ -139,9 +142,9 @@ function RequestRow({ r, last, onHide }: { r: ServiceRequest; last: boolean; onH
             <span className="text-[10.8px] leading-[12px] text-muted-foreground">{isAr ? r.dateAr : r.date}</span>
             {done && (
               <button type="button" onClick={onHide}
-                className="inline-flex h-7 items-center gap-2 rounded-lg border border-secondary px-3 text-[12px] font-semibold text-error hover:bg-error-fill">
-                <Trash2 className="size-2.5" />
+                className="inline-flex h-7 items-center gap-2 rounded-[8px] border border-secondary px-3 text-[12px] font-semibold text-error hover:bg-error-fill">
                 {t("Hide", "إخفاء")}
+                <Trash2 className="size-3" />
               </button>
             )}
           </div>

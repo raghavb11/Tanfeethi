@@ -98,8 +98,8 @@ const seedComments: Comment[] = [
 
 const report = (id: string, patch: Partial<ViolationReport>): ViolationReport => ({
   id,
-  title: { en: "Report an employee's conduct", ar: "إبلاغ عن تعامل احد الموظفين" },
-  description: { en: "Repeated disrespectful conduct towards colleagues in the Riyadh office during September.", ar: "تعامل غير لائق ومتكرر مع الزملاء في مكتب الرياض خلال شهر سبتمبر." },
+  title: { en: "Report an employee's conduct", ar: "إبلاغ عن تعامل أحد الموظفين" },
+  description: { en: "Repeated disrespectful conduct towards colleagues.", ar: "تعامل غير لائق ومتكرر مع الزملاء." },
   reasonId: "hr", subCategory: "Employee conduct", accusedId: "fawaz", accusedDeptId: "quality",
   hasEvidence: "yes", reportedToManager: "no", openedOn: "09/09/2026",
   createdBy: { en: ME.en, ar: ME.ar }, anonymous: false, mine: true,

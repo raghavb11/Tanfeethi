@@ -1,10 +1,10 @@
 import * as React from "react"
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom"
-import { LayoutGrid } from "lucide-react"
 
 import {
   AttachmentsButton, Card, CardHeader, Field, FormActions, PageBody, SelectInput, TextInput, Toast } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon } from "../components/kpi-icons"
 import { addRequest, employees, serviceItemById, type FieldDef } from "../data/mock/services"
 
 /** Service request form — Figma 4661:13733 ("Printer services"). The fields come
@@ -45,7 +45,7 @@ export default function ServiceRequestPage() {
       return (
         <SelectInput
           id={f.key} value={values[f.key] ?? ""} onChange={(v) => set(f.key, v)} invalid={invalid}
-          placeholder={t("Choose from the list", "أختر من القائمة")}
+          placeholder={t("Select from the list", "اختر من القائمة")}
           prefix={
             <>
               <span className="inline-flex size-[22px] items-center justify-center rounded-full bg-primary/25 text-[8px] font-semibold text-primary">
@@ -62,7 +62,7 @@ export default function ServiceRequestPage() {
       return (
         <SelectInput
           id={f.key} value={values[f.key] ?? ""} onChange={(v) => set(f.key, v)} invalid={invalid}
-          placeholder={t("Choose from the list", "أختر من القائمة")}
+          placeholder={t("Select from the list", "اختر من القائمة")}
           options={f.options.map((x) => ({ value: x.en, label: o(x) }))}
         />
       )
@@ -82,7 +82,7 @@ export default function ServiceRequestPage() {
         </Toast>
       )}
       <Card className="px-4">
-        <CardHeader icon={LayoutGrid} title={isAr ? item.nameAr : item.name} />
+        <CardHeader icon={GridIcon} title={isAr ? item.nameAr : item.name} />
         <div className="mb-6 mt-[18px] flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {item.fields.map((f) => (

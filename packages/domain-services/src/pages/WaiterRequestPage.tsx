@@ -1,9 +1,9 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { LayoutGrid } from "lucide-react"
 
 import { Card, CardHeader, Field, FormActions, PageBody, SelectInput, Toast } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon } from "../components/kpi-icons"
 import { addOrder, floorOf, newOrderId, newOrderRef, nowMin, useLocations } from "../data/mock/cafeteria"
 
 /** Hospitality → Request a waiter — Figma 4915:18193. Calls an attendant to a
@@ -20,7 +20,7 @@ export default function WaiterRequestPage() {
 
   const floors = [...new Map(locations.map((l) => [floorOf(l).id, floorOf(l)])).values()]
   const places = locations.filter((l) => floorOf(l).id === floor)
-  const choose = t("Choose from the list", "أختر من القائمة")
+  const choose = t("Select from the list", "اختر من القائمة")
 
   const submit = () => {
     setTried(true)
@@ -43,7 +43,7 @@ export default function WaiterRequestPage() {
         </Toast>
       )}
       <Card className="px-4">
-        <CardHeader icon={LayoutGrid} title={t("Waiter Request Service", "خدمة طلب النادل")} />
+        <CardHeader icon={GridIcon} title={t("Waiter Request Service", "خدمة طلب النادل")} />
         <div className="mb-6 mt-[18px] grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Field label={t("Floor", "دور")} required htmlFor="w-floor">
             <SelectInput id="w-floor" value={floor} onChange={(v) => { setFloor(v); setPlace("") }} placeholder={choose}

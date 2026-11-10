@@ -193,9 +193,9 @@ export default function CafeteriaItemEditorPage({ kind }: { kind: "item" | "plac
                 )}
 
                 {servedScope === "places" && (
-                  <div className="mt-2.5 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-border/60 p-2">
+                  <div className="mt-2.5 max-h-56 space-y-1 overflow-y-auto rounded-[12px] border border-border/60 p-2">
                     {locations.map((l) => (
-                      <label key={l.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[12.5px] hover:bg-muted/40">
+                      <label key={l.id} className="flex cursor-pointer items-center gap-2 rounded-[8px] px-2 py-1.5 text-[12.5px] hover:bg-muted/40">
                         <input
                           type="checkbox" checked={servedPlaces.includes(l.id)}
                           onChange={() => setServedPlaces(toggle(servedPlaces, l.id))}
@@ -272,7 +272,7 @@ function Toggle({ checked, onChange, title, body }: {
   checked: boolean; onChange: (v: boolean) => void; title: string; body: string
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border/70 p-3">
+    <label className="flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-border/70 p-3">
       <input
         type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)}
         className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"

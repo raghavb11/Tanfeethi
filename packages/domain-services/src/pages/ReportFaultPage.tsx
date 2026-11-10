@@ -1,10 +1,11 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { LayoutGrid, Laptop } from "lucide-react"
+import { Laptop } from "lucide-react"
 
 import {
   AttachmentsButton, Card, CardHeader, Field, FormActions, GroupRow, PageBody, SelectInput, TextInput, Toast } from "../components/wijha"
 import { useT } from "../components/i18n"
+import { GridIcon } from "../components/kpi-icons"
 import { addRequest, faultOptions } from "../data/mock/services"
 
 /** IT → "Report a fault" — Figma 4851:15277. Route: /services/catalog/it/report-fault */
@@ -21,7 +22,7 @@ export default function ReportFaultPage() {
   const missing = (Object.keys(empty) as (keyof typeof empty)[]).filter((k) => !v[k].trim())
   const bad = (k: keyof typeof empty) => (tried && !v[k].trim() ? "border-error/70" : undefined)
   const opts = (xs: { en: string; ar: string }[]) => xs.map((x) => ({ value: x.en, label: o(x) }))
-  const choose = t("Choose from the list", "أختر من القائمة")
+  const choose = t("Select from the list", "اختر من القائمة")
 
   const submit = () => {
     setTried(true)
@@ -37,7 +38,7 @@ export default function ReportFaultPage() {
   }
 
   const required = [
-    t("Category", "التصنيف"), t("Sub-category", "التصنيف الفرعي"), t("Priority", "الاهمية"),
+    t("Category", "التصنيف"), t("Sub-category", "التصنيف الفرعي"), t("Priority", "الأهمية"),
     t("Contact method", "طريقة التواصل"), t("Description", "الوصف"),
   ]
 
@@ -52,10 +53,10 @@ export default function ReportFaultPage() {
       <div className="grid items-start gap-5 lg:grid-cols-[397px_minmax(0,1fr)]">
         {/* الخدمة التي اخترتها */}
         <Card>
-          <CardHeader icon={LayoutGrid} title={t("The service you chose", "الخدمة التي اخترتها")} />
+          <CardHeader icon={GridIcon} title={t("The service you chose", "الخدمة التي اخترتها")} />
           <div className="mt-4 flex flex-col gap-3 pt-4">
             <GroupRow icon={Laptop} label={t("Report a fault", "الإبلاغ عن عطل")} filled />
-            <div className="pt-2 text-[13px] font-semibold text-foreground">{t("Required fields:", "الحقول المطلوبة:")}</div>
+            <div className="text-[13px] font-semibold leading-[17px] text-foreground">{t("Required fields:", "الحقول المطلوبة:")}</div>
             <ul className="list-disc ps-5 text-[11.3px] leading-6 text-foreground">
               {required.map((r) => <li key={r}>{r} <span className="text-error">*</span></li>)}
             </ul>
@@ -64,7 +65,7 @@ export default function ReportFaultPage() {
 
         {/* خدمات الإبلاغ عن عطل */}
         <Card className="px-4">
-          <CardHeader icon={LayoutGrid} title={t("Fault reporting services", "خدمات الإبلاغ عن عطل")} />
+          <CardHeader icon={GridIcon} title={t("Fault reporting services", "خدمات الإبلاغ عن عطل")} />
           <div className="mb-6 mt-[18px] flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t("Category", "التصنيف")} required htmlFor="f-cat">
@@ -74,7 +75,7 @@ export default function ReportFaultPage() {
                 <SelectInput id="f-sub" value={v.sub} onChange={set("sub")} placeholder={choose} disabled={!v.category}
                   options={opts(faultOptions.subCategory[v.category] ?? [])} invalid={!!bad("sub")} />
               </Field>
-              <Field label={t("Priority", "الاهمية")} required htmlFor="f-pri">
+              <Field label={t("Priority", "الأهمية")} required htmlFor="f-pri">
                 <SelectInput id="f-pri" value={v.priority} onChange={set("priority")} placeholder={choose} options={opts(faultOptions.priority)} invalid={!!bad("priority")} />
               </Field>
               <Field label={t("Contact method", "طريقة التواصل")} hint={t("(to understand the problem)", "( لفهم المشكلة )")} required htmlFor="f-con">
