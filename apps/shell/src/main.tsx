@@ -16,6 +16,16 @@ if (new URLSearchParams(window.location.search).has("static")) {
   MotionGlobalConfig.skipAnimations = true
 }
 
+// Date/time fields: the app hides the native calendar button (custom icons
+// sit on top, and in RTL they don't line up), so open the picker from a click
+// anywhere in the field.
+const PICKER_TYPES = new Set(["date", "time", "datetime-local", "month", "week"])
+document.addEventListener("click", (e) => {
+  const el = e.target
+  if (!(el instanceof HTMLInputElement) || !PICKER_TYPES.has(el.type) || el.disabled || el.readOnly) return
+  try { el.showPicker() } catch { /* not supported or already open */ }
+})
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary label="root">

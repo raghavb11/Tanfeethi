@@ -711,3 +711,12 @@ header,
 #root {
   transform: rotate(0.001deg);
 }
+
+/* Native date/time pickers follow the app theme and read as clickable. */
+input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]) {
+  color-scheme: light;
+  cursor: pointer;
+}
+.dark input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]) {
+  color-scheme: dark;
+}
