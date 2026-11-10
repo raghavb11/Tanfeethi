@@ -153,11 +153,13 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
   const loaded: Fields | undefined = task
     ? { category: task.category, sprint: task.sprint, ownerId: task.assigneeId ?? "me", dueISO: task.dueISO,
-        priority: task.priority, description: (isAr ? task.descriptionAr : task.description) ?? "" }
+        priority: task.priority, description: (isAr ? task.descriptionAr : task.description) ?? "",
+        title: isAr ? task.titleAr : task.title }
     : project
       ? { category: project.category, sprint: project.sprint, ownerId: project.ownerId, dueISO: project.dueISO,
           priority: project.priority ?? "medium", description: (isAr ? project.descriptionAr : project.description) ?? "",
-          startISO: project.startISO, projectStatus: project.status }
+          startISO: project.startISO, projectStatus: project.status,
+          title: isAr ? project.nameAr : project.name }
       : undefined
 
   const [draft, setDraft] = React.useState<Fields | undefined>(() => (create ? blankDraft(kind, params) : loaded))
@@ -207,7 +209,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
   // ── validation (inline, shown after the first save attempt) ──────────────
   const errors = {
-    title: create && draft && !draft.title?.trim()
+    title: editing && draft && !draft.title?.trim()
       ? (isTask ? t("Give the task a title.", "أدخل عنوانًا للمهمة.") : t("Give the project a name.", "أدخل اسمًا للمشروع."))
       : undefined,
     due: editing && draft && !draft.dueISO ? t("Pick a due date.", "اختر تاريخ الاستحقاق.") : undefined,
@@ -235,13 +237,16 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
     if (invalid) { setTried(true); return }
     if (draft.ownerId !== loaded.ownerId) assign(draft.ownerId)
     const descKey = isAr ? "descriptionAr" : "description"
+    const newName = draft.title?.trim()
     if (task) {
       updateTask(task.id, {
+        ...(newName ? { [isAr ? "titleAr" : "title"]: newName } : {}),
         category: draft.category, sprint: draft.sprint, dueISO: draft.dueISO, priority: draft.priority,
         [descKey]: draft.description.trim() || undefined,
       })
     } else if (project) {
       updateProject(project.id, {
+        ...(newName ? { [isAr ? "nameAr" : "name"]: newName } : {}),
         category: draft.category, sprint: draft.sprint, priority: draft.priority,
         dueISO: draft.dueISO, due: prettyDate(draft.dueISO),
         startISO: draft.startISO, start: draft.startISO ? prettyDate(draft.startISO) : project.start,
@@ -419,18 +424,18 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className={cn("flex min-w-0 flex-col gap-3", create && "lg:flex-1")}>
-            {create && draft ? (
+            {editing && draft ? (
               <div className="flex flex-col gap-1">
                 <input
-                  ref={titleRef} autoFocus value={draft.title ?? ""} onChange={(e) => patch({ title: e.target.value })}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createRecord() } }}
+                  ref={titleRef} autoFocus={create} value={draft.title ?? ""} onChange={(e) => patch({ title: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (create) createRecord(); else save() } }}
                   placeholder={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
                   aria-label={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
                   aria-invalid={!!err("title")}
                   className={cn("h-[38px] w-full max-w-[640px] border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
                     err("title") ? "border-error" : "border-input focus:border-primary/70")}
                 />
-                {err("title") && <p className="text-[12px] text-error">{err("title")}</p>}
+                {err("title") ? <p className="text-[12px] text-error">{err("title")}</p> : <TextCounter text={draft.title ?? ""} isAr={isAr} />}
               </div>
             ) : (
               <h1 className={cn("text-[27px] font-normal leading-[38px] tracking-[-0.27px]", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
