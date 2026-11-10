@@ -1,6 +1,7 @@
 /** Goals list — Figma 4124:13741, with the goal-details modals 4124:13923
  *  (add, editable) and 4124:14002 (info icon, read-only). Route: /operations/personal/goals */
 import * as React from "react"
+import { useLocation } from "react-router-dom"
 import { BadgeCheck, Target } from "lucide-react"
 
 import { measureUnits, type Goal } from "../data/operations"
@@ -17,8 +18,12 @@ export default function GoalsListPage() {
   const { t, l } = useT()
   const goals = useOps((s) => s.goals)
   const loading = useSimulatedLoad()
-  const [viewing, setViewing] = React.useState<Goal | undefined>()
-  const [adding, setAdding] = React.useState(false)
+  // Capture helper: "?modal=view" opens 4124:14002 (read-only details of the first
+  // goal), "?modal=edit" 4124:13923 (the same goal, editable), "?modal=new" an empty form.
+  const capture = new URLSearchParams(useLocation().search).get("modal")
+  const [viewing, setViewing] = React.useState<Goal | undefined>(() => (capture === "view" ? goals[0] : undefined))
+  const [editing, setEditing] = React.useState<Goal | undefined>(() => (capture === "edit" ? goals[0] : undefined))
+  const [adding, setAdding] = React.useState(capture === "new")
   const totalWeight = goals.reduce((s, g) => s + g.weight, 0)
 
   return (
@@ -47,7 +52,7 @@ export default function GoalsListPage() {
             t("Goal", "الهدف"),
             t("KPI", "المؤشر"),
             t("Start date", "تاريخ البدء"),
-            t("End date", "تاريخ الإنتهاء"),
+            t("End date", "تاريخ الانتهاء"),
             t("Unit of measure", "وحدة القياس"),
             t("Target", "المستهدف"),
             t("Weight", "الوزن"),
@@ -85,6 +90,13 @@ export default function GoalsListPage() {
 
       <GoalModal open={!!viewing} onOpenChange={(o) => !o && setViewing(undefined)} goal={viewing} readOnly />
       <GoalModal open={adding} onOpenChange={setAdding} otherWeight={totalWeight} onSave={upsertGoal} />
+      <GoalModal
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(undefined)}
+        goal={editing}
+        otherWeight={totalWeight - (editing?.weight ?? 0)}
+        onSave={upsertGoal}
+      />
     </Page>
   )
 }

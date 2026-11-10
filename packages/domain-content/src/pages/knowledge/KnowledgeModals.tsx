@@ -19,6 +19,7 @@ import { addArticle, getArticleById, updateArticle, useArticles } from "../../st
 import { logAudit } from "../../data/audit"
 
 const ORDINALS_AR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"]
+const ORDINALS_EN = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"]
 
 function useDeptOptions(isAr: boolean) {
   return React.useMemo(() => DEPARTMENTS.map((d) => ({ id: d.id, label: isAr ? d.nameAr : d.name })), [isAr])
@@ -66,11 +67,13 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
   const [options, setOptions] = React.useState<string[]>(["", "", ""])
   const [showDrafts, setShowDrafts] = React.useState(false)
   const [editingId, setEditingId] = React.useState<{ kind: "news" | "poll"; id: string } | null>(null)
+  // Buttons stay enabled (as drawn); a failed attempt shows what is missing.
+  const [tried, setTried] = React.useState<"publish" | "draft" | null>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
 
   const reset = React.useCallback(() => {
     setTitle(""); setText(""); setDate(""); setFromDepts([]); setAudience([]); setLink(""); setImage(null)
-    setOptions(["", "", ""]); setShowDrafts(false); setEditingId(null)
+    setOptions(["", "", ""]); setShowDrafts(false); setEditingId(null); setTried(null)
   }, [])
 
   // (Re)initialise whenever the popup opens.
@@ -112,6 +115,7 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
   const deptName = (id: string) => DEPARTMENTS.find((d) => d.id === id)?.name ?? "Corporate"
 
   const save = (status: "Published" | "Draft") => {
+    if (status === "Published" ? !canPublish : !canDraft) { setTried(status === "Published" ? "publish" : "draft"); return }
     const ttl = title.trim()
     if (kind === "news") {
       const body = text.trim().split(/\n+/).map((p) => `<p>${p.replace(/</g, "&lt;")}</p>`).join("")
@@ -159,7 +163,7 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
 
   const isNews = kind === "news"
   const kindSelect = (
-    <Field label={t("Create news or survey", "إنشاء خبر أو استبيان")}>
+    <Field label={t("Create News or Survey", "إنشاء خبر أو استبيان")}>
       <WSelect value={kind} onChange={(e) => setKind(e.target.value as ContentKind)} disabled={!!editingId}>
         <option value="news">{t("News", "خبر")}</option>
         <option value="survey">{t("Survey", "استبيان")}</option>
@@ -169,9 +173,9 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
   )
   const metaRow = (
     <div className="grid gap-4 sm:grid-cols-3">
-      <Field label={t("Publish date", "تاريخ النشر")}><DateInput value={date} onChange={setDate} isAr={isAr} /></Field>
-      <Field label={t("From department", "الخبر من إدارة")}><CountSelect options={deptOptions} value={fromDepts} onChange={setFromDepts} allLabel={t("All", "الكل")} isAr={isAr} /></Field>
-      <Field label={t("Target employees", "الموظفين المستهدفين")}><CountSelect options={deptOptions} value={audience} onChange={setAudience} allLabel={t("All", "الكل")} isAr={isAr} /></Field>
+      <Field label={t("Publish Date", "تاريخ النشر")}><DateInput value={date} onChange={setDate} isAr={isAr} /></Field>
+      <Field label={t("News from Department", "الخبر من إدارة")}><CountSelect options={deptOptions} value={fromDepts} onChange={setFromDepts} allLabel={t("All", "الكل")} isAr={isAr} /></Field>
+      <Field label={t("Target Employees", "الموظفين المستهدفين")}><CountSelect options={deptOptions} value={audience} onChange={setAudience} allLabel={t("All", "الكل")} isAr={isAr} /></Field>
     </div>
   )
 
@@ -180,9 +184,9 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
       title={isNews ? t("News", "الأخبار") : t("Surveys & Polls", "الاستبيانات والتصويت")}
       icon={isNews ? Newspaper : BadgeCheck}
       footer={<>
-        <WButton className="px-6" disabled={!canPublish} onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
+        <WButton className="px-6" onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
-        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!canDraft} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
+        <WButton variant="outline" className={MODAL_OUTLINE} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
         <DraftsButton count={drafts} isAr={isAr} onClick={() => setShowDrafts((v) => !v)} />
       </>}>
       {showDrafts && (
@@ -202,23 +206,27 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
       )}
 
       <div className="flex flex-col gap-4">
-        <div className="grid gap-2 sm:grid-cols-[266px_minmax(0,1fr)]">
+        {/* 2485:3150 / 2464:2865: 212px type select + title (12px gap). */}
+        <div className="grid gap-3 sm:grid-cols-[212px_minmax(0,1fr)]">
           {kindSelect}
-          <Field label={t("Main title", "العنوان الرئيسي")}>
-            <WInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} autoFocus />
+          <Field label={t("Main Title", "العنوان الرئيسي")}>
+            <WInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} />
+            {tried && !title.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a title", "أدخل العنوان")}</span>}
           </Field>
         </div>
 
         {isNews ? (
           <>
-            <Field label={t("News text", "نص الخبر")}>
+            <Field label={t("News Text", "نص الخبر")}>
               <WTextarea rows={1} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("Text", "نص")} />
+              {tried === "publish" && !text.trim() && <span className="px-1 text-[11px] text-error">{t("Enter the news text", "أدخل نص الخبر")}</span>}
             </Field>
             {metaRow}
-            <Field label={t("News link", "رابط الخبر")}>
-              <WInput value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("Link*", "رابط*")} />
+            <Field label={t("News Link", "رابط الخبر")}>
+              <WInput value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("*Link*", "*رابط*")} />
             </Field>
-            <div className="grid gap-4 pt-2 sm:grid-cols-2">
+            {/* 2485:3150: 390px 16:9 preview + 262px file column; 36px above, 40px to the footer. */}
+            <div className="grid gap-2.5 pb-4 pt-5 sm:grid-cols-[390px_minmax(0,1fr)]">
               {/* 16:9 preview */}
               <div className="relative grid aspect-video place-items-center overflow-hidden rounded-[8px] bg-[repeating-linear-gradient(135deg,var(--card-elevated)_0_18px,transparent_18px_36px)] ring-1 ring-[var(--card-ring)]">
                 {image ? (
@@ -241,6 +249,8 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
                   <div className="flex items-center gap-3 rounded-[8px] bg-background px-4 py-4">
                     <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[8px] bg-error-fill text-[10px] font-bold text-error">PNG</span>
                     <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">{t("*Image*", "*صورة*")}</span>
+                    {/* drawn in 2485:3150 even before an image is chosen */}
+                    <button type="button" disabled aria-label={t("Remove image", "حذف الصورة")} className="grid size-7 place-items-center rounded-md text-error disabled:cursor-default"><Trash2 className="size-4" /></button>
                   </div>
                 )}
                 <WButton className="w-full" onClick={() => fileRef.current?.click()}>{t("Upload Image", "رفع صورة")}</WButton>
@@ -251,7 +261,7 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
           <>
             {metaRow}
             {options.map((o, i) => (
-              <Field key={i} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : `Option ${i + 1}`}>
+              <Field key={i} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : ORDINALS_EN[i] ? `${ORDINALS_EN[i]} Option` : `Option ${i + 1}`}>
                 <div className="flex items-center gap-4">
                   <WInput value={o} onChange={(e) => setOptions(options.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("Text", "نص")} />
                   <WButton variant="danger" className={MODAL_OUTLINE} disabled={options.length <= 2} onClick={() => setOptions(options.filter((_, j) => j !== i))}>
@@ -260,7 +270,8 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
                 </div>
               </Field>
             ))}
-            <div className="flex justify-end">
+            {tried === "publish" && filledOptions.length < 2 && <p className="px-1 text-[11px] text-error">{t("Add at least two options", "أضف خيارين على الأقل")}</p>}
+            <div className="flex justify-start pb-4">
               <WButton className="px-6" disabled={options.length >= 10} onClick={() => setOptions([...options, ""])}>{t("Add New Option", "إضافة خيار جديد")}</WButton>
             </div>
           </>
@@ -286,14 +297,15 @@ export function CreateFolderModal({ open, onClose, isAr, folders, currentId, onC
   const [parent, setParent] = React.useState<string>(currentId ?? ROOT_FOLDER)
   const [access, setAccess] = React.useState<string[]>([])
   const [owners, setOwners] = React.useState<string[]>([])
+  const [tried, setTried] = React.useState(false)
   React.useEffect(() => {
-    if (open) { setName(""); setParent(currentId ?? ROOT_FOLDER); setAccess([]); setOwners([]) }
+    if (open) { setName(""); setParent(currentId ?? ROOT_FOLDER); setAccess([]); setOwners([]); setTried(false) }
   }, [open, currentId])
 
   const writable = folders.filter((f) => !f.readOnly)
   const create = () => {
     const n = name.trim()
-    if (!n) return
+    if (!n) { setTried(true); return }
     const id = newFolderId()
     addFolder({ id, name: n, nameAr: n, count: 0, parent: parent === ROOT_FOLDER ? null : parent, access, owners })
     logAudit("created", `${t("Folder", "مجلد")}: ${n}`, "Documents")
@@ -301,16 +313,17 @@ export function CreateFolderModal({ open, onClose, isAr, folders, currentId, onC
     onClose()
   }
   return (
-    <WModal open={open} onClose={onClose} isAr={isAr} icon={FolderOpen} title={t("Create New Folder", "إنشاء ملف جديد")}
+    <WModal open={open} onClose={onClose} isAr={isAr} icon={FolderOpen} title={t("Create New Folder", "إنشاء مجلد جديد")}
       footer={<>
-        <WButton className="px-6" disabled={!name.trim()} onClick={create}>{t("Create", "إنشاء")}</WButton>
+        <WButton className="px-6" onClick={create}>{t("Create", "إنشاء")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
       </>}>
       <div className="flex flex-col gap-4 pb-4">
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_214px]">
           <Field label={t("Folder name", "اسم المجلد")}>
-            <WInput value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Title", "عنوان")} autoFocus
+            <WInput value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Title", "عنوان")}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); create() } }} />
+            {tried && !name.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a folder name", "أدخل اسم المجلد")}</span>}
           </Field>
           <Field label={t("Create in", "الإنشاء في")}>
             <WSelect value={parent} onChange={(e) => setParent(e.target.value)}>
@@ -342,18 +355,19 @@ export function FaqModal({ open, onClose, isAr, edit }: { open: boolean; onClose
   const [audience, setAudience] = React.useState<string[]>([])
   const [editId, setEditId] = React.useState<string | null>(null)
   const [showDrafts, setShowDrafts] = React.useState(false)
+  const [tried, setTried] = React.useState<"publish" | "draft" | null>(null)
 
   const load = React.useCallback((f: Faq | null | undefined) => {
     setQ(f ? (isAr ? f.qAr : f.q) : ""); setA(f ? (isAr ? f.aAr : f.a) : "")
     setLink(f?.relatedLinks[0]?.url ?? ""); setDate(f?.publishDate ?? ""); setAudience(f?.audience ?? [])
-    setEditId(f?.id ?? null); setShowDrafts(false)
+    setEditId(f?.id ?? null); setShowDrafts(false); setTried(null)
   }, [isAr])
   React.useEffect(() => { if (open) load(edit) }, [open, edit, load])
 
   const drafts = faqs.filter((f) => f.status === "Draft")
   const save = (status: "Published" | "Draft") => {
     const question = q.trim()
-    if (!question) return
+    if (!question || (status === "Published" && !a.trim())) { setTried(status === "Published" ? "publish" : "draft"); return }
     const fields: Partial<Faq> = {
       ...(isAr ? { qAr: question, aAr: a.trim() } : { q: question, a: a.trim() }),
       relatedLinks: link.trim() ? [{ label: isAr ? "رابط" : "Link", url: link.trim() }] : [],
@@ -371,9 +385,9 @@ export function FaqModal({ open, onClose, isAr, edit }: { open: boolean; onClose
   return (
     <WModal open={open} onClose={onClose} isAr={isAr} width={496} icon={BookMarked} title={t("FAQs", "الأسئلة الشائعة")}
       footer={<>
-        <WButton className="px-6" disabled={!q.trim() || !a.trim()} onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
+        <WButton className="px-6" onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
-        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!q.trim()} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
+        <WButton variant="outline" className={MODAL_OUTLINE} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
         <DraftsButton count={drafts.length} isAr={isAr} onClick={() => setShowDrafts((v) => !v)} />
       </>}>
       {showDrafts && (
@@ -387,10 +401,16 @@ export function FaqModal({ open, onClose, isAr, edit }: { open: boolean; onClose
         </div>
       )}
       <div className="flex flex-col gap-4">
-        <Field label={t("Main title", "العنوان الرئيسي")}><WInput value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Title", "عنوان")} autoFocus /></Field>
-        <Field label={t("Text", "النص")}><WTextarea rows={1} value={a} onChange={(e) => setA(e.target.value)} placeholder={t("Text", "نص")} /></Field>
+        <Field label={t("Main title", "العنوان الرئيسي")}>
+          <WInput value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Title", "عنوان")} />
+          {tried && !q.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a title", "أدخل العنوان")}</span>}
+        </Field>
+        <Field label={t("Text", "النص")}>
+          <WTextarea rows={1} value={a} onChange={(e) => setA(e.target.value)} placeholder={t("Text", "نص")} />
+          {tried === "publish" && !a.trim() && <span className="px-1 text-[11px] text-error">{t("Enter the answer", "أدخل النص")}</span>}
+        </Field>
         <Field label={<><span className="font-semibold">{t("Link", "رابط")}</span><span className="font-normal">{t(" to the solution", " لحل المشكلة الشائعة")}</span></>}>
-          <WInput value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("Link*", "رابط*")} />
+          <WInput value={link} onChange={(e) => setLink(e.target.value)} placeholder={t("*Link*", "*رابط*")} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("Publish date", "تاريخ النشر")}><DateInput value={date} onChange={setDate} isAr={isAr} /></Field>
@@ -413,11 +433,12 @@ export function ImageLightbox({ src, onClose, isAr }: { src: string | null; onCl
   if (!src) return null
   return createPortal(
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4 backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div role="dialog" aria-modal="true" className="relative w-full max-w-[920px] rounded-[12px] bg-secondary px-4 pb-4 pt-12 shadow-2xl">
-        <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="absolute end-3 top-3 grid size-8 place-items-center rounded-[8px] text-foreground hover:bg-background/40">
-          <X className="size-5" />
+      {/* 4775:25339: 964 wide, 32px sides, 84px header with the close X, 900×506 (16:9) image. */}
+      <div role="dialog" aria-modal="true" dir={isAr ? "rtl" : "ltr"} className="relative w-full max-w-[964px] rounded-[12px] bg-secondary px-4 pb-[25px] pt-[84px] shadow-2xl sm:px-8">
+        <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="absolute end-6 top-6 grid size-[34px] place-items-center rounded-[8px] text-foreground hover:bg-background/40">
+          <X className="size-6" />
         </button>
-        <img src={src} alt="" className="max-h-[78vh] w-full rounded-[8px] object-contain" />
+        <img src={src} alt="" className="aspect-video max-h-[70vh] w-full rounded-[8px] object-cover" />
       </div>
     </div>,
     document.body,

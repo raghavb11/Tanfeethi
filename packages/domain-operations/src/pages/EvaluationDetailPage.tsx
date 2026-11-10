@@ -1,9 +1,10 @@
 /** One past evaluation, read-only answers — Figma 4124:13130.
  *  Route: /operations/evaluations/:evaluationId */
 import { useNavigate, useParams } from "react-router-dom"
+import { usePageTitle } from "@reach/shell-context"
 import { SearchX, SquareStar } from "lucide-react"
 
-import { answersFor, evaluatedPerson, evaluationRecords, templateById } from "../data/operations"
+import { answersFor, evaluatedPerson, findEvaluationRecord, templateById } from "../data/operations"
 import { ChecklistAnswers } from "../components/ChecklistAnswers"
 import { CardHeading, EmptyState, GoldButton, Page, Panel } from "../components/ui"
 import { useT } from "../components/helpers"
@@ -12,8 +13,13 @@ export default function EvaluationDetailPage() {
   const { evaluationId } = useParams()
   const { t } = useT()
   const navigate = useNavigate()
-  const record = evaluationRecords.find((r) => r.id === evaluationId)
+  const record = findEvaluationRecord(evaluationId)
   const person = evaluatedPerson(record?.employeeId)
+  // Figma top bar carries the record name (4124:13130 / 5233:28552).
+  usePageTitle(
+    person && `Previous evaluations log for “${person.name.en}”`,
+    person && `سجل التقييمات السابقة للموظف “${person.name.ar}”`,
+  )
 
   if (!record || !person) {
     return (

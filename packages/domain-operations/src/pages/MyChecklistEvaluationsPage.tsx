@@ -2,14 +2,13 @@
  *  Route: /operations/personal/operational-log */
 import { SquareStar } from "lucide-react"
 
-import { currentUser, evaluationRecords } from "../data/operations"
+import { myLogRecords } from "../data/operations"
 import { EvaluationLog, type LogRow } from "../components/EvaluationLog"
 import { CardHeading, Page, Panel } from "../components/ui"
 import { useT } from "../components/helpers"
 
 // The current user's own records — not a copy of the manager's all-staff list.
-const rows: LogRow[] = evaluationRecords
-  .filter((r) => r.employeeId === currentUser.id)
+const rows: LogRow[] = [...myLogRecords]
   .sort((a, b) => b.date.localeCompare(a.date))
   .map((r) => ({
     id: r.id,
@@ -28,7 +27,7 @@ export default function MyChecklistEvaluationsPage() {
     <Page>
       <Panel>
         <CardHeading icon={SquareStar} title={t("View my previous evaluations", "عرض تقييماتي السابقة")} />
-        <EvaluationLog rows={rows} nameHeader={t("Name", "الأسم المدير المباشر")} />
+        <EvaluationLog rows={rows} nameHeader={t("Name", "اسم المدير المباشر")} />
       </Panel>
     </Page>
   )

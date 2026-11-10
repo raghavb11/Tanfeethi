@@ -122,7 +122,7 @@ export function AiCenter({ isAr, initials = "FA" }: { isAr: boolean; initials?: 
           <div ref={endRef} />
         </div>
 
-        <div className="flex flex-col gap-2.5 pt-10">
+        <div className="flex flex-col gap-2.5 pt-[26px]">
           {/* suggestion chips */}
           <div className="flex flex-wrap gap-3">
             {chatChips.map((c) => {
@@ -140,7 +140,7 @@ export function AiCenter({ isAr, initials = "FA" }: { isAr: boolean; initials?: 
           {files.length > 0 && (
             <div className="flex flex-wrap gap-3">
               {files.map((f, i) => (
-                <div key={`${f.name}-${i}`} className="flex h-[62px] min-w-[220px] items-center gap-3 rounded-[8px] border border-secondary p-[14px]">
+                <div key={`${f.name}-${i}`} className="flex h-[62px] w-full items-center gap-3 sm:w-[245px] rounded-[8px] border border-secondary p-[14px]">
                   <span className={cn("grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[8px] text-[10px] font-bold", KIND_STYLE[f.kind])}>{f.kind}</span>
                   <span className="min-w-0 flex-1 truncate text-[13px]">{f.name}</span>
                   <button type="button" onClick={() => setFiles(files.filter((_, j) => j !== i))} aria-label={t("Remove file", "حذف الملف")}
@@ -183,7 +183,7 @@ function Bubble({ m, isAr, initials }: { m: ChatMessage; isAr: boolean; initials
       {user
         ? <span className="grid size-[30px] shrink-0 place-items-center rounded-full border border-primary bg-soft-accent text-[11px] font-bold text-primary">{initials}</span>
         : <AiAvatar />}
-      <div className={cn("flex flex-col gap-2 rounded-[8px] border px-4 py-3 text-[13px] leading-6", user ? "border-secondary" : "border-primary")}>
+      <div className={cn("flex min-w-0 flex-col gap-2 rounded-[8px] border px-4 py-3 text-[13px] leading-6 sm:w-[398px]", user ? "border-secondary" : "border-primary")}>
         {text && <p>{text}</p>}
         {m.attachments && (
           <div className="flex flex-wrap gap-2">

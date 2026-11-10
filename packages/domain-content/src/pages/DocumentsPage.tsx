@@ -2,7 +2,7 @@
  *  Main column: Document management (folders + documents table) and FAQ.
  *  Side column: create launcher, polls & surveys, announcements, news. */
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import {
@@ -27,6 +27,9 @@ import { deleteArticle, getArticleById } from "../store"
 import { logAudit } from "../data/audit"
 
 const PAGE = 24
+/** Capture helper: "?modal=news|poll|folder|faq|image" opens that Knowledge popup
+ *  (Figma 2485:3150 · 2464:2865 · 4775:25446 · 2485:3307 · 4775:25339). */
+const useCaptureModal = () => new URLSearchParams(useLocation().search).get("modal")
 const MONTHS: Record<string, number> = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 }
 const dateKey = (s: string) => {
   if (/yesterday|today|just now/i.test(s)) return 99999999
@@ -45,9 +48,12 @@ export default function DocumentsPage() {
   const isAdmin = useAsAdmin(role)
   const t: T = (en, ar) => (isAr ? ar : en)
 
-  const [createKind, setCreateKind] = React.useState<ContentKind | null>(null)
+  const capture = useCaptureModal()
+  const [createKind, setCreateKind] = React.useState<ContentKind | null>(() =>
+    capture === "news" ? "news" : capture === "poll" ? "survey" : null)
   const [editNews, setEditNews] = React.useState<NewsItem | null>(null)
-  const [lightbox, setLightbox] = React.useState<string | null>(null)
+  const news = usePublishedNews()
+  const [lightbox, setLightbox] = React.useState<string | null>(() => (capture === "image" ? news[0]?.img || null : null))
 
   return (
     <WPage>
@@ -95,7 +101,7 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
   const [owner, setOwner] = React.useState("all")
   const [sort, setSort] = React.useState<SortKey>("recent")
   const [visible, setVisible] = React.useState(PAGE)
-  const [newFolder, setNewFolder] = React.useState(false)
+  const [newFolder, setNewFolder] = React.useState(useCaptureModal() === "folder")
   const [confirm, setConfirm] = React.useState<Doc | null>(null)
   React.useEffect(() => { setVisible(PAGE) }, [folder, q, typeFilter, owner, sort])
 
@@ -223,7 +229,7 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
             <colgroup><col className="w-[45%]" /><col className="w-[15%]" /><col className="w-[10.3%]" /><col /><col className="w-[140px]" /></colgroup>
             <thead>
               <tr className="h-9 border-b border-secondary text-[12px] text-muted-foreground">
-                <th className="pe-1 ps-[70px] text-start font-normal">{t("File Name", "أسم الملف")}</th>
+                <th className="pe-1 ps-[70px] text-start font-normal">{t("File Name", "اسم الملف")}</th>
                 <th className="px-1 text-start font-normal">{t("Owner", "المالك")}</th>
                 <th className="px-1 text-start font-normal">{t("File Size", "حجم الملف")}</th>
                 <th className="px-1 text-start font-normal">{t("Upload Date", "تاريخ الرفع")}</th>
@@ -298,14 +304,14 @@ function FaqCard({ isAr, isAdmin, t }: CardProps) {
   const faqs = useFaqs().filter((f) => isAdmin || f.status !== "Draft")
   const loading = useFakeLoading()
   const [openId, setOpenId] = React.useState<string | null>("fk1")
-  const [modal, setModal] = React.useState<{ edit: Faq | null } | null>(null)
+  const [modal, setModal] = React.useState<{ edit: Faq | null } | null>(useCaptureModal() === "faq" ? { edit: null } : null)
   const [confirm, setConfirm] = React.useState<Faq | null>(null)
   const list = faqs.slice(0, 5)
 
   return (
     <WCard className="flex flex-col gap-[18px]">
       <CardHead icon={BookMarked} title={t("FAQs", "الأسئلة الشائعة")}
-        actions={isAdmin ? <WButton size="sm" className="min-w-[108px]" onClick={() => setModal({ edit: null })}><Plus />{t("Add Question", "إضافة سؤال")}</WButton> : undefined} />
+        actions={isAdmin ? <WButton size="sm" className="min-w-[108px]" onClick={() => setModal({ edit: null })}>{t("Add Question", "إضافة سؤال")}<Plus /></WButton> : undefined} />
       {loading ? (
         <div className="flex flex-col gap-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
       ) : list.length === 0 ? (
@@ -358,7 +364,9 @@ function FaqCard({ isAr, isAdmin, t }: CardProps) {
 function PollsCard({ isAr, isAdmin, t }: CardProps) {
   const polls = usePolls().filter((p) => p.status !== "draft")
   const loading = useFakeLoading()
-  const [i, setI] = React.useState(0)
+  // Capture helper: "?poll=N" opens the card on the Nth published poll/survey
+  // (1 = closed poll results 2441:5698, 2 = survey results 4352:14026).
+  const [i, setI] = React.useState(() => Number(new URLSearchParams(useLocation().search).get("poll")) || 0)
   const [pick, setPick] = React.useState<string | null>(null)
   const [confirm, setConfirm] = React.useState<KPoll | null>(null)
   const idx = Math.min(i, Math.max(0, polls.length - 1))
@@ -402,8 +410,8 @@ function PollBody({ p, isAr, isAdmin, t, pick, setPick, onDelete }: {
   return (
     <div className="flex flex-col gap-3 rounded-[8px] bg-background p-4">
       <div className="flex items-center gap-3">
-        <Tag>{p.kind === "survey" ? t("Surveys", "الاستبيانات") : t("Vote", "تصويت")}</Tag>
-        {p.kind === "poll" && <span className="text-[11px] text-muted-foreground">{isAr ? p.whenAr : p.when}</span>}
+        <Tag className="text-[10.5px] font-semibold">{p.kind === "survey" ? t("Surveys", "الاستبيانات") : t("Vote", "تصويت")}</Tag>
+        {p.kind === "poll" && <span className="text-[10.4px] leading-[11.5px] text-muted-foreground">{isAr ? p.whenAr : p.when}</span>}
       </div>
       <h3 className="text-[14px] font-medium leading-[22px]">{isAr ? p.questionAr : p.question}</h3>
       {voting ? (
@@ -419,13 +427,13 @@ function PollBody({ p, isAr, isAdmin, t, pick, setPick, onDelete }: {
           <p className="-mb-0.5 text-[11px] leading-[14px] text-muted-foreground">{t("Choose an answer, then tap “Vote” to see results", "اختر إجابة ثم اضغط «تصويت» لعرض النتائج")}</p>
         </>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           {p.options.map((o) => (
             <ResultBar key={o.id} label={isAr ? o.labelAr : o.label} pct={pollPct(p, o)} radio={p.kind === "poll"} selected={p.myVote === o.id} />
           ))}
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className={cn("flex flex-wrap items-center justify-between gap-3", !voting && "pt-6")}>
         <span className="text-[11px] text-muted-foreground">{arNum(total, isAr)} {t("responses", "مشاركة")}</span>
         <div className="flex items-center gap-2">
           {voting ? (
@@ -455,11 +463,11 @@ function StoryBody({ img, tag, tagTone, meta, title, excerpt, onImage, isAr }: {
         <div className="grid aspect-[358/201] w-full place-items-center rounded-[8px] bg-secondary text-icon"><Newspaper className="size-8" /></div>
       )}
       <div className="flex items-center gap-2.5">
-        <Tag tone={tagTone}>{tag}</Tag>
-        <span className="text-[11px] text-muted-foreground">{meta}</span>
+        <Tag tone={tagTone} className="text-[10.5px] font-semibold">{tag}</Tag>
+        <span className="text-[10.4px] leading-[11.5px] text-muted-foreground">{meta}</span>
       </div>
       <h3 className="text-[13px] font-medium leading-[22px]">{title}</h3>
-      <p className="line-clamp-3 min-h-[60px] text-[11.3px] leading-5 text-muted-foreground">{excerpt}</p>
+      <p className="line-clamp-2 min-h-[40px] text-[11.3px] leading-5 text-muted-foreground rtl:line-clamp-3 rtl:min-h-[60px]">{excerpt}</p>
     </div>
   )
 }

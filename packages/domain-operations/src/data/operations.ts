@@ -40,7 +40,7 @@ export const templates: ChecklistTemplate[] = [
       {
         id: "h2",
         text: {
-          ar: "الوقت المستغرق لتقديم الخدمة مناسبة و مطابقة لقائمة الطعام بإستثناء أوقات الذروة",
+          ar: "الوقت المستغرق لتقديم الخدمة مناسبة ومطابقة لقائمة الطعام باستثناء أوقات الذروة",
           en: "Service time is appropriate and matches the menu, except at peak times",
         },
       },
@@ -256,6 +256,23 @@ const teamHistory: EvaluationRecord[] = (
 
 export const evaluationRecords: EvaluationRecord[] = [...e1History, ...otherHistory, ...teamHistory]
 
+/** 4215:13599 — the signed-in employee's own operational evaluations (evaluator,
+ *  date and negatives verbatim from the frame). Kept apart from e1's manager-side
+ *  history (4124:12781) so both screens show exactly what their frames draw. */
+export const myLogRecords: EvaluationRecord[] = latest.map(([, date, negatives], i) => ({
+  id: `my-ev-${i + 1}`,
+  employeeId: currentUser.id,
+  evaluator: evaluatedStaff[i],
+  date,
+  day: date,
+  negatives,
+  templateId: ["hospitality", "cleanliness", "staff"][i % 3],
+}))
+
+/** Look up any evaluation record (manager-side or the employee's own log). */
+export const findEvaluationRecord = (id: string | undefined) =>
+  evaluationRecords.find((r) => r.id === id) ?? myLogRecords.find((r) => r.id === id)
+
 /** Any person whose checklist evaluations can be listed (lounge staff or a team member). */
 export function evaluatedPerson(id: string | undefined): EvaluatedPerson | undefined {
   const staff = evaluatedStaff.find((p) => p.id === id)
@@ -429,7 +446,7 @@ export const initialGoals: Goal[] = [
 export type Rating = 1 | 2 | 3 | 4 | 5
 export const ratingScale: { value: Rating; label: L; tone: "success" | "info" | "warning" | "error" }[] = [
   { value: 5, label: { ar: "متجاوز للمستهدف", en: "Exceeds target" }, tone: "success" },
-  { value: 4, label: { ar: "على المسار الصحيح", en: "On the right track" }, tone: "info" },
+  { value: 4, label: { ar: "على المسار الصحيح", en: "On track" }, tone: "info" },
   { value: 3, label: { ar: "يوجد بعض التحديات", en: "Some challenges" }, tone: "warning" },
   { value: 2, label: { ar: "دون المستهدف", en: "Below target" }, tone: "error" },
   { value: 1, label: { ar: "متعثر", en: "Off track" }, tone: "error" },

@@ -23,15 +23,22 @@ export default function MyGoalResultsPage() {
   return (
     <Page>
       <Panel>
-        <CardHeading icon={SquareStar} title={t("View my previous evaluations", "عرض تقييماتي السابقة")} />
-        <div className="mt-4 max-w-[260px]">
-          <FilterSelect
-            label={t("Period", "الفترة")}
-            value={periodId}
-            onChange={setPeriodId}
-            options={pastGoalReviews.map((p) => ({ value: p.id, label: l(p.label) }))}
-          />
-        </div>
+        {/* The period picker sits in the header's action slot so the table keeps
+            the position 4124:13384 draws (the frame shows one period only). */}
+        <CardHeading
+          icon={SquareStar}
+          title={t("View my previous evaluations", "عرض تقييماتي السابقة")}
+          actions={
+            <div className="w-[260px]">
+              <FilterSelect
+                label={t("Period", "الفترة")}
+                value={periodId}
+                onChange={setPeriodId}
+                options={pastGoalReviews.map((p) => ({ value: p.id, label: l(p.label) }))}
+              />
+            </div>
+          }
+        />
         <DataGrid
           className="mt-2"
           template={TEMPLATE}

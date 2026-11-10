@@ -1,6 +1,7 @@
 /** Previous evaluations of one employee — Figma 4124:12781.
  *  Route: /operations/evaluations/employee/:employeeId */
 import { useNavigate, useParams } from "react-router-dom"
+import { usePageTitle } from "@reach/shell-context"
 import { SearchX, SquareStar } from "lucide-react"
 
 import { evaluatedPerson, evaluationRecords } from "../data/operations"
@@ -13,6 +14,11 @@ export default function EmployeeEvaluationsPage() {
   const { t } = useT()
   const navigate = useNavigate()
   const person = evaluatedPerson(employeeId)
+  // Figma top bar carries the record name (4124:12781 / 5233:28448).
+  usePageTitle(
+    person && `Previous evaluations log for “${person.name.en}”`,
+    person && `سجل التقييمات السابقة للموظف “${person.name.ar}”`,
+  )
 
   if (!person) {
     return (

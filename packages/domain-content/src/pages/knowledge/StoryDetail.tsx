@@ -30,29 +30,30 @@ export function StoryDetail({ isAr, icon, section, counter, onPrev, onNext, prev
     <WCard className="px-[18px] sm:px-[18px]">
       <CardHead icon={icon} title={section}
         actions={<div className="flex items-center gap-4">
-          <span className="text-[12px] text-muted-foreground">{counter}</span>
+          <span className="text-[13px] text-muted-foreground">{counter}</span>
           <Pager isAr={isAr} onPrev={onPrev} onNext={onNext} prevDisabled={prevDisabled} nextDisabled={nextDisabled} />
         </div>} />
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-6 pt-3.5">
           {img && (
             <button type="button" onClick={() => setZoom(img)} aria-label={isAr ? "عرض الصورة" : "View image"}
-              className="mx-auto block w-full max-w-[900px] overflow-hidden rounded-[12px]">
+              className="mx-auto block w-full max-w-[900px] overflow-hidden rounded-[8px]">
               <img src={img} alt="" className="aspect-video w-full object-cover" />
             </button>
           )}
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-3.5 ps-6">
             <div className="flex items-center gap-2.5">
-              <Tag tone={tagTone}>{tag}</Tag>
-              <span className="text-[11px] text-muted-foreground">{meta}</span>
+              <Tag tone={tagTone} className="text-[10.5px] font-semibold">{tag}</Tag>
+              <span className="text-[10.4px] leading-[11.5px] text-muted-foreground">{meta}</span>
             </div>
-            <h1 className="text-[15px] font-medium leading-[22px]">{title}</h1>
-            <div className="max-w-[80ch] text-[13px] leading-6 text-foreground/90 [&_a]:text-primary [&_a]:underline [&_b]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:ps-5">
+            <h1 className="text-[13px] font-medium leading-[22px]">{title}</h1>
+            <div className="text-[11.3px] leading-5 text-muted-foreground [&_a]:text-primary [&_a]:underline [&_b]:font-semibold [&_p+p]:mt-2 [&_ul]:list-disc [&_ul]:ps-5">
               {children}
             </div>
           </div>
         </div>
-        {actions && <div className="flex flex-wrap justify-end gap-2">{actions}</div>}
+        {/* Figma keeps the 34px action row even where the viewer has no actions. */}
+        <div className="flex min-h-[34px] flex-wrap justify-end gap-2">{actions}</div>
       </div>
       <ImageLightbox src={zoom} onClose={() => setZoom(null)} isAr={isAr} />
     </WCard>

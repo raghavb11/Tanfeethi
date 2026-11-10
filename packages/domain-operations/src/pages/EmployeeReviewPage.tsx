@@ -3,6 +3,7 @@
  *  Submit added. Route: /operations/evaluate/:employeeId */
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import { usePageTitle } from "@reach/shell-context"
 import { SearchX, SquareStar, Users } from "lucide-react"
 
 import { overallScore, teamMember, teamSelfScores, type Rating } from "../data/operations"
@@ -25,6 +26,12 @@ export default function EmployeeReviewPage() {
   const loading = useSimulatedLoad()
   const [scores, setScores] = React.useState<Record<string, Rating>>(() => (employeeId ? allScores[employeeId] ?? {} : {}))
   const [status, setStatus] = React.useState<"" | "draft" | "invalid">("")
+  // Figma top bar carries the employee's name (4126:14408 / 5233:28759).
+  const isAnnual = member?.cycle === "annual"
+  usePageTitle(
+    member && `${isAnnual ? "Annual evaluation" : "Mid-year evaluation"} for “${member.name.en}”`,
+    member && `${isAnnual ? "التقييم السنوي" : "التقييم النصف سنوي"} للموظف "${member.name.ar}"`,
+  )
 
   if (!member) {
     return (
@@ -61,19 +68,19 @@ export default function EmployeeReviewPage() {
       <Panel>
         <CardHeading
           icon={SquareStar}
-          title={
-            <>
-              {cardTitle}
-              <span className="text-muted-foreground"> — {l(member.name)}</span>
-            </>
-          }
+          title={cardTitle}
           actions={
-            annual && (
-              <OutlineButton size="sm" onClick={() => navigate("/operations/evaluate")}>
-                <Users className="size-3.5" />
-                {t("All annual evaluations", "جميع التقييمات السنوية")}
-              </OutlineButton>
-            )
+            // The frame's title is the review type only; whose review it is sits
+            // with the actions so the heading keeps 4126:14408's text.
+            <>
+              <span className="text-[13px] text-muted-foreground">{l(member.name)}</span>
+              {annual && (
+                <OutlineButton size="sm" onClick={() => navigate("/operations/evaluate")}>
+                  <Users className="size-3.5" />
+                  {t("All annual evaluations", "جميع التقييمات السنوية")}
+                </OutlineButton>
+              )}
+            </>
           }
         />
         <DataGrid

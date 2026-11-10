@@ -4,7 +4,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
 import { Avatar, AvatarFallback } from "@reach/shared-ui"
-import { useShell } from "@reach/shell-context"
+import { usePageTitle, useShell } from "@reach/shell-context"
 import { MessageSquare, Newspaper, Trash2 } from "lucide-react"
 
 import { CardHead, DeletePopup, EmptyState, toneForCategory, useAsAdmin, WButton, WCard, WPage, WTextarea, arNum } from "./_wijha"
@@ -28,6 +28,7 @@ export default function ArticleReaderPage() {
   const published = usePublishedNews()
   const item = all.find((n) => n.id === id)
   const pos = published.findIndex((n) => n.id === id)
+  usePageTitle(item?.title, item?.titleAr)
 
   const comments = useComments(id)
   const [text, setText] = React.useState("")

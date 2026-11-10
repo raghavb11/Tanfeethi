@@ -72,12 +72,10 @@ export const NEWS: NewsItem[] = [
     tint: "#3d2031",
     img: "images/cms/office.jpg",
     body: P(
-      "The lounge welcomes its first member groups early next month with <b>double capacity</b> and 24/7 concierge service.",
-      "Fit-out is complete and the operations team is running final service rehearsals ahead of the September opening.",
+      "The lounge welcomes its first member groups early next month with double capacity and 24/7 concierge service.",
     ),
     bodyAr: P(
       "تستقبل الصالة أول أفواج الأعضاء مطلع الشهر القادم بسعة مضاعفة وخدمة كونسيرج على مدار الساعة.",
-      "اكتملت أعمال التجهيز ويُجري فريق العمليات التجارب النهائية للخدمة استعدادًا للافتتاح في سبتمبر.",
     ),
   },
   {

@@ -248,7 +248,7 @@ export function Field({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <label htmlFor={htmlFor} className="px-1 text-[13px] font-semibold text-foreground">
+      <label htmlFor={htmlFor} className="px-1 text-[13px] font-semibold leading-[15px] text-foreground rtl:leading-[17px]">
         {label}
       </label>
       {children}

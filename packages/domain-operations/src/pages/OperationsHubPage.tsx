@@ -23,7 +23,7 @@ const TEMPLATE = "30px minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1.1fr)
 
 function ProfileTile({ value, label }: { value: string; label: string }) {
   return (
-    <div className="panel flex min-h-[81px] min-w-0 flex-col justify-center gap-0.5 rounded-[12px] px-[18px] py-4">
+    <div className="panel flex h-[77px] min-w-0 flex-col justify-center gap-0.5 rounded-[12px] px-[18px] py-3">
       <span className="truncate text-base font-semibold leading-8 text-foreground" dir="auto">
         {value}
       </span>
@@ -36,7 +36,7 @@ function Hero() {
   const { t, l } = useT()
   const tiles: [string, string][] = [
     [l(currentUser.name), t("Name", "الاسم")],
-    [l(currentUser.jobTitle), t("Job title", "المسمى الوظيفي")],
+    [l(currentUser.jobTitle), t("Job Title", "المسمى الوظيفي")],
     [currentUser.employeeNo, t("Employee no.", "الرقم الوظيفي")],
     [l(currentUser.department), t("Department", "الإدارة")],
     [l(currentUser.manager), t("Direct manager", "المدير المباشر")],
@@ -45,7 +45,7 @@ function Hero() {
   return (
     // Figma Hero: radius 16, padding 40 / 24 (start) / 40 / 56 (end), green glow.
     <section className="highlight-card hl-green relative overflow-hidden rounded-2xl px-6 py-10 md:pe-14 md:ps-6">
-      <div className="flex min-h-[268px] flex-col justify-between gap-5">
+      <div className="flex min-h-[266px] flex-col justify-between gap-5">
         <div className="flex flex-col gap-2">
           <h2 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px] text-foreground">
             {t("Operations & Performance", "العمليات والأداء")}
@@ -53,11 +53,11 @@ function Hero() {
           <p className="text-[12.5px] text-foreground">
             {t(
               "Evaluate and track the quality and performance of Al Tanfeethi employees",
-              "قيم و تابع جودة و أداء موظفين التنفيذي",
+              "قيّم وتابع جودة وأداء موظفي التنفيذي",
             )}
           </p>
         </div>
-        <div className="grid w-full max-w-[798px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid w-full max-w-[798px] grid-cols-1 gap-x-6 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
           {tiles.map(([v, lab]) => (
             <ProfileTile key={lab} value={v} label={lab} />
           ))}
@@ -151,7 +151,7 @@ function ChecklistsCard() {
         headers={[
           t("No.", "ترقيم"),
           t("Audit checklist", "قائمة التدقيق"),
-          t("Reviewer name", "أسم المراجع"),
+          t("Reviewer name", "اسم المراجع"),
           t("Review date", "تاريخ المراجعة"),
           t("Lounge", "الصالة"),
           t("Violations", "عدد المخالفات"),
@@ -229,7 +229,7 @@ function EmployeeCard({ m }: { m: TeamMember }) {
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-[14.5px] leading-[21.75px]">{l(m.name)}</span>
             <span className="shrink-0 text-[12.5px] text-muted-foreground">
-              {t("Employee ID", "رقم الوظيفي")}: {m.employeeNo}
+              {t("Employee ID", "الرقم الوظيفي")}: {m.employeeNo}
             </span>
           </div>
           <span className="text-[12.5px] text-muted-foreground">
@@ -240,7 +240,7 @@ function EmployeeCard({ m }: { m: TeamMember }) {
       <div className="flex flex-col gap-2 text-[14.5px] leading-[21.75px]">
         <span>{m.cycle === "annual" ? t("Annual evaluation", "تقييم سنوي") : t("Mid-year evaluation", "تقييم نصف سنة")}</span>
         <span>
-          {t("Line manager", "مدير المباشر")}: {l(m.manager)}
+          {t("Line manager", "المدير المباشر")}: {l(m.manager)}
         </span>
       </div>
       <div className="flex items-center gap-6 pt-2">
@@ -282,7 +282,7 @@ function EmployeeEvaluationCard() {
           <div className="flex flex-col items-center gap-2 pb-2 pt-6 text-center">
             <BadgeCheck className="size-5 text-primary" strokeWidth={1.7} />
             <div className="flex flex-col items-center gap-0.5">
-            <p className="text-[13.5px] leading-[20.25px]">{t("All employees evaluated", "تمّت تقييم جميع الموظفين")}</p>
+            <p className="text-[13.5px] leading-[20.25px]">{t("All employees evaluated", "تمّ تقييم جميع الموظفين")}</p>
             <p className="text-[12.5px] leading-[18.75px] text-muted-foreground">
               {t(
                 "You've reviewed all your approvals. We'll notify you when a new request arrives.",
@@ -307,7 +307,7 @@ export default function OperationsHubPage() {
           <ChecklistsCard />
         </div>
         <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-[400px]">
-          <LinkRow to="/operations/delegation/new" icon={Plus} label={t("Submit a new delegation request", "رفع طلب إنابه جديد")} />
+          <LinkRow to="/operations/delegation/new" icon={Plus} label={t("Submit a new delegation request", "رفع طلب إنابة جديد")} />
           <LinkRow to="/operations/incentives" icon={CircleDollarSign} iconClass="text-primary" label={t("Incentives", "الحوافز")} />
           <LinkRow to="/operations/personal" icon={BadgeCheck} iconClass="text-primary" label={t("Personal evaluation", "التقييم الشخصي")} />
           <EmployeeEvaluationCard />

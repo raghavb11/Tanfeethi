@@ -1,7 +1,7 @@
 /** Operational checklist — fill-in form (Figma 4124:12320) for a pending audit,
  *  read-only answers for a completed one. Route: /operations/checklists/:runId */
 import * as React from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { BadgeCheck, SearchX } from "lucide-react"
 
 import { currentUser, loungeById, templateById, type Answer } from "../data/operations"
@@ -18,7 +18,17 @@ export default function ChecklistRunPage() {
   const runs = useOps((s) => s.runs)
   const run = runs.find((r) => r.id === runId)
 
-  const [answers, setAnswers] = React.useState<Record<string, Answer>>(() => run?.answers ?? {})
+  // Capture helper: "?state=draft" opens the half-filled form 4124:12320 draws
+  // (Q1 complied, Q2 not complied with Ali responsible).
+  const draft = new URLSearchParams(useLocation().search).get("state") === "draft"
+  const [answers, setAnswers] = React.useState<Record<string, Answer>>(() => {
+    if (!draft || !run || run.status === "completed") return run?.answers ?? {}
+    const [q1, q2] = templateById(run.templateId).questions
+    return {
+      ...(q1 ? { [q1.id]: { ...emptyAnswer(), complied: true } } : {}),
+      ...(q2 ? { [q2.id]: { ...emptyAnswer(), complied: false, responsible: ["ali"] } } : {}),
+    }
+  })
   const [tried, setTried] = React.useState(false)
 
   if (!run) {
@@ -89,7 +99,7 @@ export default function ChecklistRunPage() {
           ) : (
             <>
               <GoldButton onClick={save}>{t("Save", "حفظ")}</GoldButton>
-              <OutlineButton onClick={() => navigate("/operations")}>{t("Cancel", "إلغاء")}</OutlineButton>
+              <OutlineButton className="w-[84px] px-0" onClick={() => navigate("/operations")}>{t("Cancel", "إلغاء")}</OutlineButton>
             </>
           )}
         </div>

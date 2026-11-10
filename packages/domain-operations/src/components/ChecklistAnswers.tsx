@@ -62,7 +62,7 @@ export function ChecklistAnswers({
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-4 md:flex-row">
                   <Field
-                    label={t("Responsible persons", "الأشخاص المسؤولون")}
+                    label={t("Responsible people", "الأشخاص المسؤولون")}
                     className="md:w-[300px] md:shrink-0"
                     error={missingPeople ? t("Choose at least one person.", "اختر شخصاً واحداً على الأقل.") : undefined}
                   >
@@ -72,7 +72,7 @@ export function ChecklistAnswers({
                       </div>
                     ) : (
                       <MultiSelect
-                        label={t("Responsible persons", "الأشخاص المسؤولون")}
+                        label={t("Responsible people", "الأشخاص المسؤولون")}
                         options={loungeStaff.map((s) => ({ value: s.id, label: l(s.name) }))}
                         value={a.responsible}
                         onChange={(v) => set({ responsible: v })}

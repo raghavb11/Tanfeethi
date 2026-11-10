@@ -44,6 +44,7 @@ export function GoalModal({
   const { t, l, isAr } = useT()
   const [draft, setDraft] = React.useState<Draft>(() => toDraft(goal, isAr))
   const [tried, setTried] = React.useState(false)
+  const popupRef = React.useRef<HTMLDivElement>(null)
 
   // Re-seed the form each time the modal opens (render-time sync, no effect).
   const [seenOpen, setSeenOpen] = React.useState(open)
@@ -69,7 +70,8 @@ export function GoalModal({
   }
   const invalid = Object.values(errors).some(Boolean)
   const surface = "card" as const
-  const roCls = readOnly ? "bg-foreground/10" : undefined
+  // 4124:14002: read-only fields are Text/Primary on a ~19% light fill with a faint inner stroke.
+  const roCls = readOnly ? "bg-foreground/[0.19] ring-1 ring-inset ring-foreground/[0.09] disabled:opacity-100 opacity-100" : undefined
 
   const save = () => {
     setTried(true)
@@ -94,6 +96,10 @@ export function GoalModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        ref={popupRef}
+        // Focus the dialog itself on open (not the close button), so no focus
+        // ring is drawn on the X the frames show at rest.
+        initialFocus={popupRef}
         showCloseButton={false}
         className="max-h-[calc(100svh-2rem)] gap-6 overflow-y-auto rounded-[12px] bg-secondary px-5 py-6 text-foreground ring-0 sm:max-w-[728px] sm:px-8"
       >
@@ -109,7 +115,7 @@ export function GoalModal({
             aria-label={t("Close", "إغلاق")}
             className="inline-flex size-[34px] items-center justify-center rounded-[8px] text-foreground hover:bg-background/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
-            <X className="size-5" />
+            <X className="size-6" />
           </DialogClose>
         </div>
         <DialogDescription className="sr-only">
@@ -140,7 +146,7 @@ export function GoalModal({
               <DateBox id="goal-start" value={draft.start} onChange={(v) => set({ start: v })} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.start} className={roCls} />
             </Field>
             <Field
-              label={t("End date", "تاريخ الإنتهاء")}
+              label={t("End date", "تاريخ الانتهاء")}
               htmlFor="goal-end"
               error={err("end", draft.end ? t("Must be after the start date", "يجب أن يكون بعد تاريخ البدء") : required)}
             >

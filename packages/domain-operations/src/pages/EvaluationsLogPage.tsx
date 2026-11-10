@@ -23,7 +23,7 @@ export default function EvaluationsLogPage() {
     <Page>
       <Panel>
         <CardHeading icon={SquareStar} title={t("Previous evaluations log", "سجل التقييمات السابقة")} />
-        <EvaluationLog rows={rows} nameHeader={t("Name", "الأسم")} showPeopleFilters />
+        <EvaluationLog rows={rows} nameHeader={t("Name", "الاسم")} showPeopleFilters />
       </Panel>
     </Page>
   )

@@ -270,8 +270,8 @@ export const conversations: Conversation[] = [
   {
     id: "c-mail", title: "Mail summary", titleAr: "تلخيص البريد",
     messages: [
-      { id: "m1", role: "user", text: "Summarize my mail, review pending approvals and reorganize my schedule.", textAr: "لخص بريدي، راجع الموافقات المعلقة، و إعد تنظيم جدولي." },
-      { id: "m2", role: "assistant", text: "Hi Fawaz — I'm summarizing your mail, reviewing your approvals and reorganizing your schedule now.", textAr: "أهلاً فواز، يتم الآن تلخيص بريدك، مراجعة الموافقات و إعادة تنظيم جدولك" },
+      { id: "m1", role: "user", text: "Summarize my email, review pending approvals, and reorganize my schedule.", textAr: "لخص بريدي، راجع الموافقات المعلقة، وأعد تنظيم جدولي." },
+      { id: "m2", role: "assistant", text: "Hi Fawaz, I'm now summarizing your mail, reviewing approvals and reorganizing your schedule", textAr: "أهلاً فواز، يتم الآن تلخيص بريدك، مراجعة الموافقات وإعادة تنظيم جدولك" },
     ],
   },
   { id: "c-q1", title: "Q1 report", titleAr: "تقرير الربع الأول", messages: [

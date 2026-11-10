@@ -75,11 +75,11 @@ export function Chip({ children, tone = "gold" }: { children: React.ReactNode; t
   return (
     <span
       className={cn(
-        "inline-flex h-5 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium",
+        "inline-flex h-[21px] items-center gap-1.5 rounded-md px-2 text-[10.1px] font-medium",
         tone === "gold" ? "accent-chip" : "bg-[#a997c7]/20 text-[#a997c7]",
       )}
     >
-      <span aria-hidden className="size-1 rounded-full bg-current" />
+      <span aria-hidden className="size-[5px] rounded-full bg-current" />
       {children}
     </span>
   )

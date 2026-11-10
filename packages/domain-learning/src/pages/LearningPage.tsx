@@ -62,56 +62,60 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
 
   return (
     <section className="highlight-card hl-violet overflow-hidden rounded-[12px] p-6 lg:pe-10">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+      <div className="flex flex-col gap-6 lg:min-h-[237px] lg:flex-row lg:items-stretch lg:justify-between lg:gap-0">
         {/* Continue */}
-        <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[480px]">
-          <span className="text-xs text-muted-foreground">{t("Learning Center", "مركز التعلم")}</span>
-          <h2 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{t("Continue Where You Left Off", "واصل ما بدأته")}</h2>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
-            <GraduationCap className="size-4 text-primary" strokeWidth={1.8} />
+        {/* Continue — Figma 3071:8990: 444 wide; 12 label, 50 title, 24 meta, then a 340-wide block. */}
+        <div className="flex min-w-0 flex-col justify-center lg:w-[444px]">
+          <span className="text-[10.5px] leading-3 text-muted-foreground">{t("Learning Center", "مركز التعلم")}</span>
+          <h2 className="flex min-h-[50px] items-center text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{t("Continue Where You Left Off", "واصل ما بدأته")}</h2>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-[11px] leading-4 text-muted-foreground">
+            <GraduationCap className="size-3.5 text-primary" strokeWidth={1.8} />
             <span className="text-foreground/90">{l(course.title)}</span>
             <span>{t(`Module ${course.unit} of ${course.units}`, `الوحدة ${course.unit} من ${course.units}`)}</span>
           </p>
-          <div className="mt-2 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t("Today's Goal", "هدف اليوم")}</span>
-              <span className="font-semibold text-primary tabular-nums">
-                <span dir="ltr">
-                  {learner.todayMinutes} / {learner.dailyGoal}
-                </span>{" "}
-                {t("min", "د")}
+          <div className="flex w-full max-w-[340px] flex-col gap-2.5 pt-5">
+            <div className="flex flex-col gap-2">
+              <div className="flex h-3 items-center justify-between text-[10.5px] leading-3">
+                <span className="text-muted-foreground">{t("Today's Goal", "هدف اليوم")}</span>
+                <span className="font-semibold text-primary tabular-nums">
+                  <span dir="ltr">
+                    {learner.todayMinutes} / {learner.dailyGoal}
+                  </span>{" "}
+                  {t("min", "د")}
+                </span>
+              </div>
+              <ProgressBar
+                className="h-1.5"
+                value={(learner.todayMinutes / learner.dailyGoal) * 100}
+                label={t("Today's goal", "هدف اليوم")}
+              />
+              <span className="text-[10.5px] leading-3 text-muted-foreground">
+                {t(`${left} minutes away from keeping your streak`, `${left} دقيقة تفصلك عن الحفاظ على تتابعك`)}
               </span>
             </div>
-            <ProgressBar
-              className="h-1.5"
-              value={(learner.todayMinutes / learner.dailyGoal) * 100}
-              label={t("Today's goal", "هدف اليوم")}
-            />
-            <span className="text-xs text-muted-foreground">
-              {t(`${left} minutes away from keeping your streak`, `${left} دقيقة تفصلك عن الحفاظ على تتابعك`)}
-            </span>
-          </div>
-          <div className="mt-2 grid grid-cols-2 gap-4">
-            <GoldButton onClick={onPlayer}>
-              <Video className="size-4" />
-              {t("Continue Learning", "تابع الدراسة")}
-            </GoldButton>
-            <OutlineButton
-              onClick={() => document.getElementById("learning-certificates")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-            >
-              <FileText className="size-4" />
-              {t("Your Certificates", "شهاداتك")}
-            </OutlineButton>
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <GoldButton className="px-3" onClick={onPlayer}>
+                <Video className="size-4" />
+                {t("Continue Learning", "تابع الدراسة")}
+              </GoldButton>
+              <OutlineButton
+                className="px-3"
+                onClick={() => document.getElementById("learning-certificates")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+              >
+                <FileText className="size-4" />
+                {t("Your Certificates", "شهاداتك")}
+              </OutlineButton>
+            </div>
           </div>
         </div>
 
-        <div aria-hidden className="hidden w-px bg-border lg:block" />
+        <div aria-hidden className="hidden w-[2.5px] self-stretch bg-gradient-to-b from-transparent via-[#937dba]/60 to-transparent lg:block" />
 
-        {/* Weekly chart */}
-        <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[460px]">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold">{t("Your Progress This Week", "تقدّمك هذا الأسبوع")}</span>
-            <span className="font-semibold text-primary tabular-nums">{fmtMinutes(total, isAr)}</span>
+        {/* Weekly chart — Figma 3071:8931: 380 wide, 12.5 header, 113 bars, 30 footer, 20 gaps. */}
+        <div className="flex min-w-0 flex-col justify-center gap-5 lg:w-[380px]">
+          <div className="flex h-[12.5px] items-center justify-between">
+            <span className="text-[10.9px] font-semibold leading-[12.5px]">{t("Your Progress This Week", "تقدّمك هذا الأسبوع")}</span>
+            <span className="text-[12.5px] font-semibold leading-[12.5px] text-primary tabular-nums">{fmtMinutes(total, isAr)}</span>
           </div>
           <div className="flex items-end gap-2.5" role="img" aria-label={t("Minutes learned per day this week", "دقائق التعلم يومياً هذا الأسبوع")}>
             {week.map((d, i) => {
@@ -127,38 +131,38 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
                 <div key={i} className="flex flex-1 flex-col items-center gap-2">
                   <div
                     className={cn(
-                      "relative flex h-[92px] w-full max-w-[46px] items-end overflow-hidden rounded-[4px]",
+                      "relative flex h-[93px] w-full items-end overflow-hidden rounded-[4px]",
                       d.today ? "bg-gradient-to-b from-primary/25 to-secondary" : "bg-secondary",
                     )}
                     title={`${l(d.day)} · ${fmtMinutes(d.minutes, isAr)}`}
                   >
                     <div className={cn("w-full rounded-[4px]", fill)} style={{ height: `${pct * 100}%` }} />
                   </div>
-                  <span className={cn("text-xs", d.today ? "font-semibold text-primary" : "text-muted-foreground")}>{l(d.day)}</span>
+                  <span className={cn("h-3 text-[10px] leading-3", d.today ? "font-semibold text-primary" : "text-muted-foreground")}>{l(d.day)}</span>
                 </div>
               )
             })}
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 items-center rounded-md bg-success-fill px-2 text-xs font-semibold text-success" dir="ltr">
+            <span className="inline-flex h-[30px] items-center rounded-[4px] bg-success-fill px-2 pb-[2px] pt-[3px] text-[11px] font-medium leading-[11px] text-success" dir="ltr">
               +{learner.weekOverWeek}%
             </span>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[8.8px] leading-[11.5px] text-muted-foreground">
               {t(`vs last week · ${activeDays} of 7 days`, `عن الأسبوع الماضي · ${activeDays} من 7 أيام`)}
             </span>
           </div>
         </div>
 
-        <div aria-hidden className="hidden w-px bg-border lg:block" />
+        <div aria-hidden className="hidden w-[2.5px] self-stretch bg-gradient-to-b from-transparent via-[#937dba]/60 to-transparent lg:block" />
 
-        {/* Streak */}
-        <div className="flex flex-col items-center justify-center gap-1 text-center lg:w-[200px]">
-          <div className="flex items-baseline gap-2">
+        {/* Streak — Figma 3071:8921: 124 wide, 14px rhythm. */}
+        <div className="flex flex-col items-center justify-center gap-3.5 whitespace-nowrap text-center lg:min-w-[124px]">
+          <div className="flex h-16 items-baseline gap-1 pt-1">
             <span className="text-[56px] font-bold leading-none text-primary tabular-nums">{learner.streakDays}</span>
             <span className="text-sm">{t("days", "يوماً")}</span>
           </div>
-          <span className="mt-2 text-sm font-medium">{t("Learning streak", "تتابع متواصل من التعلم")}</span>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[12px] font-medium leading-[14px]">{t("Learning streak", "تتابع متواصل من التعلم")}</span>
+          <span className="text-[9.7px] leading-[11.5px] text-muted-foreground">
             {t(`Your longest streak: ${learner.longestStreak} days`, `أطول تتابع لك: ${learner.longestStreak} يوماً`)}
           </span>
         </div>
@@ -196,25 +200,28 @@ function Thumb({ icon: Icon, className }: { icon: typeof Users; className?: stri
 function PathCard({ p, started, onStart }: { p: LearningPath; started: boolean; onStart: () => void }) {
   const { t, l } = useT()
   return (
-    <article className="flex flex-col gap-4 rounded-2xl bg-background p-4">
-      <Thumb icon={pathIcon[p.icon]} className="aspect-[300/250] w-full" />
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip tone="purple">{l(p.category)}</Chip>
-          <span className="text-[11px] text-muted-foreground">
-            {t(`${p.units} modules over ${p.weeks} weeks`, `${p.units} وحدات خلال ${p.weeks} أسبوعًا`)}
-          </span>
+    <article className="flex min-h-[440px] flex-col gap-4 rounded-2xl bg-background p-4">
+      {/* Figma 3071:9222 — 250px thumb, 14px rhythm, 21px chip row, 16/22 title, 33px meta row. */}
+      <div className="flex flex-col">
+        <div className="flex flex-col gap-3.5">
+          <Thumb icon={pathIcon[p.icon]} className="h-[250px] w-full rounded-[8px]" />
+          <div className="flex h-[21px] flex-wrap items-center gap-2.5">
+            <Chip tone="purple">{l(p.category)}</Chip>
+            <span className="text-[10.4px] leading-[11.5px] text-muted-foreground">
+              {t(`${p.units} modules over ${p.weeks} weeks`, `${p.units} وحدات خلال ${p.weeks} أسبوعًا`)}
+            </span>
+          </div>
+          <h3 className="pb-1 text-base font-medium leading-[22px]">{l(p.title)}</h3>
         </div>
-        <h3 className="text-base font-medium leading-6">{l(p.title)}</h3>
-        <div className="flex items-center gap-4 text-[13px] text-muted-foreground">
+        <div className="flex items-center gap-3 py-2 text-[13px] text-muted-foreground">
           <span>{t(`${p.units} modules`, `${p.units} وحدات`)}</span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1">
             <Clock className="size-3.5" />
             {t(`${p.hours} h`, `${p.hours} ساعة`)}
           </span>
         </div>
       </div>
-      <div className="mt-auto">
+      <div className="mt-auto self-end">
         {started ? (
           <OutlineButton size="md" onClick={onStart} aria-pressed className="px-4">
             <Check className="size-4 text-success" />
@@ -324,15 +331,15 @@ function LiveWorkshops() {
 function Recommended() {
   const { t, l } = useT()
   return (
-    <SideCard>
+    <SideCard className="gap-2.5">
       <CardHeading icon={Presentation} title={t("Recommended for You", "موصى به لك")} />
       <ul className="flex flex-col">
         {recommendations.map((r, i) => (
           <li
             key={r.id}
-            className={cn("flex items-center gap-3 py-3.5", i < recommendations.length - 1 && "border-b border-secondary")}
+            className={cn("flex items-center gap-3 py-[13px]", i < recommendations.length - 1 && "border-b border-secondary")}
           >
-            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs">{l(r.letter)}</span>
+            <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-secondary text-xs">{l(r.letter)}</span>
             <span className="min-w-0 flex-1 truncate text-sm">{l(r.title)}</span>
             <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
               <Clock className="size-3.5" />
@@ -413,7 +420,7 @@ export default function LearningPage() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
         <section className="panel min-w-0 flex-1 rounded-[12px] p-4 sm:px-6 sm:py-5">
           <CardHeading icon={Presentation} title={t("Learning Paths", "مسارات تعلم")} />
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-[18px] grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
             {learningPaths.map((p) => (
               <PathCard
                 key={p.id}

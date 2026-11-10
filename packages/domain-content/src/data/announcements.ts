@@ -16,15 +16,7 @@ export type Announcement = {
 }
 
 const SEED: Announcement[] = [
-  { id: "a0", title: "Fingerprint Attendance Procedure", titleAr: "آلية البصمة", body: "From next Sunday, attendance is recorded by fingerprint at the main entrance readers. Please register your fingerprint with HR before the end of this week.", bodyAr: "اعتبارًا من الأحد القادم يُسجَّل الحضور والانصراف بالبصمة عبر أجهزة المداخل الرئيسية. يُرجى تسجيل بصمتك لدى الموارد البشرية قبل نهاية هذا الأسبوع.", category: "HR", categoryAr: "الموارد البشرية", date: "Yesterday", dateAr: "أمس", audience: "All employees", audienceAr: "جميع الموظفين", important: true, img: "images/cms/dashboard.jpg", readMin: 3, details: [
-    "Fingerprint readers are installed at the main entrance, the operations building and the VIP terminal staff gate.",
-    "Registration takes two minutes at the HR service desk (ground floor, HQ) between 08:00 and 15:00. Bring your staff ID.",
-    "From the go-live date the fingerprint record is the only reference for working hours, overtime and late arrivals.",
-  ], detailsAr: [
-    "رُكّبت أجهزة البصمة عند المدخل الرئيسي ومبنى العمليات وبوابة موظفي صالة كبار الزوار.",
-    "يستغرق التسجيل دقيقتين لدى مكتب خدمات الموارد البشرية (الدور الأرضي، المقر) من ٨:٠٠ حتى ١٥:٠٠. أحضر بطاقة الموظف.",
-    "اعتبارًا من تاريخ التشغيل تُعتمد البصمة مرجعًا وحيدًا لاحتساب ساعات العمل والعمل الإضافي والتأخير.",
-  ] },
+  { id: "a0", title: "Fingerprint Attendance Procedure", titleAr: "آلية البصمة", body: "From next Sunday, attendance is recorded by fingerprint at the main entrance readers. Please register your fingerprint with HR before the end of this week.", bodyAr: "اعتبارًا من الأحد القادم يُسجَّل الحضور والانصراف بالبصمة عبر أجهزة المداخل الرئيسية. يُرجى تسجيل بصمتك لدى الموارد البشرية قبل نهاية هذا الأسبوع.", category: "HR", categoryAr: "الموارد البشرية", date: "Yesterday", dateAr: "أمس", audience: "All employees", audienceAr: "جميع الموظفين", important: true, img: "images/cms/dashboard.jpg", readMin: 3 },
   { id: "a1", img: "images/cms/celebrate.jpg", readMin: 2, title: "Eid Al-Adha — office closure schedule", titleAr: "عيد الأضحى — جدول إغلاق المكاتب", body: "All offices will be closed from the 9th to the 13th. Operations teams follow the on-call rota shared by your line manager.", bodyAr: "ستُغلق جميع المكاتب من ٩ إلى ١٣. تتبع فرق العمليات جدول المناوبة المشترك من مديرك.", category: "HR", categoryAr: "الموارد البشرية", date: "Aug 3, 2026", dateAr: "٣ أغسطس ٢٠٢٦", audience: "All employees", audienceAr: "جميع الموظفين", important: true, pinned: true, details: [
     "All corporate offices and support functions will observe the public holiday from Wednesday the 9th through Sunday the 13th, resuming normal hours on Monday the 14th.",
     "Front-line operations, security and IT on-call will run on a reduced rota. Your line manager will confirm your individual shifts by the end of this week — please acknowledge the schedule once you receive it.",

@@ -24,19 +24,20 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
     <article
       className={cn(
         "flex flex-col gap-4 rounded-[10px] border p-4",
-        leave ? "border-success bg-success-fill" : "border-[#a997c7] bg-[#a997c7]/15",
+        // Sampled from 4124:9654 (dark): green #156b47 / #11281e, purple #6d627f / #322e38.
+        leave ? "border-[#156b47] bg-[#11281e]" : "border-[#6d627f] bg-[#322e38]",
       )}
     >
       <div className="flex items-center gap-3">
         <span
           className={cn(
             "inline-flex size-[30px] shrink-0 items-center justify-center rounded-[8px]",
-            leave ? "bg-success text-foreground" : "bg-[#a997c7] text-foreground",
+            leave ? "bg-[#156b47] text-foreground" : "bg-[#6d627f] text-foreground",
           )}
         >
           {leave ? <UserRound className="size-[15px]" strokeWidth={2} /> : <Wifi className="size-[15px]" strokeWidth={2} />}
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-[14.5px] leading-[21.75px]">{l(e.employee)}</span>
             {e.pending && (
@@ -45,7 +46,7 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] leading-5 text-muted-foreground">
             <span>{leave ? t("Leave", "إجازة") : t("Remote work", "دوام عن بعد")}</span>
             <span>
               {dayMonth(e.from, isAr)} {t("to", "إلى")} {dayMonth(e.to, isAr)}
@@ -55,14 +56,14 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
       </div>
       {e.substitute && (
         <>
-          <div aria-hidden className="h-0.5 bg-gradient-to-r from-success/40 via-success to-success/40" />
-          <div className="flex flex-col gap-0.5">
+          <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-success/15 to-transparent" />
+          <div className="flex flex-col gap-1">
             <span className="text-[14.5px] leading-[21.75px]">
               {t("Substitute employee", "الموظف البديل")}: {l(e.substitute)}
             </span>
             {e.email && (
-              <span className="text-[12.5px] text-muted-foreground">
-                {t("Email", "أيميل")}: <span dir="ltr">{e.email}</span>
+              <span className="text-[12.5px] leading-5 text-muted-foreground">
+                {t("Email", "البريد الإلكتروني")}: <span dir="ltr">{e.email}</span>
               </span>
             )}
           </div>
@@ -110,7 +111,7 @@ export default function DelegationRequestPage() {
     <Page>
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
         <Panel className="flex-1">
-          <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابه جديد")} />
+          <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابة جديد")} />
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
             <Field label={t("Delegation start date", "تاريخ بداية الإنابة")} htmlFor="dl-start" error={tried && !start ? t("Required", "مطلوب") : undefined}>
               <DateBox id="dl-start" value={start} onChange={setStart} placeholder={t("Date", "تاريخ")} invalid={tried && !start} />
@@ -128,7 +129,7 @@ export default function DelegationRequestPage() {
             >
               <DateBox id="dl-end" value={end} onChange={setEnd} min={start || undefined} placeholder={t("Date", "تاريخ")} invalid={(tried && !end) || endBeforeStart} />
             </Field>
-            <Field label={t("Employee covering for you", "الموظف المناب عنك")} htmlFor="dl-emp" error={tried && !delegate ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Your delegate", "الموظف المناب عنك")} htmlFor="dl-emp" error={tried && !delegate ? t("Required", "مطلوب") : undefined}>
               <SelectBox
                 id="dl-emp"
                 value={delegate}
@@ -140,7 +141,7 @@ export default function DelegationRequestPage() {
             </Field>
           </div>
           <div className="mt-4 flex flex-col items-start gap-3">
-            <GoldButton onClick={submit}>{t("Submit delegation request", "إرسال طلب الإنابه")}</GoldButton>
+            <GoldButton onClick={submit}>{t("Submit delegation request", "إرسال طلب الإنابة")}</GoldButton>
             {sent && (
               <Notice tone="success">
                 {t("Your delegation request was sent for approval.", "تم إرسال طلب الإنابة للاعتماد.")}

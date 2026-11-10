@@ -248,6 +248,10 @@ export function WModal({ open, onClose, title, icon, tone = "gold", width = 728,
   footer?: React.ReactNode
   isAr: boolean
 }) {
+  const boxRef = React.useRef<HTMLDivElement>(null)
+  // Focus the dialog itself on open (screen readers land in it; no field shows a
+  // focus ring at rest, as in the frames).
+  React.useEffect(() => { if (open) boxRef.current?.focus({ preventScroll: true }) }, [open])
   React.useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
@@ -260,13 +264,13 @@ export function WModal({ open, onClose, title, icon, tone = "gold", width = 728,
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-10 backdrop-blur-[2px] sm:items-center"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div role="dialog" aria-modal="true" dir={isAr ? "rtl" : "ltr"}
-        className="flex w-full flex-col gap-6 rounded-[12px] bg-secondary px-5 py-6 text-foreground shadow-2xl sm:px-8"
+      <div ref={boxRef} tabIndex={-1} role="dialog" aria-modal="true" dir={isAr ? "rtl" : "ltr"}
+        className="flex w-full flex-col gap-6 rounded-[12px] bg-secondary px-5 py-6 text-foreground shadow-2xl outline-none sm:px-8"
         style={{ maxWidth: width }}>
         <div className="flex items-center justify-between gap-4 pb-3">
           <CardHead icon={icon} title={title} tone={tone} />
           <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="grid size-[34px] shrink-0 place-items-center rounded-[8px] text-foreground hover:bg-background/40">
-            <X className="size-5" />
+            <X className="size-6" />
           </button>
         </div>
         {children}
@@ -319,7 +323,8 @@ export function ResultBar({ label, pct, selected, radio }: { label: string; pct:
         </span>
         <span className="tabular-nums">{pct}%</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+      {/* 2441:5698 / 4352:14026 fill the bar from the left in both directions. */}
+      <div dir="ltr" className="h-1.5 overflow-hidden rounded-full bg-secondary">
         <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} />
       </div>
     </div>
