@@ -6,6 +6,7 @@ import { cn } from "@reach/shared-core"
 import { searchEmployees } from "@reach/shared-mocks"
 import { commandNav, previewNav } from "@/config/navigation"
 import { EmployeeCardDialog } from "@/pages/shell-dialogs"
+import { TopSearchIcon } from "@/components/layout/shell-icons"
 import {
   BadgeCheck, Briefcase, Building2, ClipboardList, CornerDownLeft, FileText, Link2, Search, Sparkles,
   TrendingUp, User, Wallet, X,
@@ -38,7 +39,7 @@ const SHORTCUTS: Result[] = [
   { id: "sc:projects", label: "Projects", labelAr: "المشاريع", icon: TrendingUp, path: "/projects", group: "navigate", keywords: "projects مشاريع" },
   { id: "sc:tasks", label: "Tasks", labelAr: "المهام", icon: Briefcase, path: "/tasks", group: "navigate", keywords: "tasks مهام" },
   { id: "sc:balance", label: "My balance", labelAr: "رصيدي", icon: Wallet, path: "/leave", group: "navigate", keywords: "balance leave رصيد إجازة" },
-  { id: "sc:org", label: "Org structure", labelAr: "الهيكل التنظيمي", icon: Building2, path: "/org-chart", group: "navigate", keywords: "org chart structure هيكل" },
+  { id: "sc:org", label: "Org Chart", labelAr: "الهيكل التنظيمي", icon: Building2, path: "/org-chart", group: "navigate", keywords: "org chart structure هيكل" },
   { id: "sc:performance", label: "Performance", labelAr: "الأداء", icon: TrendingUp, path: "/operations", group: "navigate", keywords: "performance kpi أداء" },
   { id: "sc:links", label: "Links", labelAr: "روابط", icon: Link2, path: "/links", group: "navigate", keywords: "links روابط" },
 ]
@@ -71,10 +72,13 @@ export function InlineSearch({
   onOpenFullPalette: () => void
 }) {
   const navigate = useNavigate()
-  const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState("")
-  const [active, setActive] = React.useState(0)
-  const [employeeId, setEmployeeId] = React.useState<string | null>(null)
+  // Pixel checks open these states by URL: ?search=1[&q=…] (2159:2117 / 2423:2562),
+  // ?employee=<id> (employee card 4263:19954).
+  const [open, setOpen] = React.useState(() => new URLSearchParams(window.location.search + "&" + (window.location.hash.split("?")[1] ?? "")).has("search"))
+  const [query, setQuery] = React.useState(() => new URLSearchParams(window.location.search + "&" + (window.location.hash.split("?")[1] ?? "")).get("q") ?? "")
+  // -1 = nothing highlighted until the keyboard or pointer moves (Figma draws no selection)
+  const [active, setActive] = React.useState(-1)
+  const [employeeId, setEmployeeId] = React.useState<string | null>(() => new URLSearchParams(window.location.search + "&" + (window.location.hash.split("?")[1] ?? "")).get("employee"))
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const t = (en: string, ar: string) => (isAr ? ar : en)
@@ -117,7 +121,7 @@ export function InlineSearch({
       .filter((g) => g.items.length > 0)
   }, [results])
 
-  const updateQuery = (v: string) => { setQuery(v); setActive(0); setOpen(true) }
+  const updateQuery = (v: string) => { setQuery(v); setActive(v.trim() ? 0 : -1); setOpen(true) }
 
   React.useEffect(() => {
     if (!open) return
@@ -157,20 +161,21 @@ export function InlineSearch({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((i) => Math.min(results.length - 1, i + 1)) }
     else if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(0, i - 1)) }
-    else if (e.key === "Enter") { e.preventDefault(); const r = results[active]; if (r) handleSelect(r) }
+    else if (e.key === "Enter") { e.preventDefault(); const r = results[Math.max(0, active)]; if (r) handleSelect(r) }
     else if (e.key === "Escape") { e.preventDefault(); setOpen(false); inputRef.current?.blur() }
   }
 
   return (
     <div ref={containerRef} className="relative hidden md:block">
-      {/* Figma top-bar search: 447×33, Page/Fill, radius 8, padding 7.5/12/7.5/8 */}
+      {/* Figma top-bar search: 447×33, Page/Fill, radius 8, padding 7.5 / 12 (start) / 8 (end),
+          gap 8: 16px icon · placeholder (12/18 Text/Secondary) · ⌘K (10/14). */}
       <label
         className={cn(
-          "flex h-[33px] w-72 items-center gap-2 rounded-lg bg-background pe-2 ps-3 transition-shadow lg:w-[447px]",
+          "flex h-[33px] w-72 items-center gap-2 rounded-lg bg-background ps-3 pe-2 transition-shadow lg:w-[447px]",
           open && "ring-1 ring-primary/40",
         )}
       >
-        <Search className={cn("size-4 shrink-0", open ? "text-primary" : "text-foreground")} strokeWidth={1.6} />
+        <TopSearchIcon className={cn("size-4 shrink-0", open ? "text-primary" : "text-muted-foreground")} />
         <input
           ref={inputRef}
           type="search"
@@ -178,19 +183,22 @@ export function InlineSearch({
           onChange={(e) => updateQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder={t("Search people, tasks, documents, services…", "أبحث عن أشخاص، مهام، مستندات، خدمات...")}
+          placeholder={t("Search about Employee, Tasks, Files, Service...", "أبحث عن أشخاص، مهام، مستندات، خدمات...")}
           aria-label={t("Search", "بحث")}
           aria-expanded={open}
           role="combobox"
           aria-controls="wijha-search-list"
-          className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] text-foreground outline-none placeholder:text-foreground [&::-webkit-search-cancel-button]:hidden"
+          className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         />
         {query ? (
           <button type="button" onClick={() => updateQuery("")} aria-label={t("Clear", "مسح")} className="rounded p-0.5 text-muted-foreground hover:text-foreground">
             <X className="size-3.5" />
           </button>
         ) : (
-          <kbd className="pointer-events-none shrink-0 font-sans text-[11px] text-foreground">⌘K</kbd>
+          <kbd dir="ltr" className="pointer-events-none flex shrink-0 translate-y-px items-center gap-px px-1 font-sans text-[10px] leading-[14px] text-muted-foreground">
+            <span>⌘</span>
+            <span>K</span>
+          </kbd>
         )}
       </label>
 
@@ -201,13 +209,13 @@ export function InlineSearch({
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute end-0 top-full z-50 mt-2 w-[min(509px,calc(100vw-24px))] rounded-xl bg-popover px-[18px] py-5 text-popover-foreground shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] ring-1 ring-border"
+            className="absolute end-0 top-full z-50 mt-3 w-[min(509px,calc(100vw-24px))] rounded-xl bg-popover px-[18px] py-5 dark:bg-[rgba(27,26,26,0.5)] dark:backdrop-blur-xl text-popover-foreground shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] ring-1 ring-border"
           >
             <div className={cn("max-h-[428px] overflow-y-auto pe-4", thinScroll)}>
               {grouped.map(({ group, items }, gi) => (
-                <div key={group} className={cn(gi > 0 && "pt-4")}>
-                  <div className="flex items-center gap-1 pb-1 text-[12px] text-muted-foreground">
-                    {group === "suggestions" && <Sparkles className="size-3 text-primary" strokeWidth={1.8} />}
+                <div key={group}>
+                  {/* Figma 2159:1656 group title: 10px SemiBold / 14, pb 4 (pt 8 after the first) */}
+                  <div className={cn("pb-1 text-[10px] font-semibold leading-[14px] text-foreground", gi > 0 && "pt-2")}>
                     {isAr ? GROUP_LABEL[group].ar : GROUP_LABEL[group].en}
                   </div>
                   {items.map((r, i) => {
@@ -223,15 +231,16 @@ export function InlineSearch({
                         onMouseEnter={() => setActive(flat)}
                         onClick={() => handleSelect(r)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-md py-3 text-start transition-colors",
+                          "flex w-full items-center gap-3 py-2 text-start transition-colors",
                           i < items.length - 1 && "border-b border-input",
                           isActive && "bg-soft-accent/40",
                         )}
                       >
-                        <span className={cn("grid size-[30px] shrink-0 place-items-center rounded-lg bg-secondary", r.group === "suggestions" ? "text-primary" : "text-foreground")}>
-                          <Icon className="size-[15px]" strokeWidth={1.6} />
+                        {/* Figma row (49): py 8 · 32px tile (radius 8) · 12 · label 13.5/20.25 */}
+                        <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg bg-secondary", r.group === "suggestions" ? "text-primary" : "text-foreground")}>
+                          <Icon className="size-[13px]" strokeWidth={1.8} />
                         </span>
-                        <span className="min-w-0 flex-1 truncate text-[14.5px] leading-[21.75px] text-foreground">
+                        <span className="min-w-0 flex-1 truncate text-[13.5px] leading-[20.25px] text-foreground">
                           {isAr && r.labelAr ? r.labelAr : r.label}
                         </span>
                         {isActive && <CornerDownLeft className="size-3 shrink-0 text-primary" />}
@@ -240,14 +249,15 @@ export function InlineSearch({
                   })}
                 </div>
               ))}
+              {/* kept from v1, inside the list so the panel keeps Figma's 468px */}
+              <button
+                type="button"
+                onClick={() => { setOpen(false); onOpenFullPalette() }}
+                className="mt-3 mb-1 text-[11.5px] font-medium text-primary hover:opacity-80"
+              >
+                {t("Advanced search", "البحث الموسّع")}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => { setOpen(false); onOpenFullPalette() }}
-              className="mt-3 text-[11.5px] font-medium text-primary hover:opacity-80"
-            >
-              {t("Advanced search", "البحث الموسّع")}
-            </button>
           </motion.div>
         )}
 

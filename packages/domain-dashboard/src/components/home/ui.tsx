@@ -20,22 +20,26 @@ export function CardHeading({
   icon: Icon,
   title,
   short,
+  middle,
   children,
 }: {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   title: string
   short?: boolean
+  /** Sits between the title and the actions, spaced evenly (Figma mail header). */
+  middle?: React.ReactNode
   children?: React.ReactNode
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 flex-col gap-2">
-        <h2 className="flex items-center gap-2 text-[17px] font-medium leading-[25.5px] text-foreground">
+        <h2 className="flex items-center gap-2 text-[17px] font-medium leading-[26px] text-foreground">
           <Icon className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
           <span className="truncate">{title}</span>
         </h2>
         <span className={cn("block h-[3px] rounded-[2px] bg-primary", short ? "w-12" : "w-full")} />
       </div>
+      {middle && <div className="shrink-0">{middle}</div>}
       {children && <div className="flex shrink-0 items-center gap-4">{children}</div>}
     </div>
   )

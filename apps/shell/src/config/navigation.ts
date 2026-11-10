@@ -1,13 +1,8 @@
+import type * as React from "react"
 import type { LucideIcon } from "lucide-react"
 import {
   Bell,
   BookOpen,
-  BriefcaseBusiness,
-  ChartNoAxesCombined,
-  GraduationCap,
-  LayoutDashboard,
-  Sparkles,
-  Wrench,
   CalendarClock,
   CalendarDays,
   ClipboardList,
@@ -39,6 +34,19 @@ import {
 } from "lucide-react"
 
 import { previewNav as previewNavFromDomain } from "@reach/domain-preview/nav"
+import {
+  RailAdminIcon,
+  RailAssistantIcon,
+  RailCalendarIcon,
+  RailCommunityIcon,
+  RailEmployeeIcon,
+  RailHomeIcon,
+  RailKnowledgeIcon,
+  RailLearningIcon,
+  RailPerformanceIcon,
+  RailServicesIcon,
+  RailWorkIcon,
+} from "@/components/layout/shell-icons"
 
 /** Shell navigation contract. Grouped to match the ALTANFEETHI Figma design
  *  system: CORE · RESOURCES · ADMINISTRATION. */
@@ -156,6 +164,7 @@ export const commandNav: { label: string; path: string; group: string }[] = [
 export type ModuleKey = "home" | "work" | "employee" | "services" | "ai" | "knowledge" | "learning" | "operations" | "admin"
 
 export type RailChild = { title: string; titleAr: string; path: string }
+export type RailIcon = React.ComponentType<{ className?: string }>
 
 export type RailItem = {
   key: string
@@ -163,25 +172,39 @@ export type RailItem = {
   titleAr: string
   /** Where the rail tile itself navigates. */
   path: string
-  icon: LucideIcon
+  icon: RailIcon
   module: ModuleKey
   /** Path prefixes that light this tile up (in addition to `path` and children). */
   match?: string[]
   badge?: number
-  /** Sub-pages, shown in a flyout on the rail and nested when expanded. Keeps
-   *  every v1 page reachable now that the rail only has the Figma top-level items. */
+  /** Sub-pages. Only the ADMIN view shows them (rail flyout / nested when
+   *  expanded); the employee view shows exactly the Figma items. They also
+   *  decide which tile lights up for a deep route. */
   children?: RailChild[]
   /** In the design but with no screens and no page yet — rendered inert and
    *  flagged (BUILD-GUIDELINES U5). */
   inert?: boolean
   adminOnly?: boolean
+  /** Figma draws this label with a taller (18px) line box in the rail. */
+  tallLabel?: boolean
 }
+
+/** Expanded side-bar group headings (Figma Side Bar "Default" 2010:4014 / 3134:5634),
+ *  one per entry of `railGroups`. */
+export const railGroupLabels: { title: string; titleAr: string }[] = [
+  { title: "Home Pages", titleAr: "الصفحات الرئيسية" },
+  { title: "Discover", titleAr: "إكتشف" },
+  { title: "Performance", titleAr: "الأداء" },
+  { title: "Administration", titleAr: "الإدارة" },
+]
+/** Group that holds the role switch (after the Figma groups). */
+export const railPermissionsLabel = { title: "Permissions", titleAr: "الصلاحيات" }
 
 export const railGroups: RailItem[][] = [
   [
-    { key: "home", title: "Home", titleAr: "الرئيسية", path: "/", icon: LayoutDashboard, module: "home", match: ["/notifications"] },
+    { key: "home", title: "Home", titleAr: "الرئيسية", path: "/", icon: RailHomeIcon, module: "home", match: ["/notifications"] },
     {
-      key: "calendar", title: "Calendar", titleAr: "التقويم", path: "/calendar", icon: CalendarDays, module: "work",
+      key: "calendar", title: "Calendar", titleAr: "التقويم", path: "/calendar", icon: RailCalendarIcon, module: "work",
       match: ["/events", "/config/holidays"],
       children: [
         { title: "My calendar", titleAr: "تقويمي", path: "/calendar" },
@@ -190,7 +213,7 @@ export const railGroups: RailItem[][] = [
       ],
     },
     {
-      key: "work", title: "Work", titleAr: "العمل", path: "/tasks", icon: BriefcaseBusiness, module: "work",
+      key: "work", title: "Work", titleAr: "العمل", path: "/tasks", icon: RailWorkIcon, module: "work",
       match: ["/work", "/tasks", "/projects", "/manager"],
       children: [
         { title: "Tasks", titleAr: "المهام", path: "/tasks" },
@@ -200,7 +223,7 @@ export const railGroups: RailItem[][] = [
       ],
     },
     {
-      key: "employee", title: "Employee", titleAr: "الموظف", path: "/employee", icon: UserRound, module: "employee",
+      key: "employee", title: "Employee", titleAr: "الموظف", path: "/employee", icon: RailEmployeeIcon, module: "employee",
       match: ["/employee", "/leave", "/attendance", "/org-chart", "/directory", "/benefits", "/payslip", "/profile"],
       children: [
         { title: "Employee center", titleAr: "مركز الموظف", path: "/employee" },
@@ -219,7 +242,7 @@ export const railGroups: RailItem[][] = [
       ],
     },
     {
-      key: "services", title: "Services", titleAr: "الخدمات", path: "/services", icon: Wrench, module: "services",
+      key: "services", title: "Services", titleAr: "الخدمات", path: "/services", icon: RailServicesIcon, module: "services",
       match: ["/services", "/cafeteria"],
       children: [
         { title: "Services", titleAr: "الخدمات", path: "/services" },
@@ -230,12 +253,12 @@ export const railGroups: RailItem[][] = [
         { title: "My orders", titleAr: "طلباتي", path: "/cafeteria/orders" },
       ],
     },
-    { key: "assistant", title: "Assistant", titleAr: "المساعد", path: "/intelligence", icon: Sparkles, module: "ai", badge: 2 },
+    { key: "assistant", title: "Assistant", titleAr: "المساعد", path: "/intelligence", icon: RailAssistantIcon, module: "ai", badge: 2 },
   ],
   [
     {
-      key: "community", title: "Executive community", titleAr: "مجتمع التنفيذي", path: "/community", icon: Users, module: "knowledge",
-      match: ["/community", "/surveys", "/circulars"],
+      key: "community", title: "Altanfeethi Community", titleAr: "مجتمع التنفيذي", path: "/community", icon: RailCommunityIcon, module: "knowledge",
+      match: ["/community", "/surveys", "/circulars"], tallLabel: true,
       children: [
         { title: "Community", titleAr: "المجتمع", path: "/community" },
         { title: "Surveys & polls", titleAr: "الاستبيانات", path: "/surveys" },
@@ -243,7 +266,7 @@ export const railGroups: RailItem[][] = [
       ],
     },
     {
-      key: "knowledge", title: "Knowledge", titleAr: "المعرفة", path: "/documents", icon: BookOpen, module: "knowledge",
+      key: "knowledge", title: "Knowledge Center", titleAr: "المعرفة", path: "/documents", icon: RailKnowledgeIcon, module: "knowledge",
       // Figma breadcrumbs put news and announcement details under المعرفة.
       match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs", "/news", "/announcements"],
       children: [
@@ -256,16 +279,16 @@ export const railGroups: RailItem[][] = [
         { title: "Quick links", titleAr: "روابط سريعة", path: "/links" },
       ],
     },
-    { key: "learning", title: "Learning", titleAr: "التعلم", path: "/learning", icon: GraduationCap, module: "learning" },
+    { key: "learning", title: "Altanfeethi Academy", titleAr: "التعلم", path: "/learning", icon: RailLearningIcon, module: "learning" },
   ],
   [
-    { key: "operations", title: "Operations & Performance", titleAr: "العمليات والأداء", path: "/operations", icon: Gauge, module: "operations" },
+    { key: "operations", title: "Operations & Performance", titleAr: "العمليات والأداء", path: "/operations", icon: RailPerformanceIcon, module: "operations" },
+    { key: "corporate", title: "Corporate Performance", titleAr: "الأداء المؤسسي", path: "/corporate-performance", icon: RailPerformanceIcon, module: "operations" },
+  ],
+  // Not in Figma — only the admin view adds it, after the Figma groups.
+  [
     {
-      key: "corporate", title: "Corporate performance", titleAr: "الأداء المؤسسي", path: "/corporate-performance",
-      icon: ChartNoAxesCombined, module: "operations", inert: true,
-    },
-    {
-      key: "admin", title: "Administration", titleAr: "الإدارة", path: "/config", icon: SlidersHorizontal, module: "admin", adminOnly: true,
+      key: "admin", title: "Administration", titleAr: "الإدارة", path: "/config", icon: RailAdminIcon, module: "admin", adminOnly: true,
       match: ["/config", "/cms", "/admin", "/partner"],
       children: [
         { title: "Configuration", titleAr: "الإعدادات", path: "/config" },

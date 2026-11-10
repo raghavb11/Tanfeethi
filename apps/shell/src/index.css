@@ -147,13 +147,14 @@
     --color-lavender: var(--lavender);
     --color-royal-purple: var(--royal-purple);
 
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
+    /* Figma radii: 4 (tags) · 6 · 8 (buttons, inputs, tiles) · 12 (cards) · 16 · 24 */
+    --radius-sm: calc(var(--radius) * 0.5);
+    --radius-md: calc(var(--radius) * 0.75);
     --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --radius-xl: calc(var(--radius) * 1.5);
+    --radius-2xl: calc(var(--radius) * 2);
+    --radius-3xl: calc(var(--radius) * 3);
+    --radius-4xl: calc(var(--radius) * 4);
 }
 
 :root {
@@ -204,7 +205,7 @@
     --chart-3: #b57808;
     --chart-4: #175cd3;
     --chart-5: #b42318;
-    --radius: 0.75rem;
+    --radius: 0.5rem;            /* rounded-lg 8px, rounded-xl 12px */
 
     /* Status — Figma Status/* (Light) */
     --success: #067647;  --success-fill: #dffceb;
@@ -266,7 +267,9 @@
     --border: rgba(243, 238, 241, 0.09);           /* Card/Stroke/On-Color */
     --input: #2c2b2b;               /* Button/Stroke/Secondary */
     --ring: #bc9951;
-    --card-ring: rgba(243, 238, 241, 0.09);
+    /* Card outline as rendered in the Figma frames (≈#1d1c1c over the card fill);
+       the 9% Card/Stroke token reads much lighter in the browser. */
+    --card-ring: rgba(243, 238, 241, 0.035);
     --page-stroke: rgba(188, 153, 81, 0.15);       /* Page/Stroke */
     --icon: rgba(243, 238, 241, 0.7);              /* Shape/Icons */
     --avatar-fill: #2c2b2b;
@@ -482,9 +485,9 @@ body {
     opacity: 0.45;
     pointer-events: none;
   }
+  /* Figma's dark cards have no top sheen (2013:5689) */
   .dark .panel::before {
-    background: linear-gradient(90deg, transparent, color-mix(in oklab, #fff 13%, transparent), transparent);
-    opacity: 0.8;
+    content: none;
   }
 
   /* Sidebar carries no edge wash — just a positioning context. */
@@ -619,11 +622,24 @@ body {
     border: 1px solid color-mix(in oklab, var(--foreground) 9%, transparent);
     box-shadow: 0 8px 30px -16px color-mix(in oklab, #000 30%, transparent);
   }
-  /* Module-tinted wash behind the top bar (Figma Page/Gradient/Up). */
+  /* Page content area — Figma draws it flat Page/Fill (no wash below the top bar). */
   .ambient-page {
-    background-image: linear-gradient(180deg, var(--module-glow) 0px, transparent 260px);
+    background-image: none;
+  }
+  /* Module-tinted wash behind the top bar, measured from the Figma frames: the
+     module accent at 18% in the top bar's inline-end corner, fading out ~600px
+     in along a slightly tilted line, confined to the 80px bar. */
+  .topbar-wash {
+    --wash-angle: 238deg;
+    background-image: linear-gradient(
+      var(--wash-angle),
+      color-mix(in srgb, var(--module-accent) 18%, transparent) 67px,
+      color-mix(in srgb, var(--module-accent) 9%, transparent) 236px,
+      transparent 506px
+    );
     background-repeat: no-repeat;
   }
+  [dir="rtl"] .topbar-wash { --wash-angle: 122deg; }
 
   /* Figma "Card Separater": a hairline that fades out at both ends. */
   .card-separator {

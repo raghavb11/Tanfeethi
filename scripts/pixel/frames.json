@@ -60,6 +60,9 @@
     {"ar": "4126:14074", "route": "operations/personal/annual", "area": "operations"},
     {"ar": "4215:13599", "route": "operations/personal/operational-log", "area": "operations"},
     {"ar": "4126:14560", "route": "operations/evaluate", "area": "operations"},
-    {"ar": "4126:14408", "route": "operations/evaluate/t3", "area": "operations"}
+    {"ar": "4126:14408", "route": "operations/evaluate/t3", "area": "operations"},
+    {"ar": "2146:3946", "route": "?notifications=1", "area": "home"},
+    {"ar": "2159:2117", "route": "?search=1", "area": "home"},
+    {"ar": "4263:19954", "route": "?employee=e-khaled", "area": "home"}
   ]
 }

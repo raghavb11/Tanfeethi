@@ -45,8 +45,8 @@ export default function Dashboard() {
             <KpiTiles isAr={isAr} />
           </div>
           <div className="contents @5xl:grid @5xl:grid-cols-2 @5xl:items-start @5xl:gap-6">
-            <MailCard isAr={isAr} t={t} className="order-4 @2xl:order-5 @5xl:order-none" />
-            <AgendaCard isAr={isAr} t={t} className="order-2 @2xl:order-4 @5xl:order-none" />
+            <MailCard isAr={isAr} t={t} className="order-4 @2xl:order-4 @5xl:order-none" />
+            <AgendaCard isAr={isAr} t={t} className="order-2 @2xl:order-5 @5xl:order-none" />
           </div>
           <ProjectsCard isAr={isAr} t={t} className="order-6 @2xl:col-span-2 @5xl:order-none" />
           <LinksCard isAr={isAr} t={t} className="order-7 @2xl:col-span-2 @5xl:order-none" />
@@ -54,8 +54,8 @@ export default function Dashboard() {
 
         {/* side column */}
         <div className="contents @5xl:flex @5xl:min-w-0 @5xl:flex-col @5xl:gap-6">
-          <ApprovalsCard isAr={isAr} t={t} className="order-3 @2xl:order-2 @5xl:order-none" />
-          <TasksCard isAr={isAr} t={t} tasks={tasks} onToggle={toggleTask} className="order-5 @2xl:order-3 @5xl:order-none" />
+          <ApprovalsCard isAr={isAr} t={t} className="order-3 @2xl:order-3 @5xl:order-none" />
+          <TasksCard isAr={isAr} t={t} tasks={tasks} onToggle={toggleTask} className="order-5 @2xl:order-2 @5xl:order-none" />
         </div>
       </div>
     </div>

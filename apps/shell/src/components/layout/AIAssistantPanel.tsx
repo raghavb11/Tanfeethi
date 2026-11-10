@@ -11,8 +11,8 @@ type Msg = { id: string; role: "assistant" | "user"; text: string }
 
 const SUGGESTIONS = [
   { id: "q1", icon: FileText, en: "Q1 report", ar: "تقرير الربع الأول" },
-  { id: "meetings", icon: CalendarDays, en: "Tomorrow’s meetings", ar: "اجتماعات الغد" },
-  { id: "pending", icon: UsersRound, en: "Show transactions awaiting reply", ar: "عرض المعاملات بانتظار الرد" },
+  { id: "meetings", icon: CalendarDays, en: "Tomorrow's meetings", ar: "اجتماعات الغد" },
+  { id: "pending", icon: UsersRound, en: "View transactions awaiting response", ar: "عرض المعاملات بانتظار الرد" },
 ]
 
 const greeting = (isAr: boolean): Msg => ({
@@ -114,7 +114,7 @@ export function AIAssistantPanel() {
         >
           <SheetTitle className="sr-only">{isAr ? "المساعد الشخصي" : "Personal assistant"}</SheetTitle>
           <SheetDescription className="sr-only">
-            {isAr ? "يقرأ بياناتك داخل منصة وجهة فقط" : "Reads your data inside WIJHA only"}
+            {isAr ? "يقرأ بياناتك داخل منصة وجهة فقط" : "Only reads your data within the Wijha platform"}
           </SheetDescription>
           {body}
         </SheetContent>
@@ -174,7 +174,7 @@ function AssistantBody({
             <div className="truncate text-[17px] font-medium leading-[25.5px] text-foreground">{t("Personal assistant", "المساعد الشخصي")}</div>
             <div className="flex items-center gap-1 truncate text-[12px] text-muted-foreground">
               <ShieldCheck className="size-3.5 shrink-0" strokeWidth={1.6} />
-              {t("Reads your data inside WIJHA only", "يقرأ بياناتك داخل منصة وجهة فقط")}
+              {t("Only reads your data within the Wijha platform", "يقرأ بياناتك داخل منصة وجهة فقط")}
             </div>
           </div>
         </div>
@@ -227,7 +227,7 @@ function AssistantBody({
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={t("Ask your question…", "اطرح استفسارك...")}
+            placeholder={t("Ask a question...", "اطرح استفسارك...")}
             aria-label={t("Ask the assistant", "اسأل المساعد")}
             autoFocus
             className="min-w-0 flex-1 bg-transparent text-[13.5px] text-foreground outline-none placeholder:text-foreground"

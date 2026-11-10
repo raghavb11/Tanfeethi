@@ -129,6 +129,10 @@ const MyChecklistEvaluationsPage = lazy(() => import("@reach/domain-operations")
 const EmployeeReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.EmployeeReviewPage })))
 const TeamAnnualReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.TeamAnnualReviewPage })))
 const LearningPage = lazy(() => import("@reach/domain-learning").then((m) => ({ default: m.LearningPage })))
+const CorporatePerformancePage = lazy(() => import("@reach/domain-performance").then((m) => ({ default: m.CorporatePerformancePage })))
+const ObjectiveDetailPage = lazy(() => import("@reach/domain-performance").then((m) => ({ default: m.ObjectiveDetailPage })))
+const KpiDetailPage = lazy(() => import("@reach/domain-performance").then((m) => ({ default: m.KpiDetailPage })))
+const DepartmentScorecardPage = lazy(() => import("@reach/domain-performance").then((m) => ({ default: m.DepartmentScorecardPage })))
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
 )
@@ -364,6 +368,10 @@ export default function App() {
         <Route path="operations/personal/operational-log" element={<MyChecklistEvaluationsPage />} />
         <Route path="operations/evaluate" element={<TeamAnnualReviewPage />} />
         <Route path="operations/evaluate/:employeeId" element={<EmployeeReviewPage />} />
+        <Route path="corporate-performance" element={<CorporatePerformancePage />} />
+        <Route path="corporate-performance/objectives/:objectiveId" element={<ObjectiveDetailPage />} />
+        <Route path="corporate-performance/kpis/:kpiId" element={<KpiDetailPage />} />
+        <Route path="corporate-performance/departments/:departmentId" element={<DepartmentScorecardPage />} />
       </Route>
     </Routes>
   )

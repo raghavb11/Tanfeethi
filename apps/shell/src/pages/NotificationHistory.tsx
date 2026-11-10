@@ -43,12 +43,12 @@ export default function NotificationHistory() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 pb-10 pt-6 md:px-10 md:pt-8">
-      <section className="panel flex flex-col gap-6 rounded-xl px-4 py-5 md:px-6" aria-label={t("Notification history", "سجل التنبيهات")}>
+      <section className="panel flex flex-col gap-6 rounded-xl px-4 py-5 md:px-6" aria-label={t("Notification History", "سجل التنبيهات")}>
         {/* header */}
         <div className="flex flex-col gap-2 self-start">
           <h2 className="flex items-center gap-2 text-[17px] font-medium leading-[25.5px]">
             <Bell className="size-4 text-primary" strokeWidth={1.8} />
-            {t("Notification history", "سجل التنبيهات")}
+            {t("Notification History", "سجل التنبيهات")}
           </h2>
           <span className="block h-[3px] w-full rounded-[2px] bg-primary" />
         </div>
@@ -77,7 +77,7 @@ export default function NotificationHistory() {
                 <th scope="col" className="w-14 py-2.5 pe-4 text-start font-normal">{t("No.", "ترقيم")}</th>
                 <th scope="col" className="w-[200px] py-2.5 pe-4 text-start font-normal">{t("From", "من")}</th>
                 <th scope="col" className="w-[200px] py-2.5 pe-4 text-start font-normal">{t("Date", "تاريخ")}</th>
-                <th scope="col" className="py-2.5 pe-4 text-start font-normal">{t("Notification text", "نص التنبيه")}</th>
+                <th scope="col" className="py-2.5 pe-4 text-start font-normal">{t("Notification Text", "نص التنبيه")}</th>
                 <th scope="col" className="w-[96px] py-2.5"><span className="sr-only">{t("Actions", "الإجراءات")}</span></th>
               </tr>
             </thead>

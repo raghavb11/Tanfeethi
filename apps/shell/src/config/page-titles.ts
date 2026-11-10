@@ -3,6 +3,7 @@ import { hubMeta } from "@reach/domain-preview/nav"
 const titlesEn: Record<string, string> = {
   "/learning": "Learning",
   "/operations": "Operations & Performance",
+  "/corporate-performance": "Corporate performance",
   "/operations/delegation/new": "New delegation request",
   "/operations/incentives": "Incentives",
   "/operations/evaluations": "Previous evaluations log",
@@ -14,7 +15,7 @@ const titlesEn: Record<string, string> = {
   "/operations/personal/operational-log": "My operational evaluations",
   "/operations/evaluate": "Team annual evaluation",
   "/": "Home",
-  "/notifications": "Notification history",
+  "/notifications": "Notification History",
   "/work": "Work Hub",
   "/employee": "Employees",
   "/services": "Services",
@@ -80,6 +81,7 @@ const titlesEn: Record<string, string> = {
 const titlesAr: Record<string, string> = {
   "/learning": "التعلم",
   "/operations": "العمليات والأداء",
+  "/corporate-performance": "الأداء المؤسسي",
   "/operations/delegation/new": "طلب إنابة جديد",
   "/operations/incentives": "الحوافز",
   "/operations/evaluations": "سجل التقييمات السابقة",
@@ -190,6 +192,9 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (pathname.startsWith("/operations/evaluations/employee/")) return ar ? "سجل تقييمات الموظف" : "Employee evaluation history"
   if (pathname.startsWith("/operations/evaluations/")) return ar ? "تفاصيل التقييم" : "Evaluation details"
   if (pathname.startsWith("/operations/evaluate/")) return ar ? "تقييم الموظف" : "Employee evaluation"
+  if (pathname.startsWith("/corporate-performance/objectives/")) return ar ? "هدف استراتيجي" : "Strategic objective"
+  if (pathname.startsWith("/corporate-performance/kpis/")) return ar ? "تفاصيل المؤشر" : "KPI detail"
+  if (pathname.startsWith("/corporate-performance/departments/")) return ar ? "بطاقة أداء الإدارة" : "Department scorecard"
   return ar ? "وجهة" : "WIJHA"
 }
 

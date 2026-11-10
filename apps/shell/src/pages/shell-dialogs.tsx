@@ -14,9 +14,11 @@ import { ChevronLeft, ChevronRight, CircleX, Landmark, MessageSquareText, Phone,
  * ───────────────────────────────────────────────────────────────────────── */
 
 function Overlay({
-  open, onClose, label, children, className,
+  open, onClose, label, children, className, scrim = true,
 }: {
   open: boolean
+  /** Dim the page behind (Figma's employee card 4263:19954 draws none). */
+  scrim?: boolean
   onClose: () => void
   label: string
   children: React.ReactNode
@@ -42,7 +44,7 @@ function Overlay({
   return createPortal(
     <div className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto p-4">
           <motion.div
-            className="fixed inset-0 bg-black/45"
+            className={cn("fixed inset-0", scrim && "bg-black/45")}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             onClick={onClose}
@@ -212,6 +214,7 @@ export function EmployeeCardDialog({
       onClose={onClose}
       label={t("Profile", "الملف التعريفي")}
       className={tab === "org" ? "max-w-[816px]" : "max-w-[728px]"}
+      scrim={false}
     >
       {e && (
         <div className="relative flex max-h-[calc(100svh-32px)] flex-col gap-4 overflow-y-auto px-5 py-6 sm:px-8">
@@ -248,17 +251,17 @@ export function EmployeeCardDialog({
             <>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[12px] leading-[17px] text-muted-foreground">{t("Employee information", "معلومات الموظف")}</span>
-                  <span className="text-[16px] font-semibold leading-8">{t("Work details", "تفاصيل العمل")}</span>
+                  <span className="text-[12px] leading-[17px] text-muted-foreground">{t("Employee Information", "معلومات الموظف")}</span>
+                  <span className="text-[16px] font-semibold leading-8">{t("Work Details", "تفاصيل العمل")}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {[
                     { label: t("Name", "الاسم"), value: isAr ? e.nameAr : e.name },
                     { label: t("Department", "الإدارة"), value: isAr ? e.divisionAr : e.division },
-                    { label: t("Job title", "المسمى الوظيفي"), value: isAr ? e.titleAr : e.title },
-                    { label: t("Employee number", "الرقم الوظيفي"), value: e.empNo },
+                    { label: t("Job Title", "المسمى الوظيفي"), value: isAr ? e.titleAr : e.title },
+                    { label: t("Employee ID", "الرقم الوظيفي"), value: e.empNo },
                     { label: t("Email", "البريد الإلكتروني"), value: e.email, ltr: true },
-                    { label: t("Direct manager", "المدير المباشر"), value: manager ? (isAr ? manager.nameAr : manager.name) : "—" },
+                    { label: t("Direct Manager", "المدير المباشر"), value: manager ? (isAr ? manager.nameAr : manager.name) : "—" },
                   ].map((f) => (
                     <div key={f.label} className="flex min-h-[81px] flex-col justify-center gap-1 rounded-xl bg-background px-[18px] py-4">
                       <span className="truncate text-[16px] font-semibold leading-6 text-foreground" dir={f.ltr ? "ltr" : undefined} style={f.ltr ? { textAlign: isAr ? "right" : "left" } : undefined}>{f.value}</span>
@@ -272,13 +275,13 @@ export function EmployeeCardDialog({
                 <>
                   <span aria-hidden className="h-0.5 bg-foreground/10" />
                   <div className="flex flex-col gap-3">
-                    <span className="text-[16px] font-semibold leading-8">{t("Direct manager", "المدير المباشر")}</span>
+                    <span className="text-[16px] font-semibold leading-8">{t("Direct Manager", "المدير المباشر")}</span>
                     <Identity
                       e={manager}
                       isAr={isAr}
                       action={
                         <button type="button" onClick={() => show(manager.id)} className="btn-primary-grad inline-flex h-[34px] items-center rounded-lg px-4 text-[12px] font-semibold">
-                          {t("View profile", "عرض الملف التعريفي")}
+                          {t("View Profile", "عرض الملف التعريفي")}
                         </button>
                       }
                     />
@@ -340,7 +343,7 @@ function OrgTab({ e, isAr, onShow }: { e: Employee; isAr: boolean; onShow: (id: 
                 </div>
                 {!me && (
                   <button type="button" onClick={() => onShow(m.id)} className="shrink-0 text-[12px] text-primary hover:underline">
-                    {t("View profile", "عرض الملف التعريفي")}
+                    {t("View Profile", "عرض الملف التعريفي")}
                   </button>
                 )}
               </div>
@@ -364,7 +367,7 @@ function OrgTab({ e, isAr, onShow }: { e: Employee; isAr: boolean; onShow: (id: 
                   <span className="text-[14px] font-semibold">{isAr ? p.nameAr : p.name}</span>
                   <span className="w-full truncate text-[11px] text-muted-foreground" dir="ltr">{p.email}</span>
                   <button type="button" onClick={() => onShow(p.id)} className="mt-3 text-[12px] text-primary hover:underline">
-                    {t("View profile", "عرض الملف التعريفي")}
+                    {t("View Profile", "عرض الملف التعريفي")}
                   </button>
                 </div>
               ))}

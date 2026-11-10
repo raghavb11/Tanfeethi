@@ -23,7 +23,11 @@ function PageFallback() {
 
 export function AppShell() {
   const location = useLocation()
-  const { commandOpen, setCommandOpen, locale } = useShell()
+  const { commandOpen, setCommandOpen, locale, setAiPanelOpen } = useShell()
+  // ?assistant=1 docks the assistant panel on load (pixel check of 315:680)
+  React.useEffect(() => {
+    if (new URLSearchParams(window.location.search + "&" + (window.location.hash.split("?")[1] ?? "")).has("assistant")) setAiPanelOpen(true)
+  }, [setAiPanelOpen])
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false)
 
   // Close mobile sidebar on route change — derive during render instead of
@@ -41,15 +45,16 @@ export function AppShell() {
     document.documentElement.setAttribute("data-module", module)
   }, [module])
 
-  // Breadcrumb: the owning rail section, unless we are on its landing page.
+  // Breadcrumb (Figma always shows the row): الرئيسية › section › … › page.
+  // The current page is appended by the TopBar; Home shows just "الرئيسية".
   const isAr = locale === "ar"
-  const crumbs =
-    railItem && railItem.path !== location.pathname
-      ? [
-          { label: isAr ? railItem.titleAr : railItem.title, to: railItem.path },
-          ...intermediateCrumbs(location.pathname, locale),
-        ]
-      : undefined
+  const crumbs: { label: string; to: string }[] = []
+  if (location.pathname !== "/") {
+    crumbs.push({ label: isAr ? "الرئيسية" : "Home", to: "/" })
+    if (railItem && railItem.path !== "/" && railItem.path !== location.pathname)
+      crumbs.push({ label: isAr ? railItem.titleAr : railItem.title, to: railItem.path })
+    crumbs.push(...intermediateCrumbs(location.pathname, locale))
+  }
 
   return (
     <div className="isolate flex h-svh bg-background text-foreground">
