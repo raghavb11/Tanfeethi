@@ -13,7 +13,7 @@ import {
   Page, Panel, StatusDot, TextCounter, useT, type TFn,
 } from "./ui"
 import {
-  CATEGORIES, categoryById, CURRENT_SPRINT, isStatus, PRIORITIES, PRIORITY_META, SPRINTS, sprintById,
+  CATEGORIES, categoryById, isStatus, PRIORITIES, PRIORITY_META,
   STATUS_META, STATUS_ORDER, type CategoryId, type TaskPriority, type TaskStatus,
 } from "../data/meta"
 import {
@@ -31,6 +31,7 @@ import { MilestonePicker } from "./MilestonePicker"
 import { ProjectPicker } from "./ProjectPicker"
 import { HealthPill } from "./HealthPill"
 import { getMilestone, HEALTH, milestoneHealth, milestonesFor, useMilestones } from "../data/milestones"
+import { currentSprintId, SPRINT_STATUS, sprintById, sprintsForPicking, sprintStatus, useSprints } from "../data/sprints"
 
 /** The editable fields both a task and a project carry on this screen. */
 type Fields = {
@@ -74,7 +75,7 @@ function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
   if (kind === "project") {
     return {
       title: "", titleAlt: "", description: "", releaseNote: "", subtasks: [],
-      category: "operations", sprint: CURRENT_SPRINT, ownerId: "me", priority: "medium",
+      category: "operations", sprint: currentSprintId(), ownerId: "me", priority: "medium",
       startISO: TASK_TODAY_ISO, dueISO: "", projectStatus: "active",
     }
   }
@@ -83,7 +84,7 @@ function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
   const st = params.get("status")
   const d: Fields = {
     title: "", titleAlt: "", description: "", releaseNote: "",
-    category: p?.category ?? "operations", sprint: CURRENT_SPRINT,
+    category: p?.category ?? "operations", sprint: currentSprintId(),
     ownerId: params.get("assignee") ?? (params.get("from") === "manager" ? team[0].id : "me"),
     dueISO: TASK_TODAY_ISO, priority: "medium",
     projectId: p ? pid : "", milestoneId: params.get("milestone") ?? "",
@@ -110,6 +111,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   const [params, setParams] = useSearchParams()
   const allTasks = useTasks()
   const projects = useProjects()
+  const sprints = useSprints()
   useMilestones()
 
   const isTask = kind === "task"
@@ -333,7 +335,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   const order = (x: Task) => STATUS_ORDER.indexOf(x.status)
   const siblings = create ? [] : isTask
     ? (() => {
-        const sprintSet = allTasks.filter((x) => x.sprint === (task?.sprint ?? CURRENT_SPRINT))
+        const sprintSet = allTasks.filter((x) => x.sprint === (task?.sprint ?? currentSprintId()))
         const list = sprintSet.some((x) => x.id === id) ? sprintSet : allTasks
         return [...list].sort((a, b) => order(a) - order(b) || a.dueISO.localeCompare(b.dueISO)).map((x) => x.id)
       })()
@@ -525,12 +527,22 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     options={CATEGORIES.map((c) => ({ value: c.id, label: isAr ? c.ar : c.en, lead: <span className={cn("size-2 rounded-full", c.dot)} /> }))} />
                 )} />
               <Row label={t("Sprint", "السبرنت")} edit={editing}
-                view={(() => { const s = sprintById(fields.sprint); return s ? (isAr ? s.ar : s.en) : "—" })()}
+                view={(() => {
+                  const s = sprintById(fields.sprint)
+                  return s
+                    ? <button onClick={() => navigate(`/sprints/${s.id}`)} className="text-start hover:text-primary hover:underline">{isAr ? s.nameAr : s.name}</button>
+                    : "—"
+                })()}
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<RotateCcw className="size-[14px] shrink-0 text-icon" />}
                     label={t("Sprint", "السبرنت")} value={draft.sprint ?? ""}
                     onChange={(v) => patch({ sprint: v })}
-                    options={SPRINTS.map((s) => ({ value: s.id, label: isAr ? s.ar : s.en }))} />
+                    // planned and active first, completed after; the record's own sprint stays pickable even if archived
+                    options={[...sprintsForPicking(sprints), ...(() => { const own = sprintById(draft.sprint); return own?.archived ? [own] : [] })()]
+                      .map((s) => {
+                        const st = sprintStatus(s)
+                        return { value: s.id, label: isAr ? s.nameAr : s.name, hint: isAr ? SPRINT_STATUS[st].ar : SPRINT_STATUS[st].en }
+                      })} />
                 )} />
               <Row label={t("Assignee", "المسؤول")} edit={editing}
                 view={firstName(ownerName(fields.ownerId, isAr))}
@@ -657,7 +669,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 }
 
 /** One key/value line of the Details card; becomes a control in edit mode. */
-function Row({ label, view, control, edit, error }: { label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean; error?: string }) {
+export function Row({ label, view, control, edit, error }: { label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean; error?: string }) {
   return (
     <div className={cn("flex min-h-[54px] items-center justify-between gap-4 border-b border-input px-4 py-2.5 last:border-b-0", error && "flex-wrap gap-y-1")}>
       <dt className="shrink-0 text-[12px] text-muted-foreground">{label}</dt>
@@ -667,7 +679,7 @@ function Row({ label, view, control, edit, error }: { label: string; view: React
   )
 }
 
-function DateField({ value, onChange, label, invalid }: { value: string; onChange: (v: string) => void; label: string; invalid?: boolean }) {
+export function DateField({ value, onChange, label, invalid }: { value: string; onChange: (v: string) => void; label: string; invalid?: boolean }) {
   return (
     <label className={cn("relative flex h-9 w-full max-w-[265px] items-center rounded-lg bg-[var(--card-elevated)] ring-1 ring-inset focus-within:ring-primary",
       invalid ? "ring-error" : "ring-[var(--card-ring)]")}>
@@ -906,7 +918,7 @@ function Suggestions({ project, isAr, t }: { project: Project; isAr: boolean; t:
       id: newTaskId(), title: text, titleAr: textAr, projectId: project.id, project: project.name, projectAr: project.nameAr,
       due: prettyDate(TASK_TODAY_ISO), dueAr: prettyDateAr(TASK_TODAY_ISO), dueISO: TASK_TODAY_ISO,
       priority: "medium", status: "open", assignedBy: "Assistant", assignedByAr: "المساعد",
-      category: project.category, sprint: CURRENT_SPRINT, createdISO: TASK_TODAY_ISO,
+      category: project.category, sprint: currentSprintId(), createdISO: TASK_TODAY_ISO,
     })
     addAiEvent(project.id, `Added as a sub-task: ${text}`, `أُضيف كمهمة فرعية: ${textAr}`)
     dismissSuggestion(sid)

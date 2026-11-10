@@ -120,6 +120,8 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "New task", path: "/tasks/new", group: "Core" },
   { label: "Team tasks", path: "/tasks?scope=team", group: "Core" },
   { label: "Projects", path: "/projects", group: "Core" },
+  { label: "Sprints", path: "/sprints", group: "Core" },
+  { label: "New sprint", path: "/sprints/new", group: "Core" },
   { label: "Holiday calendar", path: "/config/holidays", group: "Core" },
   { label: "Master data", path: "/config/master-data", group: "Core" },
   { label: "Cafeteria menu & places", path: "/config/cafeteria", group: "Core" },
@@ -214,10 +216,11 @@ export const railGroups: RailItem[][] = [
     },
     {
       key: "work", title: "Work", titleAr: "العمل", path: "/tasks", icon: RailWorkIcon, module: "work",
-      match: ["/work", "/tasks", "/projects", "/manager"],
+      match: ["/work", "/tasks", "/projects", "/sprints", "/manager"],
       children: [
         { title: "Tasks", titleAr: "المهام", path: "/tasks" },
         { title: "Projects", titleAr: "المشاريع", path: "/projects" },
+        { title: "Sprints", titleAr: "السبرنتات", path: "/sprints" },
         { title: "Work hub", titleAr: "مركز العمل", path: "/work" },
         { title: "Manager dashboard", titleAr: "لوحة المدير", path: "/manager" },
       ],

@@ -35,6 +35,12 @@ const ProjectDetailPage = lazy(() =>
 const MilestoneEditorPage = lazy(() =>
   import("@reach/domain-work").then((m) => ({ default: m.MilestoneEditorPage })),
 )
+const SprintsPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.SprintsPage })),
+)
+const SprintDetailPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.SprintDetailPage })),
+)
 const EmployeePage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.EmployeePage })),
 )
@@ -250,6 +256,9 @@ export default function App() {
         <Route path="manager" element={<ManagerDashboardPage />} />
         {/* team tasks merged into /tasks — keep old links working */}
         <Route path="manager/tasks" element={<Navigate to="/tasks?scope=team" replace />} />
+        <Route path="sprints" element={<SprintsPage />} />
+        <Route path="sprints/new" element={<SprintDetailPage />} />
+        <Route path="sprints/:id" element={<SprintDetailPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/new" element={<ProjectEditorPage />} />
         <Route path="projects/:id" element={<ProjectDetailPage />} />

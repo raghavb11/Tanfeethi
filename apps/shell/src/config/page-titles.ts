@@ -66,6 +66,8 @@ const titlesEn: Record<string, string> = {
   "/calendar/new": "New appointment",
   "/tasks": "Tasks",
   "/tasks/new": "New task",
+  "/sprints": "Sprints",
+  "/sprints/new": "New sprint",
   "/services/catalog/it/technical": "Request a technical service",
   "/services/catalog/it/report-fault": "Report a fault",
   "/services/history": "Submitted services log",
@@ -144,6 +146,8 @@ const titlesAr: Record<string, string> = {
   "/calendar/new": "موعد جديد",
   "/tasks": "المهام",
   "/tasks/new": "مهمة جديدة",
+  "/sprints": "السبرنتات",
+  "/sprints/new": "سبرنت جديد",
   "/services/catalog/it/technical": "طلب خدمة تقنية",
   "/services/catalog/it/report-fault": "الإبلاغ عن عطل",
   "/services/history": "سجل الخدمات المرفوعة",
@@ -185,6 +189,7 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (/^\/services\/violations\/(reports|queue)\/[^/]+$/.test(pathname)) return ar ? "بلاغ مخالفة" : "Violation report"
   if (/^\/calendar\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل الموعد" : "Edit appointment"
   if (pathname.startsWith("/tasks/")) return ar ? "تفاصيل المهمة" : "Task details"
+  if (pathname.startsWith("/sprints/")) return ar ? "السبرنت" : "Sprint"
   if (/^\/projects\/[^/]+\/milestones\//.test(pathname)) return ar ? "المعلم" : "Milestone"
   if (/^\/projects\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل المشروع" : "Edit project"
   if (pathname.startsWith("/projects/")) return ar ? "تفاصيل المشروع" : "Project details"
@@ -220,6 +225,9 @@ export function intermediateCrumbs(pathname: string, locale: "en" | "ar" = "en")
     return [{ label: ar ? "التقييم الشخصي" : "Personal evaluation", to: "/operations/personal" }]
   if (pathname.startsWith("/operations/evaluations/"))
     return [{ label: ar ? "سجل التقييمات السابقة" : "Previous evaluations log", to: "/operations/evaluations" }]
+  // Sprint screens sit under the sprint master: المهام › السبرنتات › <sprint>.
+  if (pathname.startsWith("/sprints/"))
+    return [{ label: ar ? "السبرنتات" : "Sprints", to: "/sprints" }]
   // Team evaluation pages are section › page in Figma (4126:14560, 4126:14408).
   return []
 }

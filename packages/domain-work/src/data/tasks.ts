@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { projectIdForName } from "./projects"
-import { CURRENT_SPRINT, type CategoryId, type TaskPriority, type TaskStatus } from "./meta"
+import type { CategoryId, TaskPriority, TaskStatus } from "./meta"
 
 export type { TaskPriority, TaskStatus } from "./meta"
 export type Task = {
@@ -22,7 +22,7 @@ export type Task = {
   description?: string; descriptionAr?: string
   /** Department the work belongs to — drives the coloured chip on the card. */
   category?: CategoryId
-  /** Sprint the task is planned in (see SPRINTS). */
+  /** Sprint the task is planned in (see data/sprints.ts). */
   sprint?: string
   /** The assistant's next-step hint shown along the bottom of the board card. */
   aiHint?: string; aiHintAr?: string
@@ -189,7 +189,7 @@ const linked = (list: Seed[]): Task[] =>
     category: t.category ?? CATEGORY_FOR_PROJECT[t.project] ?? "operations",
     // the Sprint 24 board is the design's set; older rows sit in the sprint
     // before (finished or overdue) or the one after (still ahead)
-    sprint: t.sprint ?? (BOARD_IDS.has(t.id) ? CURRENT_SPRINT
+    sprint: t.sprint ?? (BOARD_IDS.has(t.id) ? "s24"
       : t.status === "completed" || t.dueISO < TASK_TODAY_ISO ? "s23" : "s25"),
     createdISO: t.createdISO ?? shiftISO(t.dueISO, -10),
   }))
@@ -221,6 +221,19 @@ export function toggleComplete(id: string) {
   emit()
 }
 export const getTaskById = (id: string) => tasks.find((t) => t.id === id)
+/** The whole list, outside React (the sprint store counts and moves with it). */
+export const getTasks = () => tasks
+/** Closing a sprint: its unfinished tasks carry over into the next one. Returns how many moved. */
+export function moveUnfinishedTasks(fromSprint: string, toSprint: string): number {
+  let n = 0
+  tasks = tasks.map((t) => {
+    if (t.sprint !== fromSprint || t.status === "completed") return t
+    n++
+    return { ...t, sprint: toSprint }
+  })
+  if (n) emit()
+  return n
+}
 /** Change any of a task's own fields (edit mode, release note, reassign). */
 export function updateTask(id: string, patch: Partial<Task>) {
   const before = tasks.find((t) => t.id === id)

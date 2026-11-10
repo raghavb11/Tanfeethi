@@ -1,4 +1,4 @@
-/** Look-up lists the task screens share: statuses, categories, sprints and
+/** Look-up lists the task screens share: statuses, categories and
  *  priorities, each with its bilingual label and its Figma colour.
  *  Demo masters; a real build reads them from configuration. */
 
@@ -39,13 +39,8 @@ export const CATEGORIES: { id: CategoryId; en: string; ar: string; chip: string;
 ]
 export const categoryById = (id?: string) => CATEGORIES.find((c) => c.id === id)
 
-export const SPRINTS: { id: string; en: string; ar: string }[] = [
-  { id: "s23", en: "Sprint 23", ar: "سبرنت 23" },
-  { id: "s24", en: "Sprint 24", ar: "سبرنت 24" },
-  { id: "s25", en: "Sprint 25", ar: "سبرنت 25" },
-]
-export const CURRENT_SPRINT = "s24"
-export const sprintById = (id?: string) => SPRINTS.find((s) => s.id === id)
+// Sprints used to be a fixed list here (SPRINTS / CURRENT_SPRINT / sprintById).
+// They are a managed master now — see ./sprints.ts (useSprints, sprintById, currentSprintId).
 
 export const PRIORITY_META: Record<TaskPriority, { en: string; ar: string; dot: string; text: string }> = {
   high:   { en: "High",   ar: "عالية",   dot: "bg-error",   text: "text-error" },

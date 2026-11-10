@@ -148,7 +148,7 @@ export type Option = { value: string; label: string; hint?: React.ReactNode; lea
 
 /** Figma filter dropdown (h36 · radius 8 · Card/Fill · px 12 · gap 9):
  *  [leading mark] label  value ………… [count] ⌄ . Opens a small list inline. */
-export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue, triggerClassName }: {
+export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue, triggerClassName, footer }: {
   lead?: React.ReactNode
   label?: string
   value: string
@@ -162,6 +162,8 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
   hideValue?: boolean
   /** extra classes for the trigger button (height / fill overrides) */
   triggerClassName?: string
+  /** a last row under the options (e.g. "Manage sprints"); clicking it closes the list */
+  footer?: React.ReactNode
 }) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
@@ -207,6 +209,9 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
               </button>
             </li>
           ))}
+          {footer && (
+            <li className="mt-1 border-t border-border pt-1" onClick={() => setOpen(false)}>{footer}</li>
+          )}
         </ul>
       )}
     </div>

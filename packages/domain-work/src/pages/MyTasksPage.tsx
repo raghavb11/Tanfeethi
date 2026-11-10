@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import {
   AlertTriangle, CalendarClock, CheckCircle2, ChevronRight, Circle, CirclePause, CirclePlay, Clock,
-  Flag, FolderOpen, FolderPlus, Inbox, LayoutGrid, List, ListPlus, Plus, RotateCcw, Search, Sparkles,
+  Flag, FolderOpen, FolderPlus, Inbox, LayoutGrid, List, ListPlus, Plus, RotateCcw, Search, Settings2, Sparkles,
+  SquarePlus,
 } from "lucide-react"
 
 import {
@@ -11,9 +12,11 @@ import {
   useFirstPaint, useT, type TFn,
 } from "../components/ui"
 import {
-  CATEGORIES, CURRENT_SPRINT, PRIORITY_META, SPRINTS, STATUS_META, STATUS_ORDER,
+  CATEGORIES, PRIORITY_META, STATUS_META, STATUS_ORDER,
   type TaskStatus,
 } from "../data/meta"
+import { currentSprintId, SPRINT_STATUS, sprintStatus, useSprints } from "../data/sprints"
+import { useCanManageSprints } from "../data/permissions"
 import { ME, isOverdue, setTaskStatus, shortDate, type Task, toggleComplete, useTasks } from "../data/tasks"
 import { memberById, team } from "../data/team"
 
@@ -40,12 +43,16 @@ export default function MyTasksPage() {
   const all = useTasks()
   const [params, setParams] = useSearchParams()
   const ready = useFirstPaint()
+  const sprints = useSprints()
+  const canManageSprints = useCanManageSprints()
+  // the live current sprint (re-read whenever the sprint store changes)
+  const CURRENT_SPRINT = React.useMemo(() => currentSprintId(), [sprints])  // eslint-disable-line react-hooks/exhaustive-deps
 
   const who = whoFromParams(params)
   const category = params.get("category") ?? "all"
   // a status deep-link (?tab=open from the dashboard) opens the list; otherwise the board
   const view: View = params.get("view") === "list" || (params.get("tab") && params.get("view") !== "board") ? "list" : "board"
-  // the board is a sprint board (Sprint 24 as drawn); the list spans every sprint unless narrowed
+  // the board is a sprint board (the current sprint; Sprint 24 as drawn); the list spans every sprint unless narrowed
   const sprint = params.get("sprint") ?? (view === "board" ? CURRENT_SPRINT : "all")
   const tab: Tab = isTab(params.get("tab")) ? (params.get("tab") as Tab) : "all"
   const [q, setQ] = React.useState("")
@@ -162,6 +169,9 @@ export default function MyTasksPage() {
             onTask={() => newTask()}
             onProject={() => navigate(`/projects/new?back=${encodeURIComponent(`/tasks${params.toString() ? `?${params}` : ""}`)}`)}
             onProjects={() => navigate("/projects")}
+            onSprint={canManageSprints ? () => navigate("/sprints/new") : undefined}
+            onSprints={() => navigate("/sprints")}
+            manageSprints={canManageSprints}
           />
         </div>
 
@@ -183,8 +193,17 @@ export default function MyTasksPage() {
             label={t("Sprint", "السبرنت")}
             value={sprint}
             onChange={(v) => setQuery({ sprint: v === (view === "board" ? CURRENT_SPRINT : "all") ? undefined : v })}
-            options={[...SPRINTS.map((s) => ({ value: s.id, label: isAr ? s.ar : s.en })),
-              { value: "all", label: t("All sprints", "كل السبرنتات") }]}
+            options={[...sprints.map((s) => {
+              const st = sprintStatus(s)
+              return { value: s.id, label: isAr ? s.nameAr : s.name, hint: st === "completed" ? undefined : isAr ? SPRINT_STATUS[st].ar : SPRINT_STATUS[st].en }
+            }), { value: "all", label: t("All sprints", "كل السبرنتات") }]}
+            footer={
+              <button type="button" onClick={() => navigate("/sprints")}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-start text-[12.5px] font-medium text-primary transition-colors hover:bg-soft-accent">
+                <Settings2 className="size-3.5 shrink-0" />
+                {canManageSprints ? t("Manage sprints", "إدارة السبرنتات") : t("Sprints", "السبرنتات")}
+              </button>
+            }
           />
           <FilterSelect
             className="w-full sm:w-[225px]"
@@ -328,8 +347,12 @@ export default function MyTasksPage() {
 /** The board track (2062:2570): 208px columns centred with 16px gaps, scrolling
  *  sideways inside itself, and the drawn 4px scroll indicator (2062:2923) under it. */
 /** "+ جديد" — a small menu: new task, new project, or the project list. */
-function NewMenu({ isAr, t, onTask, onProject, onProjects }: {
+function NewMenu({ isAr, t, onTask, onProject, onProjects, onSprint, onSprints, manageSprints }: {
   isAr: boolean; t: TFn; onTask: () => void; onProject: () => void; onProjects: () => void
+  /** only for managers and admins — they define sprints */
+  onSprint?: () => void
+  onSprints: () => void
+  manageSprints: boolean
 }) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
@@ -341,10 +364,12 @@ function NewMenu({ isAr, t, onTask, onProject, onProjects }: {
     document.addEventListener("keydown", onKey)
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey) }
   }, [open])
-  const items = [
+  const items: { icon: typeof Plus; label: string; run: () => void; divider?: boolean }[] = [
     { icon: ListPlus, label: t("New task", "مهمة جديدة"), run: onTask },
     { icon: FolderPlus, label: t("New project", "مشروع جديد"), run: onProject },
+    ...(onSprint ? [{ icon: SquarePlus, label: t("New sprint", "سبرنت جديد"), run: onSprint }] : []),
     { icon: FolderOpen, label: t("View projects", "عرض المشاريع"), run: onProjects, divider: true },
+    { icon: Flag, label: manageSprints ? t("Manage sprints", "إدارة السبرنتات") : t("Sprints", "السبرنتات"), run: onSprints },
   ]
   return (
     <div ref={ref} className="relative">
