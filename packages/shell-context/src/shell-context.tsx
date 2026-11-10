@@ -16,7 +16,12 @@ type ShellContextValue = {
   setLocale: (v: Locale) => void
   role: Role
   setRole: (v: Role) => void
+  /** Record-specific top-bar title set by a page (e.g. "مهمة: …"); null = route title. */
+  pageTitle: PageTitle | null
+  setPageTitle: (v: PageTitle | null) => void
 }
+
+export type PageTitle = { en: string; ar: string }
 
 const ShellContext = React.createContext<ShellContextValue | null>(null)
 
@@ -65,6 +70,7 @@ export function ShellProvider({ children }: { children: React.ReactNode }) {
   const [notificationsOpen, setNotificationsOpen] = React.useState(false)
   const [locale, setLocaleState] = React.useState<Locale>(readStoredLocale)
   const [role, setRoleState] = React.useState<Role>(readStoredRole)
+  const [pageTitle, setPageTitle] = React.useState<PageTitle | null>(null)
 
   // Keep <html> dir/lang in sync
   React.useEffect(() => {
@@ -109,6 +115,8 @@ export function ShellProvider({ children }: { children: React.ReactNode }) {
         setLocale,
         role,
         setRole,
+        pageTitle,
+        setPageTitle,
       }) satisfies ShellContextValue,
     [
       sidebarCollapsed,
@@ -120,6 +128,7 @@ export function ShellProvider({ children }: { children: React.ReactNode }) {
       setLocale,
       role,
       setRole,
+      pageTitle,
     ],
   )
 
@@ -130,4 +139,17 @@ export function useShell() {
   const ctx = React.useContext(ShellContext)
   if (!ctx) throw new Error("useShell must be used within ShellProvider")
   return ctx
+}
+
+/**
+ * Let a page put its record in the top-bar title, as the Figma screens do
+ * ("المشروع: العمليات", "مهمة: مراجعة عقود الضيافة"). Cleared on unmount.
+ */
+export function usePageTitle(en: string | undefined, ar: string | undefined) {
+  const { setPageTitle } = useShell()
+  React.useEffect(() => {
+    if (!en || !ar) return
+    setPageTitle({ en, ar })
+    return () => setPageTitle(null)
+  }, [en, ar, setPageTitle])
 }

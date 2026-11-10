@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
+import { usePageTitle } from "@reach/shell-context"
 import {
   ArrowLeft, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList,
   FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
@@ -157,6 +158,11 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
   }
 
   const title = task ? (isAr ? task.titleAr : task.title) : project ? (isAr ? project.nameAr : project.name) : ""
+  // Figma top bar: "مهمة: <title>" / "المشروع: <name>".
+  usePageTitle(
+    task ? `Task: ${task.title}` : project ? `Project: ${project.name}` : undefined,
+    task ? `مهمة: ${task.titleAr}` : project ? `المشروع: ${project.nameAr}` : undefined,
+  )
   const projectTasks = project ? allTasks.filter((x) => x.projectId === project.id) : []
   const statusCount = (s: TaskStatus) => projectTasks.filter((x) => x.status === s).length
 

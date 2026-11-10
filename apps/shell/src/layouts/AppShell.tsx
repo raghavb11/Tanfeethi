@@ -23,7 +23,7 @@ function PageFallback() {
 
 export function AppShell() {
   const location = useLocation()
-  const { commandOpen, setCommandOpen, locale, setAiPanelOpen } = useShell()
+  const { commandOpen, setCommandOpen, locale, setAiPanelOpen, pageTitle } = useShell()
   // ?assistant=1 docks the assistant panel on load (pixel check of 315:680)
   React.useEffect(() => {
     if (new URLSearchParams(window.location.search + "&" + (window.location.hash.split("?")[1] ?? "")).has("assistant")) setAiPanelOpen(true)
@@ -61,7 +61,7 @@ export function AppShell() {
       <Sidebar mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />
       <div className="ambient-page flex min-w-0 flex-1 flex-col">
         <TopBar
-          title={titleForPath(location.pathname, locale)}
+          title={pageTitle ? (isAr ? pageTitle.ar : pageTitle.en) : titleForPath(location.pathname, locale)}
           crumbs={crumbs}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />

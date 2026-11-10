@@ -1,1 +1,1 @@
-export { ShellProvider, useShell } from "./shell-context"
+export { ShellProvider, useShell, usePageTitle, type PageTitle } from "./shell-context"
