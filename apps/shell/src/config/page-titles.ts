@@ -20,14 +20,14 @@ const titlesEn: Record<string, string> = {
   "/services": "Services",
   "/surveys": "Surveys",
   "/surveys/new": "Create survey",
-  "/intelligence": "Intelligence Hub",
-  "/news": "News & Announcements",
+  "/intelligence": "Assistant",
+  "/news": "News",
   "/news/new": "New article",
   "/circulars": "Internal Circulars",
   "/circulars/new": "New circular",
   "/events": "Events Calendar",
   "/policies": "Policies & FAQs",
-  "/documents": "Document Library",
+  "/documents": "Knowledge",
   "/links": "Quick Links",
   "/community": "Employee Community",
   "/cms": "Content Management",
@@ -97,18 +97,18 @@ const titlesAr: Record<string, string> = {
   "/services": "الخدمات",
   "/surveys": "الاستبيانات",
   "/surveys/new": "إنشاء استبيان",
-  "/intelligence": "مركز الذكاء",
-  "/news": "الأخبار والإعلانات",
+  "/intelligence": "المساعد",
+  "/news": "الأخبار",
   "/news/new": "مقال جديد",
   "/circulars": "التعاميم الداخلية",
   "/circulars/new": "تعميم جديد",
   "/events": "تقويم الفعاليات",
   "/policies": "السياسات والأسئلة الشائعة",
-  "/documents": "مكتبة المستندات",
+  "/documents": "المعرفة",
   "/links": "روابط سريعة",
   "/community": "مجتمع الموظفين",
   "/cms": "إدارة المحتوى",
-  "/announcements": "الإعلانات",
+  "/announcements": "التعاميم",
   "/faqs": "السياسات والأسئلة الشائعة",
   "/admin/notifications": "الإشعارات",
   "/admin/roles": "الأدوار والصلاحيات",
@@ -166,8 +166,10 @@ const serviceCatalogs: Record<string, [string, string]> = {
 export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): string {
   const map = locale === "ar" ? titlesAr : titlesEn
   if (map[pathname]) return map[pathname]
-  if (pathname.startsWith("/news/edit/")) return locale === "ar" ? "تحرير المقال" : "Edit article"
-  if (pathname.startsWith("/news/")) return locale === "ar" ? "مقال" : "Article"
+  if (pathname.startsWith("/news/edit/")) return locale === "ar" ? "تحرير الخبر" : "Edit news"
+  if (pathname.startsWith("/news/")) return locale === "ar" ? "تفاصيل الخبر" : "News details"
+  if (pathname.startsWith("/announcements/edit/")) return locale === "ar" ? "تحرير التعميم" : "Edit announcement"
+  if (pathname.startsWith("/announcements/")) return locale === "ar" ? "تفاصيل التعميم" : "Announcement details"
   const m = pathname.match(/^\/hubs\/([^/]+)$/)
   if (m?.[1] && hubMeta[m[1]]) {
     return locale === "ar" ? hubMeta[m[1]].titleAr : hubMeta[m[1]].title

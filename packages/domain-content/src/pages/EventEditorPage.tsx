@@ -62,7 +62,7 @@ export default function EventEditorPage() {
   const selectCls = "h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/events")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to events", "العودة إلى الفعاليات")}
@@ -79,7 +79,7 @@ export default function EventEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit event", "تحرير الفعالية") : t("New event", "فعالية جديدة")}</span>
       </div>
 
-      <Card className="space-y-5 p-6 sm:p-8">
+      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
         {field("ev-title", t("Title", "العنوان"), <Input id="ev-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Event name", "اسم الفعالية")} autoFocus className="h-11 text-base" />)}
         {field("ev-desc", t("Description", "الوصف"), <Textarea id="ev-desc" rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} className="text-[15px] leading-relaxed" />)}
         <div className="grid gap-4 sm:grid-cols-3">

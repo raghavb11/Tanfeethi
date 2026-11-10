@@ -1,12 +1,12 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Button, Card, Input } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { Archive, ArrowLeft, Upload } from "lucide-react"
 
 import { SearchSelect } from "./_ui"
-import { addDocument, useFolders } from "../data/documents"
+import { addDocument, ROOT_FOLDER, useFolders } from "../data/documents"
 import { OWNER_TEAMS } from "../data/departments"
 import { logAudit } from "../data/audit"
 
@@ -20,10 +20,11 @@ export default function DocumentEditorPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
   const folders = useFolders()
+  const [params] = useSearchParams()
 
   const [name, setName] = React.useState("")
   const [type, setType] = React.useState<(typeof TYPES)[number]>("PDF")
-  const [folder, setFolder] = React.useState("hr")
+  const [folder, setFolder] = React.useState(params.get("folder") ?? "hr")
   const [dept, setDept] = React.useState("HR")
   const [restricted, setRestricted] = React.useState(false)
   const [autoArchive, setAutoArchive] = React.useState(false)
@@ -48,7 +49,7 @@ export default function DocumentEditorPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/documents")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to library", "العودة إلى المكتبة")}
@@ -64,7 +65,7 @@ export default function DocumentEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Upload document", "رفع مستند")}</span>
       </div>
 
-      <Card className="space-y-5 p-6 sm:p-8">
+      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/[0.03]">
           <Upload className="size-6 text-primary" />
           <span className="font-medium text-foreground">{t("Drag a file here or click to browse", "اسحب ملفًا هنا أو انقر للتصفح")}</span>
@@ -85,7 +86,8 @@ export default function DocumentEditorPage() {
           <div className="sm:col-span-2">
             <label htmlFor="doc-folder" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Folder", "المجلد")}</label>
             <select id="doc-folder" value={folder} onChange={(e) => setFolder(e.target.value)} className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
-              {folders.map((f) => <option key={f.id} value={f.id}>{f.parent ? "— " : ""}{isAr ? f.nameAr : f.name}</option>)}
+              <option value={ROOT_FOLDER}>{t("Documents (top level)", "المستندات (المستوى الأعلى)")}</option>
+              {folders.filter((f) => !f.readOnly).map((f) => <option key={f.id} value={f.id}>{f.parent ? "— " : ""}{isAr ? f.nameAr : f.name}</option>)}
             </select>
           </div>
         </div>

@@ -8,6 +8,13 @@ export type CreatedSurvey = {
   title: string
   category: SurveyCategory
   questionCount: number
+  /** Created from the Figma create popup (2464:2865). */
+  kind?: "survey" | "poll"
+  status?: "Published" | "Draft"
+  options?: string[]
+  publishDate?: string
+  fromDepts?: string[]
+  audience?: string[]
 }
 
 let created: CreatedSurvey[] = []
@@ -19,6 +26,16 @@ export function getCreatedSurveys(): CreatedSurvey[] {
 
 export function addCreatedSurvey(survey: CreatedSurvey): void {
   created = [survey, ...created]
+  listeners.forEach((l) => l())
+}
+
+export function updateCreatedSurvey(id: string, patch: Partial<CreatedSurvey>): void {
+  created = created.map((c) => (c.id === id ? { ...c, ...patch } : c))
+  listeners.forEach((l) => l())
+}
+
+export function removeCreatedSurvey(id: string): void {
+  created = created.filter((c) => c.id !== id)
   listeners.forEach((l) => l())
 }
 

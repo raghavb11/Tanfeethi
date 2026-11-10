@@ -48,7 +48,7 @@ export default function AnnouncementsPage() {
             {a.pinned && <Badge variant="outline"><Pin className="me-1 size-3" />{t("Pinned", "مثبّت")}</Badge>}
             <span className="text-xs text-muted-foreground">{isAr ? a.dateAr : a.date}</span>
           </div>
-          <h3 className={cn("mt-1.5 font-medium leading-snug transition-colors group-hover:text-primary", featured && "font-heading text-lg font-semibold")}>{isAr ? a.titleAr : a.title}</h3>
+          <h3 className={cn("mt-1.5 font-medium leading-snug transition-colors group-hover:text-primary", featured && "text-lg font-semibold")}>{isAr ? a.titleAr : a.title}</h3>
           <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{isAr ? a.bodyAr : a.body}</p>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground/80">
             <span className="inline-flex items-center gap-1"><Users className="size-3.5" />{isAr ? a.audienceAr : a.audience}</span>
@@ -66,7 +66,7 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-4xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={Megaphone}
         eyebrow={t("Announcements", "الإعلانات")}
@@ -113,7 +113,7 @@ export default function AnnouncementsPage() {
       <div className="space-y-3">
         {rest.map((a) => Row(a))}
         {rest.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-xl border border-dashed border-border py-14 text-center">
             <Megaphone className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No announcements match this view.", "لا توجد إعلانات مطابقة لهذا العرض.")}</p>
           </div>

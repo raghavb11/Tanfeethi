@@ -109,7 +109,7 @@ export default function CommunityPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={Users}
         eyebrow={t("Employee Community", "مجتمع الموظفين")}
@@ -124,7 +124,7 @@ export default function CommunityPage() {
       </div>
 
       {/* composer */}
-      <Card className="mb-6 p-4">
+      <Card className="rounded-xl mb-6 p-4">
         <div className="flex gap-3">
           <Avatar className="size-9 shrink-0"><AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">{CURRENT_USER.initials}</AvatarFallback></Avatar>
           <div className="flex-1">
@@ -154,7 +154,7 @@ export default function CommunityPage() {
                 <Button variant={pollMode ? "secondary" : "ghost"} size="sm" onClick={() => setPollMode((v) => !v)}><BarChart3 className="size-4" />{t("Poll", "تصويت")}</Button>
               </div>
               <div className="flex items-center gap-3">
-                <span className={cn("text-xs tabular-nums", remaining < 0 ? "text-destructive" : remaining <= 60 ? "text-amber-500" : "text-muted-foreground")}>{remaining}</span>
+                <span className={cn("text-xs tabular-nums", remaining < 0 ? "text-destructive" : remaining <= 60 ? "text-warning" : "text-muted-foreground")}>{remaining}</span>
                 <Button size="sm" disabled={!canPost} onClick={post}><Send className="size-4" />{t("Post", "نشر")}</Button>
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function CommunityPage() {
                       <div key={c.id} className="flex gap-2.5">
                         <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{c.initials}</AvatarFallback></Avatar>
                         <div className="min-w-0 flex-1">
-                          <div className="rounded-2xl bg-muted/60 px-3 py-2">
+                          <div className="rounded-xl bg-muted/60 px-3 py-2">
                             <div className="flex items-baseline gap-2">
                               <span className="text-sm font-medium">{c.who}</span>
                               <span className="text-[11px] text-muted-foreground">{c.time}</span>

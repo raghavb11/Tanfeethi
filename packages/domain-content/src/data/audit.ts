@@ -1,6 +1,6 @@
 import { createCollection, newId } from "../collections"
 
-export type AuditAction = "published" | "edited" | "deleted" | "uploaded" | "approved" | "permission"
+export type AuditAction = "published" | "edited" | "deleted" | "uploaded" | "approved" | "permission" | "created" | "restored"
 
 export type AuditEntry = {
   id: string

@@ -40,7 +40,7 @@ export default function CircularEditorPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-2xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6">
         <button onClick={() => navigate("/circulars")} className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />
@@ -50,10 +50,10 @@ export default function CircularEditorPage() {
           <Megaphone className="size-5" />
           <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Internal Circulars", "التعاميم الداخلية")}</span>
         </div>
-        <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">{t("New circular", "تعميم جديد")}</h1>
+        <h1 className="mt-2 text-[18px] font-bold leading-7">{t("New circular", "تعميم جديد")}</h1>
       </div>
 
-      <Card className="space-y-5 p-5">
+      <Card className="rounded-xl space-y-5 p-5">
         <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2">
           <span className="text-sm text-muted-foreground">{t("Reference number", "الرقم المرجعي")}</span>
           <span className="font-mono text-sm font-medium">{ref}</span>

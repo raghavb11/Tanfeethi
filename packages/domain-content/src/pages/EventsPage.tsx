@@ -42,7 +42,7 @@ export default function EventsPage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-5xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={CalendarDays}
         eyebrow={t("Events Calendar", "تقويم الفعاليات")}
@@ -80,7 +80,7 @@ export default function EventsPage() {
             <img src={spotlight.img} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
             <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm"><Sparkles className="size-3" />{t("Next up", "التالي")}</span>
             <div className="absolute bottom-3 start-3 flex size-14 flex-col items-center justify-center rounded-lg bg-[var(--card-elevated)] shadow-sm ring-1 ring-border/60">
-              <span className="font-heading text-xl font-semibold leading-none tabular-nums text-foreground">{spotlight.day}</span>
+              <span className="text-xl font-semibold leading-none tabular-nums text-foreground">{spotlight.day}</span>
               <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">{spotlight.mon}</span>
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function EventsPage() {
               {spotlight.endDay && <Badge variant="outline">{t("Multi-day", "عدة أيام")}</Badge>}
               <span className="text-xs text-muted-foreground">{dateChip(spotlight)}</span>
             </div>
-            <h2 className="font-heading text-xl font-semibold leading-tight sm:text-2xl">{isAr ? spotlight.titleAr : spotlight.title}</h2>
+            <h2 className="text-xl font-semibold leading-tight sm:text-2xl">{isAr ? spotlight.titleAr : spotlight.title}</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">{isAr ? spotlight.descAr : spotlight.desc}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">{meta(spotlight)}</div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -112,7 +112,7 @@ export default function EventsPage() {
             <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-muted sm:w-44">
               <img src={e.img} alt="" className={cn("absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105", e.past && "grayscale")} loading="lazy" onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
               <div className="absolute left-2.5 top-2.5 flex w-11 flex-col items-center rounded-lg bg-[var(--card-elevated)] py-1 shadow-sm ring-1 ring-border/60">
-                <span className="font-heading text-lg font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
+                <span className="text-lg font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">{e.mon}</span>
               </div>
             </div>

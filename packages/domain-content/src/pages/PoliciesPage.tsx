@@ -47,7 +47,7 @@ export default function PoliciesPage() {
   }
 
   return (
-    <main className="@container mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="@container w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* header */}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-[52ch]">
@@ -55,7 +55,7 @@ export default function PoliciesPage() {
             <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary"><Scale className="size-4" /></span>
             <span className="text-[13px] font-semibold text-primary">{t("Policy Library", "مكتبة السياسات")}</span>
           </div>
-          <h1 className="mt-3 font-heading text-[32px] font-bold leading-tight tracking-tight sm:text-[38px]">
+          <h1 className="mt-3 text-[18px] font-bold leading-7">
             {t("Policies", "السياسات")}
           </h1>
           <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
@@ -171,7 +171,7 @@ export default function PoliciesPage() {
           </Card>
         ))}
         {list.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-xl border border-dashed border-border py-14 text-center">
             <BookText className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No policies match your search.", "لا توجد سياسات مطابقة لبحثك.")}</p>
           </div>
@@ -198,7 +198,7 @@ function Stat({ value, label, sub, icon: Icon }: {
   value: number; label: string; sub: string; icon: React.ComponentType<{ className?: string }>
 }) {
   return (
-    <Card className="p-5">
+    <Card className="rounded-xl p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="text-[30px] font-bold leading-none tabular-nums text-primary">{value}</div>
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" /></span>

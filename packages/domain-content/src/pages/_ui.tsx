@@ -292,8 +292,8 @@ export function CategoryBadge({ label, color, className }: { label: string; colo
   const c = color ?? "#8a8a8a"
   return (
     <span
-      className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium", className)}
-      style={{ backgroundColor: `${c}22`, color: c, borderColor: `${c}55` }}
+      className={cn("inline-flex items-center gap-1.5 rounded px-2 py-1 text-[12px] font-medium", className)}
+      style={{ backgroundColor: `${c}26`, color: c }}
     >
       <span className="size-1.5 rounded-full" style={{ backgroundColor: c }} />
       {label}
@@ -301,7 +301,10 @@ export function CategoryBadge({ label, color, className }: { label: string; colo
   )
 }
 
-/** Shared page furniture for the CMS/content modules. */
+/** Shared page furniture for the CMS/content modules — WIJHA card-header
+ *  language: the page title lives in the shell top bar, so the in-page header
+ *  is a compact Figma card header (16px accent icon, 17px title, 48×3 gold
+ *  underline) with the description beneath and actions at the end. */
 export function PageHeader({
   eyebrow,
   title,
@@ -316,22 +319,22 @@ export function PageHeader({
   action?: React.ReactNode
 }) {
   return (
-    <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <div className="mb-3 inline-flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary ring-1 ring-primary/15">
-            <Icon className="size-[17px]" />
-          </span>
-          <span className="text-[13px] font-semibold text-muted-foreground">{eyebrow}</span>
-        </div>
-        <h1 className="font-heading text-[2.15rem] font-semibold leading-[1.06] tracking-tight text-balance sm:text-[2.6rem]">{title}</h1>
-        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{desc}</p>
+    <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="flex min-w-0 flex-col items-start gap-2">
+        <span className="text-[12px] text-muted-foreground">{eyebrow}</span>
+        <h1 className="flex items-center gap-2 text-[17px] font-medium leading-[25.5px]">
+          <Icon className="size-4 shrink-0 text-primary" />
+          {title}
+        </h1>
+        <span className="h-[3px] w-12 rounded-[2px] bg-primary" />
+        <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">{desc}</p>
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </header>
   )
 }
 
+/** KPI tile — Figma card (r12, hairline) with a 34px soft-gold icon tile. */
 export function StatCard({
   icon: Icon,
   value,
@@ -344,21 +347,22 @@ export function StatCard({
   sub?: string
 }) {
   return (
-    <Card className="p-5 transition-shadow hover:shadow-md">
+    <Card className="rounded-xl gap-0  px-5 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="metal-text font-heading text-[1.9rem] font-semibold leading-none tracking-tight tabular-nums">{value}</div>
-          <div className="mt-2 text-sm font-medium">{label}</div>
-          {sub && <div className="mt-0.5 text-xs text-muted-foreground">{sub}</div>}
+          <div className="text-[24px] font-bold leading-none tabular-nums">{value}</div>
+          <div className="mt-2 text-[13px] font-medium">{label}</div>
+          {sub && <div className="mt-0.5 text-[11px] text-muted-foreground">{sub}</div>}
         </div>
-        <div className="accent-chip flex size-10 shrink-0 items-center justify-center rounded-xl">
-          <Icon className="size-5" />
+        <div className="accent-chip grid size-[34px] shrink-0 place-items-center rounded-lg">
+          <Icon className="size-4" />
         </div>
       </div>
     </Card>
   )
 }
 
+/** Filter chips — selected chip is the soft-gold accent; others sit on Shape/Fill/Secondary. */
 export function Chips({
   items,
   active,
@@ -376,8 +380,8 @@ export function Chips({
           onClick={() => onSelect(it)}
           aria-pressed={active === it}
           className={cn(
-            "rounded-full border px-3 py-1.5 text-sm transition-colors",
-            active === it ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/60",
+            "h-8 rounded-lg px-3 text-[13px] font-medium transition-colors",
+            active === it ? "accent-chip ring-1 ring-primary/40" : "bg-secondary text-foreground hover:brightness-110",
           )}
         >
           {it}
@@ -395,9 +399,9 @@ export function useT() {
 /** Shared prose styling for rich-text (contentEditable HTML) bodies rendered
  *  read-only — matches the RichTextEditor toolbar's output. */
 export const RICH_PROSE = cn(
-  "text-[15px] leading-relaxed text-foreground/85",
-  "[&_h2]:mb-1.5 [&_h2]:mt-4 [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-semibold [&_h2:first-child]:mt-0",
-  "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:font-heading [&_h3]:text-base [&_h3]:font-semibold",
+  "text-[13px] leading-6 text-foreground/90",
+  "[&_h2]:mb-1.5 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2:first-child]:mt-0",
+  "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-base [&_h3]:font-semibold",
   "[&_p]:my-2.5",
   "[&_ul]:my-2.5 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-2.5 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1",
   "[&_a]:text-primary [&_a]:underline",

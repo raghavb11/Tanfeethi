@@ -49,7 +49,7 @@ export default function AnnouncementEditorPage() {
   const remove = () => { if (editing) { deleteAnnouncement(editing.id); logAudit("deleted", editing.title, "Announcements") } navigate("/announcements") }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/announcements")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to announcements", "العودة إلى الإعلانات")}
@@ -66,7 +66,7 @@ export default function AnnouncementEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit announcement", "تحرير الإعلان") : t("New announcement", "إعلان جديد")}</span>
       </div>
 
-      <Card className="space-y-5 p-6 sm:p-8">
+      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
         <div>
           <label htmlFor="ann-title" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Title", "العنوان")}</label>
           <Input id="ann-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Announcement title", "عنوان الإعلان")} autoFocus className="h-11 text-base" />

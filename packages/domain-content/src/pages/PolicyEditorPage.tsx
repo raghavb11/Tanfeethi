@@ -157,7 +157,7 @@ export default function PolicyEditorPage() {
   const label = (text: React.ReactNode) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}</label>
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-4xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/policies")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to policies", "العودة إلى السياسات")}
@@ -175,7 +175,7 @@ export default function PolicyEditorPage() {
       </div>
 
       <div className="space-y-5">
-        <Card className="space-y-5 p-6 sm:p-8">
+        <Card className="rounded-xl space-y-5 p-6 sm:p-8">
           <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
             <div>{label(t("Title", "العنوان"))}<Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Policy title", "عنوان السياسة")} autoFocus className="h-11 text-base" /></div>
             <div>{label(<span className="inline-flex items-center gap-1.5"><Hash className="size-3.5 text-primary" />{t("Policy number", "رقم السياسة")}</span>)}<Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="TF-POL-###" className="h-11 font-mono text-sm" /></div>
@@ -285,7 +285,7 @@ export default function PolicyEditorPage() {
         </div>
 
         {/* attached documents (visible to users) */}
-        <Card className="p-6 sm:p-8">
+        <Card className="rounded-xl p-6 sm:p-8">
           {label(t("Attached documents (visible to employees)", "المستندات المرفقة (مرئية للموظفين)"))}
           <p className="-mt-1 mb-3 text-xs text-muted-foreground">{t("Add supporting files — employees will see and can open these on the policy page. Upload a new file, or attach one from the document library.", "أضف ملفات داعمة — سيراها الموظفون ويمكنهم فتحها في صفحة السياسة. ارفع ملفًا جديدًا أو أرفق ملفًا من مكتبة المستندات.")}</p>
 

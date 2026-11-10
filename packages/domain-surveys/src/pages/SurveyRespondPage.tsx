@@ -56,7 +56,7 @@ export default function SurveyRespondPage() {
         <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 16 }}>
           <CheckCircle2 className="size-16 text-primary" />
         </motion.div>
-        <h1 className="mt-5 font-heading text-2xl font-bold">{t("Thank you — response submitted", "شكرًا — تم إرسال الرد")}</h1>
+        <h1 className="mt-5 text-[18px] font-bold leading-7">{t("Thank you — response submitted", "شكرًا — تم إرسال الرد")}</h1>
         <p className="mt-2 text-muted-foreground">{t("Your answers are anonymous and now part of the aggregated results. You can't be individually identified.", "إجاباتك مجهولة وأصبحت جزءًا من النتائج المجمّعة. لا يمكن تحديد هويتك بشكل فردي.")}</p>
         <Button className="mt-8" onClick={() => navigate("/surveys")}>{t("Back to surveys", "العودة إلى الاستبيانات")}</Button>
       </main>
@@ -66,7 +66,7 @@ export default function SurveyRespondPage() {
   const title = survey ? (isAr ? survey.titleAr : survey.title) : t("Survey", "استبيان")
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-2xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <button onClick={() => navigate("/surveys")} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to surveys", "العودة إلى الاستبيانات")}
       </button>
@@ -78,7 +78,7 @@ export default function SurveyRespondPage() {
           <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Survey", "استبيان")}</span>
           {survey && <Badge variant="outline">{isAr ? categoryAr[survey.category] : survey.category}</Badge>}
         </div>
-        <h1 className="mt-2 font-heading text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
+        <h1 className="mt-2 text-[18px] font-bold leading-7">{title}</h1>
         <p className="mt-2 leading-relaxed text-muted-foreground">{isAr ? form.introAr : form.intro}</p>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1"><ClipboardList className="size-3.5" />{allQuestions.length} {t("questions", "سؤال")} · {form.sections.length} {t("sections", "أقسام")}</span>
@@ -105,7 +105,7 @@ export default function SurveyRespondPage() {
           <Card key={si} className="p-5 sm:p-6">
             <div className="mb-1 flex items-center gap-2">
               <span className="grid size-6 place-items-center rounded-full bg-primary/15 text-xs font-bold text-primary">{si + 1}</span>
-              <h2 className="font-heading text-lg font-semibold">{isAr ? sec.titleAr : sec.title}</h2>
+              <h2 className="text-lg font-semibold">{isAr ? sec.titleAr : sec.title}</h2>
             </div>
             <p className="mb-5 ps-8 text-sm text-muted-foreground">{isAr ? sec.descAr : sec.desc}</p>
 

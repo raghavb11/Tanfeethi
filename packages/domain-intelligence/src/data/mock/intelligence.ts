@@ -260,3 +260,46 @@ export const knowledgeRecs: {
   { id: "kr1", title: "Playbook · executive comms under incident", titleAr: "دليل · التواصل التنفيذي وقت الحوادث", match: 96 },
   { id: "kr2", title: "Policy library · contractor device posture", titleAr: "مكتبة السياسات · وضعية أجهزة المتعاقدين", match: 91 },
 ]
+
+// ── AI Center conversations (Figma 2028:2252 / 4858:15788) ──────────────────
+export type ChatAttachment = { name: string; kind: "PDF" | "Word" | "Excel" | "Image" | "File" }
+export type ChatMessage = { id: string; role: "user" | "assistant"; text: string; textAr: string; attachments?: ChatAttachment[] }
+export type Conversation = { id: string; title: string; titleAr: string; messages: ChatMessage[] }
+
+export const conversations: Conversation[] = [
+  {
+    id: "c-mail", title: "Summarize my mail", titleAr: "تلخيص البريد",
+    messages: [
+      { id: "m1", role: "user", text: "Summarize my mail, review pending approvals and reorganize my schedule.", textAr: "لخص بريدي، راجع الموافقات المعلقة، و إعد تنظيم جدولي." },
+      { id: "m2", role: "assistant", text: "Hi Fawaz — I'm summarizing your mail, reviewing your approvals and reorganizing your schedule now.", textAr: "أهلاً فواز، يتم الآن تلخيص بريدك، مراجعة الموافقات و إعادة تنظيم جدولك" },
+    ],
+  },
+  { id: "c-q1", title: "Q1 report", titleAr: "تقرير الربع الأول", messages: [
+    { id: "m1", role: "user", text: "Draft the Q1 operations report.", textAr: "أعدّ مسودة تقرير العمليات للربع الأول." },
+    { id: "m2", role: "assistant", text: "Here's an outline: volumes, on-time performance, guest satisfaction and cost per movement. Shall I fill in the figures from the dashboard?", textAr: "إليك المخطط: الأحجام، الالتزام بالمواعيد، رضا الضيوف وتكلفة الحركة. هل أملأ الأرقام من لوحة المؤشرات؟" },
+  ] },
+  { id: "c-meetings", title: "Tomorrow's meetings", titleAr: "اجتماعات الغد", messages: [] },
+  { id: "c-approvals", title: "Pending approvals", titleAr: "الموافقات المعلقة", messages: [] },
+  { id: "c-leave", title: "Leave balance", titleAr: "رصيد الإجازات", messages: [] },
+  { id: "c-travel", title: "Travel policy", titleAr: "سياسة السفر", messages: [] },
+  { id: "c-expense", title: "Expense claim", titleAr: "مطالبة المصروفات", messages: [] },
+  { id: "c-team", title: "Team performance", titleAr: "أداء الفريق", messages: [] },
+  { id: "c-onboarding", title: "Onboarding checklist", titleAr: "قائمة الانضمام", messages: [] },
+]
+
+/** Suggestion chips under the thread. */
+export const chatChips: { id: string; en: string; ar: string; icon: "report" | "calendar" | "approvals" }[] = [
+  { id: "q1", en: "Q1 report", ar: "تقرير الربع الأول", icon: "report" },
+  { id: "tomorrow", en: "Tomorrow's meetings", ar: "اجتماعات الغد", icon: "calendar" },
+  { id: "awaiting", en: "Show transactions awaiting reply", ar: "عرض المعاملات بانتظار الرد", icon: "approvals" },
+]
+
+/** Canned assistant reply for the prototype (no model call). */
+export function cannedReply(prompt: string, isAr: boolean, files: number): string {
+  const p = prompt.toLowerCase()
+  if (files > 0) return isAr ? `استلمت ${files === 1 ? "الملف" : `${files} ملفات`}. سألخّص المحتوى وأستخرج المهام والمواعيد المهمة.` : `Got ${files === 1 ? "the file" : `${files} files`}. I'll summarize them and pull out the key tasks and dates.`
+  if (/meeting|اجتماع/.test(p)) return isAr ? "لديك ٣ اجتماعات غدًا: مراجعة العمليات ٩:٠٠، لجنة المشتريات ١١:٣٠، ومكالمة مع فريق جدة ١٤:٠٠." : "You have 3 meetings tomorrow: operations review 09:00, procurement committee 11:30 and a call with the Jeddah team 14:00."
+  if (/report|تقرير/.test(p)) return isAr ? "جهّزت مسودة تقرير الربع الأول: الأحجام +12٪، الالتزام بالمواعيد 96٪، ورضا الضيوف 4.7 من 5." : "I've drafted the Q1 report: volumes +12%, on-time performance 96% and guest satisfaction 4.7 / 5."
+  if (/await|transaction|معامل|موافق/.test(p)) return isAr ? "هناك ٤ معاملات بانتظار ردك: طلبا إجازة، مطالبة مصروفات، وطلب شراء. هل أفتح قائمة الموافقات؟" : "4 items are waiting for you: two leave requests, an expense claim and a purchase request. Open the approvals list?"
+  return isAr ? "حسنًا، أعمل على ذلك الآن وسأوافيك بالنتيجة خلال لحظات." : "On it — I'll get back to you with the result in a moment."
+}

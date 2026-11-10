@@ -178,10 +178,10 @@ export default function EngagementHub() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 px-4 py-7 md:px-8">
+    <div className="w-full space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* Heading */}
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">
+        <h1 className="text-[18px] font-bold leading-7">
           {isAr ? ar.pageTitle : "Engagement Hub"}
         </h1>
         <p className="text-[13px] text-muted-foreground">
@@ -194,13 +194,13 @@ export default function EngagementHub() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="highlight-card hl-fuchsia relative overflow-hidden rounded-3xl"
+        className="highlight-card hl-violet relative overflow-hidden rounded-xl"
       >
         <div className="relative z-10 p-5 md:p-6 space-y-4">
           {/* Greeting line */}
           <div className="flex items-center justify-between gap-3">
-            <div className="text-white">
-              <div className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-white/70">
+            <div className="text-foreground">
+              <div className="text-[10.5px] font-semibold tracking-[0.14em] uppercase text-muted-foreground">
                 {isAr ? ar.hubLabel : "Engagement"}
               </div>
               <div className="mt-1 text-[16px] font-bold tracking-tight md:text-[18px]">
@@ -208,7 +208,7 @@ export default function EngagementHub() {
               </div>
             </div>
             <Avatar className="size-11 shrink-0 ring-2 ring-white/30 shadow-md">
-              <AvatarFallback className="bg-white text-violet-700 text-[13px] font-bold">
+              <AvatarFallback className="bg-white text-module text-[13px] font-bold">
                 {isAr ? "خ" : "KS"}
               </AvatarFallback>
             </Avatar>
@@ -226,19 +226,19 @@ export default function EngagementHub() {
           {/* Action chips + post */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1.5">
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-sm transition-colors hover:bg-white/20">
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary">
                 <ImageIcon className="size-3" />
                 {isAr ? "صورة" : "Photo"}
               </button>
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-sm transition-colors hover:bg-white/20">
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary">
                 <HeartHandshake className="size-3" />
                 {isAr ? ar.giveKudos : "Kudos"}
               </button>
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-sm transition-colors hover:bg-white/20">
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary">
                 <Vote className="size-3" />
                 {isAr ? ar.startPoll : "Poll"}
               </button>
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-sm transition-colors hover:bg-white/20">
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary">
                 <Smile className="size-3" />
                 {isAr ? "تعبير" : "Emoji"}
               </button>
@@ -246,7 +246,7 @@ export default function EngagementHub() {
             <Button
               disabled={!draft.trim()}
               size="sm"
-              className="shrink-0 gap-1.5 bg-white text-violet-700 hover:bg-white/95 disabled:bg-white/40 disabled:text-violet-700/60"
+              className="shrink-0 gap-1.5 bg-white text-module hover:bg-white/95 disabled:bg-white/40 disabled:text-module/60"
             >
               <Send className="size-3.5" />
               {isAr ? ar.postUpdate : "Post"}
@@ -260,7 +260,7 @@ export default function EngagementHub() {
         {/* Feed */}
         <div className="space-y-3 lg:col-span-8">
           <div className="text-[13px] font-semibold flex items-center gap-2">
-            <Sparkles className="size-3.5 text-rose-500" />
+            <Sparkles className="size-3.5 text-error" />
             {isAr ? ar.feed : "Team feed"}
           </div>
           {feed.map((item, idx) => {
@@ -274,12 +274,12 @@ export default function EngagementHub() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className="rounded-2xl border border-amber-200/70 dark:border-amber-500/25 bg-gradient-to-r from-amber-50/70 to-rose-50/40 dark:from-amber-950/15 dark:to-rose-950/15 p-4"
+                  className="rounded-xl border border-primary/30 bg-soft-accent p-4"
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
                       <Avatar className="size-9">
-                        <AvatarFallback className="bg-amber-200 dark:bg-amber-500/30 text-amber-800 dark:text-amber-200 text-[10px] font-bold">
+                        <AvatarFallback className="bg-warning-fill text-warning dark:text-warning text-[10px] font-bold">
                           {item.from!.initials}
                         </AvatarFallback>
                       </Avatar>
@@ -289,7 +289,7 @@ export default function EngagementHub() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Badge variant="outline" className="gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-700 dark:text-amber-300">
+                        <Badge variant="outline" className="gap-1 border-warning/30 bg-warning/10 text-[10px] text-warning dark:text-warning">
                           <HeartHandshake className="size-2.5" />
                           {isAr ? "تقدير" : "Kudos"}
                         </Badge>
@@ -307,7 +307,7 @@ export default function EngagementHub() {
                         <button
                           type="button"
                           onClick={() => toggleLike(item.id)}
-                          className={cn("flex items-center gap-1 transition-colors", liked ? "text-rose-500" : "hover:text-rose-500")}
+                          className={cn("flex items-center gap-1 transition-colors", liked ? "text-error" : "hover:text-error")}
                         >
                           <Heart className={cn("size-3", liked && "fill-current")} />
                           <span className="tabular-nums">{likeCount}</span>
@@ -327,16 +327,16 @@ export default function EngagementHub() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: idx * 0.05 }}
               >
-                <Card className="ring-1 ring-foreground/10">
+                <Card className="rounded-xl ring-1 ring-foreground/10">
                   <div className="px-5 pt-4 pb-3 space-y-2.5">
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <Avatar className="size-9">
-                          <AvatarFallback className="bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 text-[10px] font-bold">
+                          <AvatarFallback className="bg-error-fill text-error dark:text-error text-[10px] font-bold">
                             {item.author!.initials}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="absolute -bottom-0.5 -end-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-card" />
+                        <span className="absolute -bottom-0.5 -end-0.5 size-2 rounded-full bg-success ring-2 ring-card" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-[12.5px] font-semibold">{isAr ? item.author!.nameAr : item.author!.name}</div>
@@ -355,7 +355,7 @@ export default function EngagementHub() {
                       onClick={() => toggleLike(item.id)}
                       className={cn(
                         "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors",
-                        liked ? "text-rose-500 hover:bg-rose-500/10" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                        liked ? "text-error hover:bg-error/10" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                       )}
                     >
                       <Heart className={cn("size-3.5", liked && "fill-current")} />
@@ -375,7 +375,7 @@ export default function EngagementHub() {
         {/* Sidebar */}
         <aside className="space-y-4 lg:col-span-4">
           {/* Active poll */}
-          <Card className="ring-1 ring-foreground/10 overflow-hidden">
+          <Card className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
             <div className="border-b border-border/60 px-4 py-3">
               <div className="flex items-center gap-2 text-[13px] font-semibold">
                 <Vote className="size-3.5 text-fuchsia-500" />
@@ -432,11 +432,11 @@ export default function EngagementHub() {
           </Card>
 
           {/* Online now */}
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="size-1.5 rounded-full bg-success animate-pulse" />
               {isAr ? ar.online : "Online now"}
-              <span className="ms-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="ms-auto rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success dark:text-success">
                 {onlineNow.length}
               </span>
             </div>
@@ -444,21 +444,21 @@ export default function EngagementHub() {
               {onlineNow.map((u) => (
                 <div key={u.initials} className="relative" title={u.name}>
                   <Avatar className="size-8 ring-2 ring-card">
-                    <AvatarFallback className="bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 text-[9.5px] font-bold">
+                    <AvatarFallback className="bg-error-fill text-error dark:text-error text-[9.5px] font-bold">
                       {u.initials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="absolute -bottom-0.5 -end-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-card" />
+                  <span className="absolute -bottom-0.5 -end-0.5 size-2 rounded-full bg-success ring-2 ring-card" />
                 </div>
               ))}
             </div>
           </Card>
 
           {/* Upcoming event */}
-          <Card className="ring-1 ring-foreground/10 overflow-hidden">
+          <Card className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
             <div className="relative h-20">
               <img src={upcomingEvent.cover} alt="" className="size-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/55 to-pink-600/65" />
+              <div className="absolute inset-0 bg-gradient-to-br from-error/55 to-pink-600/65" />
               <div className="absolute inset-x-3 bottom-2 text-white">
                 <div className="text-[10px] font-semibold tracking-[0.10em] uppercase opacity-80">
                   {isAr ? ar.events : "Upcoming"}
@@ -468,26 +468,26 @@ export default function EngagementHub() {
             </div>
             <div className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="space-y-0.5 text-[10.5px] text-muted-foreground/75">
-                <div className="flex items-center gap-1"><CalendarDays className="size-2.5 text-rose-500" /> {isAr ? upcomingEvent.dateAr : upcomingEvent.date}</div>
-                <div className="flex items-center gap-1"><MapPin className="size-2.5 text-rose-500" /> {isAr ? upcomingEvent.locationAr : upcomingEvent.location}</div>
+                <div className="flex items-center gap-1"><CalendarDays className="size-2.5 text-error" /> {isAr ? upcomingEvent.dateAr : upcomingEvent.date}</div>
+                <div className="flex items-center gap-1"><MapPin className="size-2.5 text-error" /> {isAr ? upcomingEvent.locationAr : upcomingEvent.location}</div>
               </div>
-              <Button size="xs" className="gap-1 bg-rose-500 hover:bg-rose-600">
+              <Button size="xs" className="gap-1 bg-error hover:bg-error">
                 {isAr ? ar.rsvp : "RSVP"}
               </Button>
             </div>
           </Card>
 
           {/* Birthdays */}
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
-              <Cake className="size-3.5 text-amber-500" />
+              <Cake className="size-3.5 text-warning" />
               {isAr ? ar.birthdays : "Birthdays"}
             </div>
             <ul className="divide-y divide-border/40">
               {birthdays.map((b) => (
                 <li key={b.initials} className="flex items-center gap-3 px-4 py-2.5">
                   <Avatar className="size-7">
-                    <AvatarFallback className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
+                    <AvatarFallback className="bg-warning-fill text-warning dark:text-warning text-[10px] font-bold">
                       {b.initials}
                     </AvatarFallback>
                   </Avatar>
@@ -495,7 +495,7 @@ export default function EngagementHub() {
                     <div className="truncate text-[12px] font-semibold">{isAr ? b.nameAr : b.name}</div>
                     <div className="text-[10.5px] text-muted-foreground/65">{isAr ? b.dateAr : b.date}</div>
                   </div>
-                  <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-amber-600 hover:bg-amber-500/10">
+                  <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-warning hover:bg-warning/10">
                     {isAr ? ar.send : "Wish"}
                   </Button>
                 </li>
@@ -504,20 +504,20 @@ export default function EngagementHub() {
           </Card>
 
           {/* Rooms */}
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
-              <Hash className="size-3.5 text-rose-500" />
+              <Hash className="size-3.5 text-error" />
               {isAr ? ar.rooms : "Team rooms"}
             </div>
             <ul className="divide-y divide-border/40">
               {rooms.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-2 px-4 py-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-rose-500 font-bold">#</span>
+                    <span className="text-error font-bold">#</span>
                     <span className="truncate text-[12px] font-medium">{isAr ? r.nameAr : r.name}</span>
-                    {r.active && <span className="size-1.5 shrink-0 rounded-full bg-emerald-500 animate-pulse" />}
+                    {r.active && <span className="size-1.5 shrink-0 rounded-full bg-success animate-pulse" />}
                   </div>
-                  <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-rose-500 hover:bg-rose-500/10">
+                  <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-error hover:bg-error/10">
                     {isAr ? ar.joinRoom : "Join"}
                   </Button>
                 </li>

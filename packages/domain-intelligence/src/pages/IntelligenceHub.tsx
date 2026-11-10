@@ -1,17 +1,16 @@
 import * as React from "react"
-import { motion, animate } from "framer-motion"
+import { motion } from "framer-motion"
 
-import { Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
+import { AiCenter } from "./AiCenter"
 import {
-  aiKpis,
   knowledgeRecs,
   meetingSummaries,
   predictions,
   recommendations,
   smartInsights,
-  suggestedPrompts,
   usefulNotes,
   type Confidence,
   type InsightCategory,
@@ -28,12 +27,10 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  Gauge,
   Lightbulb,
   Mail,
   PenLine,
   PinIcon,
-  Send,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -100,46 +97,31 @@ const categoryIcon: Record<InsightCategory, React.ComponentType<{ className?: st
 function categoryTone(c: InsightCategory): { bg: string; text: string; dot: string } {
   switch (c) {
     case "work": return { bg: "bg-primary/12", text: "text-primary", dot: "bg-primary" }
-    case "email": return { bg: "bg-blue-500/12", text: "text-blue-500", dot: "bg-blue-500" }
-    case "meeting": return { bg: "bg-violet-500/12", text: "text-violet-500", dot: "bg-violet-500" }
-    case "risk": return { bg: "bg-rose-500/12", text: "text-rose-500", dot: "bg-rose-500" }
-    case "people": return { bg: "bg-amber-500/12", text: "text-amber-500", dot: "bg-amber-500" }
+    case "email": return { bg: "bg-info/12", text: "text-info", dot: "bg-info" }
+    case "meeting": return { bg: "bg-module/12", text: "text-module", dot: "bg-module" }
+    case "risk": return { bg: "bg-error/12", text: "text-error", dot: "bg-error" }
+    case "people": return { bg: "bg-warning/12", text: "text-warning", dot: "bg-warning" }
   }
 }
 
 function confidenceTone(c: Confidence) {
-  if (c === "high") return { ring: "stroke-emerald-500", text: "text-emerald-500", value: 92 }
-  if (c === "moderate") return { ring: "stroke-amber-500", text: "text-amber-500", value: 68 }
+  if (c === "high") return { ring: "stroke-success", text: "text-success", value: 92 }
+  if (c === "moderate") return { ring: "stroke-warning", text: "text-warning", value: 68 }
   return { ring: "stroke-muted-foreground", text: "text-muted-foreground", value: 38 }
 }
 
 function toneToColor(t: Tone): { bg: string; text: string; border: string } {
   switch (t) {
     case "primary": return { bg: "bg-primary/12", text: "text-primary", border: "border-primary/30" }
-    case "emerald": return { bg: "bg-emerald-500/12", text: "text-emerald-500", border: "border-emerald-500/30" }
-    case "blue": return { bg: "bg-blue-500/12", text: "text-blue-500", border: "border-blue-500/30" }
-    case "amber": return { bg: "bg-amber-500/12", text: "text-amber-500", border: "border-amber-500/30" }
-    case "violet": return { bg: "bg-violet-500/12", text: "text-violet-500", border: "border-violet-500/30" }
-    case "rose": return { bg: "bg-rose-500/12", text: "text-rose-500", border: "border-rose-500/30" }
+    case "emerald": return { bg: "bg-success/12", text: "text-success", border: "border-success/30" }
+    case "blue": return { bg: "bg-info/12", text: "text-info", border: "border-info/30" }
+    case "amber": return { bg: "bg-warning/12", text: "text-warning", border: "border-warning/30" }
+    case "violet": return { bg: "bg-module/12", text: "text-module", border: "border-module/30" }
+    case "rose": return { bg: "bg-error/12", text: "text-error", border: "border-error/30" }
   }
 }
 
 // ─── animated counter ────────────────────────────────────────────────────────
-
-function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: number }) {
-  const [display, setDisplay] = React.useState(0)
-  React.useEffect(() => {
-    const ctrl = animate(0, value, {
-      duration: 1.2,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => setDisplay(decimals === 0 ? Math.round(v) : Math.round(v * 10) / 10),
-    })
-    return ctrl.stop
-  }, [value, decimals])
-  return <>{decimals === 0 ? display : display.toFixed(decimals)}</>
-}
-
-// ─── confidence ring ─────────────────────────────────────────────────────────
 
 function ConfidenceRing({ confidence }: { confidence: Confidence }) {
   const { ring, text, value } = confidenceTone(confidence)
@@ -171,205 +153,16 @@ function ConfidenceRing({ confidence }: { confidence: Confidence }) {
 
 // ─── hero illustration: AI brain with sparkles ───────────────────────────────
 
-function BrainIllustration({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 280 200" className={className} xmlns="http://www.w3.org/2000/svg" fill="none">
-      <circle cx="40" cy="40" r="32" fill="rgba(206,123,91,0.10)" />
-      <circle cx="240" cy="160" r="38" fill="rgba(35,64,36,0.18)" />
-
-      {/* Brain shape — half circuit, half organic */}
-      <motion.g
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {/* Outer brain blob */}
-        <path
-          d="M140 50 Q105 50 90 80 Q75 95 80 120 Q85 145 110 155 Q125 165 145 160 Q170 165 185 150 Q205 140 200 115 Q205 90 185 75 Q170 50 140 50Z"
-          fill="rgba(206,123,91,0.18)"
-          stroke="#CE7B5B"
-          strokeWidth="1.5"
-        />
-        {/* Center divider */}
-        <path d="M140 50 Q138 105 145 160" stroke="rgba(206,123,91,0.5)" strokeWidth="1.5" fill="none" strokeDasharray="2 3" />
-        {/* Circuit nodes (left) */}
-        <circle cx="105" cy="90" r="3" fill="#CE7B5B" />
-        <circle cx="100" cy="120" r="3" fill="#CE7B5B" />
-        <circle cx="120" cy="135" r="3" fill="#CE7B5B" />
-        <line x1="105" y1="90" x2="100" y2="120" stroke="#CE7B5B" strokeWidth="1.5" />
-        <line x1="100" y1="120" x2="120" y2="135" stroke="#CE7B5B" strokeWidth="1.5" />
-        {/* Organic curves (right) */}
-        <path d="M155 75 Q175 90 165 110 Q160 130 180 140" stroke="#234024" strokeWidth="2" fill="none" strokeLinecap="round" />
-        <path d="M170 80 Q185 95 175 115" stroke="#234024" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        {/* Center pulse */}
-        <motion.circle
-          cx="140"
-          cy="105"
-          r="6"
-          fill="#CE7B5B"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      </motion.g>
-
-      {/* Floating sparkles around the brain */}
-      <motion.g
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        style={{ transformOrigin: "140px 105px" }}
-      >
-        <path d="M55 60 l1.5 4.5 4.5 0 -3.5 3 1.5 4.5 -4-3 -4 3 1.5-4.5 -3.5-3 4.5 0z" fill="rgba(206,123,91,0.5)" />
-        <path d="M225 70 l1 3 3 0 -2.5 2 1 3 -2.5-2 -2.5 2 1-3 -2.5-2 3 0z" fill="rgba(206,123,91,0.45)" />
-        <path d="M70 165 l1 3 3 0 -2.5 2 1 3 -2.5-2 -2.5 2 1-3 -2.5-2 3 0z" fill="rgba(35,64,36,0.5)" />
-        <circle cx="220" cy="45" r="2.5" fill="rgba(206,123,91,0.5)" />
-        <circle cx="245" cy="120" r="2" fill="rgba(206,123,91,0.4)" />
-      </motion.g>
-
-      {/* Data lines emerging */}
-      <motion.g
-        animate={{ opacity: [0.3, 0.8, 0.3] }}
-        transition={{ duration: 3, repeat: Infinity }}
-      >
-        <line x1="55" y1="105" x2="80" y2="105" stroke="rgba(206,123,91,0.5)" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="200" y1="105" x2="230" y2="105" stroke="rgba(206,123,91,0.5)" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="140" y1="40" x2="140" y2="55" stroke="rgba(206,123,91,0.5)" strokeWidth="1" strokeDasharray="3 3" />
-        <line x1="140" y1="155" x2="140" y2="175" stroke="rgba(206,123,91,0.5)" strokeWidth="1" strokeDasharray="3 3" />
-      </motion.g>
-    </svg>
-  )
-}
-
-// ─── KPI mini ────────────────────────────────────────────────────────────────
-
-function HeroKpi({ label, value, suffix = "", icon: Icon, delay = 0 }: { label: string; value: number; suffix?: string; icon: React.ComponentType<{ className?: string }>; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-sm"
-    >
-      <span className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-amber-300">
-        <Icon className="size-3.5" />
-      </span>
-      <div>
-        <div className="text-[16px] font-bold tabular-nums leading-none text-white">
-          <AnimatedNumber value={value} decimals={value % 1 !== 0 ? 1 : 0} />{suffix}
-        </div>
-        <div className="mt-1 text-[10px] font-medium tracking-wide text-white/65">
-          {label}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
-// ─── main page ───────────────────────────────────────────────────────────────
-
-export default function IntelligenceHub() {
-  const { locale } = useShell()
-  const isAr = locale === "ar"
-  const [draft, setDraft] = React.useState("")
+/** The v1 intelligence content (predictions, insights, notes, recommendations,
+ *  meeting summaries, suggested documents), kept below the AI Center chat. */
+function InsightsSection({ isAr }: { isAr: boolean }) {
   const [doneNotes, setDoneNotes] = React.useState<Set<string>>(new Set())
 
   const todayInsights = smartInsights.filter((i) => i.group === "today")
   const weekInsights = smartInsights.filter((i) => i.group === "week")
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
-      {/* Page heading */}
-      <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">
-          {isAr ? ar.pageTitle : "The brain of Reach"}
-        </h1>
-        <p className="max-w-3xl text-[13px] text-muted-foreground">
-          {isAr ? ar.pageDesc : "Predictions, summaries, and notes Reach pulls together for you."}
-        </p>
-      </div>
-
-      {/* ── Hero — indigo/violet (intelligence palette) ── */}
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="highlight-card hl-indigo relative overflow-hidden rounded-3xl"
-      >
-        <div className="relative z-10 flex flex-col gap-6 p-6 md:flex-row md:items-center md:p-8">
-          <div className="flex-1 space-y-4">
-            <div className="space-y-1">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase text-white/80">
-                <BrainCircuit className="size-3" />
-                {isAr ? ar.helloAi : "Hello from intelligence"}
-              </p>
-              <h2 className="text-[20px] font-bold leading-tight md:text-[22px] text-white">
-                {isAr ? ar.helloAiSub : "Here's what Reach learned about your week"}
-              </h2>
-            </div>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-              <HeroKpi label={isAr ? ar.insights : "Insights"} value={aiKpis.insightsThisWeek} icon={Sparkles} delay={0.1} />
-              <HeroKpi label={isAr ? ar.accuracy : "Accuracy"} value={aiKpis.accuracyPct} suffix="%" icon={Gauge} delay={0.16} />
-              <HeroKpi label={isAr ? ar.timeSaved : "Time saved"} value={aiKpis.timeSavedHours} suffix={isAr ? "س" : "h"} icon={Clock} delay={0.22} />
-              <HeroKpi label={isAr ? ar.models : "Models"} value={aiKpis.modelsUsed} icon={Zap} delay={0.28} />
-            </div>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="hidden md:block shrink-0"
-          >
-            <BrainIllustration className="h-44 w-auto" />
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* ── Ask AI prompt strip ── */}
-      <Card className="ring-1 ring-foreground/10">
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
-          <div className="flex items-center gap-2">
-            <motion.span
-              animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary"
-            >
-              <Sparkles className="size-3.5" />
-            </motion.span>
-            <div>
-              <div className="text-[13px] font-semibold">{isAr ? ar.askAi : "Ask Reach"}</div>
-              <div className="mt-0.5 text-[10.5px] text-muted-foreground/65">{isAr ? ar.trySomething : "Try one of the suggestions"}</div>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-3 px-5 py-4">
-          <div className="flex gap-2">
-            <Input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={isAr ? ar.askPh : "Ask anything about your week…"}
-              className="flex-1"
-              dir={isAr ? "rtl" : "ltr"}
-            />
-            <Button size="icon-sm" disabled={!draft.trim()} aria-label={isAr ? ar.send : "Send"}>
-              <Send className="size-4" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {suggestedPrompts.map((p) => (
-              <motion.button
-                key={p.en}
-                type="button"
-                whileHover={{ scale: 1.04, y: -1 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setDraft(isAr ? p.ar : p.en)}
-                className="rounded-full border border-border/60 panel px-3 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
-              >
-                <Sparkles className="me-1 inline size-2.5 text-primary" />
-                {isAr ? p.ar : p.en}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </Card>
-
+    <div className="space-y-6">
       {/* ── Predictions grid ── */}
       <section>
         <div className="mb-4">
@@ -386,7 +179,7 @@ export default function IntelligenceHub() {
             const tone = categoryTone(p.category)
             const Icon = categoryIcon[p.category]
             const TrendIcon = p.trend === "up" ? TrendingUp : p.trend === "down" ? TrendingDown : ArrowRight
-            const trendColor = p.trend === "up" ? "text-emerald-500" : p.trend === "down" ? "text-rose-500" : "text-muted-foreground"
+            const trendColor = p.trend === "up" ? "text-success" : p.trend === "down" ? "text-error" : "text-muted-foreground"
             return (
               <motion.div
                 key={p.id}
@@ -395,7 +188,7 @@ export default function IntelligenceHub() {
                 transition={{ duration: 0.22, delay: idx * 0.06 }}
                 whileHover={{ y: -3 }}
               >
-                <Card className="h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
+                <Card className="rounded-xl h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
                   <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-2">
                     <div className="flex items-center gap-2">
                       <span className={cn("flex size-9 items-center justify-center rounded-xl", tone.bg, tone.text)}>
@@ -432,7 +225,7 @@ export default function IntelligenceHub() {
       {/* ── Two-column: Insights feed + Useful notes ── */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Smart insights feed */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <span className="flex size-6 items-center justify-center rounded-md bg-primary/15 text-primary">
@@ -518,10 +311,10 @@ export default function IntelligenceHub() {
         </Card>
 
         {/* Useful notes */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <span className="flex size-6 items-center justify-center rounded-md bg-amber-500/15 text-amber-500">
+              <span className="flex size-6 items-center justify-center rounded-md bg-warning/15 text-warning">
                 <Lightbulb className="size-3.5" />
               </span>
               {isAr ? ar.notes : "Useful notes"}
@@ -539,7 +332,7 @@ export default function IntelligenceHub() {
                   transition={{ duration: 0.16, delay: i * 0.05 }}
                   className={cn(
                     "group flex items-start gap-3 px-5 py-3.5 transition-colors",
-                    isDone ? "bg-emerald-500/[0.04]" : "hover:bg-muted/30",
+                    isDone ? "bg-success/[0.04]" : "hover:bg-muted/30",
                   )}
                 >
                   <button
@@ -551,7 +344,7 @@ export default function IntelligenceHub() {
                     })}
                     className={cn(
                       "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                      isDone ? "border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40 hover:border-primary",
+                      isDone ? "border-success bg-success text-white" : "border-muted-foreground/40 hover:border-primary",
                     )}
                     aria-label={isAr ? ar.done : "Done"}
                   >
@@ -607,7 +400,7 @@ export default function IntelligenceHub() {
                 transition={{ duration: 0.2, delay: idx * 0.06 }}
                 whileHover={{ y: -2 }}
               >
-                <Card className="h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
+                <Card className="rounded-xl h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
                   <div className="space-y-2 px-5 pt-4 pb-3">
                     <span className={cn("inline-flex size-8 items-center justify-center rounded-lg", t.bg, t.text)}>
                       <Sparkles className="size-3.5" />
@@ -634,10 +427,10 @@ export default function IntelligenceHub() {
 
       {/* ── Auto-summaries + Knowledge recs ── */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <span className="flex size-6 items-center justify-center rounded-md bg-violet-500/15 text-violet-500">
+              <span className="flex size-6 items-center justify-center rounded-md bg-module/15 text-module">
                 <PenLine className="size-3.5" />
               </span>
               {isAr ? ar.summariesTitle : "Auto-generated summaries"}
@@ -665,7 +458,7 @@ export default function IntelligenceHub() {
                         <span>{isAr ? m.durationAr : m.duration}</span>
                       </div>
                     </div>
-                    <Badge variant="outline" className="gap-1 border-violet-500/30 bg-violet-500/10 text-[10px] text-violet-500">
+                    <Badge variant="outline" className="gap-1 border-module/30 bg-module/10 text-[10px] text-module">
                       <FileText className="size-2.5" />
                       AI
                     </Badge>
@@ -673,7 +466,7 @@ export default function IntelligenceHub() {
                   <ul className="mt-3 space-y-1.5">
                     {bullets.map((b, i) => (
                       <li key={i} className="flex gap-2 text-[12px] leading-relaxed text-muted-foreground/85">
-                        <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-violet-500" />
+                        <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-module" />
                         <span>{b}</span>
                       </li>
                     ))}
@@ -684,10 +477,10 @@ export default function IntelligenceHub() {
           </div>
         </Card>
 
-        <Card className="ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <span className="flex size-6 items-center justify-center rounded-md bg-blue-500/15 text-blue-500">
+              <span className="flex size-6 items-center justify-center rounded-md bg-info/15 text-info">
                 <FileText className="size-3.5" />
               </span>
               {isAr ? ar.knowledgeTitle : "Knowledge recommendations"}
@@ -704,7 +497,7 @@ export default function IntelligenceHub() {
                 whileHover={{ backgroundColor: "rgba(59,130,246,0.04)" }}
                 className="group flex cursor-pointer items-start gap-3 px-5 py-3.5 transition-colors"
               >
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
                   <FileText className="size-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -715,20 +508,38 @@ export default function IntelligenceHub() {
                         initial={{ width: 0 }}
                         animate={{ width: `${k.match}%` }}
                         transition={{ duration: 0.7, delay: 0.2 + idx * 0.1 }}
-                        className="h-full rounded-full bg-blue-500"
+                        className="h-full rounded-full bg-info"
                       />
                     </div>
-                    <span className="shrink-0 text-[10px] font-bold tabular-nums text-blue-500">
+                    <span className="shrink-0 text-[10px] font-bold tabular-nums text-info">
                       {k.match}% {isAr ? ar.match : "match"}
                     </span>
                   </div>
                 </div>
-                <ArrowUpRight className={cn("self-center size-3.5 text-muted-foreground/30 group-hover:text-blue-500 transition-colors", isAr && "rotate-90")} />
+                <ArrowUpRight className={cn("self-center size-3.5 text-muted-foreground/30 group-hover:text-info transition-colors", isAr && "rotate-90")} />
               </motion.li>
             ))}
           </ul>
         </Card>
       </div>
     </div>
+  )
+}
+
+/** AI Center page (/intelligence) — Figma 2028:2252 · 4858:15788. */
+export default function IntelligenceHub() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  return (
+    <main className="w-full space-y-10 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
+      <AiCenter isAr={isAr} />
+      <section aria-label={isAr ? "رؤى المساعد" : "Assistant insights"} className="space-y-6">
+        <div className="flex flex-col items-start gap-2">
+          <h2 className="flex items-center gap-2 text-[17px] font-medium leading-[25.5px]"><BrainCircuit className="size-4 text-primary" />{isAr ? "رؤى المساعد" : "Assistant insights"}</h2>
+          <span className="h-[3px] w-12 rounded-[2px] bg-primary" />
+        </div>
+        <InsightsSection isAr={isAr} />
+      </section>
+    </main>
   )
 }

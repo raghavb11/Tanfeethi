@@ -235,20 +235,21 @@ export const railGroups: RailItem[][] = [
   [
     {
       key: "community", title: "Executive community", titleAr: "مجتمع التنفيذي", path: "/community", icon: Users, module: "knowledge",
-      match: ["/community", "/news", "/announcements", "/surveys", "/circulars"],
+      match: ["/community", "/surveys", "/circulars"],
       children: [
         { title: "Community", titleAr: "المجتمع", path: "/community" },
-        { title: "News", titleAr: "الأخبار", path: "/news" },
-        { title: "Announcements", titleAr: "الإعلانات", path: "/announcements" },
         { title: "Surveys & polls", titleAr: "الاستبيانات", path: "/surveys" },
         { title: "Circulars", titleAr: "التعاميم", path: "/circulars" },
       ],
     },
     {
       key: "knowledge", title: "Knowledge", titleAr: "المعرفة", path: "/documents", icon: BookOpen, module: "knowledge",
-      match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs"],
+      // Figma breadcrumbs put news and announcement details under المعرفة.
+      match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs", "/news", "/announcements"],
       children: [
         { title: "Document library", titleAr: "مكتبة المستندات", path: "/documents" },
+        { title: "News", titleAr: "الأخبار", path: "/news" },
+        { title: "Announcements", titleAr: "التعاميم", path: "/announcements" },
         { title: "Policies", titleAr: "السياسات", path: "/policies" },
         { title: "FAQs", titleAr: "الأسئلة الشائعة", path: "/faqs" },
         { title: "Knowledge center", titleAr: "مركز المعرفة", path: "/knowledge" },

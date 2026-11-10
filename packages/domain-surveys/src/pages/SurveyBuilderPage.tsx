@@ -74,7 +74,7 @@ export default function SurveyBuilderPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* header */}
       <div className="mb-6">
         <button
@@ -84,7 +84,7 @@ export default function SurveyBuilderPage() {
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />
           {t("Back to surveys", "العودة إلى الاستبيانات")}
         </button>
-        <h1 className="font-heading text-3xl font-bold tracking-tight">
+        <h1 className="text-[18px] font-bold leading-7">
           {t("Create a survey", "إنشاء استبيان")}
         </h1>
         <p className="mt-1 text-muted-foreground">
@@ -94,7 +94,7 @@ export default function SurveyBuilderPage() {
 
       <div className="space-y-6">
         {/* details */}
-        <Card className="space-y-5 p-5">
+        <Card className="rounded-xl space-y-5 p-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">{t("Survey title", "عنوان الاستبيان")}</label>
             <Input
@@ -139,7 +139,7 @@ export default function SurveyBuilderPage() {
         {/* questions */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-heading text-lg font-semibold">{t("Questions", "الأسئلة")}</h2>
+            <h2 className="text-lg font-semibold">{t("Questions", "الأسئلة")}</h2>
             <Badge variant="secondary">{questions.length}</Badge>
           </div>
 

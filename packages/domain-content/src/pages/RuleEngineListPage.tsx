@@ -26,7 +26,7 @@ export default function RuleEngineListPage() {
   })
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
+    <div className="w-full space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-muted-foreground">
         <Link to="/config" className="hover:text-foreground">{t("Configuration", "الإعدادات")}</Link>
         <ChevronRight className={cn("size-3.5", isAr && "rotate-180")} />
@@ -35,7 +35,7 @@ export default function RuleEngineListPage() {
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1.5">
-          <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Approval Rule Engine", "محرك قواعد الاعتماد")}</h1>
+          <h1 className="text-[18px] font-bold leading-7">{t("Approval Rule Engine", "محرك قواعد الاعتماد")}</h1>
           <p className="max-w-3xl text-[13px] text-muted-foreground">
             {t("Rules decide what needs approval, who approves it and in what order.",
                "تحدّد القواعد ما الذي يحتاج اعتمادًا ومن يعتمده وبأي ترتيب.")}
@@ -85,7 +85,7 @@ export default function RuleEngineListPage() {
                       <Badge
                         variant="outline"
                         className={cn("text-[10.5px]", r.active
-                          ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          ? "border-success/35 bg-success/10 text-success dark:text-success"
                           : "text-muted-foreground")}
                       >
                         {r.active ? t("Active", "نشطة") : t("Inactive", "غير نشطة")}
@@ -126,7 +126,7 @@ export default function RuleEngineListPage() {
           ))}
 
           {rules.length === 0 && (
-            <Card className="ring-1 ring-foreground/10">
+            <Card className="rounded-xl ring-1 ring-foreground/10">
               <div className="px-5 py-12 text-center">
                 <Layers className="mx-auto size-8 text-muted-foreground/40" />
                 <p className="mt-3 text-[13px] text-muted-foreground">{t("No rules match that.", "لا توجد قواعد مطابقة.")}</p>
@@ -136,7 +136,7 @@ export default function RuleEngineListPage() {
         </div>
 
         <div className="lg:col-span-4">
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="flex items-center gap-2.5 border-b border-border/60 px-5 py-4">
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary"><History className="size-4" /></span>
               <div>

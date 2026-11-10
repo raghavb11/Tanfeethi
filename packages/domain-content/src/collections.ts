@@ -33,10 +33,10 @@ export function createCollection<T extends WithId>(seed: T[], key?: string) {
   // Hydrate from the persisted file once, at module load.
   if (key) {
     fetch(API)
-      .then((r) => (r.ok ? r.json() : {}))
+      .then((r): Promise<Record<string, unknown>> | Record<string, unknown> => (r.ok ? r.json() : {}))
       .then((data) => {
         if (data && Array.isArray(data[key])) {
-          items = data[key]
+          items = data[key] as T[]
           emit()
         }
       })

@@ -123,8 +123,8 @@ export function RichTextEditor({
         className={cn(
           "min-h-[520px] bg-[var(--card-elevated)] px-4 py-3 text-[15px] leading-relaxed outline-none",
           "empty:before:pointer-events-none empty:before:text-muted-foreground/70 empty:before:content-[attr(data-placeholder)]",
-          "[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold",
-          "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold",
+          "[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:[&_h2]:text-xl [&_h2]:font-semibold",
+          "[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:[&_h3]:text-lg [&_h3]:font-semibold",
           "[&_p]:my-2",
           "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:ps-5",
           "[&_a]:text-primary [&_a]:underline",

@@ -14,9 +14,10 @@ const SEED: FaqCategory[] = [
   { id: "cat-finance", name: "Finance", nameAr: "المالية", color: "#5f9d52" },
   { id: "cat-facilities", name: "Facilities", nameAr: "المرافق", color: "#c99a3a" },
   { id: "cat-travel", name: "Travel", nameAr: "السفر", color: "#9a6dc0" },
+  { id: "cat-documents", name: "Documents", nameAr: "المستندات", color: "#bc9951" },
 ]
 
-const store = createCollection<FaqCategory>(SEED, "faqCategories")
+const store = createCollection<FaqCategory>(SEED, "faqCategories-v2")
 export const useCategories = () => store.use()
 export const getCategories = () => store.get()
 export const addCategory = (c: FaqCategory) => store.append(c)

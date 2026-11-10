@@ -1,4 +1,3 @@
-import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
@@ -13,8 +12,8 @@ import { CURRENT_USER } from "../data/currentUser"
 
 const PROSE = cn(
   "text-[16px] leading-[1.75]",
-  "[&_h2]:mb-2 [&_h2]:mt-8 [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold [&_h2:first-child]:mt-0",
-  "[&_h3]:mb-1 [&_h3]:mt-5 [&_h3]:font-heading [&_h3]:text-lg [&_h3]:font-semibold",
+  "[&_h2]:mb-2 [&_h2]:mt-8 [&_h2]:[&_h2]:text-xl [&_h2]:font-semibold [&_h2:first-child]:mt-0",
+  "[&_h3]:mb-1 [&_h3]:mt-5 [&_h3]:[&_h3]:text-lg [&_h3]:font-semibold",
   "[&_p]:my-4 [&_p]:text-foreground/85",
   "[&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-6 [&_ul]:text-foreground/85 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-6 [&_li]:my-1.5",
   "[&_a]:text-primary [&_a]:underline",
@@ -36,7 +35,7 @@ export default function PolicyReaderPage() {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
         <FileText className="mx-auto size-10 text-muted-foreground/40" />
-        <h1 className="mt-4 font-heading text-2xl font-semibold">{t("Policy not found", "السياسة غير موجودة")}</h1>
+        <h1 className="mt-4 text-[18px] font-bold leading-7">{t("Policy not found", "السياسة غير موجودة")}</h1>
         <Button className="mt-6" onClick={() => navigate("/policies")}>{t("Back to policies", "العودة إلى السياسات")}</Button>
       </main>
     )
@@ -59,7 +58,7 @@ export default function PolicyReaderPage() {
     : ""
 
   return (
-    <main className="@container mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="@container mx-auto w-full max-w-5xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/policies")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to policies", "العودة إلى السياسات")}
@@ -72,8 +71,8 @@ export default function PolicyReaderPage() {
 
       {/* superseded / sunset notice */}
       {supersededBy && (
-        <div className={cn("mb-5 flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm", isSunset ? "border-destructive/30 bg-destructive/[0.05]" : "border-[#99631a]/30 bg-[#99631a]/[0.05]")}>
-          <History className={cn("size-4 shrink-0", isSunset ? "text-destructive" : "text-[#99631a] dark:text-[#d6a94a]")} />
+        <div className={cn("mb-5 flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm", isSunset ? "border-destructive/30 bg-destructive/[0.05]" : "border-[#99631a]/30 bg-warning-fill")}>
+          <History className={cn("size-4 shrink-0", isSunset ? "text-destructive" : "text-warning")} />
           <span>{isSunset ? t("This policy is sunset and no longer effective.", "هذه السياسة موقوفة ولم تعد سارية.") : t("This policy has been superseded but remains effective.", "حلّت محلها سياسة أخرى لكنها ما زالت سارية.")}</span>
           <button onClick={() => navigate(`/policies/${supersededBy.id}`)} className="font-medium text-primary hover:underline">{t("View", "عرض")} {supersededBy.number} →</button>
         </div>
@@ -89,7 +88,7 @@ export default function PolicyReaderPage() {
             {isSunset && <Badge className="bg-destructive/15 text-destructive">{t("Sunset", "موقوفة")}</Badge>}
           </div>
 
-          <h1 className="mt-4 font-heading text-[2rem] font-bold leading-[1.1] tracking-tight text-balance sm:text-[2.5rem]">{isAr ? policy.titleAr : policy.title}</h1>
+          <h1 className="mt-4 text-balance text-[18px] font-bold leading-7">{isAr ? policy.titleAr : policy.title}</h1>
           <p className="mt-3 max-w-[68ch] text-lg leading-relaxed text-muted-foreground">{isAr ? policy.summaryAr : policy.summary}</p>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-border py-3.5 text-sm text-muted-foreground">
@@ -112,8 +111,8 @@ export default function PolicyReaderPage() {
           {/* acknowledgement banner (user) */}
           {policy.requiresAck && !isAdmin && (
             ackedByMe ? (
-              <div className="mt-5 flex items-center gap-2 rounded-xl border border-[#16833e]/30 bg-[#16833e]/[0.06] p-3 text-sm">
-                <Check className="size-4 text-[#16833e] dark:text-[#5bbd7e]" />{t("You have acknowledged this policy. Thank you.", "لقد أقررت بهذه السياسة. شكرًا لك.")}
+              <div className="mt-5 flex items-center gap-2 rounded-xl border border-[#16833e]/30 bg-success-fill p-3 text-sm">
+                <Check className="size-4 text-success" />{t("You have acknowledged this policy. Thank you.", "لقد أقررت بهذه السياسة. شكرًا لك.")}
               </div>
             ) : (
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.05] p-4">
@@ -130,7 +129,7 @@ export default function PolicyReaderPage() {
           {/* attached documents */}
           {attachedDocs.length > 0 && (
             <div className="mt-8 max-w-[72ch]">
-              <h2 className="mb-3 flex items-center gap-2 font-heading text-xl font-semibold"><FileText className="size-5 text-primary" />{t("Attached documents", "المستندات المرفقة")}</h2>
+              <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold"><FileText className="size-5 text-primary" />{t("Attached documents", "المستندات المرفقة")}</h2>
               <div className="grid gap-2 sm:grid-cols-2">
                 {attachedDocs.map((d) => (
                   <button key={d.id} onClick={() => navigate(`/documents/${d.id}`)} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2.5 text-start text-sm transition-colors hover:border-primary/50">
@@ -158,7 +157,7 @@ export default function PolicyReaderPage() {
         {/* details sidebar */}
         <aside className="@4xl:block hidden">
           <div className="sticky top-20 space-y-4">
-            <Card className="p-5">
+            <Card className="rounded-xl p-5">
               <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Document details", "تفاصيل الوثيقة")}</div>
               <dl className="space-y-3 text-sm">
                 <div className="flex items-center gap-2.5"><Hash className="size-4 shrink-0 text-primary" /><dt className="w-24 shrink-0 text-muted-foreground">{t("Number", "الرقم")}</dt><dd className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium">{policy.number}</dd></div>
@@ -171,10 +170,10 @@ export default function PolicyReaderPage() {
 
             {/* acknowledgement stats (admin) */}
             {policy.requiresAck && isAdmin && (
-              <Card className="p-5">
+              <Card className="rounded-xl p-5">
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Acknowledgement", "الإقرار")}</div>
                 <div className="flex items-end justify-between">
-                  <div className="metal-text font-heading text-[1.8rem] font-semibold leading-none tabular-nums">{ackPct}%</div>
+                  <div className="text-foreground text-[1.8rem] font-semibold leading-none tabular-nums">{ackPct}%</div>
                   <div className="text-xs text-muted-foreground">{acked.toLocaleString()} {t("of", "من")} {affected.toLocaleString()}</div>
                 </div>
                 <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${ackPct}%` }} /></div>
@@ -182,7 +181,7 @@ export default function PolicyReaderPage() {
               </Card>
             )}
 
-            <Card className="p-5">
+            <Card className="rounded-xl p-5">
               <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Actions", "إجراءات")}</div>
               <div className="space-y-2">
                 {isAdmin && <Button variant="outline" className="w-full" onClick={() => navigate(`/policies/edit/${policy.id}`)}>{t("Edit policy", "تحرير السياسة")}</Button>}

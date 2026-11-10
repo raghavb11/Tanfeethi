@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import {
@@ -47,7 +46,7 @@ export default function CmsAdminPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={Gauge}
         eyebrow={t("CMS Administration", "إدارة المحتوى")}
@@ -66,7 +65,7 @@ export default function CmsAdminPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* modules */}
         <div className="lg:col-span-2">
-          <h2 className="mb-3 font-heading text-lg font-semibold">{t("Modules", "الوحدات")}</h2>
+          <h2 className="mb-3 text-lg font-semibold">{t("Modules", "الوحدات")}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {MODULES.map((m) => (
               <Card key={m.name} className="flex flex-row items-center gap-3 p-4">
@@ -84,7 +83,7 @@ export default function CmsAdminPage() {
         {/* right column */}
         <div className="space-y-6">
           <div>
-            <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold"><CheckCircle2 className="size-5 text-primary" />{t("Pending approvals", "بانتظار الاعتماد")}</h2>
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><CheckCircle2 className="size-5 text-primary" />{t("Pending approvals", "بانتظار الاعتماد")}</h2>
             <div className="space-y-2">
               {APPROVALS.map((a, i) => (
                 <Card key={i} className="p-3">
@@ -102,8 +101,8 @@ export default function CmsAdminPage() {
           </div>
 
           <div>
-            <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold"><ScrollText className="size-5 text-primary" />{t("Audit log", "سجل التدقيق")}</h2>
-            <Card className="divide-y divide-border">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><ScrollText className="size-5 text-primary" />{t("Audit log", "سجل التدقيق")}</h2>
+            <Card className="rounded-xl divide-y divide-border">
               {AUDIT.map((a, i) => (
                 <div key={i} className="p-3 text-sm">
                   <span className="font-medium">{a.who}</span>{" "}

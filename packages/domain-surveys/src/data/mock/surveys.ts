@@ -29,6 +29,11 @@ export type PulsePoll = {
   question: string
   questionAr: string
   options: PollOption[]
+  /** Department tag + closing line (Figma phone 3807:9948 / 3807:10057). */
+  dept?: string
+  deptAr?: string
+  when?: string
+  whenAr?: string
 }
 
 export type ResultBar = { label: string; labelAr: string; pct: number }
@@ -86,14 +91,17 @@ export const activeSurveys: ActiveSurvey[] = [
 ]
 
 export const pulsePoll: PulsePoll = {
-  id: "return-to-office",
-  question: "How would you rate this week at work?",
-  questionAr: "كيف تقيّم أسبوعك في العمل؟",
+  id: "morning-briefing",
+  question: "What's the best time for the morning briefing?",
+  questionAr: "ما أفضل موعد لإحاطة الصباح؟",
+  dept: "Operations",
+  deptAr: "عمليات",
+  when: "Closes in 2 days",
+  whenAr: "يغلق بعد يومين",
   options: [
-    { id: "great", label: "Great", labelAr: "ممتاز", votes: 128 },
-    { id: "good", label: "Good", labelAr: "جيد", votes: 96 },
-    { id: "ok", label: "Okay", labelAr: "مقبول", votes: 41 },
-    { id: "tough", label: "Tough", labelAr: "صعب", votes: 17 },
+    { id: "o8", label: "08:00", labelAr: "08:00", votes: 26 },
+    { id: "o9", label: "09:00", labelAr: "09:00", votes: 96 },
+    { id: "o10", label: "10:00", labelAr: "10:00", votes: 6 },
   ],
 }
 
@@ -237,4 +245,16 @@ export const sampleQuestionnaire: SurveyQuestion[] = [
     q: "Anything else you'd like leadership to know?",
     qAr: "هل هناك ما تود أن تعرفه القيادة؟",
   },
+]
+
+/** Departments for the create popup's "From department" / "Target employees". */
+export const SURVEY_DEPTS: { id: string; en: string; ar: string }[] = [
+  { id: "people", en: "People & Culture", ar: "الموظفون والثقافة" },
+  { id: "finance", en: "Finance", ar: "المالية" },
+  { id: "ops", en: "Operations", ar: "العمليات" },
+  { id: "it", en: "IT & Security", ar: "تقنية المعلومات والأمن" },
+  { id: "legal", en: "Legal & Compliance", ar: "الشؤون القانونية والامتثال" },
+  { id: "commercial", en: "Commercial", ar: "التجاري" },
+  { id: "ground", en: "Ground Services", ar: "الخدمات الأرضية" },
+  { id: "exec", en: "Executive Office", ar: "المكتب التنفيذي" },
 ]

@@ -12,7 +12,19 @@ export type NewsItem = {
   tint: string
   img: string
   body: string
+  // WIJHA knowledge fields (Arabic-first copy + reading time)
+  categoryAr?: string
+  dateAr?: string
+  excerptAr?: string
+  bodyAr?: string
+  readMin?: number
 }
+
+/** Arabic labels for the news categories. */
+export const NEWS_CAT_AR: Record<string, string> = {
+  Operations: "عمليات", Corporate: "المؤسسية", People: "الموظفون", Technology: "التقنية", Events: "الفعاليات", HR: "الموارد البشرية",
+}
+export const newsCatLabel = (cat: string, isAr: boolean) => (isAr ? NEWS_CAT_AR[cat] ?? cat : cat)
 
 /** Newsroom metadata shown on the News console (list + grid views). */
 export type NewsMeta = {
@@ -46,7 +58,31 @@ const P = (...paras: string[]) => paras.map((p) => `<p>${p}</p>`).join("")
 
 export const NEWS: NewsItem[] = [
   {
+    id: "n0",
+    title: "New Jeddah lounge opens in September",
+    titleAr: "تشغيل صالة جدة الجديدة يبدأ في سبتمبر",
+    category: "Operations",
+    categoryAr: "عمليات",
+    date: "Yesterday",
+    dateAr: "أمس",
+    readMin: 3,
+    excerpt: "The lounge welcomes its first members early next month, with double the capacity and round-the-clock concierge service.",
+    excerptAr: "تستقبل الصالة أول أفواج الأعضاء مطلع الشهر القادم بسعة مضاعفة وخدمة كونسيرج على مدار الساعة.",
+    status: "Published",
+    tint: "#3d2031",
+    img: "images/cms/office.jpg",
+    body: P(
+      "The lounge welcomes its first members early next month, with <b>double the capacity</b> and round-the-clock concierge service.",
+      "Fit-out is complete and the operations team is running final service rehearsals ahead of the September opening.",
+    ),
+    bodyAr: P(
+      "تستقبل الصالة أول أفواج الأعضاء مطلع الشهر القادم بسعة مضاعفة وخدمة كونسيرج على مدار الساعة.",
+      "اكتملت أعمال التجهيز ويُجري فريق العمليات التجارب النهائية للخدمة استعدادًا للافتتاح في سبتمبر.",
+    ),
+  },
+  {
     id: "n1",
+    categoryAr: "المؤسسية", dateAr: "٢ أغسطس ٢٠٢٦", readMin: 2, excerptAr: "تكريم في جوائز التميّز الإقليمية للطيران عن عمليات صالات كبار الزوار.",
     title: "ALTANFEETHI wins Best Aviation Services 2026",
     titleAr: "التنفيذي تفوز بجائزة أفضل خدمات طيران ٢٠٢٦",
     category: "Corporate",
@@ -64,6 +100,7 @@ export const NEWS: NewsItem[] = [
   },
   {
     id: "n2",
+    categoryAr: "الموظفون", dateAr: "١ أغسطس ٢٠٢٦", readMin: 1, excerptAr: "نشرت الموارد البشرية الجدول المعدّل اعتبارًا من أول أيام رمضان.",
     title: "New Ramadan working hours announced",
     titleAr: "الإعلان عن ساعات عمل رمضان الجديدة",
     category: "People",
@@ -79,6 +116,7 @@ export const NEWS: NewsItem[] = [
   },
   {
     id: "n3",
+    categoryAr: "عمليات", dateAr: "٣٠ يوليو ٢٠٢٦", readMin: 2, excerptAr: "أعمال المرحلة الثانية تسير وفق الخطة لبلوغ هدف الربع الرابع.",
     title: "Terminal expansion reaches 68% completion",
     titleAr: "توسعة المبنى تصل إلى ٦٨٪ من الإنجاز",
     category: "Operations",
@@ -94,6 +132,7 @@ export const NEWS: NewsItem[] = [
   },
   {
     id: "n4",
+    categoryAr: "التقنية", dateAr: "٢٨ يوليو ٢٠٢٦", readMin: 2, excerptAr: "نظرة أولى على منصة تجربة الموظف الموحّدة.",
     title: "Wajha portal rollout — what's new",
     titleAr: "إطلاق بوابة وجهة — الجديد",
     category: "Technology",
@@ -109,6 +148,7 @@ export const NEWS: NewsItem[] = [
   },
   {
     id: "n5",
+    categoryAr: "الموظفون", dateAr: "—", readMin: 1, excerptAr: "بانتظار اعتماد القيادة قبل النشر لجميع الموظفين.",
     title: "Eid Al-Adha holiday schedule (draft)",
     titleAr: "جدول عطلة عيد الأضحى (مسودة)",
     category: "People",
@@ -121,6 +161,7 @@ export const NEWS: NewsItem[] = [
   },
   {
     id: "n6",
+    categoryAr: "الفعاليات", dateAr: "٢٥ يوليو ٢٠٢٦", readMin: 1, excerptAr: "انضم إلى فريق القيادة لمراجعة الربع الثالث وجلسة أسئلة مفتوحة.",
     title: "Quarterly town hall — save the date",
     titleAr: "اللقاء الفصلي — احجز الموعد",
     category: "Events",

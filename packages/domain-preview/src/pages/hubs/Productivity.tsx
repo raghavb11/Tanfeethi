@@ -82,10 +82,10 @@ const initialNotes: { id: string; text: string; textAr: string; tone: "yellow" |
 ]
 
 const templates: { id: string; title: string; titleAr: string; icon: React.ComponentType<{ className?: string }>; tone: string }[] = [
-  { id: "tp1", title: "Meeting notes", titleAr: "محضر اجتماع", icon: FileText, tone: "bg-blue-500/12 text-blue-600 dark:text-blue-400" },
-  { id: "tp2", title: "Weekly review", titleAr: "مراجعة أسبوعية", icon: Target, tone: "bg-amber-500/12 text-amber-600 dark:text-amber-400" },
-  { id: "tp3", title: "Project brief", titleAr: "موجز مشروع", icon: Briefcase, tone: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400" },
-  { id: "tp4", title: "Decision log", titleAr: "سجل القرارات", icon: Layers, tone: "bg-violet-500/12 text-violet-600 dark:text-violet-400" },
+  { id: "tp1", title: "Meeting notes", titleAr: "محضر اجتماع", icon: FileText, tone: "bg-info/12 text-info dark:text-info" },
+  { id: "tp2", title: "Weekly review", titleAr: "مراجعة أسبوعية", icon: Target, tone: "bg-warning/12 text-warning dark:text-warning" },
+  { id: "tp3", title: "Project brief", titleAr: "موجز مشروع", icon: Briefcase, tone: "bg-success/12 text-success dark:text-success" },
+  { id: "tp4", title: "Decision log", titleAr: "سجل القرارات", icon: Layers, tone: "bg-module/12 text-module dark:text-module" },
 ]
 
 const recentDocs: { id: string; title: string; titleAr: string; updated: string; updatedAr: string }[] = [
@@ -95,10 +95,10 @@ const recentDocs: { id: string; title: string; titleAr: string; updated: string;
 ]
 
 function noteTone(t: "yellow" | "rose" | "blue" | "green") {
-  if (t === "yellow") return "bg-amber-100/95 dark:bg-amber-500/15 border-amber-300/60 dark:border-amber-500/30"
-  if (t === "rose") return "bg-rose-100/95 dark:bg-rose-500/15 border-rose-300/60 dark:border-rose-500/30"
-  if (t === "green") return "bg-emerald-100/95 dark:bg-emerald-500/15 border-emerald-300/60 dark:border-emerald-500/30"
-  return "bg-blue-100/95 dark:bg-blue-500/15 border-blue-300/60 dark:border-blue-500/30"
+  if (t === "yellow") return "bg-warning/95 dark:bg-warning/15 border-warning/60 dark:border-warning/30"
+  if (t === "rose") return "bg-error/95 dark:bg-error/15 border-error/60 dark:border-error/30"
+  if (t === "green") return "bg-success/95 dark:bg-success/15 border-success/60 dark:border-success/30"
+  return "bg-info/95 dark:bg-info/15 border-info/60 dark:border-info/30"
 }
 
 function scheduleIcon(type: ScheduleType) {
@@ -108,14 +108,14 @@ function scheduleIcon(type: ScheduleType) {
 }
 
 function scheduleTone(status: ScheduleStatus) {
-  if (status === "done") return "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400"
-  if (status === "current") return "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/25"
+  if (status === "done") return "bg-success/12 text-success dark:text-success"
+  if (status === "current") return "bg-warning/15 text-warning dark:text-warning ring-2 ring-warning/25"
   return "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
 }
 
 function priorityDot(p?: "high" | "med" | "low") {
-  if (p === "high") return "bg-rose-500"
-  if (p === "med") return "bg-amber-500"
+  if (p === "high") return "bg-error"
+  if (p === "med") return "bg-warning"
   return "bg-slate-300 dark:bg-slate-600"
 }
 
@@ -163,9 +163,9 @@ export default function ProductivityHub() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 px-4 py-7 md:px-8">
+    <div className="w-full space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">
+        <h1 className="text-[18px] font-bold leading-7">
           {isAr ? ar.pageTitle : "Productivity Hub"}
         </h1>
         <p className="text-[13px] text-muted-foreground">
@@ -178,7 +178,7 @@ export default function ProductivityHub() {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col gap-4 rounded-2xl border border-border/60 panel px-5 py-4 md:flex-row md:items-center md:justify-between"
+        className="flex flex-col gap-4 rounded-xl border border-border/60 panel px-5 py-4 md:flex-row md:items-center md:justify-between"
       >
         <div>
           <div className="text-[15px] font-semibold tracking-tight">
@@ -190,7 +190,7 @@ export default function ProductivityHub() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="size-4 text-emerald-500" />
+            <CheckCircle2 className="size-4 text-success" />
             <div>
               <div className="text-[16px] font-bold tabular-nums leading-none">{tasksDone}</div>
               <div className="text-[10px] text-muted-foreground/55">{isAr ? ar.doneToday : "Done"}</div>
@@ -198,7 +198,7 @@ export default function ProductivityHub() {
           </div>
           <div className="h-8 w-px bg-border/60" />
           <div className="flex items-center gap-2">
-            <Timer className="size-4 text-amber-500" />
+            <Timer className="size-4 text-warning" />
             <div>
               <div className="text-[16px] font-bold tabular-nums leading-none">{focusToday}<span className="ms-0.5 text-[10px] font-medium text-muted-foreground/55">{isAr ? "د" : "m"}</span></div>
               <div className="text-[10px] text-muted-foreground/55">{isAr ? ar.focusMin : "Focus"}</div>
@@ -206,7 +206,7 @@ export default function ProductivityHub() {
           </div>
           <div className="h-8 w-px bg-border/60" />
           <div className="flex items-center gap-2">
-            <StickyNote className="size-4 text-rose-500" />
+            <StickyNote className="size-4 text-error" />
             <div>
               <div className="text-[16px] font-bold tabular-nums leading-none">{notes.length}</div>
               <div className="text-[10px] text-muted-foreground/55">{isAr ? ar.notesAdded : "Notes"}</div>
@@ -214,7 +214,7 @@ export default function ProductivityHub() {
           </div>
           <div className="h-8 w-px bg-border/60" />
           <div className="flex items-center gap-2">
-            <Flame className="size-4 text-orange-500" />
+            <Flame className="size-4 text-warning" />
             <div>
               <div className="text-[16px] font-bold tabular-nums leading-none">11</div>
               <div className="text-[10px] text-muted-foreground/55">{isAr ? ar.habitStreak : "Streak"}</div>
@@ -226,10 +226,10 @@ export default function ProductivityHub() {
       {/* Two-col: Tasks + Agenda */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Tasks */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <CheckCircle2 className="size-3.5 text-emerald-500" />
+              <CheckCircle2 className="size-3.5 text-success" />
               {isAr ? ar.tasks : "My tasks"}
               <span className="ms-auto text-[11px] font-medium text-muted-foreground/65">
                 {tasksDone}/{tasks.length}
@@ -265,7 +265,7 @@ export default function ProductivityHub() {
                     onClick={() => toggleTask(t.id)}
                     className={cn(
                       "flex size-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                      t.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40 hover:border-emerald-500",
+                      t.done ? "border-success bg-success text-white" : "border-muted-foreground/40 hover:border-success",
                     )}
                   >
                     {t.done && <CheckCircle2 className="size-3" />}
@@ -286,10 +286,10 @@ export default function ProductivityHub() {
         </Card>
 
         {/* Agenda */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <Calendar className="size-3.5 text-blue-500" />
+              <Calendar className="size-3.5 text-info" />
               {isAr ? ar.agenda : "Today's agenda"}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground/65">{isAr ? ar.agendaDesc : "Focus, meetings, breaks"}</div>
@@ -319,7 +319,7 @@ export default function ProductivityHub() {
                     </div>
                   </div>
                   {s.status === "current" && (
-                    <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="size-1.5 rounded-full bg-warning animate-pulse" />
                   )}
                 </motion.li>
               )
@@ -331,10 +331,10 @@ export default function ProductivityHub() {
       {/* Focus timer + sticky notes */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Focus timer — quiet card */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <Focus className="size-3.5 text-amber-500" />
+              <Focus className="size-3.5 text-warning" />
               {isAr ? ar.focusTimer : "Focus timer"}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground/65">{isAr ? ar.focusTimerDesc : "25 min · no interruptions"}</div>
@@ -348,7 +348,7 @@ export default function ProductivityHub() {
                   cx="50" cy="50" r="44" fill="none"
                   strokeWidth="6"
                   strokeLinecap="round"
-                  className="text-amber-500"
+                  className="text-warning"
                   stroke="currentColor"
                   strokeDasharray={2 * Math.PI * 44}
                   animate={{ strokeDashoffset: (2 * Math.PI * 44) * (1 - timerProgress / 100) }}
@@ -366,7 +366,7 @@ export default function ProductivityHub() {
               <Button
                 onClick={() => setRunning((r) => !r)}
                 size="sm"
-                className="gap-1.5 bg-amber-500 hover:bg-amber-600"
+                className="gap-1.5 bg-warning hover:bg-warning"
               >
                 {running ? <Pause className="size-3.5" fill="currentColor" /> : <Play className="size-3.5" fill="currentColor" />}
                 {running ? (isAr ? ar.pause : "Pause") : (isAr ? ar.start : "Start")}
@@ -383,10 +383,10 @@ export default function ProductivityHub() {
         </Card>
 
         {/* Sticky notes */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <StickyNote className="size-3.5 text-rose-400" />
+              <StickyNote className="size-3.5 text-error" />
               {isAr ? ar.notes : "Quick notes"}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground/65">{isAr ? ar.notesDesc : "Capture before you forget"}</div>
@@ -431,10 +431,10 @@ export default function ProductivityHub() {
 
       {/* Templates + recent docs */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <Layers className="size-3.5 text-violet-500" />
+              <Layers className="size-3.5 text-module" />
               {isAr ? ar.templates : "Templates"}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground/65">{isAr ? ar.templatesDesc : "Start from a template"}</div>
@@ -449,7 +449,7 @@ export default function ProductivityHub() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.16, delay: idx * 0.04 }}
                   whileHover={{ y: -2 }}
-                  className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-muted/15 p-3 ring-1 ring-foreground/5 transition-all hover:border-violet-500/30 hover:shadow-sm"
+                  className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-muted/15 p-3 ring-1 ring-foreground/5 transition-all hover:border-module/30 hover:shadow-sm"
                 >
                   <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", t.tone)}>
                     <Icon className="size-4" />
@@ -464,10 +464,10 @@ export default function ProductivityHub() {
           </div>
         </Card>
 
-        <Card className="ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <FileText className="size-3.5 text-blue-500" />
+              <FileText className="size-3.5 text-info" />
               {isAr ? ar.recentDocs : "Recent documents"}
             </div>
           </div>

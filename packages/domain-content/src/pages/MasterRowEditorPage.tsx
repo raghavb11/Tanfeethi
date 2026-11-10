@@ -93,7 +93,7 @@ export default function MasterRowEditorPage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate(back)}
@@ -111,7 +111,7 @@ export default function MasterRowEditorPage() {
       </div>
 
       <div className="mb-6">
-        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-[18px] font-bold leading-7">
           {editing
             ? t(`Edit ${meta.singular}`, `تعديل ${meta.singularAr}`)
             : t(`New ${meta.singular}`, `${meta.singularAr} جديد`)}
@@ -119,7 +119,7 @@ export default function MasterRowEditorPage() {
         <p className="mt-1 text-[13px] text-muted-foreground">{isAr ? meta.descAr : meta.desc}</p>
       </div>
 
-      <Card className="p-5">
+      <Card className="rounded-xl p-5">
         <div className="space-y-5">
           <div>
             {label(t("Name", "الاسم"))}
@@ -143,7 +143,7 @@ export default function MasterRowEditorPage() {
               )}
             </div>
             {clash && (
-              <p className="mt-1.5 text-[12px] font-medium text-rose-500">
+              <p className="mt-1.5 text-[12px] font-medium text-error">
                 {t("A value with that reference already exists in this list.", "توجد قيمة بهذا المعرّف في هذه القائمة.")}
               </p>
             )}

@@ -1,24 +1,48 @@
 import { createCollection } from "../collections"
 
-export type FolderDef = { id: string; name: string; nameAr: string; count: number; parent?: string | null }
+export type FolderDef = {
+  id: string
+  name: string
+  nameAr: string
+  /** Legacy seed count — the library computes live counts from the data. */
+  count: number
+  parent?: string | null
+  /** Read-only folders (e.g. last year's archive) cannot receive uploads. */
+  readOnly?: boolean
+  /** Who can open the folder / who owns it (department ids). Empty = everyone. */
+  access?: string[]
+  owners?: string[]
+}
 
-/** Seed folder tree — two levels deep. A real deployment would have hundreds;
- *  the library UI is built to scale to that (searchable, collapsible tree). */
+/** Folder tree — the Knowledge library's top level is the six folders drawn in
+ *  Figma (2028:3744); the departmental folders live under "Work folders", so
+ *  the library still scales to deep trees (breadcrumb + folder tiles). */
 export const FOLDERS: FolderDef[] = [
-  { id: "hr", name: "HR & People", nameAr: "الموارد البشرية", count: 84, parent: null },
+  { id: "work", name: "Work folders", nameAr: "مجلدات العمل", count: 0, parent: null },
+  { id: "proj-policies", name: "Project policies", nameAr: "سياسات المشاريع", count: 0, parent: null },
+  { id: "contracts", name: "Contracts & agreements", nameAr: "العقود والاتفاقيات", count: 0, parent: null },
+  { id: "fin-reports", name: "Financial reports", nameAr: "التقارير المالية", count: 0, parent: null },
+  { id: "op-manuals", name: "Operating manuals", nameAr: "دلائل التشغيل", count: 0, parent: null },
+  { id: "archive-2025", name: "Archive 2025", nameAr: "أرشيف 2025", count: 0, parent: null, readOnly: true },
+  { id: "pp-delivery", name: "Delivery policies", nameAr: "سياسات التنفيذ", count: 0, parent: "proj-policies" },
+  { id: "pp-quality", name: "Quality policies", nameAr: "سياسات الجودة", count: 0, parent: "proj-policies" },
+  { id: "hr", name: "HR & People", nameAr: "الموارد البشرية", count: 84, parent: "work" },
   { id: "hr-recruit", name: "Recruitment", nameAr: "التوظيف", count: 22, parent: "hr" },
   { id: "hr-benefits", name: "Benefits & Payroll", nameAr: "المزايا والرواتب", count: 31, parent: "hr" },
   { id: "hr-learning", name: "Learning & Development", nameAr: "التعلّم والتطوير", count: 18, parent: "hr" },
-  { id: "fin", name: "Finance", nameAr: "المالية", count: 56, parent: null },
+  { id: "fin", name: "Finance", nameAr: "المالية", count: 56, parent: "work" },
   { id: "fin-budgets", name: "Budgets & Forecasts", nameAr: "الميزانيات والتوقعات", count: 20, parent: "fin" },
   { id: "fin-invoices", name: "Invoices & Payments", nameAr: "الفواتير والمدفوعات", count: 27, parent: "fin" },
-  { id: "ops", name: "Operations", nameAr: "العمليات", count: 132, parent: null },
+  { id: "ops", name: "Operations", nameAr: "العمليات", count: 132, parent: "work" },
   { id: "ops-safety", name: "Health & Safety", nameAr: "الصحة والسلامة", count: 40, parent: "ops" },
   { id: "ops-manuals", name: "Manuals & SOPs", nameAr: "الأدلة والإجراءات", count: 61, parent: "ops" },
-  { id: "it", name: "IT & Security", nameAr: "تقنية المعلومات", count: 47, parent: null },
-  { id: "corp", name: "Corporate", nameAr: "المؤسسية", count: 38, parent: null },
-  { id: "legal", name: "Legal", nameAr: "القانونية", count: 29, parent: null },
+  { id: "it", name: "IT & Security", nameAr: "تقنية المعلومات", count: 47, parent: "work" },
+  { id: "corp", name: "Corporate", nameAr: "المؤسسية", count: 38, parent: "work" },
+  { id: "legal", name: "Legal", nameAr: "القانونية", count: 29, parent: "work" },
 ]
+
+/** Documents filed at the library root (no folder). */
+export const ROOT_FOLDER = "root"
 
 export type Doc = {
   id: string
@@ -36,6 +60,9 @@ export type Doc = {
   owner: string
   ownerAr: string
   restricted?: boolean
+  /** The person who uploaded the file (shown in the Owner column when set). */
+  ownerPerson?: string
+  ownerPersonAr?: string
   /** ISO date (YYYY-MM-DD). When set and reached, the file is auto-archived. */
   archiveAfter?: string | null
 }
@@ -48,6 +75,16 @@ export const isArchived = (d: Doc, today: string = DOC_TODAY_ISO) => !!d.archive
 export const isArchiveScheduled = (d: Doc, today: string = DOC_TODAY_ISO) => !!d.archiveAfter && d.archiveAfter > today
 
 const HAND_DOCS: Doc[] = [
+  // Library root + the Figma folders (2028:3744)
+  { id: "d0", name: "Approved org structure", nameAr: "الهيكل التنظيمي المعتمد", folder: ROOT_FOLDER, type: "PDF", size: "820 KB", dept: "HR", deptAr: "الموارد البشرية", updated: "Yesterday", updatedAr: "أمس", ver: "v1", downloads: 64, owner: "People & Culture", ownerAr: "الموظفون والثقافة", ownerPerson: "Fawaz Al-Ghailan", ownerPersonAr: "فواز الغيلان" },
+  { id: "dw1", name: "Work folders index", nameAr: "فهرس مجلدات العمل", folder: "work", type: "XLSX", size: "64 KB", dept: "Corporate", deptAr: "المؤسسية", updated: "Aug 6, 2026", updatedAr: "٦ أغسطس ٢٠٢٦", ver: "v2", downloads: 41, owner: "Digital Workplace", ownerAr: "بيئة العمل الرقمية", ownerPerson: "Fawaz Al-Ghailan", ownerPersonAr: "فواز الغيلان" },
+  { id: "dp1", name: "Project governance policy", nameAr: "سياسة حوكمة المشاريع", folder: "proj-policies", type: "PDF", size: "1.1 MB", dept: "PMO", deptAr: "مكتب المشاريع", updated: "Aug 4, 2026", updatedAr: "٤ أغسطس ٢٠٢٦", ver: "v3", downloads: 118, owner: "PMO", ownerAr: "مكتب المشاريع", ownerPerson: "Sara Al-Mutairi", ownerPersonAr: "سارة المطيري" },
+  { id: "dp2", name: "Change request procedure", nameAr: "إجراء طلبات التغيير", folder: "proj-policies", type: "DOCX", size: "210 KB", dept: "PMO", deptAr: "مكتب المشاريع", updated: "Jul 22, 2026", updatedAr: "٢٢ يوليو ٢٠٢٦", ver: "v2", downloads: 73, owner: "PMO", ownerAr: "مكتب المشاريع", ownerPerson: "Sara Al-Mutairi", ownerPersonAr: "سارة المطيري" },
+  { id: "dc1", name: "Ground handling agreement", nameAr: "اتفاقية الخدمات الأرضية", folder: "contracts", type: "PDF", size: "2.3 MB", dept: "Legal", deptAr: "القانونية", updated: "Jul 18, 2026", updatedAr: "١٨ يوليو ٢٠٢٦", ver: "v1", downloads: 29, owner: "Legal & Compliance", ownerAr: "الشؤون القانونية", restricted: true, ownerPerson: "Ahmed Hassan", ownerPersonAr: "أحمد حسن" },
+  { id: "dc2", name: "Lounge catering contract", nameAr: "عقد خدمات الضيافة للصالات", folder: "contracts", type: "PDF", size: "1.6 MB", dept: "Legal", deptAr: "القانونية", updated: "Jul 9, 2026", updatedAr: "٩ يوليو ٢٠٢٦", ver: "v2", downloads: 35, owner: "Legal & Compliance", ownerAr: "الشؤون القانونية", ownerPerson: "Ahmed Hassan", ownerPersonAr: "أحمد حسن" },
+  { id: "df1", name: "Q2 2026 financial statements", nameAr: "القوائم المالية للربع الثاني ٢٠٢٦", folder: "fin-reports", type: "PDF", size: "3.4 MB", dept: "Finance", deptAr: "المالية", updated: "Jul 31, 2026", updatedAr: "٣١ يوليو ٢٠٢٦", ver: "v1", downloads: 152, owner: "Finance", ownerAr: "المالية", ownerPerson: "Khalid Al-Saadi", ownerPersonAr: "خالد السعدي" },
+  { id: "df2", name: "Budget variance report — H1", nameAr: "تقرير انحراف الميزانية — النصف الأول", folder: "fin-reports", type: "XLSX", size: "380 KB", dept: "Finance", deptAr: "المالية", updated: "Jul 15, 2026", updatedAr: "١٥ يوليو ٢٠٢٦", ver: "v2", downloads: 88, owner: "Finance", ownerAr: "المالية", ownerPerson: "Khalid Al-Saadi", ownerPersonAr: "خالد السعدي" },
+  { id: "dm1", name: "VIP terminal operating manual", nameAr: "دليل تشغيل صالة كبار الزوار", folder: "op-manuals", type: "PDF", size: "6.2 MB", dept: "Operations", deptAr: "العمليات", updated: "Jun 30, 2026", updatedAr: "٣٠ يونيو ٢٠٢٦", ver: "v5", downloads: 301, owner: "Operations", ownerAr: "العمليات", ownerPerson: "Noura Saleh", ownerPersonAr: "نورة صالح" },
   { id: "d1", name: "Employee Handbook 2026", nameAr: "دليل الموظف ٢٠٢٦", folder: "hr", type: "PDF", size: "3.2 MB", dept: "HR", deptAr: "الموارد البشرية", updated: "Aug 2, 2026", updatedAr: "٢ أغسطس ٢٠٢٦", ver: "v6", downloads: 1240, owner: "People & Culture", ownerAr: "الموظفون والثقافة" },
   { id: "d2", name: "Brand Guidelines", nameAr: "دليل الهوية", folder: "corp", type: "PDF", size: "12.4 MB", dept: "Corporate", deptAr: "المؤسسية", updated: "Jul 20, 2026", updatedAr: "٢٠ يوليو ٢٠٢٦", ver: "v2", downloads: 380, owner: "Marketing", ownerAr: "التسويق" },
   { id: "d3", name: "FY26 Budget Template", nameAr: "قالب ميزانية ٢٠٢٦", folder: "fin-budgets", type: "XLSX", size: "240 KB", dept: "Finance", deptAr: "المالية", updated: "Aug 5, 2026", updatedAr: "٥ أغسطس ٢٠٢٦", ver: "v3", downloads: 96, owner: "Finance", ownerAr: "المالية", restricted: true },
@@ -110,13 +147,14 @@ function generateDocs(): Doc[] {
 
 export const DOCS: Doc[] = [...HAND_DOCS, ...generateDocs()]
 
+/** File-type tile colours — Figma draws PDF on Status/Error/Fill with red text. */
 export const TYPE_STYLE: Record<Doc["type"], string> = {
-  PDF: "bg-[#ce7b5b]",
-  XLSX: "bg-[#3f7c77]",
-  DOCX: "bg-[#8e4c58]",
+  PDF: "bg-error-fill text-error",
+  XLSX: "bg-success-fill text-success",
+  DOCX: "bg-info-fill text-info",
 }
 
-const store = createCollection<Doc>(DOCS, "documents")
+const store = createCollection<Doc>(DOCS, "documents-v2")
 export const useDocuments = () => store.use()
 export const addDocument = (d: Doc) => store.add(d)
 export const updateDocument = (id: string, patch: Partial<Doc>) => store.update(id, patch)
@@ -126,11 +164,12 @@ export function getDocumentById(id: string): Doc | undefined {
 }
 
 // ── Folders (reactive so new folders can be created from the library) ─────────
-const folderStore = createCollection<FolderDef>(FOLDERS, "folders")
+const folderStore = createCollection<FolderDef>(FOLDERS, "folders-v2")
 export const useFolders = () => folderStore.use()
 export const addFolder = (f: FolderDef) => folderStore.append(f)
 export const deleteFolder = (id: string) => folderStore.remove(id)
 export const folderById = (id: string) => folderStore.getById(id)
+export const updateFolder = (id: string, patch: Partial<FolderDef>) => folderStore.update(id, patch)
 export const newFolderId = () => `fld-${Date.now().toString(36)}`
 
 const DOC_MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -172,4 +211,27 @@ export function documentPreview(d: Doc, isAr: boolean): string {
     <p><strong>2. ${isAr ? "الإرشادات" : "Guidance"}</strong></p>
     <p>${isAr ? "تفاصيل كاملة متاحة في النسخة القابلة للتحميل من المستند." : "Full details are available in the downloadable version of the document."}</p>
     <p class="note">${isAr ? "معاينة الصفحة ١ — نزّل الملف لعرض المستند كاملًا." : "Page 1 preview — download the file to view the full document."}</p>`
+}
+
+/** Arabic counted noun: 1 → "ملف واحد", 2 → "ملفان", 3–10 → "3 ملفات", 11+ → "11 ملفًا". */
+export function arCount(n: number, forms: { one: string; two: string; few: string; many: string }) {
+  if (n === 1) return forms.one
+  if (n === 2) return forms.two
+  if (n >= 3 && n <= 10) return `${n} ${forms.few}`
+  return `${n} ${forms.many}`
+}
+const AR_FOLDERS = { one: "مجلد واحد", two: "مجلدان", few: "مجلدات", many: "مجلدًا" }
+const AR_FILES = { one: "ملف واحد", two: "ملفان", few: "ملفات", many: "ملفًا" }
+
+/** Folder tile sub-line, e.g. "6 مجلدات · ملف واحد" / "6 folders · 1 file". */
+export function folderMeta(subfolders: number, files: number, isAr: boolean): string {
+  const parts: string[] = []
+  if (isAr) {
+    if (subfolders > 0) parts.push(arCount(subfolders, AR_FOLDERS))
+    if (files > 0 || subfolders === 0) parts.push(files === 0 ? "فارغ" : arCount(files, AR_FILES))
+  } else {
+    if (subfolders > 0) parts.push(`${subfolders} folder${subfolders === 1 ? "" : "s"}`)
+    if (files > 0 || subfolders === 0) parts.push(files === 0 ? "Empty" : `${files} file${files === 1 ? "" : "s"}`)
+  }
+  return parts.join(" · ")
 }

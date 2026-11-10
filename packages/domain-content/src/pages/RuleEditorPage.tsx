@@ -187,7 +187,7 @@ export default function RuleEditorPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] px-4 py-6 md:px-8">
+    <div className="w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* breadcrumb */}
       <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-muted-foreground">
         <Link to="/config" className="hover:text-foreground">{t("Approval Rule Engine", "محرك قواعد الاعتماد")}</Link>
@@ -201,11 +201,11 @@ export default function RuleEditorPage() {
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-[22px] font-bold tracking-tight md:text-[24px]">{isAr ? draft.nameAr : draft.name}</h1>
+            <h1 className="text-[18px] font-bold leading-7">{isAr ? draft.nameAr : draft.name}</h1>
             <Badge
               variant="outline"
               className={cn("text-[11px]", draft.active
-                ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                ? "border-success/35 bg-success/10 text-success dark:text-success"
                 : "text-muted-foreground")}
             >
               {draft.active ? t("Active", "نشطة") : t("Inactive", "غير نشطة")}
@@ -243,7 +243,7 @@ export default function RuleEditorPage() {
       </div>
 
       {tab !== "builder" ? (
-        <Card className="mt-6 ring-1 ring-foreground/10">
+        <Card className="rounded-xl mt-6 ring-1 ring-foreground/10">
           <div className="px-5 py-16 text-center text-[13px] text-muted-foreground">
             {t(`${TABS.find((x) => x.id === tab)!.en} is not part of this prototype yet.`,
                `${TABS.find((x) => x.id === tab)!.ar} غير متاح في هذا النموذج بعد.`)}
@@ -254,7 +254,7 @@ export default function RuleEditorPage() {
           {/* ── main column ── */}
           <div className="space-y-6 xl:col-span-8">
             {/* 1 · conditions */}
-            <Card className="ring-1 ring-foreground/10">
+            <Card className="rounded-xl ring-1 ring-foreground/10">
               <SectionHead
                 n={1}
                 title={t("When to apply this rule", "متى تُطبَّق هذه القاعدة")}
@@ -314,7 +314,7 @@ export default function RuleEditorPage() {
                       </span>
                       <button
                         onClick={() => removeCondition(c.id)}
-                        className="flex size-9 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-red-500/40 hover:text-red-500"
+                        className="flex size-9 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
                         aria-label={t("Delete condition", "حذف الشرط")}
                       >
                         <Trash2 className="size-4" />
@@ -336,7 +336,7 @@ export default function RuleEditorPage() {
             </Card>
 
             {/* 2 · approval workflow */}
-            <Card className="ring-1 ring-foreground/10">
+            <Card className="rounded-xl ring-1 ring-foreground/10">
               <SectionHead
                 n={2}
                 title={t("Approval workflow", "مسار الاعتماد")}
@@ -404,7 +404,7 @@ export default function RuleEditorPage() {
 
                       <button
                         onClick={() => removeLevel(l.id)}
-                        className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-red-500/40 hover:text-red-500"
+                        className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
                         aria-label={t("Remove level", "حذف المستوى")}
                       >
                         <Trash2 className="size-3.5" />
@@ -444,7 +444,7 @@ export default function RuleEditorPage() {
             </Card>
 
             {/* 3 · rule settings */}
-            <Card className="ring-1 ring-foreground/10">
+            <Card className="rounded-xl ring-1 ring-foreground/10">
               <SectionHead
                 n={3}
                 title={t("Rule settings", "إعدادات القاعدة")}
@@ -497,7 +497,7 @@ export default function RuleEditorPage() {
           {/* ── right rail: summary, or the open level's approvers ── */}
           <div className="space-y-6 xl:col-span-4">
             {level ? (
-              <Card className="ring-1 ring-foreground/10">
+              <Card className="rounded-xl ring-1 ring-foreground/10">
                 <div className="flex items-start justify-between gap-2 border-b border-border/60 px-5 py-4">
                   <div className="min-w-0">
                     <div className="text-[14px] font-semibold">
@@ -585,7 +585,7 @@ export default function RuleEditorPage() {
                             {a.members ? t(`${a.members} members`, `${a.members} أعضاء`) : (isAr ? a.sublabelAr : a.sublabel) ?? t("Dynamic approver", "معتمد ديناميكي")}
                           </div>
                         </div>
-                        <button onClick={() => removeApprover(a.id)} aria-label={t("Remove", "إزالة")} className="text-muted-foreground hover:text-red-500">
+                        <button onClick={() => removeApprover(a.id)} aria-label={t("Remove", "إزالة")} className="text-muted-foreground hover:text-error">
                           <X className="size-4" />
                         </button>
                       </div>
@@ -611,7 +611,7 @@ export default function RuleEditorPage() {
             ) : (
               <>
                 {/* rule summary */}
-                <Card className="ring-1 ring-foreground/10">
+                <Card className="rounded-xl ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">{t("Rule Summary", "ملخّص القاعدة")}</div>
                   <div className="space-y-3.5 p-5 text-[12.5px]">
                     {[
@@ -631,7 +631,7 @@ export default function RuleEditorPage() {
                 </Card>
 
                 {/* workflow diagram */}
-                <Card className="ring-1 ring-foreground/10">
+                <Card className="rounded-xl ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">{t("Workflow Diagram", "مخطّط المسار")}</div>
                   <div className="space-y-2 p-5">
                     {draft.levels.map((l, i) => (
@@ -650,14 +650,14 @@ export default function RuleEditorPage() {
                       </React.Fragment>
                     ))}
                     <div className="flex justify-center text-muted-foreground/50">↓</div>
-                    <div className="flex items-center justify-center gap-2 text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center justify-center gap-2 text-[12.5px] font-semibold text-success dark:text-success">
                       <Check className="size-4" />{t("Publish", "نشر")}
                     </div>
                   </div>
                 </Card>
 
                 {/* notes */}
-                <Card className="ring-1 ring-foreground/10">
+                <Card className="rounded-xl ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">
                     {t("Notes", "ملاحظات")} <span className="text-[11.5px] font-normal text-muted-foreground">({t("Optional", "اختياري")})</span>
                   </div>

@@ -79,7 +79,7 @@ export default function CircularsPage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-5xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={Megaphone}
         eyebrow={t("Internal Circulars", "التعاميم الداخلية")}
@@ -115,7 +115,7 @@ export default function CircularsPage() {
       {/* authored this session */}
       {created.length > 0 && filter === "All" && q === "" && (
         <div className="mb-3 space-y-3">
-          {created.map((c) => Row({ ...c, titleAr: c.title }, true))}
+          {created.map((c) => Row({ ...c, titleAr: c.title, views: 0, downloads: 0 }, true))}
         </div>
       )}
 
@@ -123,7 +123,7 @@ export default function CircularsPage() {
       <div className="space-y-3">{rest.map((c) => Row(c))}</div>
 
       {list.length === 0 && created.length === 0 && (
-        <Card className="p-10 text-center text-muted-foreground">{t("No circulars match your filters.", "لا توجد تعاميم مطابقة.")}</Card>
+        <Card className="rounded-xl p-10 text-center text-muted-foreground">{t("No circulars match your filters.", "لا توجد تعاميم مطابقة.")}</Card>
       )}
     </main>
   )

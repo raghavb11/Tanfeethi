@@ -81,7 +81,7 @@ export default function RolesPage() {
   const th = "px-4 py-3 text-start text-[12px] font-medium text-muted-foreground"
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={ShieldCheck}
         eyebrow={t("Roles & Permissions", "الأدوار والصلاحيات")}
@@ -122,7 +122,7 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <Card className="overflow-hidden py-0">
+          <Card className="rounded-xl overflow-hidden py-0">
             {filteredUsers.map((u, i) => {
               const isOpen = expanded === u.id
               const viaGroup = rolesViaGroups(groups, u.id, isAr)
@@ -203,7 +203,7 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <Card className="overflow-hidden py-0">
+          <Card className="rounded-xl overflow-hidden py-0">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
@@ -280,8 +280,8 @@ export default function RolesPage() {
       {/* ── BETA ── */}
       {tab === "beta" && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Card className="self-start p-5">
-            <div className="mb-1 flex items-center gap-2"><FlaskConical className="size-4" style={{ color: "#7c5cd6" }} /><h2 className="font-heading text-[15px] font-semibold">{t("Features in beta", "الميزات التجريبية")}</h2></div>
+          <Card className="rounded-xl self-start p-5">
+            <div className="mb-1 flex items-center gap-2"><FlaskConical className="size-4" style={{ color: "#7c5cd6" }} /><h2 className="text-[15px] font-semibold">{t("Features in beta", "الميزات التجريبية")}</h2></div>
             <p className="mb-4 text-[12px] text-muted-foreground">{t("Separate beta pages visible only to Beta Testers — production pages are untouched.", "صفحات تجريبية منفصلة يراها المختبرون فقط — دون تأثير على الصفحات الحالية.")}</p>
             <div className="space-y-2.5">
               {BETA_FEATURES.map((f) => (
@@ -296,8 +296,8 @@ export default function RolesPage() {
             </div>
           </Card>
 
-          <Card className="self-start p-5">
-            <div className="mb-1 flex items-center gap-2"><Users className="size-4 text-primary" /><h2 className="font-heading text-[15px] font-semibold">{t("Beta testers", "المختبرون التجريبيون")} <span className="text-muted-foreground">({betaCount})</span></h2></div>
+          <Card className="rounded-xl self-start p-5">
+            <div className="mb-1 flex items-center gap-2"><Users className="size-4 text-primary" /><h2 className="text-[15px] font-semibold">{t("Beta testers", "المختبرون التجريبيون")} <span className="text-muted-foreground">({betaCount})</span></h2></div>
             <p className="mb-4 text-[12px] text-muted-foreground">{t("Grant or remove the individual Beta Tester role. Members of a beta group are locked here.", "امنح دور المختبر الفردي أو أزله. أعضاء المجموعات التجريبية مقفلون هنا.")}</p>
             <div className="space-y-1.5">
               {users.map((u) => {

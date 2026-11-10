@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Badge, Card } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -33,7 +32,7 @@ export default function NotificationsAdminPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-5xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={Bell}
         eyebrow={t("Notifications", "الإشعارات")}
@@ -49,7 +48,7 @@ export default function NotificationsAdminPage() {
       </div>
 
       {/* channels */}
-      <h2 className="mb-3 font-heading text-lg font-semibold">{t("Channels", "القنوات")}</h2>
+      <h2 className="mb-3 text-lg font-semibold">{t("Channels", "القنوات")}</h2>
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
         {CHANNELS.map((c) => (
           <Card key={c.name} className="flex flex-row items-center gap-3 p-4">
@@ -66,7 +65,7 @@ export default function NotificationsAdminPage() {
       </div>
 
       {/* recent */}
-      <h2 className="mb-3 font-heading text-lg font-semibold">{t("Recent notifications", "أحدث الإشعارات")}</h2>
+      <h2 className="mb-3 text-lg font-semibold">{t("Recent notifications", "أحدث الإشعارات")}</h2>
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[640px] text-sm">
           <thead>

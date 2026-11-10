@@ -29,7 +29,7 @@ export default function EventDetailPage() {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
         <CalendarDays className="mx-auto size-10 text-muted-foreground/40" />
-        <h1 className="mt-4 font-heading text-2xl font-semibold">{t("Event not found", "الفعالية غير موجودة")}</h1>
+        <h1 className="mt-4 text-[18px] font-bold leading-7">{t("Event not found", "الفعالية غير موجودة")}</h1>
         <Button className="mt-6" onClick={() => navigate("/events")}>{t("Back to events", "العودة إلى الفعاليات")}</Button>
       </main>
     )
@@ -66,7 +66,7 @@ export default function EventDetailPage() {
   ]
 
   return (
-    <main className="@container mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="@container mx-auto w-full max-w-5xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/events")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to events", "العودة إلى الفعاليات")}
@@ -80,10 +80,10 @@ export default function EventDetailPage() {
       </div>
 
       {/* hero */}
-      <div className="relative mb-6 h-56 overflow-hidden rounded-2xl border border-border bg-muted sm:h-72">
+      <div className="relative mb-6 h-56 overflow-hidden rounded-xl border border-border bg-muted sm:h-72">
         <img src={e.img} alt="" className={cn("h-full w-full object-cover", e.past && "grayscale")} onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
         <div className="absolute bottom-4 start-4 flex size-16 flex-col items-center justify-center rounded-xl bg-[var(--card-elevated)] shadow-md ring-1 ring-border/60">
-          <span className="font-heading text-2xl font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
+          <span className="text-2xl font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{e.mon}</span>
         </div>
         {multiDay && <span className="absolute end-4 top-4 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">{t("Multi-day event", "فعالية متعددة الأيام")}</span>}
@@ -92,7 +92,7 @@ export default function EventDetailPage() {
       <div className="grid gap-8 @4xl:grid-cols-[minmax(0,1fr)_300px] @4xl:gap-12">
         <div className="min-w-0">
           <Badge variant="outline" className="w-fit">{isAr ? e.categoryAr : e.category}</Badge>
-          <h1 className="mt-3 font-heading text-[2rem] font-bold leading-[1.1] tracking-tight text-balance sm:text-[2.5rem]">{isAr ? e.titleAr : e.title}</h1>
+          <h1 className="mt-3 text-balance text-[18px] font-bold leading-7">{isAr ? e.titleAr : e.title}</h1>
           <p className="mt-3 max-w-[68ch] text-lg leading-relaxed text-muted-foreground">{isAr ? e.descAr : e.desc}</p>
 
           {/* about / more text */}
@@ -110,7 +110,7 @@ export default function EventDetailPage() {
           {/* agenda */}
           {(e.agenda?.length ?? 0) > 0 && (
             <div className="mt-8">
-              <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold"><ListChecks className="size-5 text-primary" />{t("Agenda", "جدول الأعمال")}</h2>
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><ListChecks className="size-5 text-primary" />{t("Agenda", "جدول الأعمال")}</h2>
               <ol className="space-y-0">
                 {e.agenda!.map((a, i) => (
                   <li key={i} className="flex gap-4 border-s-2 border-border ps-4 pb-4 last:pb-0">
@@ -126,7 +126,7 @@ export default function EventDetailPage() {
         {/* sidebar */}
         <aside>
           <div className="@4xl:sticky @4xl:top-20 space-y-4">
-            <Card className="p-5">
+            <Card className="rounded-xl p-5">
               <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Details", "التفاصيل")}</div>
               <dl className="space-y-3 text-sm">
                 {detail.map(([Icon, l, v], i) => (
@@ -139,7 +139,7 @@ export default function EventDetailPage() {
               </dl>
             </Card>
 
-            <Card className="p-5">
+            <Card className="rounded-xl p-5">
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="inline-flex items-center gap-1.5 font-medium"><Ticket className="size-4 text-primary" />{t("Registration", "التسجيل")}</span>
                 <span className="text-muted-foreground">{e.attendees} / {e.capacity}</span>

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
-  Badge, Button, Card, Input,
+  Button, Card, Input,
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
@@ -65,7 +65,7 @@ export default function FAQEditorPage() {
   const label = (text: string) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}</label>
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/faqs")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to FAQs", "العودة إلى الأسئلة")}
@@ -82,7 +82,7 @@ export default function FAQEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit FAQ", "تحرير السؤال") : t("New FAQ", "سؤال جديد")}</span>
       </div>
 
-      <Card className="space-y-5 p-6 sm:p-8">
+      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
         <div>{label(t("Question", "السؤال"))}<Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("What do employees ask?", "ما الذي يسأل عنه الموظفون؟")} autoFocus dir={isAr ? "rtl" : "ltr"} className="h-11 text-base" /></div>
         <div>{label(t("Answer", "الإجابة"))}<RichTextEditor initialHTML={a} onChange={setA} dir={isAr ? "rtl" : "ltr"} placeholder={t("Write a clear, complete answer — headings, lists, links…", "اكتب إجابة واضحة وكاملة — عناوين، قوائم، روابط…")} /></div>
 
@@ -169,7 +169,7 @@ export default function FAQEditorPage() {
       {(q.trim() || a.trim()) && (
         <div className="mt-6">
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Preview", "معاينة")}</div>
-          <Card className="p-5">
+          <Card className="rounded-xl p-5">
             <div className="flex flex-wrap items-center gap-1.5">{categories.map((c) => <CategoryBadge key={c} label={catLabel(c)} color={findCategory(cats, c)?.color} />)}</div>
             <h3 className="mt-2 font-medium leading-snug">{q.trim() || t("Your question…", "سؤالك…")}</h3>
             {a.trim()

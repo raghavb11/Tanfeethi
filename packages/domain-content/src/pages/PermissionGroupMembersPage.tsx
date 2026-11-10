@@ -33,7 +33,7 @@ export default function PermissionGroupMembersPage() {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
         <Layers className="mx-auto size-10 text-muted-foreground/40" />
-        <h1 className="mt-4 font-heading text-2xl font-semibold">{t("Group not found", "المجموعة غير موجودة")}</h1>
+        <h1 className="mt-4 text-[18px] font-bold leading-7">{t("Group not found", "المجموعة غير موجودة")}</h1>
         <Button className="mt-6" onClick={() => navigate("/admin/permission-groups")}>{t("Back to groups", "العودة إلى المجموعات")}</Button>
       </main>
     )
@@ -80,7 +80,7 @@ export default function PermissionGroupMembersPage() {
   const crumb = "text-[12px] text-muted-foreground transition-colors hover:text-foreground"
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-1.5">
         <button onClick={() => navigate("/admin/roles")} className={crumb}>{t("Permissions", "الصلاحيات")}</button>
@@ -93,7 +93,7 @@ export default function PermissionGroupMembersPage() {
       {/* heading */}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-heading text-[28px] font-bold leading-tight tracking-tight sm:text-[32px]">
+          <h1 className="text-[18px] font-bold leading-7">
             {t("Manage Users", "إدارة المستخدمين")} - {isAr ? group.nameAr : group.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[13px] text-muted-foreground">
@@ -108,7 +108,7 @@ export default function PermissionGroupMembersPage() {
 
       {/* inline add-users panel (never a popup) */}
       {adding && (
-        <Card className="mb-4 border-primary/40 p-4">
+        <Card className="rounded-xl mb-4 border-primary/40 p-4">
           <div className="mb-3 flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2 text-sm font-semibold"><UserPlus className="size-4 text-primary" />{t("Add users to this group", "إضافة مستخدمين إلى المجموعة")}</div>
             <button type="button" onClick={() => { setAdding(false); setPicked([]); setAddQ("") }} aria-label={t("Close", "إغلاق")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"><X className="size-4" /></button>
@@ -143,7 +143,7 @@ export default function PermissionGroupMembersPage() {
       )}
 
       {/* members table */}
-      <Card className="overflow-hidden py-0">
+      <Card className="rounded-xl overflow-hidden py-0">
         {/* toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
           <div className="relative min-w-[14rem] flex-1 sm:max-w-sm">
@@ -193,8 +193,8 @@ export default function PermissionGroupMembersPage() {
                     <td className="px-4 py-3.5 text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3.5 text-muted-foreground">{isAr ? u.deptAr : u.dept}</td>
                     <td className="px-4 py-3.5">
-                      <Badge variant="outline" className={cn("gap-1.5 text-[11px]", active ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-border text-muted-foreground")}>
-                        <span className={cn("size-1.5 rounded-full", active ? "bg-emerald-500" : "bg-muted-foreground/50")} />
+                      <Badge variant="outline" className={cn("gap-1.5 text-[11px]", active ? "border-success/40 bg-success/10 text-success dark:text-success" : "border-border text-muted-foreground")}>
+                        <span className={cn("size-1.5 rounded-full", active ? "bg-success" : "bg-muted-foreground/50")} />
                         {active ? t("Active", "نشط") : t("Inactive", "غير نشط")}
                       </Badge>
                     </td>

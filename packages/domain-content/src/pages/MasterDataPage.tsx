@@ -48,7 +48,7 @@ export default function MasterDataPage() {
     row.list === "holiday-types" ? holidays.filter((h) => h.type === row.id).length : null
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-5 px-4 py-7 md:px-8">
+    <div className="w-full space-y-5 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <button
         onClick={() => navigate("/config")}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -58,7 +58,7 @@ export default function MasterDataPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-1.5">
-          <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Master data", "البيانات الرئيسية")}</h1>
+          <h1 className="text-[18px] font-bold leading-7">{t("Master data", "البيانات الرئيسية")}</h1>
           <p className="max-w-3xl text-[13px] text-muted-foreground">
             {t("The configurable lists the modules pick from. Changing a list here changes every picker that reads it.",
                "القوائم القابلة للضبط التي تعتمد عليها الوحدات. أي تغيير هنا ينعكس على كل قائمة اختيار تقرأ منها.")}
@@ -90,7 +90,7 @@ export default function MasterDataPage() {
         })}
       </div>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="rounded-xl overflow-hidden p-0">
         <div className="border-b border-border/60 px-4 py-3">
           <p className="text-[13px] font-semibold">{isAr ? meta.labelAr : meta.label}</p>
           <p className="text-[11.5px] text-muted-foreground">{isAr ? meta.descAr : meta.desc}</p>
@@ -117,7 +117,7 @@ export default function MasterDataPage() {
                         </Badge>
                       )}
                       {!row.active && (
-                        <Badge variant="outline" className="border-amber-500/35 bg-amber-500/10 text-[10px] text-amber-600 dark:text-amber-400">
+                        <Badge variant="outline" className="border-warning/35 bg-warning/10 text-[10px] text-warning dark:text-warning">
                           {t("Inactive", "غير مفعّل")}
                         </Badge>
                       )}
@@ -164,7 +164,7 @@ export default function MasterDataPage() {
                 </div>
 
                 {confirmDelete === row.id && (
-                  <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/[0.05] p-3">
+                  <div className="mt-3 rounded-xl border border-error/30 bg-error/[0.05] p-3">
                     <p className="text-[12.5px] font-semibold">
                       {t(`Remove "${row.name}" from ${meta.label.toLowerCase()}?`, `إزالة "${row.nameAr}" من ${meta.labelAr}؟`)}
                     </p>

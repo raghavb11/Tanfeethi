@@ -207,10 +207,10 @@ export default function KnowledgeHub() {
   const [query, setQuery] = React.useState("")
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 px-4 py-7 md:px-8">
+    <div className="w-full space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* Heading */}
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">
+        <h1 className="text-[18px] font-bold leading-7">
           {isAr ? ar.pageTitle : "Knowledge Hub"}
         </h1>
         <p className="text-[13px] text-muted-foreground">
@@ -223,42 +223,42 @@ export default function KnowledgeHub() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="highlight-card hl-sky relative overflow-hidden rounded-3xl"
+        className="highlight-card hl-violet relative overflow-hidden rounded-xl"
       >
         <div className="relative z-10 flex flex-col gap-5 p-6 md:flex-row md:items-center md:p-7">
           <div className="flex-1 space-y-4">
-            <Badge variant="outline" className="gap-1 border-blue-400/25 bg-blue-400/10 text-[10px] text-blue-200">
+            <Badge variant="outline" className="gap-1 border-info/25 bg-info/10 text-[10px] text-info">
               <Library className="size-2.5" />
               {isAr ? "مكتبة الفريق" : "Team library"}
             </Badge>
             <div>
-              <h2 className="font-heading text-[20px] font-bold leading-tight tracking-tight md:text-[24px] text-white">
+              <h2 className="text-[20px] font-bold leading-tight tracking-tight md:text-[24px] text-foreground">
                 {isAr ? "وش تبي تتعلمه اليوم؟" : "What do you want to learn today?"}
               </h2>
-              <p className="mt-1.5 text-[13px] text-white/60">
+              <p className="mt-1.5 text-[13px] text-muted-foreground">
                 {isAr ? `${stats.articles} مقالة · ${stats.contributors} كاتبًا · ${stats.weeklyUpdates} تحديثًا هذا الأسبوع` : `${stats.articles} articles · ${stats.contributors} contributors · ${stats.weeklyUpdates} updates this week`}
               </p>
             </div>
             <div className="relative">
-              <Search className={cn("absolute top-1/2 -translate-y-1/2 size-4 text-white/40", isAr ? "right-4" : "left-4")} />
+              <Search className={cn("absolute top-1/2 -translate-y-1/2 size-4 text-muted-foreground", isAr ? "right-4" : "left-4")} />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={isAr ? ar.searchPh : "Search articles, guides, FAQs…"}
                 className={cn(
-                  "h-11 rounded-xl border-white/15 bg-white/5 text-[14px] text-white placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-blue-400/40",
+                  "h-11 rounded-xl border-border bg-background/60 text-[14px] text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/40",
                   isAr ? "pe-12 ps-4" : "ps-12 pe-4",
                 )}
                 dir={isAr ? "rtl" : "ltr"}
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-medium text-white/85 transition-colors hover:bg-white/10">
-                <Sparkles className="size-3 text-blue-300" />
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-colors hover:bg-secondary">
+                <Sparkles className="size-3 text-info" />
                 {isAr ? ar.askAi : "Ask Reach AI"}
               </button>
-              <button type="button" className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] font-medium text-white/85 transition-colors hover:bg-white/10">
-                <Users className="size-3 text-amber-300" />
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-colors hover:bg-secondary">
+                <Users className="size-3 text-warning" />
                 {isAr ? ar.askExpert : "Ask an expert"}
               </button>
             </div>
@@ -272,7 +272,7 @@ export default function KnowledgeHub() {
       {/* Featured guides */}
       <section>
         <div className="mb-4 flex items-baseline gap-2">
-          <Star className="size-3.5 text-amber-500" />
+          <Star className="size-3.5 text-warning" />
           <span className="text-[13px] font-semibold">{isAr ? ar.featured : "Featured guides"}</span>
           <span className="text-[11px] text-muted-foreground/65">{isAr ? ar.featuredDesc : "Editor's pick this week"}</span>
         </div>
@@ -285,7 +285,7 @@ export default function KnowledgeHub() {
               transition={{ duration: 0.22, delay: idx * 0.06 }}
               whileHover={{ y: -3 }}
             >
-              <Card className="h-full gap-0 cursor-pointer overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-blue-500/5 transition-shadow">
+              <Card className="rounded-xl h-full gap-0 cursor-pointer overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-blue-500/5 transition-shadow">
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <img src={a.cover} alt="" className="size-full object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
                   <Badge variant="outline" className="absolute top-2 start-2 border-white/30 bg-black/40 text-[10px] text-white backdrop-blur-sm">
@@ -300,7 +300,7 @@ export default function KnowledgeHub() {
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-1.5">
                       <Avatar className="size-5">
-                        <AvatarFallback className="bg-blue-500/15 text-blue-600 dark:text-blue-400 text-[8px] font-bold">
+                        <AvatarFallback className="bg-info/15 text-info dark:text-info text-[8px] font-bold">
                           {a.author.initials}
                         </AvatarFallback>
                       </Avatar>
@@ -333,9 +333,9 @@ export default function KnowledgeHub() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.16, delay: idx * 0.03 }}
                 whileHover={{ x: isAr ? -3 : 3 }}
-                className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 panel p-3.5 transition-all hover:border-blue-500/30 hover:shadow-sm"
+                className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 panel p-3.5 transition-all hover:border-info/30 hover:shadow-sm"
               >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/8 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/15">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info/8 text-info dark:text-info ring-1 ring-info/15">
                   <Icon className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -344,7 +344,7 @@ export default function KnowledgeHub() {
                     {isAr ? ar.articleCount(c.count) : `${c.count} articles`}
                   </div>
                 </div>
-                <ChevronRight className={cn("size-4 text-muted-foreground/30 group-hover:text-blue-500 transition-colors", isAr && "rotate-180")} />
+                <ChevronRight className={cn("size-4 text-muted-foreground/30 group-hover:text-info transition-colors", isAr && "rotate-180")} />
               </motion.div>
             )
           })}
@@ -353,7 +353,7 @@ export default function KnowledgeHub() {
 
       {/* Recently updated + sidebar */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <History className="size-3.5 text-slate-500" />
@@ -387,7 +387,7 @@ export default function KnowledgeHub() {
                     <span>{isAr ? r.authorAr : r.author}</span>
                   </div>
                 </div>
-                <ArrowUpRight className={cn("size-3.5 text-muted-foreground/30 group-hover:text-blue-500 transition-colors", isAr && "rotate-90")} />
+                <ArrowUpRight className={cn("size-3.5 text-muted-foreground/30 group-hover:text-info transition-colors", isAr && "rotate-90")} />
               </motion.li>
             ))}
           </ul>
@@ -395,9 +395,9 @@ export default function KnowledgeHub() {
 
         <div className="space-y-4 lg:col-span-5">
           {/* Top contributors */}
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
-              <Star className="size-3.5 text-amber-500" />
+              <Star className="size-3.5 text-warning" />
               {isAr ? ar.topContributors : "Top contributors"}
             </div>
             <ul className="divide-y divide-border/40">
@@ -405,12 +405,12 @@ export default function KnowledgeHub() {
                 <li key={c.initials} className="flex items-center gap-3 px-4 py-3">
                   <span className={cn(
                     "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums",
-                    i === 0 ? "bg-amber-500 text-white" : i === 1 ? "bg-slate-300 text-slate-700" : "bg-amber-700/60 text-white",
+                    i === 0 ? "bg-warning text-white" : i === 1 ? "bg-slate-300 text-slate-700" : "bg-warning/60 text-white",
                   )}>
                     {i + 1}
                   </span>
                   <Avatar className="size-9">
-                    <AvatarFallback className="bg-blue-500/15 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
+                    <AvatarFallback className="bg-info/15 text-info dark:text-info text-[10px] font-bold">
                       {c.initials}
                     </AvatarFallback>
                   </Avatar>
@@ -418,7 +418,7 @@ export default function KnowledgeHub() {
                     <div className="truncate text-[12px] font-semibold">{isAr ? c.nameAr : c.name}</div>
                     <div className="truncate text-[10.5px] text-muted-foreground/65">{isAr ? c.roleAr : c.role}</div>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                  <div className="flex items-center gap-1 text-[11px] font-bold tabular-nums text-info dark:text-info">
                     <PenLine className="size-3" />
                     {c.contributions}
                   </div>
@@ -428,20 +428,20 @@ export default function KnowledgeHub() {
           </Card>
 
           {/* Bookmarks */}
-          <Card className="ring-1 ring-foreground/10">
+          <Card className="rounded-xl ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
-              <BookMarked className="size-3.5 text-violet-500" />
+              <BookMarked className="size-3.5 text-module" />
               {isAr ? ar.bookmarks : "Your bookmarks"}
             </div>
             <ul className="divide-y divide-border/40">
               {bookmarks.map((b) => (
-                <li key={b.id} className="group flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors">
-                  <BookMarked className="mt-0.5 size-3.5 shrink-0 text-violet-500" fill="currentColor" fillOpacity={0.2} />
+                <li key={b.id} className="group flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-module/10 transition-colors">
+                  <BookMarked className="mt-0.5 size-3.5 shrink-0 text-module" fill="currentColor" fillOpacity={0.2} />
                   <div className="min-w-0 flex-1">
                     <div className="text-[12px] font-semibold leading-snug">{isAr ? b.titleAr : b.title}</div>
                     <div className="mt-0.5 text-[10.5px] text-muted-foreground/55">{isAr ? b.dateAr : b.date}</div>
                   </div>
-                  <ArrowUpRight className="size-3.5 self-center text-muted-foreground/30 group-hover:text-violet-500 transition-colors" />
+                  <ArrowUpRight className="size-3.5 self-center text-muted-foreground/30 group-hover:text-module transition-colors" />
                 </li>
               ))}
             </ul>
@@ -450,9 +450,9 @@ export default function KnowledgeHub() {
       </div>
 
       {/* Verified Q&A */}
-      <Card className="ring-1 ring-foreground/10">
+      <Card className="rounded-xl ring-1 ring-foreground/10">
         <div className="border-b border-border/60 px-5 py-4 text-[13px] font-semibold flex items-center gap-2">
-          <CheckCircle2 className="size-3.5 text-emerald-500" />
+          <CheckCircle2 className="size-3.5 text-success" />
           {isAr ? ar.verifiedQa : "Verified answers"}
         </div>
         <ul className="divide-y divide-border/40">
@@ -466,16 +466,16 @@ export default function KnowledgeHub() {
               initial={{ opacity: 0, x: 6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.16, delay: idx * 0.04 }}
-              className="group flex items-start gap-3 px-5 py-3.5 cursor-pointer transition-colors hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20"
+              className="group flex items-start gap-3 px-5 py-3.5 cursor-pointer transition-colors hover:bg-success/40 dark:hover:bg-success/20"
             >
-              <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+              <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-success" />
               <div className="min-w-0 flex-1">
                 <div className="text-[12.5px] font-semibold leading-snug">{isAr ? q.qAr : q.q}</div>
                 <div className="mt-1 text-[10.5px] text-muted-foreground/65">
-                  <span className="font-medium text-emerald-600 dark:text-emerald-400">{isAr ? ar.verified : "Verified"}</span> · {isAr ? q.vAr : q.v}
+                  <span className="font-medium text-success dark:text-success">{isAr ? ar.verified : "Verified"}</span> · {isAr ? q.vAr : q.v}
                 </div>
               </div>
-              <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-muted-foreground group-hover:text-emerald-600">
+              <Button size="xs" variant="ghost" className="shrink-0 text-[11px] text-muted-foreground group-hover:text-success">
                 {isAr ? ar.view : "View"}
               </Button>
             </motion.li>

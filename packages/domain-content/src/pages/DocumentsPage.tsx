@@ -1,313 +1,543 @@
+/** Knowledge (المعرفة) — Figma 2028:3744 / 4263:20763.
+ *  Main column: Document management (folders + documents table) and FAQ.
+ *  Side column: create launcher, polls & surveys, announcements, news. */
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  Badge, Button, Card, Input,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
-} from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
-import { Archive, ChevronRight, Clock, Download, Eye, FileText, Folder, FolderOpen, FolderPlus, History, Lock, Plus, RotateCcw, Search, Trash2, Upload, X } from "lucide-react"
+import {
+  BadgeCheck, BookMarked, ChevronDown, ChevronUp, Download, Eye, FolderOpen, History,
+  Lock, Megaphone, Newspaper, Plus, RotateCcw, Search, Trash2, Upload,
+} from "lucide-react"
 
-import { PageHeader, StatCard } from "./_ui"
-import { addFolder, deleteDocument, type Doc, type FolderDef, formatDocDate, isArchived, isArchiveScheduled, newFolderId, TYPE_STYLE, updateDocument, useDocuments, useFolders } from "../data/documents"
+import {
+  ActionTile, CardHead, DeletePopup, DirChevron, downloadCsv, EmptyState, Pager, RadioDot, ResultBar, Skeleton, Tag, toneForCategory,
+  useFakeLoading, WButton, WCard, WPage, arNum,
+} from "./_wijha"
+import { CreateContentModal, CreateFolderModal, FaqModal, ImageLightbox, type ContentKind } from "./knowledge/KnowledgeModals"
+import {
+  deleteDocument, type Doc, type FolderDef, folderMeta, isArchived, ROOT_FOLDER, TYPE_STYLE, updateDocument, useDocuments, useFolders,
+} from "../data/documents"
+import { castVote, deletePoll, type KPoll, pollPct, pollTotal, usePolls } from "../data/polls"
+import { deleteFaq, type Faq, useFaqs } from "../data/faqs"
+import { useAnnouncements } from "../data/announcements"
+import { newsCatLabel, type NewsItem } from "../data/news"
+import { hideSeedNews, usePublishedNews } from "../data/newsFeed"
+import { deleteArticle, getArticleById } from "../store"
 import { logAudit } from "../data/audit"
 
 const PAGE = 24
 const MONTHS: Record<string, number> = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 }
-const dateKey = (s: string) => { const m = /(\w+)\s+(\d+),\s+(\d+)/.exec(s); return m ? Number(m[3]) * 10000 + (MONTHS[m[1]] ?? 0) * 100 + Number(m[2]) : 0 }
+const dateKey = (s: string) => {
+  if (/yesterday|today|just now/i.test(s)) return 99999999
+  const m = /(\w+)\s+(\d+),\s+(\d+)/.exec(s)
+  return m ? Number(m[3]) * 10000 + (MONTHS[m[1]] ?? 0) * 100 + Number(m[2]) : 0
+}
 const sizeBytes = (s: string) => { const m = /([\d.]+)\s*(KB|MB|GB)/i.exec(s); if (!m) return 0; const u = m[2].toUpperCase(); return parseFloat(m[1]) * (u === "GB" ? 1e9 : u === "MB" ? 1e6 : 1e3) }
 type SortKey = "recent" | "name" | "downloads" | "size"
 const TYPES: Doc["type"][] = ["PDF", "DOCX", "XLSX"]
+const ARCHIVE_ID = "archive-2025"
+type T = (en: string, ar: string) => string
 
 export default function DocumentsPage() {
   const { locale, role } = useShell()
   const isAr = locale === "ar"
   const isAdmin = role === "admin"
-  const t = (en: string, ar: string) => (isAr ? ar : en)
-  const navigate = useNavigate()
+  const t: T = (en, ar) => (isAr ? ar : en)
 
+  const [createKind, setCreateKind] = React.useState<ContentKind | null>(null)
+  const [editNews, setEditNews] = React.useState<NewsItem | null>(null)
+  const [lightbox, setLightbox] = React.useState<string | null>(null)
+
+  return (
+    <WPage>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_394px]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <DocumentsCard isAr={isAr} isAdmin={isAdmin} t={t} />
+          <FaqCard isAr={isAr} isAdmin={isAdmin} t={t} />
+        </div>
+        <aside className="flex min-w-0 flex-col gap-6">
+          {isAdmin && (
+            <button type="button" onClick={() => { setEditNews(null); setCreateKind("news") }}
+              className="panel flex h-16 w-full items-center gap-3 rounded-xl px-[18px] text-start transition-[filter] hover:brightness-110">
+              <Plus className="size-5 shrink-0" />
+              <span className="flex-1 text-[17px] font-medium">{t("Create a news item or survey", "إنشاء خبر أو استبيان جديد")}</span>
+              <DirChevron dir="forward" isAr={isAr} className="size-4 shrink-0 text-icon" />
+            </button>
+          )}
+          <PollsCard isAr={isAr} isAdmin={isAdmin} t={t} />
+          <AnnouncementsCard isAr={isAr} t={t} onImage={setLightbox} />
+          <NewsCard isAr={isAr} isAdmin={isAdmin} t={t} onImage={setLightbox}
+            onEdit={(n) => { setEditNews(n); setCreateKind("news") }} />
+        </aside>
+      </div>
+
+      <CreateContentModal open={createKind !== null} onClose={() => { setCreateKind(null); setEditNews(null) }} isAr={isAr}
+        initialKind={createKind ?? "news"} editNews={editNews} />
+      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} isAr={isAr} />
+    </WPage>
+  )
+}
+
+type CardProps = { isAr: boolean; isAdmin: boolean; t: T }
+
+/* ── Document management ──────────────────────────────────────────────────── */
+
+function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
+  const navigate = useNavigate()
   const docs = useDocuments()
   const folders = useFolders()
+  const loading = useFakeLoading()
 
   const [folder, setFolder] = React.useState<string | null>(null)
   const [q, setQ] = React.useState("")
   const [typeFilter, setTypeFilter] = React.useState<Doc["type"] | "all">("all")
+  const [owner, setOwner] = React.useState("all")
   const [sort, setSort] = React.useState<SortKey>("recent")
-  const [showArchived, setShowArchived] = React.useState(false)
   const [visible, setVisible] = React.useState(PAGE)
+  const [newFolder, setNewFolder] = React.useState(false)
+  const [confirm, setConfirm] = React.useState<Doc | null>(null)
+  React.useEffect(() => { setVisible(PAGE) }, [folder, q, typeFilter, owner, sort])
 
-  const archivedCount = React.useMemo(() => docs.filter((d) => isArchived(d)).length, [docs])
+  const name = (f: FolderDef) => (isAr ? f.nameAr : f.name)
+  const active = folders.find((f) => f.id === folder) ?? null
+  const inArchive = folder === ARCHIVE_ID
+  const childrenOf = React.useCallback((id: string | null) => folders.filter((f) => (f.parent ?? null) === id), [folders])
+  const filesIn = React.useCallback((id: string) => (id === ARCHIVE_ID ? docs.filter((d) => isArchived(d)) : docs.filter((d) => d.folder === id && !isArchived(d))), [docs])
+  const ownerOf = React.useCallback((d: Doc) => (isAr ? d.ownerPersonAr ?? d.ownerAr : d.ownerPerson ?? d.owner), [isAr])
 
-  // folder tree state
-  const [folderQuery, setFolderQuery] = React.useState("")
-  const [expanded, setExpanded] = React.useState<Set<string>>(new Set())
-  const [creating, setCreating] = React.useState(false)
-  const [newName, setNewName] = React.useState("")
+  // breadcrumb trail root → current
+  const trail: FolderDef[] = []
+  for (let f: FolderDef | null = active; f; ) {
+    trail.unshift(f)
+    const parentId: string | null | undefined = f.parent
+    f = folders.find((x) => x.id === parentId) ?? null
+  }
 
-  const [confirmId, setConfirmId] = React.useState<string | null>(null)
-  const confirmItem = docs.find((d) => d.id === confirmId)
+  // every folder id under the current folder (search scope)
+  const scope = React.useMemo(() => {
+    const out = new Set<string>()
+    const walk = (id: string | null) => childrenOf(id).forEach((c) => { out.add(c.id); walk(c.id) })
+    walk(folder)
+    return out
+  }, [childrenOf, folder])
 
-  const open = (id: string) => navigate(`/documents/${id}`)
-  const docCount = React.useCallback((fid: string) => docs.filter((d) => d.folder === fid && isArchived(d) === showArchived).length, [docs, showArchived])
-  const folderName = (f: FolderDef) => (isAr ? f.nameAr : f.name)
-  const activeFolder = folders.find((f) => f.id === folder)
-  const topFolders = folders.filter((f) => !f.parent)
-  const childrenOf = (id: string) => folders.filter((f) => f.parent === id)
+  const needle = q.trim().toLowerCase()
+  const subfolders = childrenOf(folder).filter((f) => !needle || name(f).toLowerCase().includes(needle))
+  const owners = React.useMemo(() => Array.from(new Set(docs.map(ownerOf))).sort(), [docs, ownerOf])
 
-  // reset pagination whenever the query set changes
-  React.useEffect(() => { setVisible(PAGE) }, [folder, q, typeFilter, sort, showArchived])
-
-  const filtered = React.useMemo(() => {
-    const out = docs.filter((d) =>
-      isArchived(d) === showArchived &&
-      (folder === null || d.folder === folder) &&
+  const rows = React.useMemo(() => {
+    let out: Doc[]
+    if (inArchive) out = docs.filter((d) => isArchived(d))
+    else if (needle) out = docs.filter((d) => !isArchived(d) && (d.folder === (folder ?? ROOT_FOLDER) || scope.has(d.folder)))
+    else out = docs.filter((d) => !isArchived(d) && d.folder === (folder ?? ROOT_FOLDER))
+    out = out.filter((d) =>
       (typeFilter === "all" || d.type === typeFilter) &&
-      (q === "" || (isAr ? d.nameAr : d.name).toLowerCase().includes(q.toLowerCase())),
-    )
-    const sorted = [...out]
-    if (sort === "recent") sorted.sort((a, b) => dateKey(b.updated) - dateKey(a.updated))
-    else if (sort === "name") sorted.sort((a, b) => (isAr ? a.nameAr : a.name).localeCompare(isAr ? b.nameAr : b.name))
-    else if (sort === "downloads") sorted.sort((a, b) => b.downloads - a.downloads)
-    else if (sort === "size") sorted.sort((a, b) => sizeBytes(b.size) - sizeBytes(a.size))
-    return sorted
-  }, [docs, folder, typeFilter, q, sort, isAr, showArchived])
+      (owner === "all" || ownerOf(d) === owner) &&
+      (!needle || (isAr ? d.nameAr : d.name).toLowerCase().includes(needle)))
+    const s = [...out]
+    if (sort === "recent") s.sort((a, b) => dateKey(b.updated) - dateKey(a.updated))
+    else if (sort === "name") s.sort((a, b) => (isAr ? a.nameAr : a.name).localeCompare(isAr ? b.nameAr : b.name))
+    else if (sort === "downloads") s.sort((a, b) => b.downloads - a.downloads)
+    else s.sort((a, b) => sizeBytes(b.size) - sizeBytes(a.size))
+    return s
+  }, [docs, folder, scope, inArchive, needle, typeFilter, owner, sort, isAr, ownerOf])
+  const shown = rows.slice(0, visible)
 
-  const shown = filtered.slice(0, visible)
-
-  const matchedFolders = folderQuery.trim()
-    ? folders.filter((f) => folderName(f).toLowerCase().includes(folderQuery.trim().toLowerCase()))
-    : []
-
-  const createFolder = () => {
-    const name = newName.trim()
-    if (!name) return
-    const id = newFolderId()
-    addFolder({ id, name, nameAr: name, count: 0, parent: folder ?? null })
-    logAudit("created", `${t("Folder", "مجلد")}: ${name}`, "Documents")
-    if (folder) setExpanded((s) => new Set(s).add(folder))
-    setFolder(id)
-    setNewName(""); setCreating(false)
-  }
-
-  const FolderRow = ({ f, depth }: { f: FolderDef; depth: number }) => {
-    const kids = childrenOf(f.id)
-    const isOpen = expanded.has(f.id)
-    const active = folder === f.id
-    return (
-      <div>
-        <div className={cn("group flex items-center gap-1 rounded-lg pe-1.5 transition-colors", active ? "bg-primary/10" : "hover:bg-muted")} style={{ paddingInlineStart: `${depth * 14 + 4}px` }}>
-          {kids.length > 0 ? (
-            <button onClick={() => setExpanded((s) => { const n = new Set(s); n.has(f.id) ? n.delete(f.id) : n.add(f.id); return n })} className="grid size-5 shrink-0 place-items-center rounded text-muted-foreground hover:text-foreground" aria-label={t("Toggle", "طي")}>
-              <ChevronRight className={cn("size-3.5 transition-transform", isOpen && "rotate-90", isAr && !isOpen && "rotate-180")} />
-            </button>
-          ) : <span className="size-5 shrink-0" />}
-          <button onClick={() => setFolder(active ? null : f.id)} className="flex min-w-0 flex-1 items-center gap-2 py-1.5 text-start">
-            {active ? <FolderOpen className="size-4 shrink-0 text-primary" /> : <Folder className={cn("size-4 shrink-0", active ? "text-primary" : "text-primary/70")} />}
-            <span className={cn("truncate text-sm", active ? "font-medium text-primary" : "text-foreground/90")}>{folderName(f)}</span>
-            <span className="ms-auto shrink-0 text-[11px] tabular-nums text-muted-foreground">{docCount(f.id)}</span>
-          </button>
-        </div>
-        {isOpen && kids.map((k) => <FolderRow key={k.id} f={k} depth={depth + 1} />)}
-      </div>
-    )
-  }
+  const download = (d: Doc) => { updateDocument(d.id, { downloads: d.downloads + 1 }) }
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <PageHeader
-        icon={FolderOpen}
-        eyebrow={t("Document Library", "مكتبة المستندات")}
-        title={t("Company documents", "مستندات الشركة")}
-        desc={t("Folders, versioning, department-based access and download tracking across all document types.", "مجلدات وإصدارات وصلاحيات حسب الإدارة وتتبّع التحميلات لكل أنواع الملفات.")}
-        action={isAdmin ? (
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="lg" onClick={() => navigate("/admin/audit?module=Documents")}><History className="size-4" />{t("Audit log", "سجل التدقيق")}</Button>
-            <Button size="lg" onClick={() => navigate("/documents/new")}><Upload className="size-4" />{t("Upload", "رفع ملف")}</Button>
-          </div>
-        ) : undefined}
-      />
+    <WCard aria-label={t("Document management", "إدارة المستندات")}>
+      <CardHead icon={FolderOpen} title={t("Document management", "إدارة المستندات")}
+        actions={isAdmin ? <>
+          <ActionTile label={t("Audit log", "سجل التدقيق")} className="size-7" onClick={() => navigate("/admin/audit?module=Documents")}><History className="!size-3.5" /></ActionTile>
+          <WButton variant="outline" size="sm" className="min-w-[108px]" disabled={!!active?.readOnly}
+            onClick={() => navigate(`/documents/new${folder && !active?.readOnly ? `?folder=${folder}` : ""}`)}>
+            <Upload />{t("Upload document", "رفع مستند")}
+          </WButton>
+          <WButton size="sm" className="min-w-[108px]" disabled={!!active?.readOnly} onClick={() => setNewFolder(true)}>
+            <Plus />{t("New folder", "مجلد جديد")}
+          </WButton>
+        </> : undefined} />
 
-      {isAdmin && (
-        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard icon={FileText} value={(docs.length - archivedCount).toLocaleString()} label={t("Active documents", "مستندات نشطة")} />
-          <StatCard icon={Folder} value={String(folders.length)} label={t("Folders", "مجلدات")} />
-          <StatCard icon={Archive} value={String(archivedCount)} label={t("Archived", "مؤرشفة")} />
-          <StatCard icon={Download} value="9.4k" label={t("Downloads", "تحميلات")} sub={t("this month", "هذا الشهر")} />
+      {/* filters */}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <label className="flex h-9 min-w-[12rem] flex-1 items-center gap-2 rounded-lg bg-background pe-2 ps-3">
+          <Search className="size-4 shrink-0 text-icon" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search", "البحث")} aria-label={t("Search documents", "البحث في المستندات")}
+            className="h-full w-full bg-transparent text-[12px] outline-none placeholder:text-foreground" />
+        </label>
+        <FilterSelect label={t("Type", "النوع")} value={typeFilter} onChange={(v) => setTypeFilter(v as Doc["type"] | "all")}
+          options={[{ v: "all", l: t("Type", "النوع") }, ...TYPES.map((ty) => ({ v: ty, l: ty }))]} />
+        <FilterSelect label={t("Owner", "المالك")} value={owner} onChange={setOwner}
+          options={[{ v: "all", l: t("Owner", "المالك") }, ...owners.map((o) => ({ v: o, l: o }))]} />
+        <FilterSelect label={t("Sort by", "الترتيب حسب")} value={sort} onChange={(v) => setSort(v as SortKey)}
+          options={[
+            { v: "recent", l: t("Sort by", "الترتيب حسب") },
+            { v: "name", l: t("Name (A–Z)", "الاسم (أ–ي)") },
+            { v: "downloads", l: t("Most downloaded", "الأكثر تحميلًا") },
+            { v: "size", l: t("Largest", "الأكبر حجمًا") },
+          ]} />
+      </div>
+
+      {/* folder breadcrumb */}
+      <nav aria-label={t("Folder path", "مسار المجلد")} className="mt-3 flex flex-wrap items-center gap-2 pe-2 text-[10px] leading-[14px]">
+        <button type="button" onClick={() => setFolder(null)} className={cn("hover:text-primary", !active && "font-bold")}>{t("Documents", "المستندات")}</button>
+        {trail.map((f, i) => (
+          <React.Fragment key={f.id}>
+            <DirChevron dir="forward" isAr={isAr} className="size-2.5 text-icon" />
+            <button type="button" onClick={() => setFolder(f.id)} className={cn("hover:text-primary", i === trail.length - 1 && "font-bold")}>{name(f)}</button>
+          </React.Fragment>
+        ))}
+      </nav>
+
+      {/* folder tiles */}
+      {loading ? (
+        <div className="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[62px]" />)}</div>
+      ) : subfolders.length > 0 && (
+        <div className="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3">
+          {subfolders.map((f) => (
+            <button key={f.id} type="button" onClick={() => { setFolder(f.id); setQ("") }}
+              className="group flex h-[62px] items-center gap-3 rounded-lg bg-background p-[14px] text-start transition-shadow hover:ring-1 hover:ring-primary/30">
+              <span className={cn("grid size-[34px] shrink-0 place-items-center rounded-lg", f.readOnly ? "bg-secondary text-icon" : "accent-chip")}>
+                <FolderOpen className="size-4" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
+                <span className="truncate text-[13px] font-medium leading-4">{name(f)}</span>
+                <span className="flex items-center gap-1 truncate text-[11px] leading-[13px] text-muted-foreground">
+                  {f.readOnly ? <><Lock className="size-3" />{t("Read-only", "للقراءة فقط")}</> : folderMeta(childrenOf(f.id).length, filesIn(f.id).length, isAr)}
+                </span>
+              </span>
+              <DirChevron dir="forward" isAr={isAr} className="size-3 shrink-0 text-icon" />
+            </button>
+          ))}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[268px_minmax(0,1fr)]">
-        {/* folder tree sidebar */}
-        <aside className="lg:sticky lg:top-20 lg:self-start">
-          <Card className="p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="ps-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Folders", "المجلدات")}</span>
-              {isAdmin && (
-                <Button variant="ghost" size="icon-sm" aria-label={t("New folder", "مجلد جديد")} onClick={() => { setCreating((v) => !v); setNewName("") }}><FolderPlus className="size-4" /></Button>
-              )}
-            </div>
-
-            {/* inline new-folder input (never a popup) */}
-            {isAdmin && creating && (
-              <div className="mb-2 rounded-lg border border-primary/40 bg-primary/[0.04] p-2">
-                <p className="mb-1.5 px-0.5 text-[11px] text-muted-foreground">{folder ? `${t("New folder in", "مجلد جديد في")} “${activeFolder ? folderName(activeFolder) : ""}”` : t("New top-level folder", "مجلد رئيسي جديد")}</p>
-                <div className="flex items-center gap-1.5">
-                  <Input autoFocus value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createFolder() } if (e.key === "Escape") { setCreating(false); setNewName("") } }} placeholder={t("Folder name", "اسم المجلد")} className="h-8 flex-1 text-sm" />
-                  <Button size="icon-sm" disabled={!newName.trim()} onClick={createFolder} aria-label={t("Create", "إنشاء")}><Plus className="size-4" /></Button>
-                  <Button size="icon-sm" variant="ghost" onClick={() => { setCreating(false); setNewName("") }} aria-label={t("Cancel", "إلغاء")}><X className="size-4" /></Button>
-                </div>
-              </div>
-            )}
-
-            {/* folder search */}
-            <div className="relative mb-2">
-              <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={folderQuery} onChange={(e) => setFolderQuery(e.target.value)} placeholder={t("Find a folder…", "ابحث عن مجلد…")} className="h-9 ps-8 text-sm" />
-            </div>
-
-            <div className="max-h-[56vh] space-y-0.5 overflow-y-auto pe-1">
-              {/* all documents */}
-              <button onClick={() => setFolder(null)} className={cn("flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start transition-colors", folder === null ? "bg-primary/10" : "hover:bg-muted")}>
-                <FolderOpen className={cn("size-4 shrink-0", folder === null ? "text-primary" : "text-primary/70")} />
-                <span className={cn("text-sm", folder === null ? "font-medium text-primary" : "text-foreground/90")}>{t("All documents", "كل المستندات")}</span>
-                <span className="ms-auto text-[11px] tabular-nums text-muted-foreground">{docs.length}</span>
-              </button>
-
-              {folderQuery.trim() ? (
-                matchedFolders.length > 0 ? matchedFolders.map((f) => (
-                  <button key={f.id} onClick={() => { setFolder(f.id); setFolderQuery("") }} className={cn("flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start transition-colors", folder === f.id ? "bg-primary/10" : "hover:bg-muted")}>
-                    <Folder className="size-4 shrink-0 text-primary/70" />
-                    <span className="truncate text-sm">{folderName(f)}</span>
-                    {f.parent && <span className="truncate text-[11px] text-muted-foreground">· {folderName(folders.find((x) => x.id === f.parent)!)}</span>}
-                    <span className="ms-auto shrink-0 text-[11px] tabular-nums text-muted-foreground">{docCount(f.id)}</span>
-                  </button>
-                )) : <p className="px-2 py-4 text-center text-xs text-muted-foreground">{t("No folders match", "لا توجد مجلدات مطابقة")}</p>
-              ) : (
-                topFolders.map((f) => <FolderRow key={f.id} f={f} depth={0} />)
-              )}
-            </div>
-          </Card>
-        </aside>
-
-        {/* documents */}
-        <section className="min-w-0">
-          {/* breadcrumb + count */}
-          <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <button onClick={() => setFolder(null)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("Library", "المكتبة")}</button>
-            {activeFolder?.parent && (
-              <>
-                <ChevronRight className={cn("size-3.5 text-muted-foreground/50", isAr && "rotate-180")} />
-                <button onClick={() => setFolder(activeFolder.parent!)} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{folderName(folders.find((x) => x.id === activeFolder.parent)!)}</button>
-              </>
-            )}
-            {activeFolder && (
-              <>
-                <ChevronRight className={cn("size-3.5 text-muted-foreground/50", isAr && "rotate-180")} />
-                <span className="text-sm font-medium text-foreground">{folderName(activeFolder)}</span>
-              </>
-            )}
-            <Badge variant="secondary" className="ms-1">{filtered.length}</Badge>
-          </div>
-
-          {/* active / archived toggle */}
-          <div className="mb-3 inline-flex rounded-lg border border-border p-0.5">
-            <button onClick={() => setShowArchived(false)} aria-pressed={!showArchived} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors", !showArchived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
-              <FileText className="size-4" />{t("Active", "النشطة")}
-            </button>
-            <button onClick={() => setShowArchived(true)} aria-pressed={showArchived} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors", showArchived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
-              <Archive className="size-4" />{t("Archived", "المؤرشفة")}<span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", showArchived ? "bg-primary-foreground/20" : "bg-muted")}>{archivedCount}</span>
-            </button>
-          </div>
-
-          {/* toolbar */}
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[12rem] flex-1">
-              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search documents…", "ابحث في المستندات…")} className="w-full ps-9" />
-            </div>
-            <div className="inline-flex rounded-lg border border-border p-0.5">
-              <button onClick={() => setTypeFilter("all")} aria-pressed={typeFilter === "all"} className={cn("rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors", typeFilter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{t("All", "الكل")}</button>
-              {TYPES.map((ty) => (
-                <button key={ty} onClick={() => setTypeFilter(ty)} aria-pressed={typeFilter === ty} className={cn("rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors", typeFilter === ty ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{ty}</button>
+      {/* documents in this folder */}
+      <div className="flex flex-col gap-3 pt-6">
+        <h3 className="text-[14px] font-medium">
+          {needle ? t("Search results", "نتائج البحث") : inArchive ? t("Archived documents", "المستندات المؤرشفة") : t("Documents in this folder", "مستندات هذا المجلد")}
+          {!loading && <span className="ms-2 text-[12px] font-normal text-muted-foreground">({arNum(rows.length, isAr)})</span>}
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] border-t border-secondary text-[13px]">
+            <thead>
+              <tr className="h-9 border-b border-secondary text-[12px] text-muted-foreground">
+                <th className="px-1 text-start font-normal">{t("File name", "اسم الملف")}</th>
+                <th className="px-1 text-start font-normal">{t("Owner", "المالك")}</th>
+                <th className="px-1 text-start font-normal">{t("File size", "حجم الملف")}</th>
+                <th className="px-1 text-start font-normal">{t("Upload date", "تاريخ الرفع")}</th>
+                <th className="w-[140px] px-1"><span className="sr-only">{t("Actions", "الإجراءات")}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? Array.from({ length: 2 }).map((_, i) => (
+                <tr key={i}><td colSpan={5} className="px-1 py-3"><Skeleton className="h-[34px]" /></td></tr>
+              )) : shown.map((d) => (
+                <tr key={d.id} className="h-[58px] border-b border-secondary/60 last:border-0">
+                  <td className="px-1 py-3">
+                    <button type="button" onClick={() => navigate(`/documents/${d.id}`)} className="flex min-w-0 items-center gap-3 text-start hover:text-primary">
+                      <span className={cn("grid h-[34px] w-[34px] shrink-0 place-items-center rounded-lg text-[10px] font-bold", TYPE_STYLE[d.type])}>{d.type}</span>
+                      <span className="truncate">{isAr ? d.nameAr : d.name}</span>
+                      {d.restricted && <Lock className="size-3.5 shrink-0 text-icon" aria-label={t("Restricted", "مقيّد")} />}
+                    </button>
+                  </td>
+                  <td className="px-1 py-3">{ownerOf(d)}</td>
+                  <td className="px-1 py-3 tabular-nums"><bdi>{d.size}</bdi></td>
+                  <td className="px-1 py-3">{isAr ? d.updatedAr : d.updated}</td>
+                  <td className="px-1 py-3">
+                    <div className="flex items-center justify-end gap-3">
+                      {isAdmin && (isArchived(d)
+                        ? <ActionTile label={t("Restore", "استعادة")} onClick={() => { updateDocument(d.id, { archiveAfter: null }); logAudit("restored", d.name, "Documents") }}><RotateCcw /></ActionTile>
+                        : <ActionTile tone="error" label={t("Delete", "حذف")} onClick={() => setConfirm(d)}><Trash2 /></ActionTile>)}
+                      <ActionTile label={t("View", "عرض")} onClick={() => navigate(`/documents/${d.id}`)}><Eye /></ActionTile>
+                      <ActionTile label={t("Download", "تحميل")} onClick={() => download(d)}><Download /></ActionTile>
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="h-10 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
-              <option value="recent">{t("Recently updated", "الأحدث تحديثًا")}</option>
-              <option value="name">{t("Name (A–Z)", "الاسم (أ–ي)")}</option>
-              <option value="downloads">{t("Most downloaded", "الأكثر تحميلًا")}</option>
-              <option value="size">{t("Largest", "الأكبر حجمًا")}</option>
-            </select>
-          </div>
-
-          <Card className="overflow-hidden py-0">
-            {shown.map((d, i) => (
-              <div
-                key={d.id}
-                onClick={() => open(d.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(d.id) } }}
-                aria-label={isAr ? d.nameAr : d.name}
-                className={cn("group flex cursor-pointer flex-wrap items-center gap-4 px-4 py-3 outline-none transition-colors hover:bg-primary/[0.04] focus-visible:bg-primary/[0.04]", i > 0 && "border-t border-border/70")}
-              >
-                <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white", TYPE_STYLE[d.type])}>{d.type}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={cn("truncate font-medium", showArchived && "text-muted-foreground")}>{isAr ? d.nameAr : d.name}</span>
-                    {d.restricted && <Lock className="size-3.5 shrink-0 text-muted-foreground" />}
-                    {isArchived(d) && <Badge className="bg-muted text-muted-foreground"><Archive className="me-1 size-3" />{t("Archived", "مؤرشف")} {formatDocDate(d.archiveAfter, isAr)}</Badge>}
-                    {isArchiveScheduled(d) && <Badge variant="outline" className="text-[#99631a] dark:text-[#d6a94a]"><Clock className="me-1 size-3" />{t("Archives", "يُؤرشف")} {formatDocDate(d.archiveAfter, isAr)}</Badge>}
-                  </div>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                    <Badge variant="outline">{isAr ? d.deptAr : d.dept}</Badge>
-                    <span>{d.size} · {d.ver}</span>
-                    <span>{t("Updated", "حُدّث")} {isAr ? d.updatedAr : d.updated}</span>
-                    <span className="inline-flex items-center gap-1"><Download className="size-3" />{d.downloads.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {isArchived(d) && isAdmin ? (
-                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); updateDocument(d.id, { archiveAfter: null }); logAudit("restored", d.name, "Documents") }}><RotateCcw className="size-4" />{t("Restore", "استعادة")}</Button>
-                  ) : (
-                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); open(d.id) }}><Eye className="size-4" />{t("Preview", "معاينة")}</Button>
-                  )}
-                  <Button variant="ghost" size="sm" aria-label={t("Download", "تحميل")} onClick={(e) => e.stopPropagation()}><Download className="size-4" /></Button>
-                  {isAdmin && <Button variant="ghost" size="icon-sm" aria-label={t("Delete", "حذف")} className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); setConfirmId(d.id) }}><Trash2 className="size-4" /></Button>}
-                </div>
-              </div>
-            ))}
-            {filtered.length === 0 && (
-              <div className="py-14 text-center">
-                {showArchived ? <Archive className="mx-auto size-8 text-muted-foreground/40" /> : <FolderOpen className="mx-auto size-8 text-muted-foreground/40" />}
-                <p className="mt-3 text-sm text-muted-foreground">{showArchived ? t("No archived documents in this view.", "لا توجد مستندات مؤرشفة في هذا العرض.") : t("No documents in this view.", "لا توجد مستندات في هذا العرض.")}</p>
-              </div>
-            )}
-          </Card>
-
-          {/* pagination */}
-          {filtered.length > 0 && (
-            <div className="mt-4 flex flex-col items-center gap-3">
-              <p className="text-xs text-muted-foreground">{t("Showing", "عرض")} {shown.length} {t("of", "من")} {filtered.length.toLocaleString()} {t("documents", "مستند")}</p>
-              {visible < filtered.length && (
-                <Button variant="outline" onClick={() => setVisible((v) => v + PAGE)}>{t("Load more", "تحميل المزيد")}</Button>
-              )}
-            </div>
-          )}
-        </section>
+            </tbody>
+          </table>
+        </div>
+        {!loading && rows.length === 0 && (
+          <EmptyState icon={needle ? Search : FolderOpen}
+            title={needle ? t("No documents match your search", "لا توجد مستندات مطابقة لبحثك") : t("No documents in this folder", "لا توجد مستندات في هذا المجلد")}
+            desc={needle ? t("Try another name, or clear the filters.", "جرّب اسمًا آخر أو امسح عوامل التصفية.") : active?.readOnly ? t("This folder is read-only.", "هذا المجلد للقراءة فقط.") : undefined} />
+        )}
+        {visible < rows.length && (
+          <div className="flex justify-center"><WButton variant="outline" onClick={() => setVisible((v) => v + PAGE)}>{t("Load more", "تحميل المزيد")} · {arNum(rows.length - visible, isAr)}</WButton></div>
+        )}
       </div>
 
-      <Dialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
-        {confirmItem && (
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader><DialogTitle>{t("Delete this document?", "حذف هذا المستند؟")}</DialogTitle></DialogHeader>
-            <p className="text-sm text-muted-foreground">{t("This removes the file from the library. This can't be undone.", "سيؤدي هذا إلى إزالة الملف من المكتبة. لا يمكن التراجع.")}</p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmId(null)}>{t("Cancel", "إلغاء")}</Button>
-              <Button className="bg-destructive text-white hover:bg-destructive/90" onClick={() => { deleteDocument(confirmItem.id); logAudit("deleted", confirmItem.name, "Documents"); setConfirmId(null) }}><Trash2 className="size-4" />{t("Delete", "حذف")}</Button>
-            </DialogFooter>
-          </DialogContent>
+      <CreateFolderModal open={newFolder} onClose={() => setNewFolder(false)} isAr={isAr} folders={folders}
+        currentId={folder && !active?.readOnly ? folder : null} onCreated={(id) => setFolder(id)} />
+      <DeletePopup open={!!confirm} onClose={() => setConfirm(null)} isAr={isAr}
+        title={t("Delete this document?", "هل تريد حذف هذا المستند؟")}
+        body={t("The document will be removed from the portal permanently. This can't be undone.", "سيُحذف المستند نهائيًا من البوابة، ولا يمكن التراجع عن هذا الإجراء")}
+        confirmLabel={t("Delete document", "حذف المستند")}
+        onConfirm={() => { if (confirm) { deleteDocument(confirm.id); logAudit("deleted", confirm.name, "Documents") } setConfirm(null) }} />
+    </WCard>
+  )
+}
+
+function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
+  return (
+    <span className="relative block w-[120px] shrink-0">
+      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}
+        className="h-9 w-full appearance-none truncate rounded-lg bg-card-elevated pe-8 ps-3 text-[13px] font-medium outline-none focus-visible:ring-1 focus-visible:ring-primary/60">
+        {options.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+      </select>
+      <ChevronDown className="pointer-events-none absolute end-2 top-1/2 size-4 -translate-y-1/2 text-icon" />
+    </span>
+  )
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────────── */
+
+function FaqCard({ isAr, isAdmin, t }: CardProps) {
+  const navigate = useNavigate()
+  const faqs = useFaqs().filter((f) => isAdmin || f.status !== "Draft")
+  const loading = useFakeLoading()
+  const [openId, setOpenId] = React.useState<string | null>("fk1")
+  const [modal, setModal] = React.useState<{ edit: Faq | null } | null>(null)
+  const [confirm, setConfirm] = React.useState<Faq | null>(null)
+  const list = faqs.slice(0, 5)
+
+  return (
+    <WCard className="flex flex-col gap-[18px]">
+      <CardHead icon={BookMarked} title={t("FAQs", "الأسئلة الشائعة")}
+        actions={isAdmin ? <WButton size="sm" className="min-w-[108px]" onClick={() => setModal({ edit: null })}><Plus />{t("Add question", "إضافة سؤال")}</WButton> : undefined} />
+      {loading ? (
+        <div className="flex flex-col gap-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
+      ) : list.length === 0 ? (
+        <EmptyState icon={BookMarked} title={t("No questions yet", "لا توجد أسئلة بعد")} />
+      ) : (
+        <div className="flex flex-col gap-1">
+          {list.map((f) => {
+            const isOpen = openId === f.id
+            const link = f.relatedLinks[0]
+            return isOpen ? (
+              <div key={f.id} className="flex flex-col gap-2.5 rounded-lg border border-primary/45 bg-background px-4 py-3.5">
+                <button type="button" onClick={() => setOpenId(null)} aria-expanded="true" className="flex items-center gap-3 text-start">
+                  <span className="flex-1 text-[12px] font-medium leading-[14px]">{isAr ? f.qAr : f.q}</span>
+                  <ChevronUp className="size-4 shrink-0 text-icon" />
+                </button>
+                <p className="text-[12px] leading-5 text-muted-foreground">
+                  {isAr ? f.aAr : f.a}
+                  {f.status === "Draft" && <Tag tone="muted" className="ms-2 h-5 text-[10px]">{t("Draft", "مسودة")}</Tag>}
+                  {link && <>{" "}<a href={link.url.startsWith("/") ? `#${link.url}` : link.url} className="font-bold text-primary underline underline-offset-2">{t("Link", "رابط")}</a></>}
+                </p>
+                {isAdmin && (
+                  <div className="flex justify-end gap-2">
+                    <WButton variant="outline" className="w-[84px]" onClick={() => setModal({ edit: f })}>{t("Edit", "تعديل")}</WButton>
+                    <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(f)}><Trash2 />{t("Delete", "حذف")}</WButton>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button key={f.id} type="button" onClick={() => setOpenId(f.id)} aria-expanded="false"
+                className="flex items-center gap-3 border-b border-secondary px-4 pb-[18px] pt-3.5 text-start last:border-0 hover:text-primary">
+                <span className="flex-1 text-[12px] leading-[14px]">{isAr ? f.qAr : f.q}</span>
+                <ChevronDown className="size-4 shrink-0 text-icon" />
+              </button>
+            )
+          })}
+        </div>
+      )}
+      {faqs.length > list.length && (
+        <button type="button" onClick={() => navigate("/faqs")} className="self-start text-[12px] font-semibold text-primary hover:underline">
+          {t(`View all ${faqs.length} questions`, `عرض جميع الأسئلة (${arNum(faqs.length, isAr)})`)}
+        </button>
+      )}
+      <FaqModal open={!!modal} onClose={() => setModal(null)} isAr={isAr} edit={modal?.edit} />
+      <DeletePopup open={!!confirm} onClose={() => setConfirm(null)} isAr={isAr}
+        title={t("Delete this question?", "هل تريد حذف هذا السؤال؟")}
+        body={t("The question will be removed from the portal permanently. This can't be undone.", "سيُحذف السؤال نهائيًا من البوابة، ولا يمكن التراجع عن هذا الإجراء")}
+        confirmLabel={t("Delete question", "حذف السؤال")}
+        onConfirm={() => { if (confirm) { deleteFaq(confirm.id); logAudit("deleted", confirm.q, "FAQs") } setConfirm(null) }} />
+    </WCard>
+  )
+}
+
+/* ── Polls & surveys ──────────────────────────────────────────────────────── */
+
+function PollsCard({ isAr, isAdmin, t }: CardProps) {
+  const polls = usePolls().filter((p) => p.status !== "draft")
+  const loading = useFakeLoading()
+  const [i, setI] = React.useState(0)
+  const [pick, setPick] = React.useState<string | null>(null)
+  const [confirm, setConfirm] = React.useState<KPoll | null>(null)
+  const idx = Math.min(i, Math.max(0, polls.length - 1))
+  const p = polls[idx]
+  const pid = p?.id
+  React.useEffect(() => { setPick(null) }, [pid])
+
+  return (
+    <WCard className="px-4 sm:px-4">
+      <CardHead icon={BadgeCheck} title={t("Surveys & polls", "الاستبيانات والتصويت")}
+        actions={polls.length > 1 ? <Pager isAr={isAr} onPrev={() => setI(Math.max(0, idx - 1))} onNext={() => setI(Math.min(polls.length - 1, idx + 1))} prevDisabled={idx === 0} nextDisabled={idx >= polls.length - 1} /> : undefined} />
+      <div className="mt-4">
+        {loading ? <Skeleton className="h-[250px]" /> : !p ? (
+          <EmptyState icon={BadgeCheck} title={t("No open surveys or polls", "لا توجد استبيانات أو تصويتات حالية")} />
+        ) : (
+          <PollBody p={p} isAr={isAr} isAdmin={isAdmin} t={t} pick={pick} setPick={setPick} onDelete={() => setConfirm(p)} />
         )}
-      </Dialog>
-    </main>
+      </div>
+      <DeletePopup open={!!confirm} onClose={() => setConfirm(null)} isAr={isAr}
+        title={confirm?.kind === "survey" ? t("Delete this survey?", "هل تريد حذف هذا الاستبيان؟") : t("Delete this poll?", "هل تريد حذف هذا التصويت؟")}
+        body={t("It will be removed from the portal permanently, with its results. This can't be undone.", "سيُحذف نهائيًا من البوابة مع نتائجه، ولا يمكن التراجع عن هذا الإجراء")}
+        confirmLabel={t("Delete", "حذف")}
+        onConfirm={() => { if (confirm) { deletePoll(confirm.id); logAudit("deleted", confirm.question, "Surveys") } setConfirm(null) }} />
+    </WCard>
+  )
+}
+
+/** Poll / survey card body — voting (2028:3744), poll results (2441:5698) and
+ *  survey results (4352:14026). */
+function PollBody({ p, isAr, isAdmin, t, pick, setPick, onDelete }: {
+  p: KPoll; isAr: boolean; isAdmin: boolean; t: T
+  pick: string | null; setPick: (v: string | null) => void; onDelete: () => void
+}) {
+  const voting = p.status === "open" && !p.myVote
+  const total = pollTotal(p)
+  const exportXlsx = () => downloadCsv(`${p.question.slice(0, 40)}.csv`, [
+    [t("Option", "الخيار"), t("Votes", "الأصوات"), "%"],
+    ...p.options.map((o) => [isAr ? o.labelAr : o.label, o.votes, pollPct(p, o)]),
+    [t("Total", "الإجمالي"), total, 100],
+  ])
+  return (
+    <div className="flex flex-col gap-4 rounded-lg bg-background p-4">
+      <div className="flex items-center gap-3">
+        <Tag>{p.kind === "survey" ? t("Surveys", "الاستبيانات") : t("Poll", "تصويت")}</Tag>
+        {p.kind === "poll" && <span className="text-[11px] text-muted-foreground">{isAr ? p.whenAr : p.when}</span>}
+      </div>
+      <h3 className="text-[15px] font-medium leading-6">{isAr ? p.questionAr : p.question}</h3>
+      {voting ? (
+        <>
+          <div role="radiogroup" aria-label={isAr ? p.questionAr : p.question} className="flex flex-col gap-3">
+            {p.options.map((o) => (
+              <button key={o.id} type="button" role="radio" aria-checked={pick === o.id} onClick={() => setPick(o.id)}
+                className="flex items-center gap-2 text-start text-[13px]">
+                <RadioDot on={pick === o.id} />{isAr ? o.labelAr : o.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground">{t("Choose an answer, then press “Vote” to see the results", "اختر إجابة ثم اضغط «تصويت» لعرض النتائج")}</p>
+        </>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {p.options.map((o) => (
+            <ResultBar key={o.id} label={isAr ? o.labelAr : o.label} pct={pollPct(p, o)} radio={p.kind === "poll"} selected={p.myVote === o.id} />
+          ))}
+        </div>
+      )}
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <span className="text-[11px] text-muted-foreground">{arNum(total, isAr)} {t("participations", "مشاركة")}</span>
+        <div className="flex items-center gap-4">
+          {voting ? (
+            <WButton className="w-[130px]" disabled={!pick} onClick={() => { if (pick) { castVote(p.id, pick); setPick(null) } }}>{t("Vote", "تصويت")}</WButton>
+          ) : isAdmin ? (
+            <WButton className="px-6" onClick={exportXlsx}><Download />{t("Export to Excel", "تصدير إلى إكسل")}</WButton>
+          ) : null}
+          {isAdmin && <WButton variant="danger" className="w-[84px]" onClick={onDelete}><Trash2 />{t("Delete", "حذف")}</WButton>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Announcements + News carousels ───────────────────────────────────────── */
+
+function StoryBody({ img, tag, tagTone, meta, title, excerpt, onImage, isAr }: {
+  img?: string; tag: string; tagTone: ReturnType<typeof toneForCategory>; meta: string; title: string; excerpt: string; onImage: (src: string) => void; isAr: boolean
+}) {
+  return (
+    <div className="flex flex-col gap-3.5 pt-3.5">
+      {img ? (
+        <button type="button" onClick={() => onImage(img)} aria-label={isAr ? "عرض الصورة" : "View image"} className="block overflow-hidden rounded-lg">
+          <img src={img} alt="" loading="lazy" className="aspect-[358/201] w-full object-cover transition-transform duration-300 hover:scale-[1.02]" />
+        </button>
+      ) : (
+        <div className="grid aspect-[358/201] w-full place-items-center rounded-lg bg-secondary text-icon"><Newspaper className="size-8" /></div>
+      )}
+      <div className="flex items-center gap-2.5">
+        <Tag tone={tagTone}>{tag}</Tag>
+        <span className="text-[11px] text-muted-foreground">{meta}</span>
+      </div>
+      <h3 className="text-[13px] font-medium leading-[22px]">{title}</h3>
+      <p className="line-clamp-3 min-h-[60px] text-[11.3px] leading-5">{excerpt}</p>
+    </div>
+  )
+}
+
+export const readMeta = (date: string, mins: number | undefined, isAr: boolean) =>
+  isAr ? `${date} · قراءة ${mins ?? 2} د` : `${date} · ${mins ?? 2} min read`
+
+function AnnouncementsCard({ isAr, t, onImage }: { isAr: boolean; t: T; onImage: (src: string) => void }) {
+  const navigate = useNavigate()
+  const items = useAnnouncements()
+  const loading = useFakeLoading()
+  const [i, setI] = React.useState(0)
+  const idx = Math.min(i, Math.max(0, items.length - 1))
+  const a = items[idx]
+  return (
+    <WCard className="px-[18px] sm:px-[18px]">
+      <CardHead icon={Megaphone} title={t("Announcements", "التعاميم")}
+        actions={items.length > 1 ? <Pager isAr={isAr} onPrev={() => setI(Math.max(0, idx - 1))} onNext={() => setI(Math.min(items.length - 1, idx + 1))} prevDisabled={idx === 0} nextDisabled={idx >= items.length - 1} /> : undefined} />
+      {loading ? <Skeleton className="mt-3.5 h-[360px]" /> : !a ? (
+        <EmptyState className="mt-4" icon={Megaphone} title={t("No announcements", "لا توجد تعاميم")} />
+      ) : (
+        <>
+          <StoryBody img={a.img} tag={isAr ? a.categoryAr : a.category} tagTone={toneForCategory(a.category)}
+            meta={readMeta(isAr ? a.dateAr : a.date, a.readMin, isAr)} title={isAr ? a.titleAr : a.title} excerpt={isAr ? a.bodyAr : a.body} onImage={onImage} isAr={isAr} />
+          <div className="mt-4 flex gap-2">
+            <WButton className="w-32" onClick={() => navigate(`/announcements/${a.id}`)}>{t("View details", "عرض التفاصيل")}</WButton>
+          </div>
+        </>
+      )}
+    </WCard>
+  )
+}
+
+function NewsCard({ isAr, isAdmin, t, onImage, onEdit }: CardProps & { onImage: (src: string) => void; onEdit: (n: NewsItem) => void }) {
+  const navigate = useNavigate()
+  const items = usePublishedNews()
+  const loading = useFakeLoading()
+  const [i, setI] = React.useState(0)
+  const [confirm, setConfirm] = React.useState<NewsItem | null>(null)
+  const idx = Math.min(i, Math.max(0, items.length - 1))
+  const n = items[idx]
+  const remove = (x: NewsItem) => {
+    if (getArticleById(x.id)) deleteArticle(x.id)
+    else hideSeedNews(x.id)
+    logAudit("deleted", x.title, "News")
+  }
+  return (
+    <WCard className="px-[18px] sm:px-[18px]">
+      <CardHead icon={Newspaper} title={t("News", "الأخبار")}
+        actions={items.length > 1 ? <Pager isAr={isAr} onPrev={() => setI(Math.max(0, idx - 1))} onNext={() => setI(Math.min(items.length - 1, idx + 1))} prevDisabled={idx === 0} nextDisabled={idx >= items.length - 1} /> : undefined} />
+      {loading ? <Skeleton className="mt-3.5 h-[360px]" /> : !n ? (
+        <EmptyState className="mt-4" icon={Newspaper} title={t("No news yet", "لا توجد أخبار بعد")} />
+      ) : (
+        <>
+          <StoryBody img={n.img || undefined} tag={newsCatLabel(n.category, isAr)} tagTone={toneForCategory(n.category)}
+            meta={readMeta(isAr ? n.dateAr ?? n.date : n.date, n.readMin, isAr)} title={isAr ? n.titleAr : n.title}
+            excerpt={isAr ? n.excerptAr ?? n.excerpt : n.excerpt} onImage={onImage} isAr={isAr} />
+          <div className="mt-4 flex flex-wrap gap-2">
+            <WButton className="w-32" onClick={() => navigate(`/news/${n.id}`)}>{t("View details", "عرض التفاصيل")}</WButton>
+            {isAdmin && <>
+              <WButton variant="outline" className="w-[84px]" onClick={() => onEdit(n)}>{t("Edit", "تعديل")}</WButton>
+              <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(n)}><Trash2 />{t("Delete", "حذف")}</WButton>
+            </>}
+          </div>
+        </>
+      )}
+      <DeletePopup open={!!confirm} onClose={() => setConfirm(null)} isAr={isAr}
+        title={t("Delete this news item?", "هل تريد حذف هذا الخبر؟")}
+        body={t("The news item will be removed from the portal permanently. This can't be undone.", "سيُحذف الخبر نهائيًا من البوابة، ولا يمكن التراجع عن هذا الإجراء")}
+        confirmLabel={t("Delete news", "حذف الخبر")}
+        onConfirm={() => { if (confirm) remove(confirm); setConfirm(null) }} />
+    </WCard>
   )
 }

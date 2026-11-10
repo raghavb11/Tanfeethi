@@ -9,12 +9,14 @@ import { PageHeader, StatCard } from "./_ui"
 import { AUDIT_MODULES, AUDIT_MODULES_AR, type AuditAction, useAudit } from "../data/audit"
 
 const META: Record<AuditAction, { icon: typeof FileEdit; label: string; labelAr: string; tone: string }> = {
-  published: { icon: CheckCircle2, label: "published", labelAr: "نشر", tone: "text-[#16833e] dark:text-[#5bbd7e]" },
+  published: { icon: CheckCircle2, label: "published", labelAr: "نشر", tone: "text-success" },
   edited: { icon: FileEdit, label: "edited", labelAr: "حرّر", tone: "text-primary" },
   deleted: { icon: Trash2, label: "deleted", labelAr: "حذف", tone: "text-destructive" },
   uploaded: { icon: Upload, label: "uploaded", labelAr: "رفع", tone: "text-primary" },
-  approved: { icon: CheckCircle2, label: "approved", labelAr: "اعتمد", tone: "text-[#16833e] dark:text-[#5bbd7e]" },
-  permission: { icon: ShieldAlert, label: "changed permissions on", labelAr: "غيّر صلاحيات", tone: "text-[#99631a] dark:text-[#d6a94a]" },
+  approved: { icon: CheckCircle2, label: "approved", labelAr: "اعتمد", tone: "text-success" },
+  permission: { icon: ShieldAlert, label: "changed permissions on", labelAr: "غيّر صلاحيات", tone: "text-warning" },
+  created: { icon: CheckCircle2, label: "created", labelAr: "أنشأ", tone: "text-success" },
+  restored: { icon: Upload, label: "restored", labelAr: "استعاد", tone: "text-primary" },
 }
 
 export default function AuditLogPage() {
@@ -40,7 +42,7 @@ export default function AuditLogPage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-4xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={History}
         eyebrow={t("Audit Logs", "سجلات التدقيق")}
@@ -86,7 +88,7 @@ export default function AuditLogPage() {
         </div>
       )}
 
-      <Card className="divide-y divide-border p-0">
+      <Card className="rounded-xl divide-y divide-border p-0">
         {list.map((e) => {
           const m = META[e.action]
           return (

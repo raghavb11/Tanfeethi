@@ -64,7 +64,7 @@ export default function HolidayEditorPage() {
   const days = orderOk ? dayCount(startISO, endISO) : 0
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate(back)}
@@ -82,7 +82,7 @@ export default function HolidayEditorPage() {
       </div>
 
       <div className="mb-6">
-        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-[18px] font-bold leading-7">
           {editing ? t("Edit holiday", "تعديل الإجازة") : t("New holiday", "إجازة جديدة")}
         </h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
@@ -91,7 +91,7 @@ export default function HolidayEditorPage() {
         </p>
       </div>
 
-      <Card className="p-5">
+      <Card className="rounded-xl p-5">
         <div className="space-y-5">
           <div>
             {label(t("Holiday name", "اسم الإجازة"))}
@@ -143,12 +143,12 @@ export default function HolidayEditorPage() {
           </div>
 
           {!orderOk && (
-            <p className="text-[12px] font-medium text-rose-500">
+            <p className="text-[12px] font-medium text-error">
               {t("The last day is before the first day.", "آخر يوم قبل أول يوم.")}
             </p>
           )}
           {orderOk && !sameYear && (
-            <p className="text-[12px] font-medium text-rose-500">
+            <p className="text-[12px] font-medium text-error">
               {t("A holiday has to sit inside one year. Split it across the two years instead.",
                  "يجب أن تقع الإجازة داخل سنة واحدة. قسّمها بين السنتين.")}
             </p>

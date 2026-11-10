@@ -2,13 +2,15 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import {
   Avatar, AvatarFallback, Badge, Button, Card, Input, Textarea,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { Check, ChevronDown, Clock3, ExternalLink, FileText, HelpCircle, History, LifeBuoy, Link2, MessageSquare, MessageSquareWarning, Pencil, Plus, Search, Tags, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react"
 
 import { CategoryBadge, PageHeader, RICH_PROSE, StatCard } from "./_ui"
+import { DeletePopup, Tag } from "./_wijha"
+import { FaqModal } from "./knowledge/KnowledgeModals"
+import type { Faq } from "../data/faqs"
 import { addFaqFeedback, deleteFaq, resolveFaqFeedback, setFaqVote, useFaqs } from "../data/faqs"
 import { findCategory, useCategories } from "../data/faqCategories"
 import { TYPE_STYLE, useDocuments } from "../data/documents"
@@ -28,8 +30,9 @@ export default function FAQsPage() {
   const [cat, setCat] = React.useState("All")
   const [open, setOpen] = React.useState<string | null>("f1")
   const [confirmId, setConfirmId] = React.useState<string | null>(null)
+  const [modal, setModal] = React.useState<{ edit: Faq | null } | null>(null)
 
-  const items = useFaqs()
+  const items = useFaqs().filter((f) => isAdmin || f.status !== "Draft")
   const docs = useDocuments()
   const cats = useCategories()
   const confirmItem = items.find((f) => f.id === confirmId)
@@ -79,7 +82,7 @@ export default function FAQsPage() {
   const totalFeedback = items.reduce((s, f) => s + (f.feedback?.length ?? 0), 0)
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <PageHeader
         icon={HelpCircle}
         eyebrow={t("Help Center", "مركز المساعدة")}
@@ -89,7 +92,7 @@ export default function FAQsPage() {
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="lg" onClick={() => navigate("/admin/faq-categories")}><Tags className="size-4" />{t("Manage topics", "إدارة المواضيع")}</Button>
             <Button variant="outline" size="lg" onClick={() => navigate("/admin/audit?module=FAQs")}><History className="size-4" />{t("Audit log", "سجل التدقيق")}</Button>
-            <Button size="lg" onClick={() => navigate("/faqs/new")}><Plus className="size-4" />{t("Add FAQ", "إضافة سؤال")}</Button>
+            <Button size="lg" onClick={() => setModal({ edit: null })}><Plus className="size-4" />{t("Add FAQ", "إضافة سؤال")}</Button>
           </div>
         ) : undefined}
       />
@@ -113,7 +116,7 @@ export default function FAQsPage() {
           const def = c === "All" ? undefined : findCategory(cats, c)
           const active = cat === c
           return (
-            <button key={c} onClick={() => setCat(c)} aria-pressed={active} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors", active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60 hover:text-foreground")}>
+            <button key={c} onClick={() => setCat(c)} aria-pressed={active} className={cn("inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors", active ? "accent-chip ring-1 ring-primary/40" : "bg-secondary text-foreground hover:brightness-110")}>
               {def && <span className="size-2 rounded-full" style={{ backgroundColor: def.color }} />}
               {catLabel(c)}
             </button>
@@ -131,7 +134,7 @@ export default function FAQsPage() {
             <Card key={f.id} className="overflow-hidden py-0 transition-colors hover:border-primary/40">
               <div className="flex items-center">
                 <button onClick={() => setOpen(isOpen ? null : f.id)} aria-expanded={isOpen} className="flex min-w-0 flex-1 items-center gap-3 px-5 py-4 text-start">
-                  <span className="min-w-0 flex-1"><span className="block font-medium leading-snug">{isAr ? f.qAr : f.q}</span></span>
+                  <span className="min-w-0 flex-1"><span className="block font-medium leading-snug">{isAr ? f.qAr : f.q}{f.status === "Draft" && <Tag tone="muted" className="ms-2 h-5 align-middle text-[10px]">{t("Draft", "مسودة")}</Tag>}</span></span>
                   <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
                     {fcats.slice(0, 2).map((c) => <CategoryBadge key={c} label={catLabel(c)} color={findCategory(cats, c)?.color} />)}
                     {fcats.length > 2 && <Badge variant="outline">+{fcats.length - 2}</Badge>}
@@ -140,7 +143,7 @@ export default function FAQsPage() {
                 </button>
                 {isAdmin && (
                   <div className="flex shrink-0 gap-1 pe-3">
-                    <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} onClick={() => navigate(`/faqs/edit/${f.id}`)}><Pencil className="size-4" /></Button>
+                    <Button variant="ghost" size="icon-sm" aria-label={t("Edit", "تحرير")} onClick={() => setModal({ edit: f })}><Pencil className="size-4" /></Button>
                     <Button variant="ghost" size="icon-sm" aria-label={t("Delete", "حذف")} className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setConfirmId(f.id)}><Trash2 className="size-4" /></Button>
                   </div>
                 )}
@@ -207,8 +210,8 @@ export default function FAQsPage() {
 
               {/* admin: all improvement feedback — permanent panel with per-item resolve. */}
               {isAdmin && (f.feedback?.length ?? 0) > 0 && (
-                <div className="border-t border-border/70 bg-[#99631a]/[0.04] px-5 py-4 dark:bg-[#d6a94a]/[0.05]">
-                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#99631a] dark:text-[#d6a94a]">
+                <div className="border-t border-border/70 bg-warning-fill px-5 py-4 dark:bg-[#d6a94a]/[0.05]">
+                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-warning">
                     <MessageSquareWarning className="size-3.5" />{t("Improvement feedback", "ملاحظات التحسين")} ({f.feedback.filter((fb) => !fb.resolved).length} {t("open", "مفتوحة")})
                   </div>
                   <div className="space-y-2">
@@ -227,7 +230,7 @@ export default function FAQsPage() {
                       </div>
                     ))}
                   </div>
-                  <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate(`/faqs/edit/${f.id}`)}><Pencil className="size-3.5" />{t("Improve this answer", "حسّن هذه الإجابة")}</Button>
+                  <Button variant="outline" size="sm" className="mt-2" onClick={() => setModal({ edit: f })}><Pencil className="size-3.5" />{t("Improve this answer", "حسّن هذه الإجابة")}</Button>
                 </div>
               )}
 
@@ -238,7 +241,7 @@ export default function FAQsPage() {
                   {myFeedback(f).map((fb) => (
                     <div key={fb.id} className="flex items-start gap-2 text-sm">
                       {fb.resolved
-                        ? <Badge variant="outline" className="mt-0.5 gap-1 text-[10px] text-[#16833e] dark:text-[#5bbd7e]"><Check className="size-2.5" />{t("Resolved", "تم الحل")}</Badge>
+                        ? <Badge variant="outline" className="mt-0.5 gap-1 text-[10px] text-success"><Check className="size-2.5" />{t("Resolved", "تم الحل")}</Badge>
                         : <Badge variant="outline" className="mt-0.5 gap-1 text-[10px]"><Clock3 className="size-2.5" />{t("Pending", "قيد المراجعة")}</Badge>}
                       <p className="min-w-0 flex-1 text-foreground/85">{fb.text} <span className="text-xs text-muted-foreground">· {fb.time}</span></p>
                     </div>
@@ -249,34 +252,28 @@ export default function FAQsPage() {
           )
         })}
         {list.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-xl border border-dashed border-border py-14 text-center">
             <HelpCircle className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No questions match your search.", "لا توجد أسئلة مطابقة لبحثك.")}</p>
           </div>
         )}
       </div>
 
-      <Card className="mt-8 flex flex-row flex-wrap items-center gap-4 p-5">
+      <Card className="rounded-xl mt-8 flex flex-row flex-wrap items-center gap-4 p-5">
         <div className="accent-chip flex size-11 shrink-0 items-center justify-center rounded-xl"><LifeBuoy className="size-5" /></div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-heading text-[17px] font-semibold">{t("Still need help?", "ما زلت بحاجة للمساعدة؟")}</h3>
+          <h3 className="text-[17px] font-semibold">{t("Still need help?", "ما زلت بحاجة للمساعدة؟")}</h3>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("Raise a request and the right team will get back to you.", "قدّم طلبًا وسيتواصل معك الفريق المختص.")}</p>
         </div>
         <Button className="shrink-0"><MessageSquare className="size-4" />{t("Contact support", "تواصل مع الدعم")}</Button>
       </Card>
 
-      <Dialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
-        {confirmItem && (
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader><DialogTitle>{t("Delete this FAQ?", "حذف هذا السؤال؟")}</DialogTitle></DialogHeader>
-            <p className="text-sm text-muted-foreground">{t("Employees will no longer see this question. This can't be undone.", "لن يرى الموظفون هذا السؤال بعد الآن. لا يمكن التراجع.")}</p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmId(null)}>{t("Cancel", "إلغاء")}</Button>
-              <Button className="bg-destructive text-white hover:bg-destructive/90" onClick={() => { deleteFaq(confirmItem.id); logAudit("deleted", confirmItem.q, "FAQs"); setConfirmId(null) }}><Trash2 className="size-4" />{t("Delete", "حذف")}</Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
+      <FaqModal open={!!modal} onClose={() => setModal(null)} isAr={isAr} edit={modal?.edit} />
+      <DeletePopup open={!!confirmItem} onClose={() => setConfirmId(null)} isAr={isAr}
+        title={t("Delete this question?", "هل تريد حذف هذا السؤال؟")}
+        body={t("The question will be removed from the portal permanently. This can't be undone.", "سيُحذف السؤال نهائيًا من البوابة، ولا يمكن التراجع عن هذا الإجراء")}
+        confirmLabel={t("Delete question", "حذف السؤال")}
+        onConfirm={() => { if (confirmItem) { deleteFaq(confirmItem.id); logAudit("deleted", confirmItem.q, "FAQs") } setConfirmId(null) }} />
     </main>
   )
 }

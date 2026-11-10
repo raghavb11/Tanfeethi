@@ -57,7 +57,7 @@ export default function FaqCategoriesPage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <button onClick={() => navigate("/faqs")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to FAQs", "العودة إلى الأسئلة")}
@@ -68,11 +68,11 @@ export default function FaqCategoriesPage() {
         <Tags className="size-4" />
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("FAQ topics", "مواضيع الأسئلة")}</span>
       </div>
-      <h1 className="mb-1 font-heading text-2xl font-semibold">{t("Manage topics", "إدارة المواضيع")}</h1>
+      <h1 className="mb-1 text-[18px] font-bold leading-7">{t("Manage topics", "إدارة المواضيع")}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{t("Topics are the coloured tags you can attach to FAQs. Add, rename, recolour or remove them here.", "المواضيع هي الوسوم الملوّنة التي تُرفق بالأسئلة. أضِفها أو أعِد تسميتها أو غيّر لونها أو احذفها هنا.")}</p>
 
       {/* add new */}
-      <Card className="mb-6 p-5">
+      <Card className="rounded-xl mb-6 p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Add a topic", "إضافة موضوع")}</div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
@@ -127,7 +127,7 @@ export default function FaqCategoriesPage() {
           </Card>
         ))}
         {cats.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border py-12 text-center">
+          <div className="rounded-xl border border-dashed border-border py-12 text-center">
             <Tags className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No topics yet — add your first one above.", "لا توجد مواضيع بعد — أضف أول موضوع أعلاه.")}</p>
           </div>

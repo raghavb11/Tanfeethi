@@ -178,7 +178,7 @@ export default function HolidayCalendarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-5 px-4 py-7 md:px-8">
+    <div className="w-full space-y-5 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <button
         onClick={() => navigate("/config")}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -188,7 +188,7 @@ export default function HolidayCalendarPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-1.5">
-          <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Holiday calendar", "تقويم الإجازات")}</h1>
+          <h1 className="text-[18px] font-bold leading-7">{t("Holiday calendar", "تقويم الإجازات")}</h1>
           <p className="max-w-3xl text-[13px] text-muted-foreground">
             {t("The non-working days for each year. Leave requests, attendance and working-day counts all read from this calendar.",
                "أيام العطل لكل سنة. تعتمد طلبات الإجازات والحضور وحساب أيام العمل على هذا التقويم.")}
@@ -270,7 +270,7 @@ export default function HolidayCalendarPage() {
       </div>
 
       {note && (
-        <Card className="flex items-start gap-2.5 border-primary/30 bg-primary/[0.04] p-3.5">
+        <Card className="rounded-xl flex items-start gap-2.5 border-primary/30 bg-primary/[0.04] p-3.5">
           <Info className="mt-0.5 size-4 shrink-0 text-primary" />
           <p className="flex-1 text-[12.5px]">{note}</p>
           <button onClick={() => setNote(null)} className="text-[12px] text-muted-foreground hover:text-foreground">
@@ -281,7 +281,7 @@ export default function HolidayCalendarPage() {
 
       {/* ── bulk upload ── */}
       {showImport && (
-        <Card className="p-4">
+        <Card className="rounded-xl p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[13.5px] font-semibold">{t("Bulk upload holidays", "رفع الإجازات جماعيًا")}</p>
@@ -319,11 +319,11 @@ export default function HolidayCalendarPage() {
           {parsed && (
             <div className="mt-4">
               <div className="mb-2 flex flex-wrap items-center gap-3 text-[12.5px]">
-                <span className="inline-flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1.5 font-medium text-success dark:text-success">
                   <Check className="size-3.5" />{t(`${good.length} ready to import`, `${good.length} جاهزة للاستيراد`)}
                 </span>
                 {bad.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 font-medium text-rose-500">
+                  <span className="inline-flex items-center gap-1.5 font-medium text-error">
                     <AlertTriangle className="size-3.5" />{t(`${bad.length} will be skipped`, `${bad.length} سيتم تخطيها`)}
                   </span>
                 )}
@@ -336,7 +336,7 @@ export default function HolidayCalendarPage() {
                       <span className="w-8 shrink-0 tabular-nums text-muted-foreground/60">{r.line}</span>
                       {r.holiday ? (
                         <>
-                          <Check className="size-3.5 shrink-0 text-emerald-500" />
+                          <Check className="size-3.5 shrink-0 text-success" />
                           <span className="min-w-0 flex-1 truncate font-medium">{r.holiday.name}</span>
                           <span className="shrink-0 tabular-nums text-muted-foreground">
                             {r.holiday.startISO}
@@ -348,9 +348,9 @@ export default function HolidayCalendarPage() {
                         </>
                       ) : (
                         <>
-                          <AlertTriangle className="size-3.5 shrink-0 text-rose-500" />
+                          <AlertTriangle className="size-3.5 shrink-0 text-error" />
                           <span className="min-w-0 flex-1 truncate text-muted-foreground">{r.raw.join(", ") || "—"}</span>
-                          <span className="shrink-0 font-medium text-rose-500">{r.error}</span>
+                          <span className="shrink-0 font-medium text-error">{r.error}</span>
                         </>
                       )}
                     </div>
@@ -373,7 +373,7 @@ export default function HolidayCalendarPage() {
       )}
 
       {/* the year */}
-      <Card className="overflow-hidden p-0">
+      <Card className="rounded-xl overflow-hidden p-0">
         <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
           <CalendarDays className="size-4 text-primary" />
           <span className="text-[13px] font-semibold tabular-nums">{year}</span>
@@ -406,7 +406,7 @@ export default function HolidayCalendarPage() {
                       {h.fixedDate ? (
                         <span className="text-[10.5px] text-muted-foreground/70">{t("Fixed date", "تاريخ ثابت")}</span>
                       ) : (
-                        <span className="text-[10.5px] text-amber-600 dark:text-amber-400">{t("Moves each year", "يتغيّر سنويًا")}</span>
+                        <span className="text-[10.5px] text-warning dark:text-warning">{t("Moves each year", "يتغيّر سنويًا")}</span>
                       )}
                     </div>
                     <p className="mt-0.5 text-[12px] text-muted-foreground">
@@ -434,7 +434,7 @@ export default function HolidayCalendarPage() {
                 </div>
 
                 {confirmDelete === h.id && (
-                  <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/[0.05] p-3">
+                  <div className="mt-3 rounded-xl border border-error/30 bg-error/[0.05] p-3">
                     <p className="text-[12.5px] font-semibold">
                       {t(`Remove ${h.name} from ${year}?`, `إزالة ${h.nameAr} من ${year}؟`)}
                     </p>

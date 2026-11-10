@@ -101,9 +101,9 @@ export default function ConfigurationPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
+    <div className="w-full space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Configuration", "الإعدادات")}</h1>
+        <h1 className="text-[18px] font-bold leading-7">{t("Configuration", "الإعدادات")}</h1>
         <p className="max-w-3xl text-[13px] text-muted-foreground">
           {t("Set up how the portal behaves — approvals, organisation, master data and module settings.",
              "اضبط طريقة عمل البوابة — الاعتمادات والهيكل التنظيمي والبيانات الرئيسية وإعدادات الوحدات.")}
@@ -114,7 +114,7 @@ export default function ConfigurationPage() {
         {areas.map((a) => {
           const body = (
             <div className={cn(
-              "group flex h-full items-start gap-3 rounded-2xl border border-border/60 bg-card/70 p-5 transition-all",
+              "group flex h-full items-start gap-3 rounded-xl border border-border/60 bg-card/70 p-5 transition-all",
               a.ready ? "hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg" : "opacity-60",
             )}>
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -143,7 +143,7 @@ export default function ConfigurationPage() {
         })}
       </div>
 
-      <Card className="ring-1 ring-foreground/10">
+      <Card className="rounded-xl ring-1 ring-foreground/10">
         <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
           {t("The cafeteria menu and places are seeded with a working list and can be edited here; the client's own list will replace it. The tea-boy fulfilment screen is live under Cafeteria → Service queue.",
              "قائمة الكافتيريا والمواقع محمّلة بقائمة أولية وقابلة للتعديل هنا؛ وستحل محلها قائمة العميل. شاشة خدمة الضيافة متاحة ضمن الكافتيريا ← قائمة الخدمة.")}

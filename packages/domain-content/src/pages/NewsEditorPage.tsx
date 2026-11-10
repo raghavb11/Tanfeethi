@@ -17,8 +17,8 @@ import { RichTextEditor } from "./RichTextEditor"
 
 const PROSE = cn(
   "text-[15px] leading-relaxed",
-  "[&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:font-heading [&_h2]:text-2xl [&_h2]:font-semibold",
-  "[&_h3]:mb-1 [&_h3]:mt-4 [&_h3]:font-heading [&_h3]:text-xl [&_h3]:font-semibold",
+  "[&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:[&_h2]:text-2xl [&_h2]:font-semibold",
+  "[&_h3]:mb-1 [&_h3]:mt-4 [&_h3]:[&_h3]:text-xl [&_h3]:font-semibold",
   "[&_p]:my-3",
   "[&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-6",
   "[&_a]:text-primary [&_a]:underline",
@@ -136,7 +136,7 @@ export default function NewsEditorPage() {
   const fieldLabel = (text: string) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}</label>
 
   return (
-    <main className="ambient-page mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="ambient-page w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* top bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/news")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -168,11 +168,11 @@ export default function NewsEditorPage() {
       <div className={cn("grid gap-6 lg:grid-cols-3", mode !== "write" && "hidden")}>
         {/* main column */}
         <div className="space-y-5 lg:col-span-2">
-          <Card className="space-y-4 p-5">
+          <Card className="rounded-xl space-y-4 p-5">
             <div>
               {fieldLabel(t("Title", "العنوان"))}
               <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Article title goes here…", "عنوان المقال هنا…")} dir={isAr ? "rtl" : "ltr"} autoFocus
-                className={cn("w-full rounded-lg border bg-[var(--card-elevated)] px-3 py-2.5 font-heading text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
+                className={cn("w-full rounded-lg border bg-[var(--card-elevated)] px-3 py-2.5 text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
             </div>
 
             <div>
@@ -223,7 +223,7 @@ export default function NewsEditorPage() {
           </Card>
 
           {/* attachment */}
-          <Card className="p-5">
+          <Card className="rounded-xl p-5">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium"><Paperclip className="size-4 text-primary" />{t("Attachment (optional)", "المرفقات (اختياري)")}</div>
 
             {/* cover image */}
@@ -268,7 +268,7 @@ export default function NewsEditorPage() {
 
         {/* general settings */}
         <aside className="space-y-4">
-          <Card className="space-y-4 p-5">
+          <Card className="rounded-xl space-y-4 p-5">
             <div className="flex items-center gap-2 text-sm font-semibold"><Users className="size-4 text-primary" />{t("General settings", "الإعدادات العامة")}</div>
 
             <div>
@@ -307,14 +307,14 @@ export default function NewsEditorPage() {
 
       {mode === "preview" && (
         <article className="mx-auto max-w-3xl">
-          <Card className="overflow-hidden py-0 gap-0">
+          <Card className="rounded-xl overflow-hidden py-0 gap-0">
             {cover && <div className="aspect-[1200/630]"><img src={cover} alt="" className="h-full w-full object-cover" /></div>}
             <div className="p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <Badge variant="outline">{category}</Badge>
                 {important && <Badge className="bg-primary/15 text-primary"><Star className="me-1 size-3 fill-primary" />{t("Important", "مهم")}</Badge>}
               </div>
-              <h1 className="mt-3 font-heading text-3xl font-bold leading-tight sm:text-4xl">{title.trim() || t("Untitled article", "مقال بدون عنوان")}</h1>
+              <h1 className="mt-3 text-[18px] font-bold leading-7">{title.trim() || t("Untitled article", "مقال بدون عنوان")}</h1>
               {excerpt.trim() && <p className="mt-3 text-lg text-muted-foreground">{excerpt}</p>}
               <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border pb-4 text-xs text-muted-foreground">
                 <span>{t("By", "بقلم")} {authorPerson ? (isAr ? authorPerson.nameAr : authorPerson.name) : t("Khalid", "خالد")}</span>

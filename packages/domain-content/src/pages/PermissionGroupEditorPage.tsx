@@ -44,7 +44,7 @@ export default function PermissionGroupEditorPage() {
   const label = (text: string) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}</label>
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button onClick={() => navigate("/admin/permission-groups")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to groups", "العودة إلى المجموعات")}
@@ -60,7 +60,7 @@ export default function PermissionGroupEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit group", "تحرير المجموعة") : t("New permission group", "مجموعة صلاحيات جديدة")}</span>
       </div>
 
-      <Card className="space-y-5 p-6 sm:p-8">
+      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
         <div>{label(t("Group name", "اسم المجموعة"))}<Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Content Team", "مثال: فريق المحتوى")} autoFocus className="h-11 text-base" /></div>
         <div>{label(t("Description", "الوصف"))}<Textarea rows={2} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("What is this group responsible for?", "ما مسؤولية هذه المجموعة؟")} /></div>
 
