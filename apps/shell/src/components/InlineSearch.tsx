@@ -183,7 +183,7 @@ export function InlineSearch({
           onChange={(e) => updateQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder={t("Search about Employee, Tasks, Files, Service...", "أبحث عن أشخاص، مهام، مستندات، خدمات...")}
+          placeholder={t("Search about Employee, Tasks, Files, Service...", "ابحث عن أشخاص، مهام، مستندات، خدمات...")}
           aria-label={t("Search", "بحث")}
           aria-expanded={open}
           role="combobox"

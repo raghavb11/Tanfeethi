@@ -71,7 +71,7 @@ export function ApprovalsCard({ isAr, t, className }: { isAr: boolean; t: T; cla
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={t("Search people, approval type", "أبحث عن أشخاص، نوع الموافقات")}
+            placeholder={t("Search people, approval type", "ابحث عن أشخاص، نوع الموافقات")}
             className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] text-foreground outline-none placeholder:text-foreground"
           />
         </label>
