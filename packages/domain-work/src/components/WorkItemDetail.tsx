@@ -290,7 +290,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
         description, descriptionAr: description, createdISO: TASK_TODAY_ISO, releaseNote,
       })
       // the first subtasks, in the order they were typed (addTask puts new rows on top)
-      ;[...(draft.subtasks ?? [])].reverse().forEach((s, i) => addTask({
+      ;[...(draft.subtasks ?? []).map((x) => x.trim()).filter(Boolean)].reverse().forEach((s, i) => addTask({
         id: `${newTaskId()}-${i}`, title: s, titleAr: s, projectId: newId, project: en, projectAr: ar,
         due: prettyDate(draft.dueISO), dueAr: prettyDateAr(draft.dueISO), dueISO: draft.dueISO,
         priority: "medium", status: "open", assignedBy: "Self", assignedByAr: "شخصي",
@@ -346,9 +346,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
   const projectTasks = project ? allTasks.filter((x) => x.projectId === project.id) : []
   const statusCount = (s: TaskStatus) => create
-    ? (s === "open" ? draft?.subtasks?.length ?? 0 : 0)
+    ? (s === "open" ? draft?.subtasks?.filter((x) => x.trim()).length ?? 0 : 0)
     : projectTasks.filter((x) => x.status === s).length
-  const taskTotal = create ? draft?.subtasks?.length ?? 0 : projectTasks.length
+  const taskTotal = create ? draft?.subtasks?.filter((x) => x.trim()).length ?? 0 : projectTasks.length
 
   const ownerOptions = [
     { value: "me", label: isAr ? ME.nameAr : ME.name, lead: <Initials text={ME.initials} /> },
@@ -770,20 +770,33 @@ function SubTasks({ project, tasks, isAr, t }: { project: Project; tasks: Task[]
   )
 }
 
-/** "المهام الفرعية" on a new project: type the first tasks; they are created with it. */
+/** "المهام الفرعية" on a new project: "مهمة جديدة" adds an editable row (focused);
+ *  Enter adds the next one. Rows are created with the project; blank rows are dropped. */
 function DraftSubTasks({ items, onChange, isAr, t }: { items: string[]; onChange: (v: string[]) => void; isAr: boolean; t: TFn }) {
-  const [text, setText] = React.useState("")
-  const inputRef = React.useRef<HTMLInputElement>(null)
-  const add = () => {
-    const v = text.trim()
-    if (!v) { inputRef.current?.focus(); return }
-    onChange([...items, v]); setText(""); inputRef.current?.focus()
+  const refs = React.useRef<(HTMLInputElement | null)[]>([])
+  const [focusIndex, setFocusIndex] = React.useState<number | null>(null)
+  React.useEffect(() => {
+    if (focusIndex == null) return
+    const el = refs.current[focusIndex]
+    el?.focus(); el?.scrollIntoView({ block: "nearest" })
+    setFocusIndex(null)
+  }, [focusIndex, items.length])
+
+  const addAt = (i: number) => {
+    // reuse an empty last row instead of stacking blanks
+    if (items.length > 0 && items[items.length - 1].trim() === "" && i >= items.length) { setFocusIndex(items.length - 1); return }
+    const next = [...items.slice(0, i), "", ...items.slice(i)]
+    onChange(next); setFocusIndex(i)
   }
+  const setAt = (i: number, v: string) => onChange(items.map((x, j) => (j === i ? v : x)))
+  const removeAt = (i: number) => onChange(items.filter((_, j) => j !== i))
+  const filled = items.filter((x) => x.trim()).length
+
   return (
     <Panel>
       <CardHeader icon={ListChecks} title={t("Subtasks", "المهام الفرعية")}
         actions={
-          <button type="button" onClick={add}
+          <button type="button" onClick={() => addAt(items.length)}
             className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
             <Plus className="size-3.5" />{t("New task", "مهمة جديدة")}
           </button>
@@ -791,29 +804,39 @@ function DraftSubTasks({ items, onChange, isAr, t }: { items: string[]; onChange
       {/* room for the six rows drawn on the edit screen; longer lists scroll */}
       <ul className="mt-[18px] max-h-[300px] min-h-[300px] overflow-y-auto [scrollbar-width:thin]">
         {items.map((s, i) => (
-          <li key={`${i}-${s}`} className="flex min-h-[50px] items-center gap-3 border-b border-input py-2">
+          <li key={i} className="flex min-h-[50px] items-center gap-3 border-b border-input py-2">
             <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-foreground/70" />
-            <span className="min-w-0 flex-1 truncate text-start text-[14px]">{s}</span>
-            <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={t("Remove", "إزالة")}
+            <input
+              ref={(el) => { refs.current[i] = el }}
+              value={s}
+              onChange={(e) => setAt(i, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); if (s.trim()) addAt(i + 1) }
+                if (e.key === "Backspace" && s === "") { e.preventDefault(); removeAt(i); setFocusIndex(Math.max(0, i - 1)) }
+              }}
+              placeholder={t("Task title", "عنوان المهمة")}
+              aria-label={t(`Subtask ${i + 1}`, `المهمة الفرعية ${i + 1}`)}
+              className="h-9 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground"
+            />
+            <button type="button" onClick={() => removeAt(i)} aria-label={t("Remove", "إزالة")}
               className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
               <X className="size-3.5" />
             </button>
           </li>
         ))}
-        <li className="flex min-h-[50px] items-center gap-3 py-2">
-          <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-dashed border-foreground/40" />
-          <input
-            ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add() } }}
-            placeholder={t("Add a subtask and press Enter — it is created with the project", "أضف مهمة فرعية واضغط Enter — تُنشأ مع المشروع")}
-            aria-label={t("New subtask", "مهمة فرعية جديدة")}
-            className="h-9 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[13px] placeholder:text-muted-foreground"
-          />
-        </li>
+        {items.length === 0 && (
+          <li>
+            <button type="button" onClick={() => addAt(0)}
+              className="flex min-h-[50px] w-full items-center gap-3 py-2 text-start text-[13px] text-muted-foreground hover:text-foreground">
+              <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-dashed border-foreground/40" />
+              {t("Add the project's first tasks — they are created with it", "أضف أول مهام المشروع — تُنشأ مع المشروع")}
+            </button>
+          </li>
+        )}
       </ul>
-      {items.length > 0 && (
+      {filled > 0 && (
         <p className="mt-2 text-[12px] text-muted-foreground">
-          {isAr ? `${items.length} مهمة فرعية ستُنشأ مع المشروع` : `${items.length} subtask${items.length === 1 ? "" : "s"} will be created with the project`}
+          {isAr ? `${filled} مهمة فرعية ستُنشأ مع المشروع` : `${filled} subtask${filled === 1 ? "" : "s"} will be created with the project`}
         </p>
       )}
     </Panel>
