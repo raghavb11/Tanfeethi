@@ -44,7 +44,7 @@ export function ProjectPicker({ value, onChange, isAr, t, onCreate }: {
       <button
         type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         aria-label={t("Project", "المشروع")}
-        className="flex h-11 w-full items-center gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60"
+        className="flex h-9 w-full items-center gap-[9px] rounded-lg bg-[var(--card-elevated)] px-3 text-start text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[var(--card-ring)] transition-colors focus:border-primary/60"
       >
         {selected ? (
           <>
@@ -67,7 +67,7 @@ export function ProjectPicker({ value, onChange, isAr, t, onCreate }: {
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg bg-popover shadow-lg ring-1 ring-[var(--card-ring)]">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input
@@ -81,7 +81,7 @@ export function ProjectPicker({ value, onChange, isAr, t, onCreate }: {
             {filtered.map((p) => (
               <button
                 key={p.id} type="button" onClick={() => pick(p.id)}
-                className={cn("flex w-full items-center gap-2 px-3 py-2 text-start text-[13px] transition-colors hover:bg-muted/60",
+                className={cn("flex w-full items-center gap-2 px-3 py-2 text-start text-[13px] transition-colors hover:bg-soft-accent",
                   p.id === value && "bg-primary/10 text-primary")}
               >
                 <span className="min-w-0 flex-1">

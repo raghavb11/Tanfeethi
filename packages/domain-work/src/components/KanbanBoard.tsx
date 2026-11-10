@@ -53,9 +53,9 @@ export function KanbanBoard({
         {columns.map((col, cIdx) => {
           const filtered = filter ? col.cards.filter((c) => c.category === filter) : col.cards
           return (
-            <div key={col.id} className="w-[300px] shrink-0 space-y-3">
+            <div key={col.id} className="w-[208px] shrink-0 space-y-3">
               {/* Column header */}
-              <div className="flex items-center justify-between rounded-xl bg-card border border-border/60 px-3 py-2.5">
+              <div className="flex h-12 items-center justify-between rounded-[10px] bg-[var(--card-elevated)] px-3.5 ring-1 ring-inset ring-[var(--card-ring)]">
                 <div className="flex items-center gap-2">
                   <span className={cn("size-2 rounded-full", columnAccent(col.id))} />
                   <div className="text-[12px] font-semibold tracking-wide">
@@ -80,12 +80,12 @@ export function KanbanBoard({
                       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: cIdx * 0.03 + idx * 0.05 }}
                       whileHover={{ y: -3, transition: { duration: 0.15 } }}
                     >
-                      <Card className="gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
-                        <div className="space-y-3 px-4 pt-4 pb-3">
+                      <Card className="gap-0 overflow-hidden rounded-[10px] border-0 bg-background py-0 ring-1 ring-inset ring-[var(--card-ring)] transition-all hover:ring-primary/40">
+                        <div className="space-y-3 px-3.5 pt-3.5 pb-3">
                           {/* Top row: category + priority */}
                           <div className="flex items-center justify-between gap-2">
                             <span className={cn(
-                              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                              "inline-flex h-[21px] items-center gap-1.5 rounded-md border-0 px-2 text-[10px] font-medium",
                               tone.chip,
                             )}>
                               <span className={cn("size-1.5 rounded-full", tone.dot)} />
@@ -98,7 +98,7 @@ export function KanbanBoard({
                           </div>
 
                           {/* Title */}
-                          <div className="text-[13px] font-semibold leading-snug">
+                          <div className="text-[12.1px] leading-[21px]">
                             {isAr ? card.titleAr : card.title}
                           </div>
 
@@ -122,9 +122,9 @@ export function KanbanBoard({
                         </div>
 
                         {/* Reach AI footer */}
-                        <div className="flex items-start gap-2 border-t border-border/50 bg-muted/30 px-4 py-2.5 dark:bg-muted/20">
+                        <div className="flex items-center justify-center gap-2 border-t border-input px-3 py-3">
                           <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
-                          <div className="text-[11px] leading-relaxed text-muted-foreground">
+                          <div className="truncate text-[10px] font-medium">
                             {isAr ? card.aiAr : card.ai}
                           </div>
                         </div>

@@ -1,5 +1,7 @@
 import * as React from "react"
 
+import type { CategoryId, TaskPriority } from "./meta"
+
 /** Projects are a master — tasks point at one by id and keep a name snapshot,
  *  so renaming a project never orphans the work already filed under it.
  *  Demo-only fixtures; a real build stores these with the task table. */
@@ -17,6 +19,12 @@ export type Project = {
   start: string; startISO: string
   due: string; dueISO: string
   description?: string; descriptionAr?: string
+  /** The fields the detail screen shows (Figma 3580:8261). */
+  category?: CategoryId
+  sprint?: string
+  priority?: TaskPriority
+  createdISO?: string
+  releaseNote?: string
 }
 
 const KH = { ownerId: "me", owner: "Khalid Al-Qahtani", ownerAr: "خالد القحطاني" }
@@ -48,7 +56,22 @@ const SEED: Project[] = [
     description: "Not started. Graph-sourced org chart and the employee directory refresh.", descriptionAr: "لم يبدأ. هيكل تنظيمي من Graph وتحديث دليل الموظفين." },
 ]
 
-let projects: Project[] = SEED
+/** Detail fields the original master predates — filled in for the seeds. */
+const DETAIL: Record<string, Partial<Project>> = {
+  p1: { category: "it", priority: "high" },
+  p2: { category: "operations", priority: "high",
+        description: "Prepare the Q1 performance report for executive management, including the key indicators and recommendations.",
+        descriptionAr: "إعداد تقرير أداء الربع الأول للإدارة التنفيذية متضمنًا المؤشرات الرئيسية والتوصيات." },
+  p4: { category: "operations", priority: "high" },
+  p5: { category: "design" },
+  p7: { category: "strategy" },
+  p9: { category: "hr", priority: "low" },
+  p11: { category: "finance" },
+}
+let projects: Project[] = SEED.map((p) => ({
+  category: "operations" as CategoryId, sprint: "s24", priority: "medium" as TaskPriority,
+  createdISO: p.startISO, ...p, ...DETAIL[p.id],
+}))
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
@@ -73,6 +96,11 @@ export function updateProject(id: string, patch: Partial<Project>) {
   projects = projects.map((p) => (p.id === id ? { ...p, ...patch } : p))
   emit()
 }
+/** Delete a project from the master. The caller unlinks its tasks. */
+export function removeProject(id: string) {
+  projects = projects.filter((p) => p.id !== id)
+  emit()
+}
 
 /** Names the seeded tasks were written with, so old rows link to a project. */
 const ALIAS: Record<string, string> = {
@@ -94,8 +122,8 @@ const ALIAS: Record<string, string> = {
 export const projectIdForName = (name: string): string | undefined => ALIAS[name]
 
 export const STATUS_LABEL: Record<ProjectStatus, { en: string; ar: string; chip: string }> = {
-  planned: { en: "Planned", ar: "مخطط", chip: "border-border bg-muted/50 text-muted-foreground" },
-  active: { en: "Active", ar: "قيد التنفيذ", chip: "border-sky-500/35 bg-sky-500/10 text-sky-600 dark:text-sky-400" },
-  "on-hold": { en: "On hold", ar: "متوقف", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  done: { en: "Completed", ar: "مكتمل", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  planned: { en: "Planned", ar: "مخطط", chip: "border-transparent bg-secondary text-muted-foreground" },
+  active: { en: "Active", ar: "قيد التنفيذ", chip: "border-transparent bg-info-fill text-info" },
+  "on-hold": { en: "On hold", ar: "متوقف", chip: "border-transparent bg-warning-fill text-warning" },
+  done: { en: "Completed", ar: "مكتمل", chip: "border-transparent bg-success-fill text-success" },
 }

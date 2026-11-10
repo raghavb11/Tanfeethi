@@ -1,451 +1,461 @@
 import * as React from "react"
-import { motion } from "framer-motion"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Badge, Button, Card, Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { useShell } from "@reach/shell-context"
-import { AlertTriangle, CalendarClock, Check, CheckCircle2, Circle, ClipboardList, GripVertical, LayoutGrid, ListTodo, Loader, MessageSquare, Plus, RotateCcw, Rows3, Search, UserCircle2, UsersRound } from "lucide-react"
+import {
+  AlertTriangle, CalendarClock, CheckCircle2, ChevronRight, Circle, CirclePause, CirclePlay, Clock,
+  Flag, FolderKanban, Inbox, LayoutGrid, List, Plus, RotateCcw, Search, Sparkles,
+} from "lucide-react"
 
-import { commentCount, countByStatus, isOverdue, myTasks, setTaskStatus, type Task, type TaskStatus, teamTasks, toggleComplete, useTasks } from "../data/tasks"
-import { team } from "../data/team"
+import {
+  CategoryChip, Donut, Empty, FilterSelect, Initials, Legend, Page, Skeleton, StatusDot,
+  useFirstPaint, useT, type TFn,
+} from "../components/ui"
+import {
+  CATEGORIES, CURRENT_SPRINT, PRIORITY_META, SPRINTS, STATUS_META, STATUS_ORDER,
+  type TaskStatus,
+} from "../data/meta"
+import { ME, isOverdue, setTaskStatus, shortDate, type Task, toggleComplete, useTasks } from "../data/tasks"
+import { memberById, team } from "../data/team"
 
-type Tab = "all" | "open" | "in-progress" | "completed" | "overdue"
-const TAB_IDS: Tab[] = ["all", "open", "in-progress", "completed", "overdue"]
-const isTab = (v: string | null): v is Tab => !!v && (TAB_IDS as string[]).includes(v)
+/** List tabs. "overdue" is a cut across the statuses, kept from the earlier list. */
+type Tab = "all" | TaskStatus | "overdue"
+const TABS: Tab[] = ["all", "open", "on-hold", "in-progress", "in-review", "overdue", "completed"]
+const isTab = (v: string | null): v is Tab => !!v && (TABS as string[]).includes(v)
 
-/** The board shows every task by status, so the column set is the status set. */
-type View = "list" | "board"
-const BOARD_COLUMNS: { id: TaskStatus; label: string; ar: string; dot: string; ring: string }[] = [
-  { id: "open", label: "Open", ar: "مفتوحة", dot: "bg-muted-foreground/40", ring: "ring-foreground/10" },
-  { id: "in-progress", label: "In progress", ar: "قيد التنفيذ", dot: "bg-sky-500", ring: "ring-sky-500/20" },
-  { id: "completed", label: "Completed", ar: "مكتملة", dot: "bg-emerald-500", ring: "ring-emerald-500/20" },
-]
+type View = "board" | "list"
 
-/** Whose work is on screen. The team scope only appears for a line manager. */
-type Scope = "mine" | "team"
+/** Whose work is on screen: everyone, only me, only the team, or one report. */
+const whoFromParams = (p: URLSearchParams): string => {
+  const who = p.get("who")
+  if (who) return who
+  // older links: ?scope=team[&report=r1]
+  if (p.get("scope") === "team") return p.get("report") ?? "team"
+  return "all"
+}
 
+/** Projects & Tasks — Figma 2015:9895 (web) and 3356:6232 (phone). */
 export default function MyTasksPage() {
-  const { locale } = useShell()
-  const isAr = locale === "ar"
-  const t = (en: string, ar: string) => (isAr ? ar : en)
-
+  const { isAr, t } = useT()
   const navigate = useNavigate()
   const all = useTasks()
-  // ?tab=open lets the dashboard deep-link straight to a filter
   const [params, setParams] = useSearchParams()
+  const ready = useFirstPaint()
 
-  // mine and the team's live on the same page, behind this switch
-  const manages = team.length > 0
-  const scope: Scope = manages && params.get("scope") === "team" ? "team" : "mine"
-  const report = params.get("report") ?? "all"
+  const who = whoFromParams(params)
+  const category = params.get("category") ?? "all"
+  // a status deep-link (?tab=open from the dashboard) opens the list; otherwise the board
+  const view: View = params.get("view") === "list" || (params.get("tab") && params.get("view") !== "board") ? "list" : "board"
+  // the board is a sprint board (Sprint 24 as drawn); the list spans every sprint unless narrowed
+  const sprint = params.get("sprint") ?? (view === "board" ? CURRENT_SPRINT : "all")
+  const tab: Tab = isTab(params.get("tab")) ? (params.get("tab") as Tab) : "all"
+  const [q, setQ] = React.useState("")
+  // which column the phone layout shows
+  const [phoneCol, setPhoneCol] = React.useState<TaskStatus>("open")
 
-  const teamAll = teamTasks(all)
-  const tasks = scope === "mine"
-    ? myTasks(all)
-    : report === "all" ? teamAll : teamAll.filter((x) => x.assigneeId === report)
-  const counts = countByStatus(tasks)
-
-  /** Keep tab and view when the scope or the person changes. */
   const setQuery = (next: Record<string, string | undefined>) => {
-    const merged: Record<string, string> = { tab, ...(view === "board" ? { view: "board" } : {}) }
-    if (scope === "team") merged.scope = "team"
-    if (scope === "team" && report !== "all") merged.report = report
+    const merged: Record<string, string> = {}
+    params.forEach((v, k) => { if (k !== "scope" && k !== "report") merged[k] = v })
+    if (who !== "all") merged.who = who
     Object.entries(next).forEach(([k, v]) => { if (v === undefined) delete merged[k]; else merged[k] = v })
     setParams(merged, { replace: true })
   }
-  const openCount = (id: string) => teamAll.filter((x) => x.assigneeId === id && x.status !== "completed").length
-  const overdueCount = (id: string) => teamAll.filter((x) => x.assigneeId === id && isOverdue(x)).length
-  const tab: Tab = isTab(params.get("tab")) ? (params.get("tab") as Tab) : "open"
-  const setTab = (next: Tab) => setQuery({ tab: next })
-  const [q, setQ] = React.useState("")
-  // ?view=board deep-links straight to the Kanban
-  const view: View = params.get("view") === "board" ? "board" : "list"
-  const setView = (next: View) => setQuery({ view: next === "board" ? "board" : undefined })
+
+  // ── filters ────────────────────────────────────────────────────────────
+  const byWho = (x: Task) =>
+    who === "all" ? true
+      : who === "me" ? !x.assigneeId
+        : who === "team" ? !!x.assigneeId
+          : x.assigneeId === who
+  const bySprint = (x: Task) => sprint === "all" || x.sprint === sprint
+  const byCategory = (x: Task) => category === "all" || x.category === category
+  const byText = (x: Task) => q === "" || (isAr ? x.titleAr : x.title).toLowerCase().includes(q.toLowerCase())
+
+  const scoped = all.filter(byWho).filter(bySprint)
+  const visible = scoped.filter(byCategory)
+
+  const count = (s: TaskStatus) => visible.filter((x) => x.status === s).length
+  const active = count("open") + count("on-hold") + count("in-progress")
+
+  const managerView = who !== "all" && who !== "me"
+  const openTask = (x: Task) => navigate(x.assigneeId ? `/tasks/${x.id}?from=manager` : `/tasks/${x.id}`)
+  const newTask = (status?: TaskStatus) => {
+    const qs = new URLSearchParams()
+    if (status) qs.set("status", status)
+    if (managerView) { qs.set("from", "manager"); if (who !== "team") qs.set("assignee", who) }
+    if (view === "board") qs.set("view", "board")
+    const s = qs.toString()
+    navigate(`/tasks/new${s ? `?${s}` : ""}`)
+  }
+
+  // ── drag between columns ───────────────────────────────────────────────
   const [dragId, setDragId] = React.useState<string | null>(null)
   const [overCol, setOverCol] = React.useState<TaskStatus | null>(null)
-
-  /** The board ignores the status tabs — it is the status view. */
-  const boardTasks = tasks.filter(
-    (x) => q === "" || (isAr ? x.titleAr : x.title).toLowerCase().includes(q.toLowerCase()))
-
   const drop = (status: TaskStatus) => {
     if (dragId) setTaskStatus(dragId, status)
     setDragId(null); setOverCol(null)
   }
 
-  const filtered = tasks
-    .filter((x) => {
-      if (tab === "overdue") return isOverdue(x)
-      if (tab === "all") return true
-      return x.status === tab
-    })
-    .filter((x) => q === "" || (isAr ? x.titleAr : x.title).toLowerCase().includes(q.toLowerCase()))
-    // active first, then by due date
+  const listRows = visible
+    .filter((x) => tab === "all" ? true : tab === "overdue" ? isOverdue(x) : x.status === tab)
+    .filter(byText)
     .sort((a, b) => (a.status === "completed" ? 1 : 0) - (b.status === "completed" ? 1 : 0) || a.dueISO.localeCompare(b.dueISO))
 
-  const TABS: { id: Tab; label: string; ar: string; count: number }[] = [
-    { id: "all", label: "All", ar: "الكل", count: counts.all },
-    { id: "open", label: "Open", ar: "مفتوحة", count: counts.open },
-    { id: "in-progress", label: "In progress", ar: "قيد التنفيذ", count: counts.inProgress },
-    { id: "overdue", label: "Overdue", ar: "متأخرة", count: counts.overdue },
-    { id: "completed", label: "Completed", ar: "مكتملة", count: counts.completed },
+  const whoOptions = [
+    { value: "all", label: t("All", "الكل") },
+    { value: "me", label: t("Only me", "أنا فقط") },
+    { value: "team", label: t("My team", "فريقي") },
+    ...team.map((m) => ({
+      value: m.id, label: isAr ? m.nameAr : m.name, lead: <Initials text={m.initials} />,
+      hint: all.filter((x) => x.assigneeId === m.id && x.status !== "completed").length,
+    })),
   ]
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-      {/* header */}
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-primary">
-            <ClipboardList className="size-5" />
-            <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Tasks", "المهام")}</span>
+    <Page>
+      {/* ── hero ───────────────────────────────────────────────────────── */}
+      <section className="highlight-card hl-green flex flex-col gap-8 rounded-2xl px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:ps-6 lg:pe-14 lg:py-10">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-5">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-[28px] font-medium leading-[38px] tracking-tight">{t("Projects & Tasks", "المشاريع و المهام")}</h1>
+            <p className="text-[14px] text-muted-foreground">
+              {t("All your tasks and projects in one board, sorted by priority.", "كل مهامك ومشاريعك في لوحة واحدة، مرتبة حسب الأولوية.")}
+            </p>
           </div>
-          <h1 className="mt-2 font-heading text-2xl font-bold tracking-tight sm:text-3xl">
-            {scope === "mine" ? t("Your tasks & to-dos", "مهامك وأعمالك") : t("Your team's tasks", "مهام فريقك")}
-          </h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">
-            {scope === "mine"
-              ? t("Everything assigned to you \u2014 open, in progress, overdue and completed, in one place.", "كل ما هو مُسند إليك — مفتوح، قيد التنفيذ، متأخر ومكتمل، في مكان واحد.")
-              : t("See what your team is carrying, move work between states, and assign new tasks.", "اطّلع على ما ينجزه فريقك، وانقل الأعمال بين الحالات، وأسند مهامًا جديدة.")}
-          </p>
+          <div className="grid gap-4 sm:grid-cols-3 lg:flex lg:gap-6">
+            {(["open", "on-hold", "in-progress"] as const).map((s) => (
+              <StatusCard key={s} status={s} value={count(s)} isAr={isAr}
+                onClick={() => setQuery({ view: "list", tab: s })} />
+            ))}
+          </div>
         </div>
-        <Button
-          className="shrink-0"
-          onClick={() => navigate(scope === "team"
-            ? `/tasks/new?from=manager${report !== "all" ? `&assignee=${report}` : ""}`
-            : view === "board" ? "/tasks/new?view=board" : "/tasks/new")}
-        >
-          <Plus className="size-4" />
-          {scope === "team" ? t("Assign task", "إسناد مهمة") : t("Add task", "إضافة مهمة")}
-        </Button>
-      </div>
+        <span aria-hidden className="hidden w-[2.5px] self-stretch bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
+        <div className="flex items-center justify-center gap-8 lg:w-[300px] lg:justify-between">
+          <Legend rows={(["open", "on-hold", "in-progress"] as const).map((s) => ({
+            label: isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: count(s), dot: STATUS_META[s].dot,
+          }))} />
+          <Donut
+            total={active} label={t("tasks", "مهام")}
+            slices={(["open", "on-hold", "in-progress"] as const).map((s) => ({ value: count(s), color: STATUS_META[s].color }))}
+          />
+        </div>
+      </section>
 
-      {/* whose tasks \u2014 only a manager sees the second option */}
-      {manages && (
-        <div className="mb-5 inline-flex rounded-xl border border-border p-0.5">
-          {([["mine", ClipboardList, t("My tasks", "مهامي"), myTasks(all).filter((x) => x.status !== "completed").length],
-             ["team", UsersRound, t("Team tasks", "مهام الفريق"), teamAll.filter((x) => x.status !== "completed").length]] as const).map(
-            ([id, Icon, text, n]) => (
+      {/* ── toolbar ────────────────────────────────────────────────────── */}
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex h-9 items-center gap-0.5 rounded-[9px] bg-[var(--card-elevated)] p-[3px]" role="tablist" aria-label={t("View", "العرض")}>
+            {([["board", LayoutGrid, t("Kanban", "كانبان")], ["list", List, t("List", "قائمة")]] as const).map(([id, Icon, label]) => (
               <button
-                key={id}
-                onClick={() => setParams(id === "team" ? { scope: "team", tab } : { tab }, { replace: true })}
-                aria-pressed={scope === id}
-                className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                  scope === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                key={id} role="tab" aria-selected={view === id}
+                onClick={() => setQuery({ view: id === "board" ? "board" : "list", tab: id === "board" ? undefined : tab })}
+                className={cn("inline-flex h-[30px] items-center gap-2 rounded-md px-3.5 text-[12.5px] font-medium transition-colors",
+                  view === id ? "bg-soft-accent text-primary" : "text-muted-foreground hover:text-foreground")}
               >
-                <Icon className="size-4" />{text}
-                <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums",
-                  scope === id ? "bg-primary-foreground/20" : "bg-muted")}>{n}</span>
+                <Icon className="size-[14px]" />{label}
               </button>
             ))}
-        </div>
-      )}
-
-      {/* the reporting line, when looking at the team */}
-      {scope === "team" && (
-        <div className="mb-5 flex flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1.5 pe-1 text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <UsersRound className="size-3.5" />{t("My team", "فريقي")}
-          </span>
+          </div>
           <button
-            onClick={() => setQuery({ report: undefined })}
-            aria-pressed={report === "all"}
-            className={cn("rounded-full border px-2.5 py-1 text-[12px] transition-colors",
-              report === "all" ? "border-primary/40 bg-primary/12 font-medium text-primary"
-                               : "border-border text-muted-foreground hover:bg-muted/40")}
+            onClick={() => newTask()}
+            className="btn-primary-grad inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-[13px] font-medium"
           >
-            {t("Everyone", "الجميع")}
+            <Plus className="size-4" />
+            {managerView ? t("Assign task", "إسناد مهمة") : t("New task", "مهمة جديدة")}
           </button>
-          {team.map((m) => {
-            const late = overdueCount(m.id)
-            return (
-              <button
-                key={m.id}
-                onClick={() => setQuery({ report: m.id })}
-                aria-pressed={report === m.id}
-                className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition-colors",
-                  report === m.id ? "border-primary/40 bg-primary/12 font-medium text-primary"
-                                  : "border-border text-muted-foreground hover:bg-muted/40")}
-              >
-                <span className="flex size-5 items-center justify-center rounded-full bg-foreground/[0.06] text-[9.5px] font-semibold text-foreground/70">
-                  {m.initials}
-                </span>
-                {isAr ? m.nameAr : m.name}
-                {late > 0
-                  ? <span className="rounded-full bg-rose-500/15 px-1.5 text-[10.5px] font-semibold tabular-nums text-rose-500">{late}</span>
-                  : <span className="text-[10.5px] tabular-nums text-muted-foreground/70">{openCount(m.id)}</span>}
-              </button>
-            )
-          })}
+          <button
+            onClick={() => navigate("/projects")}
+            className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <FolderKanban className="size-4" />{t("Projects", "المشاريع")}
+          </button>
         </div>
-      )}
 
-      {/* stats */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard icon={ListTodo} value={counts.open} label={t("Open", "مفتوحة")} tone="primary" />
-        <StatCard icon={Loader} value={counts.inProgress} label={t("In progress", "قيد التنفيذ")} tone="sky" />
-        <StatCard icon={AlertTriangle} value={counts.overdue} label={t("Overdue", "متأخرة")} tone="rose" />
-        <StatCard icon={CheckCircle2} value={counts.completed} label={t("Completed", "مكتملة")} tone="emerald" />
+        <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
+          <FilterSelect
+            className="w-full sm:w-[200px]"
+            lead={<span className="size-[7px] shrink-0 rounded-full bg-primary" />}
+            label={t("Category", "الفئة")}
+            value={category}
+            count={scoped.filter((x) => category === "all" || x.category === category).length}
+            onChange={(v) => setQuery({ category: v === "all" ? undefined : v })}
+            options={[{ value: "all", label: t("All", "الكل"), hint: scoped.length },
+              ...CATEGORIES.map((c) => ({ value: c.id, label: isAr ? c.ar : c.en, hint: scoped.filter((x) => x.category === c.id).length,
+                lead: <span className={cn("size-2 rounded-full", c.dot)} /> }))]}
+          />
+          <FilterSelect
+            className="w-full sm:w-[200px]"
+            lead={<Flag className="size-[14px] shrink-0 text-icon" />}
+            label={t("Sprint", "السبرنت")}
+            value={sprint}
+            onChange={(v) => setQuery({ sprint: v === (view === "board" ? CURRENT_SPRINT : "all") ? undefined : v })}
+            options={[...SPRINTS.map((s) => ({ value: s.id, label: isAr ? s.ar : s.en })),
+              { value: "all", label: t("All sprints", "كل السبرنتات") }]}
+          />
+          <FilterSelect
+            className="w-full sm:w-[225px]"
+            lead={<span className="inline-flex size-[22px] shrink-0 items-center justify-center rounded-full bg-soft-accent text-[10px] font-semibold text-primary">{team.length}</span>}
+            label={t("Employees", "الموظفين")}
+            value={who}
+            onChange={(v) => setQuery({ who: v === "all" ? undefined : v })}
+            options={whoOptions}
+          />
+        </div>
       </div>
 
-      {/* toolbar: tabs + search */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className={cn("inline-flex flex-wrap rounded-xl border border-border p-0.5", view === "board" && "hidden")}>
-          {TABS.map((tb) => (
-            <button key={tb.id} onClick={() => setTab(tb.id)} aria-pressed={tab === tb.id}
-              className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors", tab === tb.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
-              {isAr ? tb.ar : tb.label}
-              <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", tab === tb.id ? "bg-primary-foreground/20" : "bg-muted")}>{tb.count}</span>
-            </button>
-          ))}
+      {/* ── board ──────────────────────────────────────────────────────── */}
+      {view === "board" && !ready && (
+        <div className="mt-4 flex gap-4 overflow-hidden">
+          {STATUS_ORDER.map((s) => <Skeleton key={s} className="h-80 min-w-[208px] flex-1" />)}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search tasks…", "ابحث في المهام…")} className="w-56 ps-9" />
-          </div>
-          {/* list / board switch */}
-          <div className="inline-flex rounded-xl border border-border p-0.5">
-            {([["list", Rows3, t("List", "قائمة")], ["board", LayoutGrid, t("Board", "لوحة")]] as const).map(
-              ([id, Icon, label]) => (
-                <button
-                  key={id} onClick={() => setView(id as View)} aria-pressed={view === id}
-                  className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                    view === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-                >
-                  <Icon className="size-4" />{label}
+      )}
+
+      {view === "board" && ready && (
+        <>
+          {/* phone: one status at a time (3356:6232) */}
+          <div className="mt-4 md:hidden">
+            <div className="flex gap-1 overflow-x-auto rounded-xl bg-[var(--card-elevated)] p-1">
+              {STATUS_ORDER.map((s) => (
+                <button key={s} onClick={() => setPhoneCol(s)} aria-pressed={phoneCol === s}
+                  className={cn("shrink-0 rounded-lg px-3 py-2 text-[12.5px] font-medium",
+                    phoneCol === s ? "bg-soft-accent text-primary" : "text-muted-foreground")}>
+                  {isAr ? STATUS_META[s].ar : STATUS_META[s].en} <span className="tabular-nums opacity-70">{count(s)}</span>
                 </button>
               ))}
+            </div>
+            <div className="mt-4 space-y-3">
+              {visible.filter((x) => x.status === phoneCol).sort((a, b) => a.dueISO.localeCompare(b.dueISO)).map((x) => (
+                <BoardCard key={x.id} task={x} isAr={isAr} t={t} onOpen={() => openTask(x)} />
+              ))}
+              {count(phoneCol) === 0 && <Empty icon={Inbox} text={t("Nothing in this column.", "لا توجد مهام في هذا العمود.")} />}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* board */}
-      {view === "board" && (
-        <div className="grid gap-4 md:grid-cols-3">
-          {BOARD_COLUMNS.map((col) => {
-            const cards = boardTasks
-              .filter((x) => x.status === col.id)
-              .sort((a, b) => a.dueISO.localeCompare(b.dueISO))
-            return (
-              <div
-                key={col.id}
-                onDragOver={(e) => { e.preventDefault(); setOverCol(col.id) }}
-                onDragLeave={() => setOverCol((c) => (c === col.id ? null : c))}
-                onDrop={() => drop(col.id)}
-                className={cn(
-                  "rounded-2xl border p-2.5 transition-colors",
-                  overCol === col.id ? "border-primary/40 bg-primary/[0.04]" : "border-border/70 bg-muted/20",
-                )}
-              >
-                <div className="mb-2.5 flex items-center gap-2 px-1.5 pt-1">
-                  <span className={cn("size-2 rounded-full", col.dot)} />
-                  <span className="text-[13px] font-semibold">{isAr ? col.ar : col.label}</span>
-                  <span className="ms-auto rounded-full bg-muted px-2 text-[11px] font-medium tabular-nums text-muted-foreground">
-                    {cards.length}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  {cards.map((task) => (
-                    <BoardCard
-                      key={task.id} task={task} isAr={isAr} t={t}
-                      showWho={scope === "team" && report === "all"}
-                      dragging={dragId === task.id}
-                      onDragStart={() => setDragId(task.id)}
-                      onDragEnd={() => { setDragId(null); setOverCol(null) }}
-                      onOpen={() => navigate(scope === "team" ? `/tasks/${task.id}?from=manager` : `/tasks/${task.id}`)}
-                    />
-                  ))}
-                  {cards.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-border/70 py-8 text-center text-[12px] text-muted-foreground/70">
-                      {t("Drop a task here", "أفلت مهمة هنا")}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => navigate(scope === "team"
-                      ? `/tasks/new?status=${col.id}&from=manager${report !== "all" ? `&assignee=${report}` : ""}`
-                      : `/tasks/new?status=${col.id}&view=board`)}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/70 py-2 text-[12px] font-medium text-muted-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+          {/* web: five columns, scrolling sideways inside their own track */}
+          <div className="mt-4 hidden overflow-x-auto pb-3 md:block [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-sm [&::-webkit-scrollbar-thumb]:bg-foreground [&::-webkit-scrollbar-track]:rounded-sm [&::-webkit-scrollbar-track]:bg-secondary">
+            <div className="flex min-w-max gap-4 lg:min-w-0">
+              {STATUS_ORDER.map((s) => {
+                const cards = visible.filter((x) => x.status === s).sort((a, b) => a.dueISO.localeCompare(b.dueISO))
+                return (
+                  <div
+                    key={s}
+                    onDragOver={(e) => { e.preventDefault(); setOverCol(s) }}
+                    onDragLeave={() => setOverCol((c) => (c === s ? null : c))}
+                    onDrop={() => drop(s)}
+                    className={cn("flex w-[208px] shrink-0 flex-col gap-3 rounded-[10px] transition-colors lg:w-auto lg:min-w-[208px] lg:flex-1",
+                      overCol === s && "bg-soft-accent/40 outline-1 outline-dashed outline-primary/50")}
                   >
-                    <Plus className="size-3.5" />
-                    {scope === "team" ? t("Assign task", "إسناد مهمة") : t("Add task", "إضافة مهمة")}
+                    <div className="flex h-12 items-center justify-between rounded-[10px] bg-[var(--card-elevated)] px-3.5 ring-1 ring-inset ring-[var(--card-ring)]">
+                      <span className="flex items-center gap-2">
+                        <StatusDot status={s} />
+                        <span className="text-[12.4px] font-medium">{isAr ? STATUS_META[s].ar : STATUS_META[s].en}</span>
+                      </span>
+                      <span className="text-[12px] tabular-nums">{cards.length}</span>
+                    </div>
+                    {cards.map((x) => (
+                      <BoardCard
+                        key={x.id} task={x} isAr={isAr} t={t}
+                        dragging={dragId === x.id}
+                        onDragStart={() => setDragId(x.id)}
+                        onDragEnd={() => { setDragId(null); setOverCol(null) }}
+                        onOpen={() => openTask(x)}
+                      />
+                    ))}
+                    {cards.length === 0 && (
+                      <div className="rounded-[10px] border border-dashed border-input py-8 text-center text-[11.5px] text-muted-foreground">
+                        {t("Drop a task here", "أفلت مهمة هنا")}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => newTask(s)}
+                      className="flex items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-primary"
+                    >
+                      <Plus className="size-3.5" />{t("Add", "إضافة")}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          {visible.length === 0 && (
+            <Empty icon={CheckCircle2} text={t("No tasks match these filters.", "لا توجد مهام مطابقة لهذه التصفية.")} />
+          )}
+        </>
+      )}
+
+      {/* ── list ───────────────────────────────────────────────────────── */}
+      {view === "list" && (
+        <div className="mt-4">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1 rounded-[9px] bg-[var(--card-elevated)] p-[3px]">
+              {TABS.map((id) => {
+                const n = id === "all" ? visible.length : id === "overdue" ? visible.filter(isOverdue).length : count(id)
+                const label = id === "all" ? t("All", "الكل") : id === "overdue" ? t("Overdue", "متأخرة")
+                  : isAr ? STATUS_META[id].ar : STATUS_META[id].en
+                return (
+                  <button key={id} onClick={() => setQuery({ tab: id })} aria-pressed={tab === id}
+                    className={cn("inline-flex h-[30px] items-center gap-1.5 rounded-md px-3 text-[12.5px] font-medium transition-colors",
+                      tab === id ? "bg-soft-accent text-primary" : "text-muted-foreground hover:text-foreground")}>
+                    {label}<span className="text-[11px] tabular-nums opacity-70">{n}</span>
                   </button>
-                </div>
-              </div>
-            )
-          })}
+                )
+              })}
+            </div>
+            <label className="relative w-full sm:w-64">
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-icon" />
+              <input
+                value={q} onChange={(e) => setQ(e.target.value)}
+                placeholder={t("Search tasks…", "ابحث في المهام…")}
+                className="h-9 w-full rounded-lg bg-[var(--card-elevated)] ps-9 pe-3 text-[13px] outline-none ring-1 ring-inset ring-[var(--card-ring)] placeholder:text-muted-foreground focus:ring-primary/60"
+              />
+            </label>
+          </div>
+          <div className="panel overflow-hidden rounded-xl">
+            {!ready ? (
+              <div className="space-y-2 p-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}</div>
+            ) : listRows.length === 0 ? (
+              <Empty
+                icon={CheckCircle2}
+                text={q ? t("No task matches that search.", "لا توجد مهمة مطابقة للبحث.") : t("Nothing here — you're all caught up.", "لا شيء هنا — أنجزت كل شيء.")}
+              />
+            ) : listRows.map((x, i) => (
+              <TaskRow key={x.id} task={x} isAr={isAr} t={t} first={i === 0} onOpen={() => openTask(x)} />
+            ))}
+          </div>
         </div>
       )}
-
-      {view === "board" && (
-        <p className="mt-3 text-center text-[11.5px] text-muted-foreground/70">
-          {t("Drag a card between columns to change its status.", "اسحب البطاقة بين الأعمدة لتغيير حالتها.")}
-        </p>
-      )}
-
-      {/* list */}
-      {view === "list" && (
-      <Card className="overflow-hidden py-0">
-        {filtered.map((task, i) => (
-          <TaskRow
-            key={task.id} task={task} isAr={isAr} t={t} first={i === 0}
-            showWho={scope === "team" && report === "all"}
-            onOpen={() => navigate(scope === "team" ? `/tasks/${task.id}?from=manager` : `/tasks/${task.id}`)}
-          />
-        ))}
-        {filtered.length === 0 && (
-          <div className="py-14 text-center">
-            <CheckCircle2 className="mx-auto size-8 text-muted-foreground/40" />
-            <p className="mt-3 text-sm text-muted-foreground">{t("Nothing here — you're all caught up.", "لا شيء هنا — أنجزت كل شيء.")}</p>
-            <Button variant="outline" className="mt-4" onClick={() => navigate("/tasks/new")}>
-              <Plus className="size-4" />{t("Add task", "إضافة مهمة")}
-            </Button>
-          </div>
-        )}
-      </Card>
-      )}
-    </main>
+    </Page>
   )
 }
 
-/** A single card on the board. Draggable; the whole card opens the task. */
-function BoardCard({ task, isAr, t, showWho, dragging, onDragStart, onDragEnd, onOpen }: {
-  task: Task; isAr: boolean; t: (en: string, ar: string) => string; showWho?: boolean
-  dragging: boolean; onDragStart: () => void; onDragEnd: () => void; onOpen: () => void
+/** Hero selector card ("Work Card Selector"): 81 high, radius 12, icon 32. */
+function StatusCard({ status, value, isAr, onClick }: { status: "open" | "on-hold" | "in-progress"; value: number; isAr: boolean; onClick: () => void }) {
+  const Icon = status === "open" ? Inbox : status === "on-hold" ? CirclePause : CirclePlay
+  const tone = status === "open" ? "text-foreground" : status === "on-hold" ? "text-warning" : "text-success"
+  const m = STATUS_META[status]
+  return (
+    <button
+      onClick={onClick}
+      className="group flex h-[81px] items-center gap-3 rounded-xl bg-[var(--card-elevated)] px-[18px] py-4 text-start ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 lg:w-[215px]"
+    >
+      <Icon className={cn("size-8 shrink-0 stroke-[1.6]", tone)} />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[16px] font-semibold leading-8">{value} {isAr ? (status === "open" ? "قيد الإنتظار" : m.ar) : (status === "open" ? "Pending" : m.en)}</span>
+        <span className="text-[11.5px] text-muted-foreground">{isAr ? m.hintAr : m.hint}</span>
+      </span>
+      <ChevronRight className={cn("size-4 shrink-0 text-icon transition-transform", isAr && "rotate-180")} />
+    </button>
+  )
+}
+
+/** Board card (2062:2579): category chip + status dot, title, owner and due,
+ *  then the assistant's hint along the bottom. Draggable on the web board. */
+function BoardCard({ task, isAr, t, dragging, onDragStart, onDragEnd, onOpen }: {
+  task: Task; isAr: boolean; t: TFn
+  dragging?: boolean; onDragStart?: () => void; onDragEnd?: () => void; onOpen: () => void
 }) {
   const overdue = isOverdue(task)
-  const done = task.status === "completed"
-  const comments = commentCount(task.id)
+  const owner = task.assigneeId ? memberById(task.assigneeId) : undefined
+  const ownerName = owner ? (isAr ? owner.nameAr : owner.name) : isAr ? ME.nameAr : ME.name
+  const first = ownerName.split(" ")[0]
+  const initials = owner ? owner.initials : ME.initials
+  const hint = isAr ? task.aiHintAr : task.aiHint
   return (
     <div
-      draggable
+      draggable={!!onDragStart}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onOpen}
-      role="button"
-      tabIndex={0}
+      role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen() } }}
       aria-label={isAr ? task.titleAr : task.title}
       className={cn(
-        "group cursor-pointer rounded-xl border border-border/70 bg-card p-3 shadow-sm outline-none transition-all",
-        "hover:-translate-y-0.5 hover:border-primary/30 focus-visible:border-primary/40",
+        "group cursor-pointer overflow-hidden rounded-[10px] bg-background text-start outline-none ring-1 ring-inset ring-[var(--card-ring)] transition-all",
+        "hover:-translate-y-0.5 hover:ring-primary/40 focus-visible:ring-primary",
         dragging && "opacity-40",
-        overdue && !done && "border-rose-500/35",
       )}
     >
-      <div className="flex items-start gap-2">
-        <GripVertical className="mt-0.5 size-3.5 shrink-0 cursor-grab text-muted-foreground/30" />
-        <span className={cn("min-w-0 flex-1 text-[12.5px] font-medium leading-snug",
-          done && "text-muted-foreground line-through")}>
+      <div className="flex flex-col gap-3 px-3.5 pt-3.5 pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <CategoryChip id={task.category} isAr={isAr} />
+          <StatusDot status={task.status} />
+        </div>
+        <p className="text-[12.1px] leading-[21px] text-foreground">
           {isAr ? task.titleAr : task.title}
-        </span>
-        <PriorityDot priority={task.priority} />
-      </div>
-
-      <div className="mt-2 ps-5 text-[11px] text-muted-foreground/70">
-        {showWho && task.assignee ? `${isAr ? task.assigneeAr : task.assignee} \u00b7 ` : ""}
-        {isAr ? task.projectAr : task.project}
-      </div>
-
-      <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 ps-5 text-[11px]">
-        <span className={cn("inline-flex items-center gap-1", overdue && !done ? "font-semibold text-rose-500" : "text-muted-foreground/70")}>
-          <CalendarClock className="size-3" />{isAr ? task.dueAr : task.due}
-        </span>
-        {comments > 0 && (
-          <span className="inline-flex items-center gap-1 text-muted-foreground/70">
-            <MessageSquare className="size-3" />{comments}
+        </p>
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex min-w-0 items-center gap-[7px]">
+            <Initials text={initials} />
+            <span className="truncate text-[11px] text-muted-foreground">{first}</span>
           </span>
-        )}
-        {overdue && !done && (
-          <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-[9.5px] text-rose-500">
-            <AlertTriangle className="me-1 size-2.5" />{t("Overdue", "متأخرة")}
-          </Badge>
-        )}
+          <span className={cn("flex shrink-0 items-center gap-1 text-[11px]", overdue ? "font-semibold text-error" : "text-muted-foreground")}>
+            {overdue ? <AlertTriangle className="size-3" /> : <Clock className="size-3" />}
+            {shortDate(task.dueISO, isAr)}
+          </span>
+        </div>
       </div>
+      {hint ? (
+        <div className="flex items-center justify-center gap-2 border-t border-input px-3 py-3">
+          <Sparkles className="size-[13px] shrink-0 text-primary" />
+          <span className="truncate text-[10px] font-medium">{hint}</span>
+        </div>
+      ) : overdue ? (
+        <div className="flex items-center justify-center gap-2 border-t border-input px-3 py-3 text-error">
+          <AlertTriangle className="size-[13px] shrink-0" />
+          <span className="text-[10px] font-medium">{t("Overdue — needs a new date", "متأخرة — تحتاج موعدًا جديدًا")}</span>
+        </div>
+      ) : null}
     </div>
   )
 }
 
-function PriorityDot({ priority }: { priority: Task["priority"] }) {
-  const cls = priority === "high" ? "bg-rose-400" : priority === "medium" ? "bg-amber-400" : "bg-muted-foreground/40"
-  return <span className={cn("mt-1 size-2 shrink-0 rounded-full", cls)} />
-}
-
-function TaskRow({ task, isAr, t, first, showWho, onOpen }: { task: Task; isAr: boolean; t: (en: string, ar: string) => string; first: boolean; showWho?: boolean; onOpen: () => void }) {
+function TaskRow({ task, isAr, t, first, onOpen }: { task: Task; isAr: boolean; t: TFn; first: boolean; onOpen: () => void }) {
   const done = task.status === "completed"
   const overdue = isOverdue(task)
+  const owner = task.assigneeId ? memberById(task.assigneeId) : undefined
   const stop = (e: React.MouseEvent) => e.stopPropagation()
+  const pr = PRIORITY_META[task.priority]
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18 }}
-      onClick={onOpen}
-      role="button"
-      tabIndex={0}
+    <div
+      onClick={onOpen} role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen() } }}
       aria-label={isAr ? task.titleAr : task.title}
-      className={cn("group flex cursor-pointer items-start gap-3 px-4 py-3.5 outline-none transition-colors hover:bg-primary/[0.03] focus-visible:bg-primary/[0.04]", !first && "border-t border-border/70")}
+      className={cn("group flex cursor-pointer items-start gap-3 px-4 py-3.5 outline-none transition-colors hover:bg-foreground/[0.03] focus-visible:bg-foreground/[0.04]",
+        !first && "border-t border-input")}
     >
-      {/* complete checkbox */}
-      <button onClick={(e) => { stop(e); toggleComplete(task.id) }} aria-label={done ? t("Reopen", "إعادة فتح") : t("Mark complete", "وضع علامة مكتمل")} className="mt-0.5 shrink-0">
-        {done
-          ? <CheckCircle2 className="size-5 text-emerald-500" />
-          : <Circle className="size-5 text-muted-foreground/40 transition-colors group-hover:text-primary" />}
+      <button onClick={(e) => { stop(e); toggleComplete(task.id) }} className="mt-0.5 shrink-0"
+        aria-label={done ? t("Reopen", "إعادة فتح") : t("Mark complete", "وضع علامة مكتمل")}>
+        {done ? <CheckCircle2 className="size-5 text-success" /> : <Circle className="size-5 text-icon transition-colors group-hover:text-primary" />}
       </button>
-
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("text-[13px] font-medium leading-snug transition-colors group-hover:text-primary", done && "text-muted-foreground line-through group-hover:text-muted-foreground")}>{isAr ? task.titleAr : task.title}</span>
-          <StatusBadge status={task.status} overdue={overdue} t={t} />
+          <span className={cn("text-[13.5px] leading-snug group-hover:text-primary", done && "text-muted-foreground line-through")}>
+            {isAr ? task.titleAr : task.title}
+          </span>
+          <CategoryChip id={task.category} isAr={isAr} />
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground/70">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5"><StatusDot status={task.status} className="size-1.5" />{isAr ? STATUS_META[task.status].ar : STATUS_META[task.status].en}</span>
           <span>{isAr ? task.projectAr : task.project}</span>
-          <span className="inline-flex items-center gap-1"><CalendarClock className="size-3" /><span className={cn(overdue && "font-semibold text-rose-500")}>{isAr ? task.dueAr : task.due}</span></span>
-          <span className="inline-flex items-center gap-1">
-            <UserCircle2 className="size-3" />
-            {showWho && task.assignee ? (isAr ? task.assigneeAr : task.assignee) : (isAr ? task.assignedByAr : task.assignedBy)}
+          <span className={cn("inline-flex items-center gap-1", overdue && "font-semibold text-error")}>
+            <CalendarClock className="size-3" />{shortDate(task.dueISO, isAr)}{overdue && ` · ${t("overdue", "متأخرة")}`}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Initials text={owner ? owner.initials : ME.initials} className="size-[18px] text-[8px]" />
+            {owner ? (isAr ? owner.nameAr : owner.name) : t("Me", "أنا")}
           </span>
         </div>
       </div>
-
-      {/* priority + action */}
-      <div className="flex shrink-0 items-center gap-2">
-        <PriorityChip priority={task.priority} t={t} />
-        {done
-          ? <Button variant="ghost" size="sm" className="gap-1.5" onClick={(e) => { stop(e); toggleComplete(task.id) }}><RotateCcw className="size-3.5" />{t("Reopen", "فتح")}</Button>
-          : <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { stop(e); toggleComplete(task.id) }}><Check className="size-3.5" />{t("Complete", "إنجاز")}</Button>}
+      <div className="flex shrink-0 items-center gap-3">
+        <span className={cn("hidden items-center gap-1.5 text-[11.5px] sm:inline-flex", pr.text)}>
+          <span className={cn("size-1.5 rounded-full", pr.dot)} />{isAr ? pr.ar : pr.en}
+        </span>
+        <button
+          onClick={(e) => { stop(e); toggleComplete(task.id) }}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-[12px] font-medium hover:bg-foreground/5"
+        >
+          {done ? <><RotateCcw className="size-3.5" />{t("Reopen", "فتح")}</> : <><CheckCircle2 className="size-3.5" />{t("Complete", "إنجاز")}</>}
+        </button>
       </div>
-    </motion.div>
-  )
-}
-
-function StatusBadge({ status, overdue, t }: { status: TaskStatus; overdue: boolean; t: (en: string, ar: string) => string }) {
-  if (overdue) return <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-[10px] text-rose-500"><AlertTriangle className="me-1 size-2.5" />{t("Overdue", "متأخرة")}</Badge>
-  if (status === "completed") return <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-[10px] text-emerald-500">{t("Completed", "مكتملة")}</Badge>
-  if (status === "in-progress") return <Badge variant="outline" className="border-sky-500/40 bg-sky-500/10 text-[10px] text-sky-500">{t("In progress", "قيد التنفيذ")}</Badge>
-  return <Badge variant="outline" className="text-[10px] text-muted-foreground/70">{t("Open", "مفتوحة")}</Badge>
-}
-
-function PriorityChip({ priority, t }: { priority: Task["priority"]; t: (en: string, ar: string) => string }) {
-  const meta = priority === "high"
-    ? { cls: "text-rose-500", label: t("High", "عالية") }
-    : priority === "medium"
-      ? { cls: "text-amber-500", label: t("Medium", "متوسطة") }
-      : { cls: "text-muted-foreground/50", label: t("Low", "منخفضة") }
-  return <span className={cn("hidden items-center gap-1 text-[11px] font-medium sm:inline-flex", meta.cls)}><span className={cn("size-1.5 rounded-full", priority === "high" ? "bg-rose-400" : priority === "medium" ? "bg-amber-400" : "bg-muted-foreground/40")} />{meta.label}</span>
-}
-
-function StatCard({ icon: Icon, value, label, tone }: { icon: React.ComponentType<{ className?: string }>; value: number; label: string; tone: "primary" | "sky" | "rose" | "emerald" }) {
-  const toneCls = tone === "primary" ? "bg-primary/12 text-primary" : tone === "sky" ? "bg-sky-500/12 text-sky-500" : tone === "rose" ? "bg-rose-500/12 text-rose-500" : "bg-emerald-500/12 text-emerald-500"
-  return (
-    <Card className="flex items-center gap-3 p-4">
-      <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", toneCls)}><Icon className="size-5" /></span>
-      <div>
-        <div className="text-[22px] font-bold tabular-nums leading-none">{value}</div>
-        <div className="mt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/60">{label}</div>
-      </div>
-    </Card>
+    </div>
   )
 }

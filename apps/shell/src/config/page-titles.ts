@@ -61,6 +61,10 @@ const titlesEn: Record<string, string> = {
   "/partner/vouchers": "Voucher tracking",
   "/manager": "Manager dashboard",
   "/employee/dependants/new": "Add a dependant",
+  "/calendar": "Calendar",
+  "/calendar/new": "New appointment",
+  "/tasks": "Tasks",
+  "/tasks/new": "New task",
 }
 
 const titlesAr: Record<string, string> = {
@@ -124,6 +128,10 @@ const titlesAr: Record<string, string> = {
   "/partner/vouchers": "متابعة القسائم",
   "/manager": "لوحة المدير",
   "/employee/dependants/new": "إضافة معال",
+  "/calendar": "التقويم",
+  "/calendar/new": "موعد جديد",
+  "/tasks": "المهام",
+  "/tasks/new": "مهمة جديدة",
 }
 
 export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): string {
@@ -138,6 +146,11 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (pathname.startsWith("/hubs/")) return locale === "ar" ? "مركز المعاينة" : "Preview hub"
   // Operations & Performance detail routes
   const ar = locale === "ar"
+  if (/^\/calendar\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل الموعد" : "Edit appointment"
+  if (pathname.startsWith("/tasks/")) return ar ? "تفاصيل المهمة" : "Task details"
+  if (/^\/projects\/[^/]+\/milestones\//.test(pathname)) return ar ? "المعلم" : "Milestone"
+  if (/^\/projects\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل المشروع" : "Edit project"
+  if (pathname.startsWith("/projects/")) return ar ? "تفاصيل المشروع" : "Project details"
   if (pathname.startsWith("/operations/checklists/")) return ar ? "قوائم التحقق التشغيلية" : "Operational checklists"
   if (pathname.startsWith("/operations/evaluations/employee/")) return ar ? "سجل تقييمات الموظف" : "Employee evaluation history"
   if (pathname.startsWith("/operations/evaluations/")) return ar ? "تفاصيل التقييم" : "Evaluation details"

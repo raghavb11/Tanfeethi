@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Button, Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Check, Trash2 } from "lucide-react"
@@ -71,7 +71,7 @@ export default function MilestoneEditorPage() {
   }
 
   const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
+    <label className="mb-1.5 block text-[12px] text-muted-foreground">{s}</label>
   )
 
   if (!project) {
@@ -84,10 +84,11 @@ export default function MilestoneEditorPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => navigate(back)} className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground">
-          <ArrowLeft className={cn("size-3.5", isAr && "rotate-180")} />{isAr ? project.nameAr : project.name}
+    <main className="mx-auto w-full max-w-[840px] px-4 pt-6 pb-6 sm:px-6 lg:px-10 lg:pt-8">
+      <section className="highlight-card hl-green mb-10 flex flex-col gap-8 rounded-2xl px-6 py-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button onClick={() => navigate(back)} className="inline-flex h-[34px] items-center gap-2 rounded-lg px-3 text-[13.5px] font-medium hover:bg-foreground/5">
+          <ArrowLeft className={cn("size-[14px]", isAr && "rotate-180")} />{isAr ? project.nameAr : project.name}
         </button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</Button>
@@ -97,8 +98,8 @@ export default function MilestoneEditorPage() {
         </div>
       </div>
 
-      <div className="mb-5">
-        <h1 className="font-heading text-[26px] font-bold leading-tight tracking-tight">
+      <div>
+        <h1 className="text-[28px] font-medium leading-[38px]">
           {editing ? t("Edit milestone", "تعديل المعلم") : t("New milestone", "معلم جديد")}
         </h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
@@ -106,8 +107,9 @@ export default function MilestoneEditorPage() {
              "نقطة مؤرخة في المشروع، تندرج تحتها المهام ويتبع لونها تقدّمها.")}
         </p>
       </div>
+      </section>
 
-      <Card className="p-5">
+      <div className="panel rounded-xl px-4 py-5">
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
             <div>
@@ -134,7 +136,7 @@ export default function MilestoneEditorPage() {
               {label(t("Due", "يستحق"))}
               <Input type="date" value={dueISO} onChange={(e) => setDueISO(e.target.value)} />
               {startISO && dueISO && !datesOk && (
-                <p className="mt-1.5 text-[11.5px] text-rose-600 dark:text-rose-400">
+                <p className="mt-1.5 text-[11.5px] text-error">
                   {t("The due date has to be on or after the start.", "يجب أن يكون الاستحقاق في يوم البدء أو بعده.")}
                 </p>
               )}
@@ -148,7 +150,7 @@ export default function MilestoneEditorPage() {
           </div>
 
           {/* RAG: calculated by default, a manager can overrule it with a reason */}
-          <div className="rounded-xl border border-border/60 p-4">
+          <div className="rounded-lg bg-background/60 p-4 ring-1 ring-inset ring-input">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-[13.5px] font-semibold">{t("Status colour", "لون الحالة")}</h2>
               {report && (
@@ -170,7 +172,7 @@ export default function MilestoneEditorPage() {
                 <button
                   key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m}
                   className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors",
-                    mode === m ? "border-primary/40 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted/50")}
+                    mode === m ? "border-transparent bg-soft-accent text-primary" : "border-input text-muted-foreground hover:bg-muted/50")}
                 >
                   {m !== "auto" && <span className={cn("size-2 rounded-full", HEALTH[m].dot)} />}
                   {m === "auto" ? t("Work it out from the tasks", "احسبه من المهام") : isAr ? HEALTH[m].ar : HEALTH[m].en}
@@ -195,10 +197,10 @@ export default function MilestoneEditorPage() {
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {editing && (
-        <Card className="mt-5 p-4">
+        <div className="panel mt-6 rounded-xl px-4 py-5">
           <h2 className="text-[13.5px] font-semibold">{t("History", "السجل")}</h2>
           {log.length === 0 ? (
             <p className="mt-1.5 text-[12.5px] text-muted-foreground">{t("No changes in this session.", "لا توجد تغييرات في هذه الجلسة.")}</p>
@@ -216,11 +218,11 @@ export default function MilestoneEditorPage() {
 
           <div className="mt-4 border-t border-border/60 pt-4">
             {!removing ? (
-              <Button variant="outline" className="gap-1.5 text-rose-600 hover:text-rose-600" onClick={() => setRemoving(true)}>
+              <Button variant="outline" className="gap-1.5 text-error hover:text-error" onClick={() => setRemoving(true)}>
                 <Trash2 className="size-4" />{t("Remove milestone", "إزالة المعلم")}
               </Button>
             ) : (
-              <div className="rounded-xl border border-rose-500/35 bg-rose-500/[0.05] p-3">
+              <div className="rounded-xl border border-error/35 bg-error-fill p-3">
                 <p className="text-[13px] font-semibold">{t(`Remove ${milestone!.code}?`, `إزالة ${milestone!.code}؟`)}</p>
                 <p className="mt-1 text-[12px] text-muted-foreground">
                   {t(`Its ${taskCount} task${taskCount === 1 ? "" : "s"} stay in the project, no longer grouped. The milestone is kept in the history.`,
@@ -228,14 +230,14 @@ export default function MilestoneEditorPage() {
                 </p>
                 <div className="mt-3 flex flex-wrap justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={() => setRemoving(false)}>{t("Cancel", "إلغاء")}</Button>
-                  <Button size="sm" className="bg-rose-600 text-white hover:bg-rose-700" onClick={remove}>
+                  <Button size="sm" className="bg-error text-white hover:brightness-110" onClick={remove}>
                     {t("Yes, remove it", "نعم، أزله")}
                   </Button>
                 </div>
               </div>
             )}
           </div>
-        </Card>
+        </div>
       )}
     </main>
   )

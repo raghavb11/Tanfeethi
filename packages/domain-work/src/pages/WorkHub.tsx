@@ -124,14 +124,14 @@ function categoryTone(catId: CategoryId): { dot: string; chip: string; bar: stri
 }
 
 function priorityClasses(p: TaskPriority) {
-  if (p === "high") return "border-rose-500/30 bg-rose-500/8 text-rose-500"
+  if (p === "high") return "border-rose-500/30 bg-error-fill text-error"
   if (p === "medium") return "border-amber-400/30 bg-amber-400/8 text-amber-500"
   return "border-border bg-muted/30 text-muted-foreground/70"
 }
 
 function statusClasses(status: string) {
   if (status === "in-progress") return "border-primary/30 bg-primary/10 text-primary"
-  if (status === "blocked") return "border-rose-500/30 bg-rose-500/10 text-rose-500"
+  if (status === "blocked") return "border-transparent bg-error-fill text-error"
   if (status === "review") return "border-amber-400/30 bg-amber-400/10 text-amber-500"
   return "border-border/60 text-muted-foreground"
 }
@@ -148,7 +148,7 @@ function MyTasks({ isAr, filter }: { isAr: boolean; filter: CategoryId | null })
   const filtered = filter ? myTasks.filter((t) => t.category === filter) : myTasks
 
   return (
-    <Card className="ring-1 ring-foreground/10">
+    <Card className="panel rounded-xl border-0 ring-0">
       <div className="border-b border-border/60 px-5 py-4">
         <div className="text-[13px] font-semibold">{isAr ? ar.myTasksTitle : "My tasks"}</div>
         <div className="mt-0.5 text-[11px] text-muted-foreground/70">{isAr ? ar.myTasksDesc : "Sorted by impact · Reach assist on blockers"}</div>
@@ -261,7 +261,7 @@ function ProjectsGrid({ isAr, filter }: { isAr: boolean; filter: CategoryId | nu
             transition={{ duration: 0.22, delay: idx * 0.06 }}
             whileHover={{ y: -3 }}
           >
-            <Card className="h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
+            <Card className="panel h-full gap-0 overflow-hidden rounded-xl border-0 py-0 ring-0 transition-all hover:-translate-y-0.5">
               <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-3">
                 <div className="min-w-0 flex-1">
                   <span className={cn(
@@ -281,7 +281,7 @@ function ProjectsGrid({ isAr, filter }: { isAr: boolean; filter: CategoryId | nu
                 <span
                   className={cn(
                     "mt-1 size-2.5 shrink-0 rounded-full ring-2 ring-offset-2 ring-offset-card",
-                    p.health === "green" ? "bg-emerald-500 ring-emerald-500/30" : "bg-amber-400 ring-amber-400/30",
+                    p.health === "green" ? "bg-success ring-success/30" : "bg-warning ring-warning/30",
                   )}
                   aria-label={p.health}
                 />
@@ -407,7 +407,7 @@ function TodayFocusHero({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       style={{ "--hl": "#14b8a6" } as React.CSSProperties}
-      className="highlight-card relative overflow-hidden rounded-3xl"
+      className="highlight-card relative overflow-hidden rounded-2xl"
     >
       <div className="relative z-10 p-6 md:p-7">
         {/* Headline row */}
@@ -562,10 +562,10 @@ export default function WorkHub() {
   const totalCount = Object.values(categoryCounts).reduce((a, b) => a + b, 0)
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
+    <div className="mx-auto w-full max-w-[1309px] space-y-10 px-4 pt-6 pb-6 sm:px-6 lg:px-10 lg:pt-8">
       {/* Page heading */}
       <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">
+        <h1 className="text-[28px] font-medium leading-[38px]">
           {isAr ? ar.pageTitle : "Delivery & execution"}
         </h1>
         <p className="max-w-3xl text-[13px] text-muted-foreground">
@@ -590,8 +590,8 @@ export default function WorkHub() {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-medium transition-all",
               activeCategory === null
-                ? "border-primary/40 bg-primary/15 text-primary shadow-sm"
-                : "border-border/60 bg-card text-muted-foreground hover:border-border hover:bg-muted/40",
+                ? "border-transparent bg-soft-accent text-primary"
+                : "border-transparent bg-[var(--card-elevated)] text-muted-foreground hover:text-foreground",
             )}
           >
             <Layers className="size-3" />
@@ -612,7 +612,7 @@ export default function WorkHub() {
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-medium transition-all",
                   isActive
                     ? cn(tone.chip, "shadow-sm")
-                    : "border-border/60 bg-card text-muted-foreground hover:border-border hover:bg-muted/40",
+                    : "border-transparent bg-[var(--card-elevated)] text-muted-foreground hover:text-foreground",
                 )}
               >
                 <span className={cn("size-1.5 rounded-full", tone.dot)} />
@@ -649,7 +649,7 @@ export default function WorkHub() {
         </TabsContent>
       </Tabs>
 
-      <Card className="ring-1 ring-foreground/10">
+      <Card className="panel rounded-xl border-0 ring-0">
         <div className="flex flex-col gap-3 border-b border-border/60 px-5 py-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
@@ -677,7 +677,7 @@ export default function WorkHub() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.22, delay: idx * 0.06 }}
               whileHover={{ x: isAr ? -2 : 2 }}
-              className="group flex gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 cursor-pointer hover:border-primary/30 hover:bg-primary/[0.04] transition-colors"
+              className="group flex gap-3 rounded-xl bg-background/60 p-4 ring-1 ring-inset ring-input cursor-pointer hover:border-primary/30 hover:bg-primary/[0.04] transition-colors"
             >
               <span className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <Sparkles className="size-3" />

@@ -28,11 +28,11 @@ export type Milestone = {
 }
 
 export const HEALTH: Record<Health, { en: string; ar: string; dot: string; chip: string; bar: string }> = {
-  green:         { en: "On track",    ar: "على المسار",   dot: "bg-emerald-500", bar: "bg-emerald-500", chip: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
-  amber:         { en: "At risk",     ar: "معرّض للخطر",  dot: "bg-amber-500",   bar: "bg-amber-500",   chip: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
-  red:           { en: "Off track",   ar: "متعثّر",        dot: "bg-rose-500",    bar: "bg-rose-500",    chip: "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-400" },
-  complete:      { en: "Complete",    ar: "مكتمل",         dot: "bg-sky-500",     bar: "bg-sky-500",     chip: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-400" },
-  "not-started": { en: "Not started", ar: "لم يبدأ",       dot: "bg-muted-foreground/40", bar: "bg-muted-foreground/40", chip: "border-border bg-muted/50 text-muted-foreground" },
+  green:         { en: "On track",    ar: "على المسار",   dot: "bg-success", bar: "bg-success", chip: "border-transparent bg-success-fill text-success" },
+  amber:         { en: "At risk",     ar: "معرّض للخطر",  dot: "bg-warning",   bar: "bg-warning",   chip: "border-transparent bg-warning-fill text-warning" },
+  red:           { en: "Off track",   ar: "متعثّر",        dot: "bg-error",    bar: "bg-error",    chip: "border-transparent bg-error-fill text-error" },
+  complete:      { en: "Complete",    ar: "مكتمل",         dot: "bg-info",     bar: "bg-info",     chip: "border-transparent bg-info-fill text-info" },
+  "not-started": { en: "Not started", ar: "لم يبدأ",       dot: "bg-muted-foreground/40", bar: "bg-muted-foreground/40", chip: "border-transparent bg-secondary text-muted-foreground" },
 }
 
 const SEED: Milestone[] = [
@@ -121,7 +121,8 @@ const at = (iso: string) => new Date(`${iso}T00:00:00`).getTime()
 /** A task's share of done: finished is 100, otherwise the last percentage
  *  someone reported, with a modest default once work has begun. */
 export const taskProgress = (t: Task) =>
-  t.status === "completed" ? 100 : reportedProgress(t.id) ?? (t.status === "in-progress" ? 25 : 0)
+  t.status === "completed" ? 100
+    : reportedProgress(t.id) ?? (t.status === "in-review" ? 80 : t.status === "in-progress" || t.status === "on-hold" ? 25 : 0)
 
 export type HealthReport = {
   health: Health

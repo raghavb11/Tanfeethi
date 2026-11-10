@@ -97,6 +97,8 @@ const ApprovalDetailPage = lazy(() =>
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const NotificationHistoryPage = lazy(() => import("@/pages/NotificationHistory"))
+const CalendarPage = lazy(() => import("@reach/domain-work").then((m) => ({ default: m.CalendarPage })))
+const CalendarEventEditorPage = lazy(() => import("@reach/domain-work").then((m) => ({ default: m.CalendarEventEditorPage })))
 const ProfilePage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ProfilePage })))
 const AssetsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.AssetsPage })))
 const ShiftsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ShiftsPage })))
@@ -318,7 +320,9 @@ export default function App() {
         <Route path="knowledge" element={<KnowledgeCenterPage />} />
         <Route path="hubs/:hubId" element={<PreviewHubPage />} />
         {/* WIJHA rail destinations — stand-ins until their pages land */}
-        <Route path="calendar" element={<Navigate to="/events" replace />} />
+        <Route path="calendar" element={<CalendarPage />} />
+        <Route path="calendar/new" element={<CalendarEventEditorPage />} />
+        <Route path="calendar/:id/edit" element={<CalendarEventEditorPage />} />
         <Route path="learning" element={<LearningPage />} />
         <Route path="operations" element={<OperationsHubPage />} />
         <Route path="operations/checklists/:runId" element={<ChecklistRunPage />} />
