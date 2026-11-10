@@ -205,6 +205,13 @@ export default function MyTasksPage() {
               </button>
             }
           />
+          {/* Visible way into sprint definitions (the menu entries alone were too hidden). */}
+          <button type="button" onClick={() => navigate("/sprints")}
+            title={canManageSprints ? t("Define and manage sprints", "تعريف السبرنتات وإدارتها") : t("View sprints", "عرض السبرنتات")}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-[12.5px] font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary">
+            <Settings2 className="size-[14px] shrink-0 text-primary" />
+            {t("Sprints", "السبرنتات")}
+          </button>
           <FilterSelect
             className="w-full sm:w-[225px]"
             lead={<span className="inline-flex size-[22px] shrink-0 items-center justify-center rounded-full bg-soft-accent text-[10px] font-semibold text-primary">{team.length}</span>}
