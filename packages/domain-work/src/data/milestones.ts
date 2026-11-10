@@ -25,6 +25,8 @@ export type Milestone = {
   ragReason?: string
   /** Removed milestones are kept, not deleted; their tasks fall back to the project. */
   archived?: boolean
+  /** Set when added on the milestone screen; the seed rows predate it. */
+  createdISO?: string
 }
 
 export const HEALTH: Record<Health, { en: string; ar: string; dot: string; chip: string; bar: string }> = {
