@@ -1,15 +1,16 @@
 import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, Check, MapPin, ScanLine, Search, Ticket, UserRound } from "lucide-react"
+import { ArrowLeft, BarChart3, Check, MapPin, ScanLine, Search, Ticket, UserRound } from "lucide-react"
 
 import {
   type Branch, fmtWhen, getOffer, getPartner, markVoucherUsed, offersFor, useOffers,
   usePartners, useVouchers, type Voucher, voucherStatus, type VoucherStatus,
   VOUCHER_STATUS, vouchersForPartner,
 } from "../data/mock/partners"
+import { Bar, Chip, Empty, FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard } from "../components/wijha"
 
 type Filter = "all" | VoucherStatus
 
@@ -79,23 +80,21 @@ export default function PartnerVouchersPage() {
     const o = getOffer(v.offerId)
     const st = voucherStatus(v)
     return (
-      <Card key={v.id} className={cn("p-4", highlight && "ring-2 ring-primary/40")}>
+      <div key={v.id} className={cn("rounded-[10px] bg-background p-4 ring-1 ring-border ring-inset", highlight && "ring-2 ring-primary/50")}>
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-lg border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[12.5px] font-bold tracking-wider text-primary">
+              <span dir="ltr" className="accent-chip rounded-md px-2 py-0.5 font-mono text-[13px] font-bold tracking-wider">
                 {v.ref}
               </span>
-              <Badge variant="outline" className={cn("text-[10px]", VOUCHER_STATUS[st].chip)}>
-                {isAr ? VOUCHER_STATUS[st].ar : VOUCHER_STATUS[st].en}
-              </Badge>
-              {o && <span className="min-w-0 truncate text-[12px] text-muted-foreground">{isAr ? o.headlineAr : o.headline}</span>}
+              <Chip className={VOUCHER_STATUS[st].chip}>{isAr ? VOUCHER_STATUS[st].ar : VOUCHER_STATUS[st].en}</Chip>
+              {o && <span className="min-w-0 truncate text-[12.5px] text-muted-foreground">{isAr ? o.headlineAr : o.headline}</span>}
             </div>
 
             {/* who it is for, and who claimed it */}
-            <div className="mt-2 grid gap-x-6 gap-y-1 text-[12.5px] sm:grid-cols-2">
+            <div className="mt-2.5 grid gap-x-6 gap-y-1 text-[13.5px] sm:grid-cols-2">
               <div className="flex items-center gap-1.5">
-                <UserRound className="size-3.5 shrink-0 text-muted-foreground" />
+                <UserRound className="size-3.5 shrink-0 text-icon" />
                 <span className="text-muted-foreground">{t("For", "لـ")}</span>
                 <span className="font-medium">{isAr ? v.forNameAr : v.forName}</span>
                 {/* "You" is the employee's word; to the partner that person is the employee */}
@@ -104,16 +103,16 @@ export default function PartnerVouchersPage() {
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Ticket className="size-3.5 shrink-0 text-muted-foreground" />
+                <Ticket className="size-3.5 shrink-0 text-icon" />
                 <span className="text-muted-foreground">{t("Claimed by", "طلبها")}</span>
                 <span className="font-medium">{isAr ? v.claimedByNameAr : v.claimedByName}</span>
               </div>
             </div>
 
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-muted-foreground">
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
               <span>{t(`Claimed ${fmtWhen(v.issuedISO)}`, `طُلبت ${fmtWhen(v.issuedISO, true)}`)}</span>
               {st === "used" && v.usedAtISO ? (
-                <span className="text-emerald-600 dark:text-emerald-400">
+                <span className="text-success">
                   {t(`Used ${fmtWhen(v.usedAtISO)}`, `استُخدمت ${fmtWhen(v.usedAtISO, true)}`)}
                   {v.usedBranch && <> · <MapPin className="inline size-3" /> {isAr ? v.usedBranchAr : v.usedBranch}</>}
                 </span>
@@ -124,31 +123,26 @@ export default function PartnerVouchersPage() {
           </div>
 
           {st === "active" && marking !== v.id && (
-            <Button size="sm" className="shrink-0 gap-1.5" onClick={() => startMarking(v)}>
+            <GoldButton size="sm" className="shrink-0" onClick={() => startMarking(v)}>
               <Check className="size-3.5" />{t("Mark as used", "تعليمها كمستخدمة")}
-            </Button>
+            </GoldButton>
           )}
         </div>
 
         {/* confirm at the counter: the name has been checked, and where */}
         {marking === v.id && (
-          <div className="mt-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-3">
-            <p className="text-[13px] font-semibold">
+          <div className="mt-4 rounded-[10px] bg-soft-accent p-3.5">
+            <p className="text-[14px] font-medium">
               {t(`Mark ${v.ref} as used by ${v.forName}?`, `تعليم ${v.ref} كمستخدمة من ${v.forNameAr}؟`)}
             </p>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
               {t("Check the name against their ID first. This cannot be undone, and the employee is told.",
                  "تحقق من الاسم مقابل الهوية أولًا. لا يمكن التراجع، وسيُبلغ الموظف.")}
             </p>
             {o && o.branches.length > 0 && (
               <div className="mt-3 max-w-xs">
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t("Used at", "مكان الاستخدام")}
-                </label>
-                <select
-                  value={branchId} onChange={(e) => setBranchId(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
-                >
+                <FieldLabel>{t("Used at", "مكان الاستخدام")}</FieldLabel>
+                <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={fieldClass}>
                   {o.branches.map((b) => (
                     <option key={b.id} value={b.id}>{isAr ? b.nameAr : b.name}</option>
                   ))}
@@ -156,14 +150,14 @@ export default function PartnerVouchersPage() {
               </div>
             )}
             <div className="mt-3 flex flex-wrap justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setMarking(null)}>{t("Cancel", "إلغاء")}</Button>
-              <Button size="sm" className="gap-1.5" onClick={() => confirmUsed(v)}>
+              <OutlineButton size="sm" onClick={() => setMarking(null)}>{t("Cancel", "إلغاء")}</OutlineButton>
+              <GoldButton size="sm" onClick={() => confirmUsed(v)}>
                 <Check className="size-3.5" />{t("Yes, mark as used", "نعم، سجّل الاستخدام")}
-              </Button>
+              </GoldButton>
             </div>
           </div>
         )}
-      </Card>
+      </div>
     )
   }
 
@@ -176,90 +170,83 @@ export default function PartnerVouchersPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-7 md:px-8">
-      <div className="space-y-1.5">
+    <Page className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate(`/partner?as=${asId}`)}
-          className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className={cn("size-3.5", isAr && "rotate-180")} />{t("Back to your offers", "العودة إلى عروضك")}
+          <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to your offers", "العودة إلى عروضك")}
         </button>
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Voucher tracking", "متابعة القسائم")}</h1>
-        <p className="max-w-3xl text-[13px] text-muted-foreground">
-          {partner
-            ? t(`Every voucher ${partner.name} has issued: who claimed it, who it is for, and whether it has been used.`,
-                `كل القسائم الصادرة لـ ${partner.nameAr}: من طلبها، ولمن، وهل استُخدمت.`)
-            : ""}
-        </p>
+        {partner && (
+          <p className="text-[12.5px] text-muted-foreground">
+            {t(`Every voucher ${partner.name} has issued: who claimed it, who it is for, and whether it has been used.`,
+               `كل القسائم الصادرة لـ ${partner.nameAr}: من طلبها، ولمن، وهل استُخدمت.`)}
+          </p>
+        )}
       </div>
 
       {/* claimed against used */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {([
           [t("Claimed", "مطلوبة"), counted.length, "text-foreground"],
-          [t("Used", "مستخدمة"), usedN, "text-emerald-600 dark:text-emerald-400"],
-          [t("Not used yet", "لم تُستخدم"), count("active"), "text-amber-600 dark:text-amber-400"],
+          [t("Used", "مستخدمة"), usedN, "text-success"],
+          [t("Not used yet", "لم تُستخدم"), count("active"), "text-warning"],
           [t("Expired unused", "انتهت دون استخدام"), count("expired"), "text-muted-foreground"],
-        ].map(([label, n, tone]) => (
-          <Card key={String(label)} className="p-4">
-            <div className={cn("text-[26px] font-bold tabular-nums", tone as string)}>{n as number}</div>
-            <div className="text-[12px] text-muted-foreground">{label as string}</div>
-          </Card>
+        ] as const).map(([label, n, tone]) => (
+          <div key={label} className="panel rounded-xl p-5">
+            <div className={cn("text-[28px] font-medium tabular-nums leading-none", tone)}>{n}</div>
+            <div className="mt-1.5 text-[12.5px] text-muted-foreground">{label}</div>
+          </div>
         ))}
       </div>
 
       {/* usage by offer */}
       {myOffers.length > 0 && (
-        <Card className="p-4">
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-[13.5px] font-semibold">{t("Usage by offer", "الاستخدام حسب العرض")}</h2>
-            <span className="text-[12px] text-muted-foreground">
+        <SectionCard
+          icon={BarChart3}
+          title={t("Usage by offer", "الاستخدام حسب العرض")}
+          action={
+            <span className="text-[12.5px] text-muted-foreground">
               {t(`${rate}% of claimed vouchers used overall`, `استُخدم ${rate}٪ من القسائم المطلوبة`)}
             </span>
-          </div>
-          <div className="space-y-3">
+          }
+        >
+          <div className="space-y-4">
             {myOffers.map((o) => {
               const vs = all.filter((v) => v.offerId === o.id && voucherStatus(v) !== "cancelled")
               const used = vs.filter((v) => v.used).length
               const pct = vs.length ? Math.round((used / vs.length) * 100) : 0
               return (
-                <button
-                  key={o.id} onClick={() => setParam("offer", o.id)}
-                  className="block w-full text-start"
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 text-[12.5px]">
-                    <span className="min-w-0 truncate font-medium">{isAr ? o.headlineAr : o.headline}</span>
-                    <span className="tabular-nums text-muted-foreground">
+                <button key={o.id} onClick={() => setParam("offer", o.id)} className="block w-full text-start">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 text-[13.5px]">
+                    <span className="min-w-0 truncate">{isAr ? o.headlineAr : o.headline}</span>
+                    <span className="tabular-nums text-[12.5px] text-muted-foreground">
                       {t(`${used} used of ${vs.length} claimed`, `${used} مستخدمة من ${vs.length}`)}
                       {o.voucherQuota != null && t(` · allocation ${o.voucherQuota}`, ` · المخصص ${o.voucherQuota}`)}
                     </span>
                   </div>
-                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
-                  </div>
+                  <Bar className="mt-2" tone="success" value={pct} />
                 </button>
               )
             })}
           </div>
-        </Card>
+        </SectionCard>
       )}
 
       {/* look-up and filters */}
-      <div className="space-y-3">
+      <div className="panel space-y-3 rounded-xl px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[16rem] flex-1">
+          <div className="relative min-w-0 flex-1 sm:min-w-[16rem]">
             <ScanLine className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder={t("Voucher reference, or a name", "رقم القسيمة، أو اسم")}
-              className="ps-9" dir="ltr"
+              className="h-9 rounded-lg bg-background ps-9" dir="ltr"
             />
           </div>
           {myOffers.length > 1 && (
-            <select
-              value={offerFilter} onChange={(e) => setParam("offer", e.target.value)}
-              className="h-11 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
-            >
+            <select value={offerFilter} onChange={(e) => setParam("offer", e.target.value)} className={cn(fieldClass, "w-auto max-w-full")}>
               <option value="all">{t("All offers", "كل العروض")}</option>
               {myOffers.map((o) => (
                 <option key={o.id} value={o.id}>{isAr ? o.headlineAr : o.headline}</option>
@@ -267,37 +254,39 @@ export default function PartnerVouchersPage() {
             </select>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {FILTERS.map(([id, label, n]) => (
             <button
-              key={id} onClick={() => setStatus(id)}
-              className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors",
-                status === id ? "border-primary/40 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted/50")}
+              key={id} onClick={() => setStatus(id)} aria-pressed={status === id}
+              className={cn("inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+                status === id ? "bg-soft-accent text-primary" : "bg-secondary text-muted-foreground hover:text-foreground")}
             >
-              {label}<span className="rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">{n}</span>
+              {label}<span className="rounded-md bg-background px-1.5 text-[11px] tabular-nums text-muted-foreground">{n}</span>
             </button>
           ))}
           {offerFilter !== "all" && (
-            <button onClick={() => setParam("offer", "all")} className="text-[12px] text-primary hover:underline">
+            <button onClick={() => setParam("offer", "all")} className="text-[12.5px] text-primary hover:underline">
               {t("Show all offers", "عرض كل العروض")}
             </button>
           )}
         </div>
       </div>
 
-      <div className="space-y-3">
-        {exact && row(exact, true)}
-        {shown.filter((v) => v.id !== exact?.id).map((v) => row(v))}
+      <SectionCard icon={Ticket} title={t("Vouchers", "القسائم")} action={<Chip>{shown.length}</Chip>}>
+        <div className="space-y-3">
+          {exact && row(exact, true)}
+          {shown.filter((v) => v.id !== exact?.id).map((v) => row(v))}
 
-        {shown.length === 0 && !exact && (
-          <Card className="p-8 text-center text-[13px] text-muted-foreground">
-            <Search className="mx-auto mb-2 size-5 text-muted-foreground/60" />
-            {all.length === 0
-              ? t("No vouchers have been issued for your offers yet.", "لم تُصدر أي قسائم لعروضك بعد.")
-              : t("No voucher matches that.", "لا توجد قسيمة مطابقة.")}
-          </Card>
-        )}
-      </div>
-    </div>
+          {shown.length === 0 && !exact && (
+            <Empty
+              icon={Search}
+              title={all.length === 0
+                ? t("No vouchers have been issued for your offers yet.", "لم تُصدر أي قسائم لعروضك بعد.")
+                : t("No voucher matches that.", "لا توجد قسيمة مطابقة.")}
+            />
+          )}
+        </div>
+      </SectionCard>
+    </Page>
   )
 }

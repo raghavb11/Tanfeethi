@@ -1,7 +1,7 @@
 import * as React from "react"
 import { pushNotification } from "@reach/shared-mocks"
 
-import { RELATION, verifiedDependants } from "./dependants"
+import { allDependants, RELATION, verifiedDependants } from "./dependants"
 
 /** Partner benefits — offers vendors extend to ALTANFEETHI staff, which the
  *  employee and, where the contract allows, their family can use. The portal
@@ -12,13 +12,13 @@ export type PartnerCategory =
   | "wellness" | "health" | "fitness" | "dining" | "travel" | "retail" | "education"
 
 export const CATEGORY: Record<PartnerCategory, { en: string; ar: string; chip: string }> = {
-  wellness: { en: "Spa & wellness", ar: "المنتجعات والعافية", chip: "border-violet-500/35 bg-violet-500/10 text-violet-600 dark:text-violet-400" },
-  health: { en: "Health & clinics", ar: "الصحة والعيادات", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  fitness: { en: "Fitness", ar: "اللياقة", chip: "border-sky-500/35 bg-sky-500/10 text-sky-600 dark:text-sky-400" },
-  dining: { en: "Dining", ar: "المطاعم", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  travel: { en: "Travel & hotels", ar: "السفر والفنادق", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
-  retail: { en: "Retail", ar: "التجزئة", chip: "border-border bg-muted/50 text-muted-foreground" },
-  education: { en: "Education", ar: "التعليم", chip: "border-primary/35 bg-primary/10 text-primary" },
+  wellness: { en: "Spa & wellness", ar: "المنتجعات والعافية", chip: "border-transparent bg-[#a997c7]/20 text-[#a997c7]" },
+  health: { en: "Health & clinics", ar: "الصحة والعيادات", chip: "border-transparent bg-success-fill text-success" },
+  fitness: { en: "Fitness", ar: "اللياقة", chip: "border-transparent bg-info-fill text-info" },
+  dining: { en: "Dining", ar: "المطاعم", chip: "border-transparent bg-warning-fill text-warning" },
+  travel: { en: "Travel & hotels", ar: "السفر والفنادق", chip: "border-transparent bg-error-fill text-error" },
+  retail: { en: "Retail", ar: "التجزئة", chip: "border-transparent bg-secondary text-muted-foreground" },
+  education: { en: "Education", ar: "التعليم", chip: "border-transparent bg-soft-accent text-primary" },
 }
 
 /** Who a vendor lets use the offer. The employee is always included. */
@@ -54,8 +54,8 @@ export type Branch = {
   address?: string
 }
 
-const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"
-const arTime = (t: string) => t.replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)])
+/** Times read the same in both languages — the design uses Western digits. */
+const arTime = (t: string) => t
 
 /** "Sun-Thu 09:00-17:00" from the parts, so the editor and the card agree. */
 export function hoursLine(b: Pick<Branch, "opensAt" | "closesAt" | "days">, isAr = false) {
@@ -112,10 +112,10 @@ export const prettyWhen = (iso: string, isAr = false) => {
   const hasTime = iso.includes("T")
   const d = new Date(hasTime ? iso : `${iso}T00:00`)
   if (Number.isNaN(d.getTime())) return iso
-  const date = d.toLocaleDateString(isAr ? "ar-EG" : "en-GB",
+  const date = d.toLocaleDateString(isAr ? "ar-EG-u-nu-latn" : "en-GB",
     { day: "numeric", month: "short", year: "numeric" })
   if (!hasTime) return date
-  const time = d.toLocaleTimeString(isAr ? "ar-EG" : "en-GB",
+  const time = d.toLocaleTimeString(isAr ? "ar-EG-u-nu-latn" : "en-GB",
     { hour: "2-digit", minute: "2-digit", hour12: false })
   return `${date}, ${time}`
 }
@@ -136,10 +136,10 @@ export const mapsSearchUrl = (q: string) =>
 export type OfferStatus = "draft" | "submitted" | "published" | "returned"
 
 export const OFFER_STATUS: Record<OfferStatus, { en: string; ar: string; chip: string }> = {
-  draft:     { en: "Draft",     ar: "\u0645\u0633\u0648\u062f\u0629", chip: "border-border bg-muted/50 text-muted-foreground" },
-  submitted: { en: "Submitted", ar: "\u0645\u064f\u0631\u0633\u0644 \u0644\u0644\u0645\u0631\u0627\u062c\u0639\u0629", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  published: { en: "Published", ar: "\u0645\u0646\u0634\u0648\u0631", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  returned:  { en: "Returned",  ar: "\u0645\u064f\u0639\u0627\u062f", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+  draft:     { en: "Draft",     ar: "\u0645\u0633\u0648\u062f\u0629", chip: "border-transparent bg-secondary text-muted-foreground" },
+  submitted: { en: "Submitted", ar: "\u0645\u064f\u0631\u0633\u0644 \u0644\u0644\u0645\u0631\u0627\u062c\u0639\u0629", chip: "border-transparent bg-warning-fill text-warning" },
+  published: { en: "Published", ar: "\u0645\u0646\u0634\u0648\u0631", chip: "border-transparent bg-success-fill text-success" },
+  returned:  { en: "Returned",  ar: "\u0645\u064f\u0639\u0627\u062f", chip: "border-transparent bg-error-fill text-error" },
 }
 
 export type PartnerOffer = {
@@ -181,13 +181,13 @@ export type PartnerOffer = {
 /** The painted fallback — a category gradient, so a card without a photo still
  *  reads as designed rather than empty. */
 export const CATEGORY_ART: Record<PartnerCategory, string> = {
-  wellness: "from-violet-500/85 via-violet-600/70 to-fuchsia-500/60",
-  health: "from-emerald-500/85 via-emerald-600/70 to-teal-500/60",
-  fitness: "from-sky-500/85 via-sky-600/70 to-cyan-500/60",
-  dining: "from-amber-500/85 via-orange-500/70 to-rose-400/60",
-  travel: "from-rose-500/85 via-rose-600/70 to-orange-400/60",
-  retail: "from-slate-500/85 via-slate-600/70 to-slate-400/60",
-  education: "from-primary/85 via-primary/70 to-amber-400/60",
+  wellness: "from-[#a997c7]/85 via-[#a997c7]/60 to-[#a997c7]/30",
+  health: "from-success/85 via-success/60 to-[#1aad70]/30",
+  fitness: "from-info/85 via-info/60 to-info/30",
+  dining: "from-warning/85 via-warning/60 to-primary/40",
+  travel: "from-primary/85 via-error/55 to-error/30",
+  retail: "from-secondary via-secondary/80 to-muted-foreground/30",
+  education: "from-primary/85 via-primary/65 to-primary/35",
 }
 
 /** Seed only. The live list is `offers` below, which the portal mutates. */
@@ -196,9 +196,9 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-spa-almasa", image: "images/cms/wellbeing.jpg",
     vendor: "Al Masa Spa & Wellness", vendorAr: "منتجع الماسة للعافية",
     category: "wellness",
-    discount: "30% off", discountAr: "خصم ٣٠٪",
+    discount: "30% off", discountAr: "خصم 30٪",
     headline: "30% off all spa and massage treatments",
-    headlineAr: "خصم ٣٠٪ على جميع جلسات المنتجع والمساج",
+    headlineAr: "خصم 30٪ على جميع جلسات المنتجع والمساج",
     summary: "Body treatments, massage and hammam at the Riyadh and Jeddah branches, for you and your family. Ladies' and gentlemen's sections operate separately.",
     summaryAr: "علاجات الجسم والمساج والحمام في فرعي الرياض وجدة، لك ولعائلتك. قسم الرجال وقسم السيدات منفصلان.",
     eligible: ["employee", "spouse", "children", "parents"],
@@ -215,9 +215,9 @@ const SEED_OFFERS: PartnerOffer[] = [
       "أبرز القسيمة وبطاقتك الوظيفية الرقمية عند الاستقبال.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · Al Olaya", nameAr: "الرياض · العليا", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 456 7788", hours: "Sat–Thu 10:00–22:00", hoursAr: "السبت–الخميس ١٠:٠٠–٢٢:٠٠" },
-      { id: "b2", name: "Riyadh · Hittin", nameAr: "الرياض · حطين", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 456 7799", hours: "Daily 10:00–23:00", hoursAr: "يوميًا ١٠:٠٠–٢٣:٠٠" },
-      { id: "b3", name: "Jeddah · Corniche", nameAr: "جدة · الكورنيش", city: "Jeddah", cityAr: "جدة", phone: "+966 12 661 2020", hours: "Daily 11:00–23:00", hoursAr: "يوميًا ١١:٠٠–٢٣:٠٠" },
+      { id: "b1", name: "Riyadh · Al Olaya", nameAr: "الرياض · العليا", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 456 7788", hours: "Sat–Thu 10:00–22:00", hoursAr: "السبت–الخميس 10:00–22:00" },
+      { id: "b2", name: "Riyadh · Hittin", nameAr: "الرياض · حطين", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 456 7799", hours: "Daily 10:00–23:00", hoursAr: "يوميًا 10:00–23:00" },
+      { id: "b3", name: "Jeddah · Corniche", nameAr: "جدة · الكورنيش", city: "Jeddah", cityAr: "جدة", phone: "+966 12 661 2020", hours: "Daily 11:00–23:00", hoursAr: "يوميًا 11:00–23:00" },
     ],
     validTo: "31 Dec 2026", validToISO: "2026-12-31",
     terms: [
@@ -230,7 +230,7 @@ const SEED_OFFERS: PartnerOffer[] = [
       "لا يُجمع مع العروض الأخرى أو العروض الموسمية.",
       "قسيمة واحدة لكل زيارة، وتغطي الشخص المذكور فقط.",
       "الحجز مساء الخميس والجمعة حسب التوفر.",
-      "الأطفال دون ١٢ عامًا في القسم العائلي فقط.",
+      "الأطفال دون 12 عامًا في القسم العائلي فقط.",
     ],
     contact: { name: "Partnerships desk", nameAr: "مكتب الشراكات", phone: "+966 11 456 7700", email: "corporate@almasaspa.sa" },
     popular: true,
@@ -239,9 +239,9 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-clinic-nahdi",
     vendor: "Al Nahdi Medical Clinics", vendorAr: "عيادات النهدي الطبية",
     category: "health",
-    discount: "25% off", discountAr: "خصم ٢٥٪",
+    discount: "25% off", discountAr: "خصم 25٪",
     headline: "25% off dental and dermatology, on top of insurance",
-    headlineAr: "خصم ٢٥٪ على الأسنان والجلدية إضافة إلى التأمين",
+    headlineAr: "خصم 25٪ على الأسنان والجلدية إضافة إلى التأمين",
     summary: "Applies to the portion you pay yourself after Bupa settles — dentistry, dermatology and routine check-ups.",
     summaryAr: "يُطبَّق على الجزء الذي تتحمله بعد تسوية بوبا — الأسنان والجلدية والفحوصات الدورية.",
     eligible: ["employee", "spouse", "children"],
@@ -257,8 +257,8 @@ const SEED_OFFERS: PartnerOffer[] = [
       "يُطبَّق الخصم على حصتك من الفاتورة.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · King Fahd Road", nameAr: "الرياض · طريق الملك فهد", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 202 4141", hours: "Sat–Thu 08:00–22:00", hoursAr: "السبت–الخميس ٠٨:٠٠–٢٢:٠٠" },
-      { id: "b2", name: "Dammam · Al Faisaliah", nameAr: "الدمام · الفيصلية", city: "Dammam", cityAr: "الدمام", phone: "+966 13 833 5050", hours: "Sat–Thu 08:00–21:00", hoursAr: "السبت–الخميس ٠٨:٠٠–٢١:٠٠" },
+      { id: "b1", name: "Riyadh · King Fahd Road", nameAr: "الرياض · طريق الملك فهد", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 202 4141", hours: "Sat–Thu 08:00–22:00", hoursAr: "السبت–الخميس 08:00–22:00" },
+      { id: "b2", name: "Dammam · Al Faisaliah", nameAr: "الدمام · الفيصلية", city: "Dammam", cityAr: "الدمام", phone: "+966 13 833 5050", hours: "Sat–Thu 08:00–21:00", hoursAr: "السبت–الخميس 08:00–21:00" },
     ],
     validTo: "30 Jun 2027", validToISO: "2027-06-30",
     terms: [
@@ -275,9 +275,9 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-fitness-time",
     vendor: "Fitness Time", vendorAr: "وقت اللياقة",
     category: "fitness",
-    discount: "35% off", discountAr: "خصم ٣٥٪",
+    discount: "35% off", discountAr: "خصم 35٪",
     headline: "35% off annual membership, family rate included",
-    headlineAr: "خصم ٣٥٪ على العضوية السنوية مع سعر عائلي",
+    headlineAr: "خصم 35٪ على العضوية السنوية مع سعر عائلي",
     summary: "Corporate rate on annual memberships at all mixed and ladies' branches, with the same rate for a spouse.",
     summaryAr: "سعر الشركات على العضويات السنوية في جميع الفروع المختلطة والنسائية، وبنفس السعر للزوج/الزوجة.",
     eligible: ["employee", "spouse"],
@@ -294,8 +294,8 @@ const SEED_OFFERS: PartnerOffer[] = [
       "تُضاف عضوية الزوج/الزوجة بنفس السعر على العقد نفسه.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · 30+ branches", nameAr: "الرياض · أكثر من ٣٠ فرعًا", city: "Riyadh", cityAr: "الرياض", phone: "920000404", hours: "Daily 06:00–00:00", hoursAr: "يوميًا ٠٦:٠٠–٠٠:٠٠" },
-      { id: "b2", name: "Jeddah · 18 branches", nameAr: "جدة · ١٨ فرعًا", city: "Jeddah", cityAr: "جدة", phone: "920000404", hours: "Daily 06:00–00:00", hoursAr: "يوميًا ٠٦:٠٠–٠٠:٠٠" },
+      { id: "b1", name: "Riyadh · 30+ branches", nameAr: "الرياض · أكثر من 30 فرعًا", city: "Riyadh", cityAr: "الرياض", phone: "920000404", hours: "Daily 06:00–00:00", hoursAr: "يوميًا 06:00–00:00" },
+      { id: "b2", name: "Jeddah · 18 branches", nameAr: "جدة · 18 فرعًا", city: "Jeddah", cityAr: "جدة", phone: "920000404", hours: "Daily 06:00–00:00", hoursAr: "يوميًا 06:00–00:00" },
     ],
     validTo: "31 Mar 2027", validToISO: "2027-03-31",
     terms: [
@@ -313,11 +313,11 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-hotel-rosewood", image: "images/cms/aviation.jpg",
     vendor: "Rosewood Riyadh", vendorAr: "روزوود الرياض",
     category: "travel",
-    discount: "20% off", discountAr: "خصم ٢٠٪",
+    discount: "20% off", discountAr: "خصم 20٪",
     headline: "20% off best available rate, and late checkout",
-    headlineAr: "خصم ٢٠٪ على أفضل سعر متاح مع تأخير المغادرة",
+    headlineAr: "خصم 20٪ على أفضل سعر متاح مع تأخير المغادرة",
     summary: "Leisure stays for you and your family, with checkout at 16:00 when the hotel is not full.",
-    summaryAr: "إقامات ترفيهية لك ولعائلتك مع مغادرة حتى ٤ عصرًا عند توفر الغرف.",
+    summaryAr: "إقامات ترفيهية لك ولعائلتك مع مغادرة حتى 4 عصرًا عند توفر الغرف.",
     eligible: ["employee", "spouse", "children"],
     redeem: "booking",
     howTo: [
@@ -329,7 +329,7 @@ const SEED_OFFERS: PartnerOffer[] = [
       "أبرز بطاقتك الوظيفية الرقمية عند تسجيل الوصول.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · Diplomatic Quarter", nameAr: "الرياض · الحي الدبلوماسي", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 494 1000", hours: "Reservations 24h", hoursAr: "الحجوزات ٢٤ ساعة" },
+      { id: "b1", name: "Riyadh · Diplomatic Quarter", nameAr: "الرياض · الحي الدبلوماسي", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 494 1000", hours: "Reservations 24h", hoursAr: "الحجوزات 24 ساعة" },
     ],
     validTo: "31 Dec 2026", validToISO: "2026-12-31",
     terms: [
@@ -347,9 +347,9 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-dining-najd", image: "images/cms/gathering.jpg",
     vendor: "Najd Village Restaurants", vendorAr: "مطاعم قرية نجد",
     category: "dining",
-    discount: "15% off", discountAr: "خصم ١٥٪",
+    discount: "15% off", discountAr: "خصم 15٪",
     headline: "15% off the family section, any branch",
-    headlineAr: "خصم ١٥٪ في القسم العائلي بجميع الفروع",
+    headlineAr: "خصم 15٪ في القسم العائلي بجميع الفروع",
     summary: "Dine-in only, family section, for the employee and anyone at the table.",
     summaryAr: "تناول داخل المطعم في القسم العائلي، للموظف ومن معه على الطاولة.",
     eligible: ["employee", "spouse", "children", "parents"],
@@ -361,8 +361,8 @@ const SEED_OFFERS: PartnerOffer[] = [
       "أبرز بطاقتك الوظيفية الرقمية عند تقديم الفاتورة.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · Takhassusi", nameAr: "الرياض · التخصصي", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 419 0000", hours: "Daily 12:00–01:00", hoursAr: "يوميًا ١٢:٠٠–٠١:٠٠" },
-      { id: "b2", name: "Riyadh · Airport Road", nameAr: "الرياض · طريق المطار", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 220 8080", hours: "Daily 12:00–01:00", hoursAr: "يوميًا ١٢:٠٠–٠١:٠٠" },
+      { id: "b1", name: "Riyadh · Takhassusi", nameAr: "الرياض · التخصصي", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 419 0000", hours: "Daily 12:00–01:00", hoursAr: "يوميًا 12:00–01:00" },
+      { id: "b2", name: "Riyadh · Airport Road", nameAr: "الرياض · طريق المطار", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 220 8080", hours: "Daily 12:00–01:00", hoursAr: "يوميًا 12:00–01:00" },
     ],
     validTo: "31 Dec 2026", validToISO: "2026-12-31",
     terms: ["Dine-in only. Delivery and takeaway are excluded."],
@@ -373,9 +373,9 @@ const SEED_OFFERS: PartnerOffer[] = [
     id: "p-education-britus", image: "images/cms/training.jpg",
     vendor: "Britus International School", vendorAr: "مدارس بريتس العالمية",
     category: "education",
-    discount: "10% off", discountAr: "خصم ١٠٪",
+    discount: "10% off", discountAr: "خصم 10٪",
     headline: "10% off tuition for a second child onwards",
-    headlineAr: "خصم ١٠٪ على رسوم الطفل الثاني فما فوق",
+    headlineAr: "خصم 10٪ على رسوم الطفل الثاني فما فوق",
     summary: "Applied to annual tuition when two or more children are enrolled, on top of the school's own sibling discount.",
     summaryAr: "يُطبَّق على الرسوم السنوية عند تسجيل طفلين فأكثر، إضافة إلى خصم الأشقاء لدى المدرسة.",
     eligible: ["children"],
@@ -389,7 +389,7 @@ const SEED_OFFERS: PartnerOffer[] = [
       "يتحقق مكتب القبول منها مع الموارد البشرية قبل إصدار الرسوم.",
     ],
     branches: [
-      { id: "b1", name: "Riyadh · Al Yasmin campus", nameAr: "الرياض · مجمع الياسمين", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 288 3000", hours: "Sun–Thu 07:30–15:30", hoursAr: "الأحد–الخميس ٠٧:٣٠–١٥:٣٠" },
+      { id: "b1", name: "Riyadh · Al Yasmin campus", nameAr: "الرياض · مجمع الياسمين", city: "Riyadh", cityAr: "الرياض", phone: "+966 11 288 3000", hours: "Sun–Thu 07:30–15:30", hoursAr: "الأحد–الخميس 07:30–15:30" },
     ],
     validTo: "31 Aug 2027", validToISO: "2027-08-31",
     terms: [
@@ -398,7 +398,7 @@ const SEED_OFFERS: PartnerOffer[] = [
     ],
     termsAr: [
       "يشمل الرسوم الدراسية فقط دون النقل أو الزي أو الرحلات.",
-      "يُسحب عند تأخر السداد أكثر من ٦٠ يومًا.",
+      "يُسحب عند تأخر السداد أكثر من 60 يومًا.",
     ],
     contact: { name: "Admissions", nameAr: "القبول والتسجيل", phone: "+966 11 288 3000", email: "admissions@britus.edu.sa" },
   },
@@ -409,8 +409,8 @@ const SEED_OFFERS: PartnerOffer[] = [
 export type Beneficiary = { id: string; name: string; nameAr: string; relation: string; relationAr: string; initials: string }
 
 export const ME: Beneficiary = {
-  id: "me", name: "Khalid Al-Saadi", nameAr: "خالد السعدي",
-  relation: "You", relationAr: "أنت", initials: "KS",
+  id: "me", name: "Fawaz Al-Ghailan", nameAr: "فواز الغيلان",
+  relation: "You", relationAr: "أنت", initials: "FA",
 }
 
 /** Only verified family can be named on a voucher — a pending record has not
@@ -440,8 +440,8 @@ export function beneficiariesFor(offer: PartnerOffer): Beneficiary[] {
 export type PartnerStatus = "active" | "suspended"
 
 export const PARTNER_STATUS: Record<PartnerStatus, { en: string; ar: string; chip: string }> = {
-  active:    { en: "Active",    ar: "نشِط",  chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  suspended: { en: "Suspended", ar: "موقوف", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+  active:    { en: "Active",    ar: "نشِط",  chip: "border-transparent bg-success-fill text-success" },
+  suspended: { en: "Suspended", ar: "موقوف", chip: "border-transparent bg-error-fill text-error" },
 }
 
 export type Partner = {
@@ -614,10 +614,10 @@ export type Voucher = {
 export type VoucherStatus = "active" | "used" | "expired" | "cancelled"
 
 export const VOUCHER_STATUS: Record<VoucherStatus, { en: string; ar: string; chip: string }> = {
-  active:    { en: "Not used yet", ar: "لم تُستخدم", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  used:      { en: "Used",         ar: "مستخدمة", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  expired:   { en: "Expired",      ar: "منتهية", chip: "border-border bg-muted/50 text-muted-foreground" },
-  cancelled: { en: "Cancelled",    ar: "ملغاة", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+  active:    { en: "Not used yet", ar: "لم تُستخدم", chip: "border-transparent bg-warning-fill text-warning" },
+  used:      { en: "Used",         ar: "مستخدمة", chip: "border-transparent bg-success-fill text-success" },
+  expired:   { en: "Expired",      ar: "منتهية", chip: "border-transparent bg-secondary text-muted-foreground" },
+  cancelled: { en: "Cancelled",    ar: "ملغاة", chip: "border-transparent bg-error-fill text-error" },
 }
 
 export function voucherStatus(v: Voucher, now = Date.now()): VoucherStatus {
@@ -627,10 +627,10 @@ export function voucherStatus(v: Voucher, now = Date.now()): VoucherStatus {
 }
 
 const fmt = (d: Date, isAr = false) =>
-  d.toLocaleDateString(isAr ? "ar-EG" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
+  d.toLocaleDateString(isAr ? "ar-EG-u-nu-latn" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
 export const fmtWhen = (iso: string, isAr = false) => {
   const d = new Date(iso)
-  return `${fmt(d, isAr)}, ${d.toLocaleTimeString(isAr ? "ar-EG" : "en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })}`
+  return `${fmt(d, isAr)}, ${d.toLocaleTimeString(isAr ? "ar-EG-u-nu-latn" : "en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })}`
 }
 
 /** A demo history spread across employees and families, dated relative to
@@ -657,7 +657,12 @@ function seedVoucher(v: {
   }
 }
 
-const KHALID: [string, string, string] = ["me", "Khalid Al-Saadi", "خالد السعدي"]
+const FAWAZ: [string, string, string] = ["me", "Fawaz Al-Ghailan", "فواز الغيلان"]
+/** A dependant on the signed-in employee's record, named as the HR record names them. */
+const DEP = (id: string, fallback: [string, string]): [string, string, string] => {
+  const d = allDependants().find((x) => x.id === id)
+  return [id, d?.name ?? fallback[0], d?.nameAr ?? fallback[1]]
+}
 const NOURA: [string, string, string] = ["e-noura", "Noura Al-Qahtani", "نورة القحطاني"]
 const SAUD: [string, string, string] = ["e-saud", "Saud Al-Dosari", "سعود الدوسري"]
 const FAHAD: [string, string, string] = ["e-fahad", "Fahad Al-Harbi", "فهد الحربي"]
@@ -667,8 +672,8 @@ const OLAYA: [string, string] = ["Riyadh · Al Olaya", "الرياض · العل
 const HITTIN: [string, string] = ["Riyadh · Hittin", "الرياض · حطين"]
 
 let vouchers: Voucher[] = [
-  seedVoucher({ id: "v1", ref: "TNF-9F42", offerId: "p-spa-almasa", by: KHALID,
-    forP: ["d1", "Amal Al-Saadi", "أمل السعدي"], rel: SPOUSE, daysAgo: 2 }),
+  seedVoucher({ id: "v1", ref: "TNF-9F42", offerId: "p-spa-almasa", by: FAWAZ,
+    forP: DEP("d1", ["Amal Al-Ghailan", "أمل الغيلان"]), rel: SPOUSE, daysAgo: 2 }),
   seedVoucher({ id: "v2", ref: "TNF-K7PM", offerId: "p-spa-almasa", by: NOURA,
     forP: NOURA, rel: SELF, daysAgo: 12, usedDaysAgo: 9, branch: OLAYA }),
   seedVoucher({ id: "v3", ref: "TNF-3RQW", offerId: "p-spa-almasa", by: SAUD,
@@ -679,8 +684,8 @@ let vouchers: Voucher[] = [
     forP: ["e-fahad-m", "Latifa Al-Harbi", "لطيفة الحربي"], rel: ["Mother", "الأم"], daysAgo: 41 }),
   seedVoucher({ id: "v6", ref: "TNF-4LCT", offerId: "p-spa-almasa", by: FAHAD,
     forP: FAHAD, rel: SELF, daysAgo: 20, cancelled: true }),
-  seedVoucher({ id: "v7", ref: "TNF-Q9VA", offerId: "p-education-britus", by: KHALID,
-    forP: ["d2", "Rakan Al-Saadi", "راكان السعدي"], rel: ["Son", "الابن"], daysAgo: 15, usedDaysAgo: 11 }),
+  seedVoucher({ id: "v7", ref: "TNF-Q9VA", offerId: "p-education-britus", by: FAWAZ,
+    forP: DEP("d2", ["Rakan Al-Ghailan", "راكان الغيلان"]), rel: ["Son", "الابن"], daysAgo: 15, usedDaysAgo: 11 }),
 ]
 
 export const useVouchers = () => React.useSyncExternalStore(subscribe, () => vouchers)

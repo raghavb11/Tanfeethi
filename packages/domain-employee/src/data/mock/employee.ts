@@ -1,15 +1,15 @@
 export const profile = {
-  name: "Khalid Al-Saadi",
-  nameAr: "خالد السعدي",
-  title: "Director, Business Operations",
-  titleAr: "مدير العمليات التجارية",
+  name: "Fawaz Al-Ghailan",
+  nameAr: "فواز الغيلان",
+  title: "UX Designer",
+  titleAr: "مصمم تجربة المستخدم",
   location: "Riyadh · Hybrid",
   locationAr: "الرياض · هجين",
-  email: "khalid@altanfeethi.com.sa",
-  manager: "Ahmed Mohammed",
-  managerAr: "أحمد محمد",
-  reports: "12 direct / 84 extended",
-  reportsAr: "12 مباشر / 84 ممتد",
+  email: "Falghilan@altanfeethi.com.sa",
+  manager: "Amani Al-Harthi",
+  managerAr: "أماني الحارثي",
+  reports: "3 direct / 3 extended",
+  reportsAr: "3 مباشر / 3 ممتد",
 }
 
 export type AttendanceStatus = "complete" | "current" | "upcoming" | "leave" | "weekend"

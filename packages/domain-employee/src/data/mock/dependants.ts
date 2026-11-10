@@ -24,10 +24,10 @@ export const RELATION: Record<RelationId, {
 /** Where the record sits with People & Culture. */
 export type DependantStatus = "verified" | "pending" | "returned"
 
-export const STATUS: Record<DependantStatus, { en: string; ar: string; chip: string }> = {
-  verified: { en: "Verified", ar: "موثّق", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  pending: { en: "Pending verification", ar: "بانتظار التوثيق", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-  returned: { en: "Returned", ar: "معاد", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+export const STATUS: Record<DependantStatus, { en: string; ar: string; chip: string; tone: "success" | "warning" | "error" }> = {
+  verified: { en: "Verified", ar: "موثّق", chip: "border-transparent bg-success-fill text-success", tone: "success" },
+  pending: { en: "Pending verification", ar: "بانتظار التوثيق", chip: "border-transparent bg-warning-fill text-warning", tone: "warning" },
+  returned: { en: "Returned", ar: "معاد", chip: "border-transparent bg-error-fill text-error", tone: "error" },
 }
 
 export type Dependant = {
@@ -63,17 +63,17 @@ export const initialsOf = (name: string) =>
   name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "?"
 
 const SEED: Dependant[] = [
-  { id: "d1", name: "Amal Al-Saadi", nameAr: "أمل السعدي", relation: "spouse", dobISO: "1988-04-12",
-    idNumber: "2••••••417", initials: "AS", medical: true, tickets: true, status: "verified",
-    submitted: "12 Mar 2024", submittedAr: "١٢ مارس ٢٠٢٤" },
-  { id: "d2", name: "Rakan Al-Saadi", nameAr: "راكان السعدي", relation: "son", dobISO: "2015-01-20",
-    idNumber: "1••••••882", initials: "RS", medical: true, tickets: true, status: "verified",
-    submitted: "12 Mar 2024", submittedAr: "١٢ مارس ٢٠٢٤" },
-  { id: "d3", name: "Jood Al-Saadi", nameAr: "جود السعدي", relation: "daughter", dobISO: "2019-06-03",
-    idNumber: "1••••••905", initials: "JS", medical: true, tickets: true, status: "verified",
-    submitted: "09 Aug 2024", submittedAr: "٩ أغسطس ٢٠٢٤" },
-  { id: "d4", name: "Mohammed Al-Saadi", nameAr: "محمد السعدي", relation: "father", dobISO: "1958-11-02",
-    idNumber: "1••••••204", initials: "MS", medical: false, tickets: false, status: "pending",
+  { id: "d1", name: "Haya Al-Ghailan", nameAr: "هيا الغيلان", relation: "spouse", dobISO: "1993-04-12",
+    idNumber: "1••••••417", initials: "HG", medical: true, tickets: true, status: "verified",
+    submitted: "12 Mar 2024", submittedAr: "12 مارس 2024" },
+  { id: "d2", name: "Rayan Al-Ghailan", nameAr: "ريان الغيلان", relation: "son", dobISO: "2018-01-20",
+    idNumber: "1••••••882", initials: "RG", medical: true, tickets: true, status: "verified",
+    submitted: "12 Mar 2024", submittedAr: "12 مارس 2024" },
+  { id: "d3", name: "Jood Al-Ghailan", nameAr: "جود الغيلان", relation: "daughter", dobISO: "2021-06-03",
+    idNumber: "1••••••905", initials: "JG", medical: true, tickets: true, status: "verified",
+    submitted: "09 Aug 2024", submittedAr: "9 أغسطس 2024" },
+  { id: "d4", name: "Abdullah Al-Ghailan", nameAr: "عبدالله الغيلان", relation: "father", dobISO: "1960-11-02",
+    idNumber: "1••••••204", initials: "AG", medical: false, tickets: false, status: "pending",
     document: "father-id-and-dependency.pdf",
     submitted: "2 days ago", submittedAr: "قبل يومين" },
 ]

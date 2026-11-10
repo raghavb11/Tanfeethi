@@ -355,7 +355,7 @@ function visibleGroups(isAdmin: boolean) {
 function ProfileButton({ isAr }: { isAr: boolean }) {
   return (
     <NavLink
-      to="/employee"
+      to="/profile"
       aria-label={isAr ? "ملفي — فواز الغيلان" : "My profile — Fawaz Al-Ghaylan"}
       className="flex size-[30px] items-center justify-center rounded-full border border-primary/40 bg-[var(--avatar-fill)] text-[11px] font-semibold text-primary"
     >

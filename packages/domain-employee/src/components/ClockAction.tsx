@@ -1,13 +1,14 @@
 import * as React from "react"
-import { Button, Card } from "@reach/shared-ui"
+import { Button } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { AlertTriangle, Check, Clock, LogIn, LogOut, MapPin } from "lucide-react"
 
 import {
-  arNum, clockIn, clockOut, dayStatus, hm, hmLong, hoursWord, lateBy, nowTime,
+  clockIn, clockOut, dayStatus, lateBy, nowTime,
   remainingMinutes, SHIFT_START, useClock, workedMinutes,
 } from "../data/mock/clock"
+import { hmShort, hmWords, to12h } from "./wijha"
 
 /** Clock in or out, with a confirmation first — it writes to the attendance
  *  record, and clocking out early is worth catching before it is filed.
@@ -29,6 +30,8 @@ export function ClockAction({ size = "sm" }: { size?: "sm" | "default" }) {
   const action: "in" | "out" = status === "working" ? "out" : "in"
   const early = action === "out" && remaining > 0
   const late = lateBy(at)
+  const words = (m: number) => hmWords(m, isAr)
+  const start = to12h(SHIFT_START)
 
   const open = () => { setAt(nowTime()); setConfirming(true) }
   const commit = () => {
@@ -43,99 +46,99 @@ export function ClockAction({ size = "sm" }: { size?: "sm" | "default" }) {
     <div className="w-full">
       {/* the day has not started — say so before offering the button */}
       {status === "not-started" && !confirming && (
-        <div className="mb-3 flex flex-wrap items-start gap-2.5 rounded-xl border border-amber-500/35 bg-amber-500/[0.07] p-3">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+        <div className="mb-3 flex flex-wrap items-start gap-2.5 rounded-[10px] bg-warning-fill p-3 ring-1 ring-inset ring-warning/30">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold">
+            <p className="text-[13px] font-medium">
               {t("You haven't clocked in today", "لم تسجّل حضورك اليوم")}
             </p>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <p className="mt-0.5 text-[12.5px] text-muted-foreground">
               {lateBy() > 0
-                ? t(`The working day started at ${SHIFT_START} — that is ${hmLong(lateBy())} ago. Nothing is on your record until you clock in.`,
-                     `بدأ يوم العمل الساعة ${arNum(SHIFT_START)} — أي قبل ${hmLong(lateBy(), true)}. لن يُسجَّل شيء حتى تسجّل حضورك.`)
-                : t(`The working day starts at ${SHIFT_START}. Nothing is on your record until you clock in.`,
-                     `يبدأ يوم العمل الساعة ${arNum(SHIFT_START)}. لن يُسجَّل شيء حتى تسجّل حضورك.`)}
+                ? t(`The working day started at ${start} — that is ${words(lateBy())} ago. Nothing is on your record until you clock in.`,
+                     `بدأ يوم العمل الساعة ${start} — أي قبل ${words(lateBy())}. لن يُسجَّل شيء حتى تسجّل حضورك.`)
+                : t(`The working day starts at ${start}. Nothing is on your record until you clock in.`,
+                     `يبدأ يوم العمل الساعة ${start}. لن يُسجَّل شيء حتى تسجّل حضورك.`)}
             </p>
           </div>
         </div>
       )}
 
       {status === "done" && !confirming && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-muted/25 p-3 text-[12.5px]">
-          <Check className="size-4 shrink-0 text-emerald-500" />
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-[10px] bg-background p-3 text-[12.5px] ring-1 ring-inset ring-border">
+          <Check className="size-4 shrink-0 text-success" />
           <span className="font-medium">
-            {t(`Day closed — ${clock.checkIn} to ${clock.checkOut}`,
-               `انتهى اليوم — من ${arNum(clock.checkIn ?? "")} إلى ${arNum(clock.checkOut ?? "")}`)}
+            {t(`Day closed — ${to12h(clock.checkIn)} to ${to12h(clock.checkOut)}`,
+               `انتهى اليوم — من ${to12h(clock.checkIn)} إلى ${to12h(clock.checkOut)}`)}
           </span>
-          <span className="text-muted-foreground">· {hm(worked, isAr)}</span>
+          <span className="text-muted-foreground">· {hmShort(worked, isAr)}</span>
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size={size} className="gap-1.5" onClick={open}>
+        <Button size={size} variant={action === "out" ? "destructive" : "default"} className="gap-1.5" onClick={open}>
           {action === "out" ? <LogOut className="size-3.5" /> : <LogIn className="size-3.5" />}
           {action === "out"
-            ? t("Clock out", "تسجيل انصراف")
+            ? t("Clock out", "تسجيل خروج")
             : status === "done" ? t("Clock in again", "تسجيل حضور مرة أخرى") : t("Clock in", "تسجيل حضور")}
         </Button>
 
         {done && (
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-success">
             <Check className="size-3.5" />
             {done === "out"
-              ? t(`Clocked out at ${clock.checkOut}`, `تم تسجيل الانصراف ${arNum(clock.checkOut ?? "")}`)
-              : t(`Clocked in at ${clock.checkIn}`, `تم تسجيل الحضور ${arNum(clock.checkIn ?? "")}`)}
+              ? t(`Clocked out at ${to12h(clock.checkOut)}`, `تم تسجيل الانصراف ${to12h(clock.checkOut)}`)
+              : t(`Clocked in at ${to12h(clock.checkIn)}`, `تم تسجيل الحضور ${to12h(clock.checkIn)}`)}
           </span>
         )}
       </div>
 
       {/* nothing is recorded until this is confirmed */}
       {confirming && (
-        <Card className={cn("mt-3 p-3.5", early || (action === "in" && late > 0)
-          ? "border-amber-500/35 bg-amber-500/[0.06]"
-          : "border-primary/30 bg-primary/[0.04]")}>
-          <p className="text-[13px] font-semibold">
+        <div className={cn("mt-3 rounded-[10px] p-3.5 ring-1 ring-inset", early || (action === "in" && late > 0)
+          ? "bg-warning-fill ring-warning/30"
+          : "bg-soft-accent ring-primary/30")}>
+          <p className="text-[13px] font-medium">
             {action === "out"
-              ? t(`Clock out at ${at}?`, `تسجيل الانصراف الساعة ${arNum(at)}؟`)
-              : t(`Clock in at ${at}?`, `تسجيل الحضور الساعة ${arNum(at)}؟`)}
+              ? t(`Clock out at ${to12h(at)}?`, `تسجيل الانصراف الساعة ${to12h(at)}؟`)
+              : t(`Clock in at ${to12h(at)}?`, `تسجيل الحضور الساعة ${to12h(at)}؟`)}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <MapPin className="size-3.5" />{isAr ? clock.locationAr : clock.location}
             </span>
             {action === "out" && (
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="size-3.5" />
-                {t(`${hm(worked)} worked today`, `عمل اليوم ${hm(worked, true)}`)}
+                {t(`${hmShort(worked, false)} worked today`, `عمل اليوم ${hmShort(worked, true)}`)}
               </span>
             )}
           </div>
 
           {early && (
-            <p className="mt-2 flex items-start gap-2 text-[12px] font-medium text-amber-600 dark:text-amber-400">
+            <p className="mt-2 flex items-start gap-2 text-[12.5px] font-medium text-warning">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              {t(`That is ${hmLong(remaining)} short of your ${clock.targetHours}-hour day. The shortfall goes on your record and your manager sees it.`,
-                 `هذا أقل بـ${hmLong(remaining, true)} من يوم العمل (${hoursWord(clock.targetHours, true)}). سيظهر النقص في سجلك ويطّلع عليه مديرك.`)}
+              {t(`That is ${words(remaining)} short of your ${clock.targetHours}-hour day. The shortfall goes on your record and your manager sees it.`,
+                 `هذا أقل بـ${words(remaining)} من يوم العمل (${words(clock.targetHours * 60)}). سيظهر النقص في سجلك ويطّلع عليه مديرك.`)}
             </p>
           )}
 
           {action === "in" && late > 0 && (
-            <p className="mt-2 flex items-start gap-2 text-[12px] font-medium text-amber-600 dark:text-amber-400">
+            <p className="mt-2 flex items-start gap-2 text-[12.5px] font-medium text-warning">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              {t(`That is ${hmLong(late)} after the ${SHIFT_START} start, so the day is recorded as late.`,
-                 `هذا بعد ${hmLong(late, true)} من بداية الدوام (${arNum(SHIFT_START)})، وسيُسجَّل اليوم كتأخير.`)}
+              {t(`That is ${words(late)} after the ${start} start, so the day is recorded as late.`,
+                 `هذا بعد ${words(late)} من بداية الدوام (${start})، وسيُسجَّل اليوم كتأخير.`)}
             </p>
           )}
 
           {action === "out" && !early && (
-            <p className="mt-2 text-[12px] text-muted-foreground">
+            <p className="mt-2 text-[12.5px] text-muted-foreground">
               {t("Your day is complete. The record is filed against today's date.",
                  "اكتمل يومك، وسيُسجَّل ذلك بتاريخ اليوم.")}
             </p>
           )}
           {action === "in" && (
-            <p className="mt-2 text-[12px] text-muted-foreground">
+            <p className="mt-2 text-[12.5px] text-muted-foreground">
               {t("The time is taken from now and cannot be edited afterwards — ask your manager to correct a wrong entry.",
                  "يُؤخذ الوقت من الآن ولا يمكن تعديله لاحقًا — راجع مديرك لتصحيح أي إدخال خاطئ.")}
             </p>
@@ -150,7 +153,7 @@ export function ClockAction({ size = "sm" }: { size?: "sm" | "default" }) {
                 : t("Yes, clock in", "نعم، سجّل الحضور")}
             </Button>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   )

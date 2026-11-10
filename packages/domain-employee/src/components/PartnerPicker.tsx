@@ -79,19 +79,19 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
       <button
         type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         aria-label={t("Partner", "الشريك")}
-        className="flex h-11 w-full items-center gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60"
+        className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-background px-3 text-start text-[13px] outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
       >
         {selected ? (
           <>
             <Handshake className="size-4 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate">{isAr ? selected.nameAr : selected.name}</span>
-            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{selected.code}</span>
+            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground" dir="ltr">{selected.code}</span>
             {clearable && (
               <span
                 role="button" tabIndex={0} aria-label={t("Clear", "مسح")}
                 onClick={(e) => { e.stopPropagation(); onChange("") }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onChange("") } }}
-                className="grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
                 <X className="size-3.5" />
               </span>
@@ -108,7 +108,7 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
           ref={panelRef}
           dir={isAr ? "rtl" : "ltr"}
           style={{ position: "fixed", left: pos.left, width: pos.width, top: pos.top, bottom: pos.bottom }}
-          className="z-[60] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-lg"
+          className="z-[60] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-lg"
         >
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
@@ -123,8 +123,8 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
             {filtered.map((p) => (
               <button
                 key={p.id} type="button" onClick={() => pick(p.id)}
-                className={cn("flex w-full items-center gap-2 px-3 py-2 text-start text-[13px] transition-colors hover:bg-muted/60",
-                  p.id === value && "bg-primary/10 text-primary")}
+                className={cn("flex w-full items-center gap-2 px-3 py-2 text-start text-[13px] transition-colors hover:bg-secondary",
+                  p.id === value && "bg-soft-accent text-primary")}
               >
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium leading-tight">{isAr ? p.nameAr : p.name}</span>
@@ -133,7 +133,7 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
                   </span>
                 </span>
                 {p.status !== "active" && (
-                  <span className={cn("shrink-0 rounded-full border px-1.5 py-0.5 text-[10px]", PARTNER_STATUS[p.status].chip)}>
+                  <span className={cn("shrink-0 rounded-md border px-1.5 py-0.5 text-[11px]", PARTNER_STATUS[p.status].chip)}>
                     {isAr ? PARTNER_STATUS[p.status].ar : PARTNER_STATUS[p.status].en}
                   </span>
                 )}
@@ -152,7 +152,7 @@ export function PartnerPicker({ value, onChange, isAr, t, onCreate, activeOnly =
             <button
               type="button"
               onClick={() => { setOpen(false); onCreate() }}
-              className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-start text-[12.5px] font-medium text-primary transition-colors hover:bg-primary/[0.06]"
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-start text-[13px] font-medium text-primary transition-colors hover:bg-soft-accent"
             >
               <Plus className="size-3.5" />{t("Add a new partner", "إضافة شريك جديد")}
             </button>

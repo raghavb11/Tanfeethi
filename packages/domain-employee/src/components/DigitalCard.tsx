@@ -37,8 +37,8 @@ function matrixFor(payload: string, size = 21): boolean[][] {
   return grid
 }
 
-export function QrMatrix({ payload, className }: { payload: string; className?: string }) {
-  const grid = React.useMemo(() => matrixFor(payload), [payload])
+export function QrMatrix({ payload, className, size = 21 }: { payload: string; className?: string; size?: number }) {
+  const grid = React.useMemo(() => matrixFor(payload, size), [payload, size])
   const n = grid.length
   return (
     <svg

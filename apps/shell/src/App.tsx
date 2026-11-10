@@ -97,6 +97,9 @@ const ApprovalDetailPage = lazy(() =>
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const NotificationHistoryPage = lazy(() => import("@/pages/NotificationHistory"))
+const ProfilePage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ProfilePage })))
+const AssetsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.AssetsPage })))
+const ShiftsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ShiftsPage })))
 const OperationsHubPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.OperationsHubPage })))
 const ChecklistRunPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.ChecklistRunPage })))
 const DelegationRequestPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.DelegationRequestPage })))
@@ -221,6 +224,9 @@ export default function App() {
         <Route path="tasks/:id" element={<TaskDetailPage />} />
         <Route path="employee" element={<EmployeePage />} />
         <Route path="employee/card" element={<BusinessCardPage />} />
+        <Route path="employee/assets" element={<AssetsPage />} />
+        <Route path="employee/shifts" element={<ShiftsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="employee/dependants" element={<DependantsPage />} />
         <Route path="employee/dependants/new" element={<DependantEditorPage />} />
         <Route path="employee/dependants/:id" element={<DependantEditorPage />} />

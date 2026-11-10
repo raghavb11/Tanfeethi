@@ -1,9 +1,10 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input } from "@reach/shared-ui"
+import { Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, Check, MapPin, Navigation, Plus, Search, X } from "lucide-react"
+import { ArrowLeft, Check, Contact, Handshake, MapPin, Navigation, Plus, Search, Store, X } from "lucide-react"
+import { Empty, FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard, Tile } from "../components/wijha"
 
 import {
   addPartner, type Branch, CATEGORY, coordsFromMapsUrl, directionsUrl, getPartner,
@@ -57,9 +58,8 @@ export default function PartnerEditorPage() {
   }
   const removeBranch = (i: number) => setBranches((b) => b.filter((_, j) => j !== i))
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
-  )
+  const label = (s: string, required = false) => <FieldLabel required={required}>{s}</FieldLabel>
+  const inputCls = "h-9 rounded-lg bg-background"
 
   const canSave = name.trim() !== "" && agreementToISO !== ""
 
@@ -91,36 +91,30 @@ export default function PartnerEditorPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => navigate(back)} className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground">
-          <ArrowLeft className={cn("size-3.5", isAr && "rotate-180")} />{t("Back to partners", "العودة إلى الشركاء")}
+    <Page className="mx-auto max-w-4xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button onClick={() => navigate(back)} className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground">
+          <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to partners", "العودة إلى الشركاء")}
         </button>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</Button>
-          <Button disabled={!canSave} className="gap-1.5" onClick={save}>
+          <OutlineButton onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</OutlineButton>
+          <GoldButton disabled={!canSave} onClick={save}>
             <Check className="size-4" />{editing ? t("Save changes", "حفظ التغييرات") : t("Create partner", "إنشاء الشريك")}
-          </Button>
+          </GoldButton>
         </div>
       </div>
 
-      <div className="mb-5">
-        <h1 className="font-heading text-[26px] font-bold leading-tight tracking-tight">
-          {editing ? t("Edit partner", "تعديل الشريك") : t("New partner", "شريك جديد")}
-        </h1>
-        <p className="mt-1 text-[13px] text-muted-foreground">
+      <SectionCard icon={Handshake} title={editing ? t("Edit partner", "تعديل الشريك") : t("New partner", "شريك جديد")}>
+        <p className="-mt-1 mb-5 text-[12.5px] text-muted-foreground">
           {t("The vendor and its agreement. Offers are created by the partner and point back at this record.",
              "بيانات الجهة واتفاقيتها. يُنشئ الشريك العروض وتُربط بهذا السجل.")}
         </p>
-      </div>
-
-      <Card className="p-5">
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               {label(t("Partner code", "رمز الشريك"))}
-              <Input value={code} readOnly className="bg-muted/40 tabular-nums text-muted-foreground" />
-              <p className="mt-1 text-[11.5px] text-muted-foreground">
+              <Input value={code} readOnly dir="ltr" className={cn(inputCls, "bg-secondary/50 tabular-nums text-muted-foreground")} />
+              <p className="mt-1 text-[12px] text-muted-foreground">
                 {t("Allocated once and never reused.", "يُمنح مرة واحدة ولا يُعاد استخدامه.")}
               </p>
             </div>
@@ -128,7 +122,7 @@ export default function PartnerEditorPage() {
               {label(t("Category", "الفئة"))}
               <select
                 value={category} onChange={(e) => setCategory(e.target.value as PartnerCategory)}
-                className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
+                className={fieldClass}
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{isAr ? CATEGORY[c].ar : CATEGORY[c].en}</option>
@@ -139,19 +133,19 @@ export default function PartnerEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("Name", "الاسم"))}
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Al Masa Spa & Wellness", "منتجع الماسة للعافية")} />
+              {label(t("Name", "الاسم"), true)}
+              <Input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Al Masa Spa & Wellness", "منتجع الماسة للعافية")} />
             </div>
             <div>
               {label(t("Name in Arabic", "الاسم بالعربية"))}
-              <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl" />
+              <Input className={inputCls} value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl" />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("Agreement valid to", "الاتفاقية سارية حتى"))}
-              <Input type="date" value={agreementToISO} onChange={(e) => setAgreementToISO(e.target.value)} />
+              {label(t("Agreement valid to", "الاتفاقية سارية حتى"), true)}
+              <Input className={inputCls} type="date" value={agreementToISO} onChange={(e) => setAgreementToISO(e.target.value)} />
             </div>
             <div>
               {label(t("Status", "الحالة"))}
@@ -159,8 +153,10 @@ export default function PartnerEditorPage() {
                 {(["active", "suspended"] as PartnerStatus[]).map((s) => (
                   <button
                     key={s} type="button" onClick={() => setStatus(s)}
-                    className={cn("h-11 flex-1 rounded-lg border text-[12.5px] font-medium transition-colors",
-                      status === s ? "border-primary/40 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted/50")}
+                    className={cn("h-9 flex-1 rounded-lg text-[13px] font-medium transition-colors",
+                      status === s
+                        ? s === "active" ? "bg-success-fill text-success" : "bg-error-fill text-error"
+                        : "bg-secondary text-muted-foreground hover:text-foreground")}
                   >
                     {s === "active" ? t("Active", "نشِط") : t("Suspended", "موقوف")}
                   </button>
@@ -168,63 +164,63 @@ export default function PartnerEditorPage() {
               </div>
             </div>
           </div>
+        </div>
+      </SectionCard>
 
-          <div>
-            <h2 className="mb-3 text-[13px] font-semibold">{t("Contact", "جهة الاتصال")}</h2>
+      <SectionCard icon={Contact} title={t("Contact", "جهة الاتصال")}>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 {label(t("Contact name", "اسم جهة الاتصال"))}
-                <Input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder={t("Partnerships desk", "مكتب الشراكات")} />
+                <Input className={inputCls} value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder={t("Partnerships desk", "مكتب الشراكات")} />
               </div>
               <div>
                 {label(t("Contact name in Arabic", "الاسم بالعربية"))}
-                <Input value={contactNameAr} onChange={(e) => setContactNameAr(e.target.value)} dir="rtl" />
+                <Input className={inputCls} value={contactNameAr} onChange={(e) => setContactNameAr(e.target.value)} dir="rtl" />
               </div>
               <div>
                 {label(t("Phone", "الهاتف"))}
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 11 000 0000" dir="ltr" />
+                <Input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 11 000 0000" dir="ltr" />
               </div>
               <div>
                 {label(t("Email", "البريد الإلكتروني"))}
-                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="corporate@vendor.sa" dir="ltr" />
+                <Input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="corporate@vendor.sa" dir="ltr" />
               </div>
             </div>
-          </div>
+      </SectionCard>
 
-          <div>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-[13px] font-semibold">{t("Branches", "الفروع")}</h2>
-              <Button variant="outline" size="sm" className="gap-1.5" onClick={addBranch}>
-                <Plus className="size-3.5" />{t("Add branch", "إضافة فرع")}
-              </Button>
-            </div>
-
+      <SectionCard
+        icon={Store}
+        title={t("Branches", "الفروع")}
+        action={
+          <OutlineButton size="sm" onClick={addBranch}>
+            <Plus className="size-3.5" />{t("Add branch", "إضافة فرع")}
+          </OutlineButton>
+        }
+      >
             {branches.length === 0 && (
-              <p className="rounded-xl border border-dashed border-border/70 p-4 text-center text-[12.5px] text-muted-foreground">
-                {t("No branches yet. Offers can still be created; they will show no locations.",
-                   "لا توجد فروع بعد. يمكن إنشاء العروض، لكنها لن تعرض مواقع.")}
-              </p>
+              <Empty icon={MapPin} title={t("No branches yet", "لا توجد فروع بعد")}
+                hint={t("Offers can still be created; they will show no locations.", "يمكن إنشاء العروض، لكنها لن تعرض مواقع.")} />
             )}
 
             <div className="space-y-3">
               {branches.map((b, i) => (
-                <div key={b.id} className="rounded-xl border border-border/60 p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[11.5px] font-semibold text-muted-foreground">
+                <Tile key={b.id}>
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-[13px] font-medium text-primary">
                       {t(`Branch ${i + 1}`, `الفرع ${i + 1}`)}
                     </span>
                     <button
                       onClick={() => removeBranch(i)} aria-label={t("Remove branch", "إزالة الفرع")}
-                      className="text-muted-foreground hover:text-rose-500"
+                      className="grid size-7 place-items-center rounded-lg text-icon hover:bg-error-fill hover:text-error"
                     >
                       <X className="size-3.5" />
                     </button>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <Input value={b.name} onChange={(e) => setBranch(i, { name: e.target.value })} placeholder={t("Branch name", "اسم الفرع")} />
-                    <Input value={b.nameAr} onChange={(e) => setBranch(i, { nameAr: e.target.value })} placeholder={t("Name in Arabic", "الاسم بالعربية")} dir="rtl" />
-                    <Input value={b.city} onChange={(e) => setBranch(i, { city: e.target.value })} placeholder={t("City", "المدينة")} />
-                    <Input value={b.phone} onChange={(e) => setBranch(i, { phone: e.target.value })} placeholder={t("Phone", "الهاتف")} dir="ltr" />
+                    <Input className={inputCls} value={b.name} onChange={(e) => setBranch(i, { name: e.target.value })} placeholder={t("Branch name", "اسم الفرع")} />
+                    <Input className={inputCls} value={b.nameAr} onChange={(e) => setBranch(i, { nameAr: e.target.value })} placeholder={t("Name in Arabic", "الاسم بالعربية")} dir="rtl" />
+                    <Input className={inputCls} value={b.city} onChange={(e) => setBranch(i, { city: e.target.value })} placeholder={t("City", "المدينة")} />
+                    <Input className={inputCls} value={b.phone} onChange={(e) => setBranch(i, { phone: e.target.value })} placeholder={t("Phone", "الهاتف")} dir="ltr" />
                   </div>
 
                   {/* opening hours — days, then from and until */}
@@ -232,6 +228,7 @@ export default function PartnerEditorPage() {
                     <div>
                       {label(t("Days", "الأيام"))}
                       <Input
+                        className={inputCls}
                         value={b.days ?? ""} onChange={(e) => setBranch(i, { days: e.target.value })}
                         placeholder={t("Sat–Thu", "السبت–الخميس")}
                       />
@@ -239,20 +236,20 @@ export default function PartnerEditorPage() {
                     <div>
                       {label(t("Open from", "يفتح من"))}
                       <Input
-                        type="time" value={b.opensAt ?? ""} className="w-[9.5rem]"
+                        type="time" value={b.opensAt ?? ""} className={cn(inputCls, "w-[9.5rem]")}
                         onChange={(e) => setBranch(i, { opensAt: e.target.value })}
                       />
                     </div>
                     <div>
                       {label(t("Until", "حتى"))}
                       <Input
-                        type="time" value={b.closesAt ?? ""} className="w-[9.5rem]"
+                        type="time" value={b.closesAt ?? ""} className={cn(inputCls, "w-[9.5rem]")}
                         onChange={(e) => setBranch(i, { closesAt: e.target.value })}
                       />
                     </div>
                   </div>
                   {b.opensAt && b.closesAt && (
-                    <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                    <p className="mt-1.5 text-[12px] text-muted-foreground">
                       {t("Staff see", "يرى الموظف")}: <span className="font-medium text-foreground">{hoursLine(b)}</span>
                     </p>
                   )}
@@ -265,18 +262,18 @@ export default function PartnerEditorPage() {
                         value={b.mapsUrl ?? ""} onChange={(e) => setMapsUrl(i, e.target.value)}
                         placeholder={t("Paste the Google Maps link, or 24.7136, 46.6753",
                                        "الصق رابط خرائط جوجل، أو 24.7136, 46.6753")}
-                        className="min-w-[16rem] flex-1" dir="ltr"
+                        className={cn(inputCls, "min-w-0 flex-1 sm:min-w-[16rem]")} dir="ltr"
                       />
                       <a
                         href={mapsSearchUrl([name, b.name, b.city].filter(Boolean).join(" ") || "Riyadh")}
                         target="_blank" rel="noopener noreferrer"
-                        className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border/70 px-3 text-[12.5px] font-medium transition-colors hover:border-primary/40 hover:text-primary"
+                        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[var(--btn-outline-border)] px-3 text-[13px] font-medium transition-colors hover:bg-[var(--btn-outline-hover)] hover:text-primary"
                       >
                         <Search className="size-3.5" />{t("Find on Maps", "ابحث في الخرائط")}
                       </a>
                     </div>
                     {b.lat != null && b.lng != null ? (
-                      <p className="mt-1.5 flex flex-wrap items-center gap-2 text-[11.5px] text-emerald-600 dark:text-emerald-400">
+                      <p className="mt-1.5 flex flex-wrap items-center gap-2 text-[12px] text-success">
                         <MapPin className="size-3.5" />
                         {t("Pinned at", "محدّد عند")} <span className="tabular-nums">{b.lat.toFixed(5)}, {b.lng.toFixed(5)}</span>
                         <a
@@ -287,18 +284,16 @@ export default function PartnerEditorPage() {
                         </a>
                       </p>
                     ) : (
-                      <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                      <p className="mt-1.5 text-[12px] text-muted-foreground">
                         {t("Find the branch on Google Maps, copy the link from the address bar and paste it here. Without a pin, directions search for the branch by name.",
                            "ابحث عن الفرع في خرائط جوجل، وانسخ الرابط والصقه هنا. بدون تحديد، تبحث الاتجاهات عن الفرع بالاسم.")}
                       </p>
                     )}
                   </div>
-                </div>
+                </Tile>
               ))}
             </div>
-          </div>
-        </div>
-      </Card>
-    </main>
+      </SectionCard>
+    </Page>
   )
 }

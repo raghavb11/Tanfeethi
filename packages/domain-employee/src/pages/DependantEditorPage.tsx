@@ -1,14 +1,15 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input } from "@reach/shared-ui"
+import { Input } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { AlertTriangle, ArrowLeft, Check, FileUp, Info, Paperclip } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Check, FileUp, Info, Paperclip, UserPlus } from "lucide-react"
 
 import {
   addDependant, type Dependant, getDependant, initialsOf, newDependantId,
   RELATION, type RelationId, updateDependant,
 } from "../data/mock/dependants"
+import { FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard, Tile, Toggle as Switch } from "../components/wijha"
 
 const RELATIONS: RelationId[] = ["spouse", "son", "daughter", "father", "mother"]
 
@@ -68,51 +69,43 @@ export default function DependantEditorPage() {
     navigate(back)
   }
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
-  )
+  const label = (s: string, required = false) => <FieldLabel required={required}>{s}</FieldLabel>
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+    <Page className="mx-auto max-w-4xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate(back)}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to my family", "العودة إلى عائلتي")}
         </button>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</Button>
-          <Button disabled={!canSubmit} onClick={() => setConfirming(true)}>
+          <OutlineButton onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</OutlineButton>
+          <GoldButton disabled={!canSubmit} onClick={() => setConfirming(true)}>
             <Check className="size-4" />
             {editing ? t("Resubmit", "إعادة الإرسال") : t("Submit for verification", "إرسال للتوثيق")}
-          </Button>
+          </GoldButton>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
-          {editing ? t("Edit dependant", "تعديل بيانات المعال") : t("Add a dependant", "إضافة معال")}
-        </h1>
-        <p className="mt-1 max-w-2xl text-[13px] text-muted-foreground">
+      <SectionCard icon={UserPlus} title={editing ? t("Edit dependant", "تعديل بيانات المعال") : t("Add a dependant", "إضافة معال")}>
+        <p className="mb-5 max-w-2xl text-[12.5px] text-muted-foreground">
           {t("People & Culture verify the document before the record affects medical cover, tickets or partner offers.",
              "يتحقق قسم الموظفين والثقافة من المستند قبل أن يؤثر السجل على التأمين الطبي أو التذاكر أو عروض الشركاء.")}
         </p>
-      </div>
-
-      <Card className="p-5">
         <div className="space-y-5">
           {/* the relation comes first — it decides the rest */}
           <div>
-            {label(t("Relation", "صلة القرابة"))}
+            {label(t("Relation", "صلة القرابة"), true)}
             <div className="flex flex-wrap gap-1.5">
               {RELATIONS.map((r) => (
                 <button
                   key={r} type="button" onClick={() => pickRelation(r)}
                   aria-pressed={relation === r}
-                  className={cn("rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors",
-                    relation === r ? "border-primary/40 bg-primary/12 text-primary"
-                                   : "border-border text-muted-foreground hover:bg-muted/40")}
+                  className={cn("h-8 rounded-full px-3.5 text-[13px] font-medium transition-colors",
+                    relation === r ? "bg-soft-accent text-primary ring-1 ring-primary/40"
+                                   : "bg-secondary text-muted-foreground hover:text-foreground")}
                 >
                   {isAr ? RELATION[r].ar : RELATION[r].en}
                 </button>
@@ -121,14 +114,14 @@ export default function DependantEditorPage() {
           </div>
 
           {!relation ? (
-            <p className="rounded-xl border border-dashed border-border/70 px-4 py-8 text-center text-[12.5px] text-muted-foreground">
+            <p className="rounded-[10px] border border-dashed border-border px-4 py-8 text-center text-[12.5px] text-muted-foreground">
               {t("Choose the relation to continue — it sets which document is needed.",
                  "اختر صلة القرابة للمتابعة — فهي تحدد المستند المطلوب.")}
             </p>
           ) : (
             <>
               {/* what this relation needs */}
-              <div className="flex items-start gap-2.5 rounded-xl border border-primary/25 bg-primary/[0.05] p-3">
+              <div className="flex items-start gap-2.5 rounded-[10px] bg-soft-accent p-3">
                 <Info className="mt-0.5 size-4 shrink-0 text-primary" />
                 <p className="text-[12px] leading-relaxed">
                   {t(`For a ${RELATION[relation].en.toLowerCase()}, People & Culture need the ${RELATION[relation].document.toLowerCase()}.`,
@@ -144,51 +137,51 @@ export default function DependantEditorPage() {
               </div>
 
               <div>
-                {label(t("Full name", "الاسم الكامل"))}
-                <Input value={name} onChange={(e) => setName(e.target.value)}
+                {label(t("Full name", "الاسم الكامل"), true)}
+                <Input className={fieldClass} value={name} onChange={(e) => setName(e.target.value)}
                        placeholder={t("As it appears on the ID", "كما يظهر في الهوية")} />
               </div>
 
               <div>
                 {label(t("Full name in Arabic", "الاسم بالعربية"))}
-                <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
+                <Input className={fieldClass} value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
                        placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  {label(t("Date of birth", "تاريخ الميلاد"))}
-                  <Input type="date" value={dobISO} max={new Date().toISOString().slice(0, 10)}
+                  {label(t("Date of birth", "تاريخ الميلاد"), true)}
+                  <Input className={fieldClass} type="date" value={dobISO} max={new Date().toISOString().slice(0, 10)}
                          onChange={(e) => setDobISO(e.target.value)} />
                 </div>
                 <div>
-                  {label(t("National ID / Iqama", "رقم الهوية / الإقامة"))}
-                  <Input value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
+                  {label(t("National ID / Iqama", "رقم الهوية / الإقامة"), true)}
+                  <Input className={fieldClass} value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
                          inputMode="numeric" placeholder="1XXXXXXXXX" />
                 </div>
               </div>
 
               {/* the document */}
               <div>
-                {label(t("Supporting document", "المستند الداعم"))}
+                {label(t("Supporting document", "المستند الداعم"), true)}
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                    <FileUp className="size-3.5" />
+                  <GoldButton onClick={() => fileRef.current?.click()}>
+                    <FileUp className="size-4" />
                     {document ? t("Replace file", "استبدال الملف") : t("Choose file", "اختيار ملف")}
-                  </Button>
+                  </GoldButton>
                   <input
                     ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) setDocument(f.name) }}
                   />
                   {document && (
-                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-muted/25 px-2.5 py-1 text-[12px]">
+                    <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-secondary px-3 text-[12.5px]">
                       <Paperclip className="size-3.5 text-muted-foreground" />{document}
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 text-[11px] text-muted-foreground/75">
+                <p className="mt-1.5 text-[12px] text-muted-foreground">
                   {t(`${RELATION[relation].document} · PDF or photo, up to 10 MB.`,
-                     `${RELATION[relation].documentAr} · PDF أو صورة، حتى ١٠ ميجابايت.`)}
+                     `${RELATION[relation].documentAr} · PDF أو صورة، حتى 10 ميجابايت.`)}
                 </p>
               </div>
 
@@ -208,9 +201,9 @@ export default function DependantEditorPage() {
                 />
               </div>
 
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/70 p-3">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
-                <p className="text-[11.5px] leading-relaxed text-muted-foreground">
+              <div className="flex items-start gap-2.5 rounded-[10px] bg-warning-fill p-3">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
+                <p className="text-[12px] leading-relaxed text-muted-foreground">
                   {t("Submitting a false or altered document is a disciplinary matter. The record stays pending until People & Culture verify it against the original.",
                      "تقديم مستند غير صحيح أو معدّل يُعد مخالفة. يبقى السجل معلّقًا حتى يتحقق قسم الموظفين والثقافة من الأصل.")}
                 </p>
@@ -218,12 +211,12 @@ export default function DependantEditorPage() {
             </>
           )}
         </div>
-      </Card>
+      </SectionCard>
 
       {/* nothing is filed until this is confirmed */}
       {confirming && relation && (
-        <Card className="mt-4 border-primary/30 bg-primary/[0.04] p-4">
-          <p className="text-[13px] font-semibold">
+        <Tile className="mt-6 bg-soft-accent ring-primary/30">
+          <p className="text-[14px] font-medium">
             {editing
               ? t(`Resubmit ${name.trim()} for verification?`, `إعادة إرسال ${name.trim()} للتوثيق؟`)
               : t(`Submit ${name.trim()} as your ${RELATION[relation].en.toLowerCase()}?`,
@@ -234,14 +227,14 @@ export default function DependantEditorPage() {
                "يتحقق قسم الموظفين والثقافة من المستند مقابل الأصل، ولا تتغير التغطية أو التذاكر إلا بعد التوثيق.")}
           </p>
           <div className="mt-3 flex flex-wrap justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setConfirming(false)}>{t("Cancel", "إلغاء")}</Button>
-            <Button size="sm" onClick={save}>
+            <OutlineButton size="sm" onClick={() => setConfirming(false)}>{t("Cancel", "إلغاء")}</OutlineButton>
+            <GoldButton size="sm" onClick={save}>
               <Check className="size-3.5" />{t("Yes, submit", "نعم، أرسل")}
-            </Button>
+            </GoldButton>
           </div>
-        </Card>
+        </Tile>
       )}
-    </main>
+    </Page>
   )
 }
 
@@ -249,15 +242,12 @@ function Toggle({ checked, onChange, title, body }: {
   checked: boolean; onChange: (v: boolean) => void; title: string; body: string
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border/70 p-3">
-      <input
-        type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"
-      />
+    <Tile className="flex items-center justify-between gap-4">
       <span className="min-w-0">
-        <span className="block text-[12.5px] font-medium">{title}</span>
-        <span className="block text-[11.5px] text-muted-foreground">{body}</span>
+        <span className="block text-[14px] font-medium">{title}</span>
+        <span className="mt-0.5 block text-[12px] text-muted-foreground">{body}</span>
       </span>
-    </label>
+      <Switch checked={checked} onChange={onChange} label={title} />
+    </Tile>
   )
 }

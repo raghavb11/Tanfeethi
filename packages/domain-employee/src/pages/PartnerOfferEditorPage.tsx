@@ -1,15 +1,20 @@
 import * as React from "react"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { ArrowLeft, Check, Eye, ImagePlus, Plus, Save, Send, Upload, X } from "lucide-react"
+import { ArrowLeft, Check, Eye, FileText, ImagePlus, Plus, Save, Send, Tag, Upload, Users, X } from "lucide-react"
 
 import { PartnerPicker } from "../components/PartnerPicker"
 import {
   addOffer, CATEGORY, type EligibleWho, getOffer, getPartner, IMAGE_LIBRARY,
   newOfferId, type PartnerCategory, prettyWhen, type RedeemMethod, updateOffer, WHO,
 } from "../data/mock/partners"
+import { FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard } from "../components/wijha"
+
+/** The shared inputs, at the design's 36px / radius 8 / page-fill chrome. */
+const In = (p: React.ComponentProps<typeof Input>) => <In {...p} className={cn("h-9 rounded-lg bg-background", p.className)} />
+const TA = (p: React.ComponentProps<typeof Textarea>) => <TA {...p} className={cn("rounded-lg bg-background", p.className)} />
 
 const CATEGORIES = Object.keys(CATEGORY) as PartnerCategory[]
 const WHO_IDS = Object.keys(WHO) as EligibleWho[]
@@ -92,7 +97,7 @@ export default function PartnerOfferEditorPage() {
     <div className="space-y-2">
       {items.map((line, i) => (
         <div key={i} className="flex gap-2">
-          <Input
+          <In
             value={line} disabled={readOnly}
             onChange={(e) => set(items.map((x, j) => (j === i ? e.target.value : x)))}
             placeholder={placeholder}
@@ -100,7 +105,7 @@ export default function PartnerOfferEditorPage() {
           {!readOnly && (
             <button
               onClick={() => set(items.filter((_, j) => j !== i))} aria-label={t("Remove", "إزالة")}
-              className="shrink-0 text-muted-foreground hover:text-rose-500"
+              className="grid size-9 shrink-0 place-items-center rounded-lg text-icon hover:bg-error-fill hover:text-error"
             >
               <X className="size-3.5" />
             </button>
@@ -108,9 +113,9 @@ export default function PartnerOfferEditorPage() {
         </div>
       ))}
       {!readOnly && (
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => set([...items, ""])}>
+        <OutlineButton size="sm" onClick={() => set([...items, ""])}>
           <Plus className="size-3.5" />{addLabel}
-        </Button>
+        </OutlineButton>
       )}
     </div>
   )
@@ -155,55 +160,47 @@ export default function PartnerOfferEditorPage() {
     navigate(then === "preview" ? `/benefits/partners/${offerId}?preview=1&as=${partnerId}` : back)
   }
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
-  )
+  const label = (s: string, required = false) => <FieldLabel required={required}>{s}</FieldLabel>
 
   if (viewOnly && offer) {
     return <Navigate to={`/benefits/partners/${offer.id}?preview=1`} replace />
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => navigate(back)} className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground">
-          <ArrowLeft className={cn("size-3.5", isAr && "rotate-180")} />{t("Back to your offers", "العودة إلى عروضك")}
+    <Page className="mx-auto max-w-4xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button onClick={() => navigate(back)} className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground">
+          <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to your offers", "العودة إلى عروضك")}
         </button>
         {!readOnly && (
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</Button>
-            <Button variant="outline" disabled={!canSave} className="gap-1.5" onClick={() => save("draft")}>
+            <OutlineButton onClick={() => navigate(back)}>{t("Cancel", "إلغاء")}</OutlineButton>
+            <OutlineButton disabled={!canSave} onClick={() => save("draft")}>
               <Save className="size-4" />{t("Save draft", "حفظ كمسودة")}
-            </Button>
-            <Button variant="outline" disabled={!canSave} className="gap-1.5" onClick={() => save("draft", "preview")}>
+            </OutlineButton>
+            <OutlineButton disabled={!canSave} onClick={() => save("draft", "preview")}>
               <Eye className="size-4" />{t("Save & preview", "حفظ ومعاينة")}
-            </Button>
-            <Button disabled={!canSave} className="gap-1.5" onClick={() => save("submitted")}>
+            </OutlineButton>
+            <GoldButton disabled={!canSave} onClick={() => save("submitted")}>
               <Send className="size-4" />{t("Submit for review", "إرسال للمراجعة")}
-            </Button>
+            </GoldButton>
           </div>
         )}
       </div>
 
-      <div className="mb-5">
-        <h1 className="font-heading text-[26px] font-bold leading-tight tracking-tight">
-          {editing ? t("Edit offer", "تعديل العرض") : t("New offer", "عرض جديد")}
-        </h1>
-        <p className="mt-1 text-[13px] text-muted-foreground">
+      <SectionCard icon={Tag} title={editing ? t("Edit offer", "تعديل العرض") : t("New offer", "عرض جديد")}>
+        <p className="-mt-1 mb-5 text-[12.5px] text-muted-foreground">
           {readOnly
             ? t("This offer is with ALTANFEETHI or already published, so it is read-only. Withdraw it to make changes.",
                 "هذا العرض لدى التنفيذي أو منشور بالفعل، لذا للقراءة فقط. اسحبه لتعديله.")
             : t("Say what the saving is, who may use it and how it is claimed. Arabic falls back to English where left empty.",
                 "وضّح قيمة الخصم ومن يستفيد وكيفية المطالبة. تُستخدم الإنجليزية عند ترك العربية فارغة.")}
         </p>
-      </div>
-
-      <Card className="p-5">
         <div className="space-y-5">
           <div>
-            {label(t("Partner", "الشريك"))}
+            {label(t("Partner", "الشريك"), true)}
             {editing || readOnly ? (
-              <Input value={partner ? (isAr ? partner.nameAr : partner.name) : ""} readOnly className="bg-muted/40 text-muted-foreground" />
+              <In value={partner ? (isAr ? partner.nameAr : partner.name) : ""} readOnly className="bg-secondary/50 text-muted-foreground" />
             ) : (
               <PartnerPicker value={partnerId} onChange={setPartnerId} isAr={isAr} t={t}
                              onCreate={() => navigate("/config/partners/new")} />
@@ -215,7 +212,7 @@ export default function PartnerOfferEditorPage() {
               {label(t("Category", "الفئة"))}
               <select
                 value={category} disabled={readOnly} onChange={(e) => setCategory(e.target.value as PartnerCategory)}
-                className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60 disabled:opacity-60"
+                className={cn(fieldClass, "disabled:opacity-60")}
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{isAr ? CATEGORY[c].ar : CATEGORY[c].en}</option>
@@ -224,11 +221,11 @@ export default function PartnerOfferEditorPage() {
             </div>
             <div>
               {label(t("Valid from", "سارٍ من"))}
-              <Input
+              <In
                 type="datetime-local" value={validFromISO} disabled={readOnly}
                 onChange={(e) => setValidFromISO(e.target.value)}
               />
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-1.5 text-[12px] text-muted-foreground">
                 {t("Leave empty to start as soon as it is published.",
                    "اتركه فارغًا ليبدأ فور النشر.")}
               </p>
@@ -237,15 +234,15 @@ export default function PartnerOfferEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("Valid to", "سارٍ حتى"))}
-              <Input
+              {label(t("Valid to", "سارٍ حتى"), true)}
+              <In
                 type="datetime-local" value={validToISO} disabled={readOnly}
                 onChange={(e) => setValidToISO(e.target.value)}
               />
             </div>
             <div>
               {label(t("Runs", "مدة السريان"))}
-              <div className="flex h-11 items-center rounded-lg border border-border/60 bg-muted/30 px-3 text-[12.5px] text-muted-foreground">
+              <div className="flex h-9 items-center rounded-lg bg-secondary/50 px-3 text-[12.5px] text-muted-foreground">
                 {validToISO
                   ? `${validFromISO ? prettyWhen(validFromISO, isAr) : t("On publishing", "عند النشر")} → ${prettyWhen(validToISO, isAr)}`
                   : t("Set an end date", "حدّد تاريخ الانتهاء")}
@@ -255,36 +252,40 @@ export default function PartnerOfferEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("The saving", "قيمة الخصم"))}
-              <Input value={discount} disabled={readOnly} onChange={(e) => setDiscount(e.target.value)} placeholder={t("30% off", "خصم ٣٠٪")} />
+              {label(t("The saving", "قيمة الخصم"), true)}
+              <In value={discount} disabled={readOnly} onChange={(e) => setDiscount(e.target.value)} placeholder={t("30% off", "خصم 30٪")} />
             </div>
             <div>
               {label(t("The saving in Arabic", "قيمة الخصم بالعربية"))}
-              <Input value={discountAr} disabled={readOnly} onChange={(e) => setDiscountAr(e.target.value)} dir="rtl" />
+              <In value={discountAr} disabled={readOnly} onChange={(e) => setDiscountAr(e.target.value)} dir="rtl" />
             </div>
           </div>
 
           <div>
-            {label(t("Headline", "العنوان"))}
-            <Input value={headline} disabled={readOnly} onChange={(e) => setHeadline(e.target.value)}
-                   placeholder={t("30% off all spa treatments", "خصم ٣٠٪ على جميع جلسات المنتجع")} />
+            {label(t("Headline", "العنوان"), true)}
+            <In value={headline} disabled={readOnly} onChange={(e) => setHeadline(e.target.value)}
+                   placeholder={t("30% off all spa treatments", "خصم 30٪ على جميع جلسات المنتجع")} />
           </div>
           <div>
             {label(t("Headline in Arabic", "العنوان بالعربية"))}
-            <Input value={headlineAr} disabled={readOnly} onChange={(e) => setHeadlineAr(e.target.value)} dir="rtl" />
+            <In value={headlineAr} disabled={readOnly} onChange={(e) => setHeadlineAr(e.target.value)} dir="rtl" />
           </div>
 
           <div>
             {label(t("Summary", "الوصف"))}
-            <Textarea rows={3} value={summary} disabled={readOnly} onChange={(e) => setSummary(e.target.value)}
+            <TA rows={3} value={summary} disabled={readOnly} onChange={(e) => setSummary(e.target.value)}
                       placeholder={t("What is included, and anything staff should know before they go.",
                                      "ما الذي يشمله العرض، وما يجدر بالموظف معرفته قبل الزيارة.")} />
           </div>
           <div>
             {label(t("Summary in Arabic", "الوصف بالعربية"))}
-            <Textarea rows={3} value={summaryAr} disabled={readOnly} onChange={(e) => setSummaryAr(e.target.value)} dir="rtl" />
+            <TA rows={3} value={summaryAr} disabled={readOnly} onChange={(e) => setSummaryAr(e.target.value)} dir="rtl" />
           </div>
+        </div>
+      </SectionCard>
 
+      <SectionCard icon={Users} title={t("Who and how", "المستفيدون وطريقة المطالبة")}>
+        <div className="space-y-5">
           <div>
             {label(t("Who may use it", "من يمكنه الاستفادة"))}
             <div className="flex flex-wrap gap-2">
@@ -293,8 +294,8 @@ export default function PartnerOfferEditorPage() {
                 return (
                   <button
                     key={w} type="button" disabled={readOnly || w === "employee"} onClick={() => toggleWho(w)}
-                    className={cn("rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors",
-                      on ? "border-primary/40 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted/50",
+                    className={cn("h-8 rounded-full px-3 text-[12.5px] font-medium transition-colors",
+                      on ? "bg-soft-accent text-primary" : "bg-secondary text-muted-foreground hover:text-foreground",
                       w === "employee" && "opacity-70")}
                   >
                     {isAr ? WHO[w].ar : WHO[w].en}
@@ -302,7 +303,7 @@ export default function PartnerOfferEditorPage() {
                 )
               })}
             </div>
-            <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+            <p className="mt-1.5 text-[12px] text-muted-foreground">
               {t("The employee is always included. Family members must be verified by HR before they can be named on a voucher.",
                  "الموظف مشمول دائمًا. يجب أن تعتمد الموارد البشرية أفراد العائلة قبل إصدار قسيمة بأسمائهم.")}
             </p>
@@ -311,20 +312,20 @@ export default function PartnerOfferEditorPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               {label(t("Family members per visit", "عدد أفراد العائلة لكل زيارة"))}
-              <Input type="number" min="0" value={guestLimit} disabled={readOnly}
+              <In type="number" min="0" value={guestLimit} disabled={readOnly}
                      onChange={(e) => setGuestLimit(e.target.value)} placeholder={t("Leave empty for no cap", "اتركه فارغًا بلا حد")} />
             </div>
             <div>
               {label(t("How it is claimed", "طريقة المطالبة"))}
               <select
                 value={redeem} disabled={readOnly} onChange={(e) => setRedeem(e.target.value as RedeemMethod)}
-                className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60 disabled:opacity-60"
+                className={cn(fieldClass, "disabled:opacity-60")}
               >
                 {(Object.keys(REDEEM) as RedeemMethod[]).map((r) => (
                   <option key={r} value={r}>{isAr ? REDEEM[r].ar : REDEEM[r].en}</option>
                 ))}
               </select>
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-1.5 text-[12px] text-muted-foreground">
                 {isAr ? REDEEM[redeem].hintAr : REDEEM[redeem].hint}
               </p>
             </div>
@@ -333,12 +334,12 @@ export default function PartnerOfferEditorPage() {
           {redeem === "voucher" && (
             <div>
               {label(t("Vouchers available", "عدد القسائم المتاحة"))}
-              <Input
+              <In
                 type="number" min="1" value={quota} disabled={readOnly}
                 onChange={(e) => setQuota(e.target.value)}
                 placeholder={t("Leave empty for no limit", "اتركه فارغًا بلا حد")}
               />
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+              <p className="mt-1.5 text-[12px] text-muted-foreground">
                 {t("How many you will honour in total. The count goes down as staff take them, and only you see what is left.",
                    "كم قسيمة ستقبلونها إجمالًا. ينقص العدد مع كل إصدار، ولا يراه إلا أنتم.")}
               </p>
@@ -348,7 +349,7 @@ export default function PartnerOfferEditorPage() {
           {redeem === "code" && (
             <div>
               {label(t("Discount code", "رمز الخصم"))}
-              <Input value={code} disabled={readOnly} onChange={(e) => setCode(e.target.value)} placeholder="TNF-2026" dir="ltr" />
+              <In value={code} disabled={readOnly} onChange={(e) => setCode(e.target.value)} placeholder="TNF-2026" dir="ltr" />
             </div>
           )}
 
@@ -359,8 +360,8 @@ export default function PartnerOfferEditorPage() {
                 {partner.branches.map((b) => (
                   <button
                     key={b.id} type="button" disabled={readOnly} onClick={() => toggleBranch(b.id)}
-                    className={cn("rounded-full border px-3 py-1.5 text-[12.5px] transition-colors",
-                      branchIds.includes(b.id) ? "border-primary/40 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted/50")}
+                    className={cn("h-8 rounded-full px-3 text-[12.5px] transition-colors",
+                      branchIds.includes(b.id) ? "bg-soft-accent text-primary" : "bg-secondary text-muted-foreground hover:text-foreground")}
                   >
                     {isAr ? b.nameAr : b.name}
                   </button>
@@ -373,7 +374,11 @@ export default function PartnerOfferEditorPage() {
               </p>
             )}
           </div>
+        </div>
+      </SectionCard>
 
+      <SectionCard icon={FileText} title={t("Details", "التفاصيل")}>
+        <div className="space-y-5">
           <div>
             {label(t("How to use it", "كيفية الاستخدام"))}
             {listField(howTo, setHowTo, t("One step per line", "خطوة واحدة في كل سطر"), t("Add a step", "إضافة خطوة"))}
@@ -384,23 +389,23 @@ export default function PartnerOfferEditorPage() {
             {label(t("Picture", "الصورة"))}
             {image ? (
               <div className="flex flex-wrap items-start gap-3">
-                <img src={image} alt="" className="h-28 w-44 rounded-xl object-cover ring-1 ring-border/60" />
+                <img src={image} alt="" className="h-28 w-44 rounded-[10px] object-cover ring-1 ring-border" />
                 {!readOnly && (
                   <div className="flex flex-col gap-2">
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => fileRef.current?.click()}>
+                    <OutlineButton size="sm" onClick={() => fileRef.current?.click()}>
                       <Upload className="size-3.5" />{t("Replace", "استبدال")}
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImage("")}>
+                    </OutlineButton>
+                    <OutlineButton size="sm" className="text-error" onClick={() => setImage("")}>
                       <X className="size-3.5" />{t("Remove", "إزالة")}
-                    </Button>
+                    </OutlineButton>
                   </div>
                 )}
               </div>
             ) : (
               !readOnly && (
-                <Button variant="outline" className="gap-1.5" onClick={() => fileRef.current?.click()}>
+                <GoldButton onClick={() => fileRef.current?.click()}>
                   <ImagePlus className="size-4" />{t("Upload a picture", "رفع صورة")}
-                </Button>
+                </GoldButton>
               )
             )}
             <input
@@ -410,7 +415,7 @@ export default function PartnerOfferEditorPage() {
 
             {!readOnly && (
               <>
-                <p className="mt-3 text-[11.5px] text-muted-foreground">
+                <p className="mt-3 text-[12px] text-muted-foreground">
                   {t("Or pick one from the portal's library.", "أو اختر صورة من مكتبة البوابة.")}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -419,13 +424,13 @@ export default function PartnerOfferEditorPage() {
                       key={src} type="button" onClick={() => setImage(src)}
                       aria-label={src}
                       className={cn("overflow-hidden rounded-lg ring-1 transition-all",
-                        image === src ? "ring-2 ring-primary" : "ring-border/60 hover:ring-primary/40")}
+                        image === src ? "ring-2 ring-primary" : "ring-border hover:ring-primary/40")}
                     >
                       <img src={src} alt="" className="h-14 w-20 object-cover" />
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-[11.5px] text-muted-foreground">
+                <p className="mt-2 text-[12px] text-muted-foreground">
                   {t("Without a picture the card falls back to a painted tile in the category colour.",
                      "بدون صورة تظهر البطاقة بتدرج لون الفئة.")}
                 </p>
@@ -445,14 +450,14 @@ export default function PartnerOfferEditorPage() {
             </p>
           )}
         </div>
-      </Card>
+      </SectionCard>
 
       {readOnly && offer?.status === "submitted" && (
-        <p className="mt-4 flex items-center gap-2 text-[12.5px] text-muted-foreground">
-          <Check className="size-4 text-amber-500" />
+        <p className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
+          <Check className="size-4 text-warning" />
           {t("With ALTANFEETHI for review.", "لدى التنفيذي للمراجعة.")}
         </p>
       )}
-    </main>
+    </Page>
   )
 }

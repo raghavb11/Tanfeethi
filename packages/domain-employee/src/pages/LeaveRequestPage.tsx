@@ -1,15 +1,16 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
-import { AlertTriangle, ArrowLeft, CalendarPlus, Check, HeartPulse, Info, Moon, Plane, User, Wallet, Users } from "lucide-react"
+import { AlertTriangle, CalendarDays, ChevronDown, Info, Paperclip, Umbrella, Users, X } from "lucide-react"
 
-import { addLeaveRequest, type LeaveTypeId, newRequestId, remaining, teamAwayBetween, useLiveLeaveTypes } from "../data/mock/leave"
-
-const TYPE_ICON: Record<LeaveTypeId, React.ComponentType<{ className?: string }>> = {
-  annual: Plane, sick: HeartPulse, personal: User, hajj: Moon, unpaid: Wallet,
-}
+import {
+  addLeaveRequest, type LeaveTypeId, NEEDS_ATTACHMENT, newRequestId, remaining, teamAwayBetween, useLiveLeaveTypes,
+} from "../data/mock/leave"
+import { emp } from "../data/mock/center"
+import { childrenOf, ME_ID, personById } from "../data/mock/org"
+import { FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard } from "../components/wijha"
+import { LeaveDistribution, PendingLeaveList } from "../components/LeaveWidgets"
 
 /** Working week is Sunday–Thursday, so Fri/Sat don't consume leave days. */
 function workingDaysBetween(from: string, to: string): number {
@@ -25,128 +26,210 @@ function workingDaysBetween(from: string, to: string): number {
 }
 const pretty = (iso: string) =>
   iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""
-/** Arabic-Indic numerals + Arabic month names, matching the seeded requests. */
+/** Arabic month names with Western digits, matching the seeded requests. */
 const prettyAr = (iso: string) =>
-  iso ? new Date(iso).toLocaleDateString("ar-EG", { month: "long", day: "numeric" }) : ""
+  iso ? new Date(iso).toLocaleDateString("ar-EG-u-nu-latn", { month: "long", day: "numeric" }) : ""
 
+/** Leave request — Figma 4871:16776 (web) / 4871:17529 (phone). */
 export default function LeaveRequestPage() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
 
-  const [type, setType] = React.useState<LeaveTypeId>("annual")
+  const [type, setType] = React.useState<LeaveTypeId | "">("")
+  const [delegateId, setDelegateId] = React.useState("")
   const [from, setFrom] = React.useState("")
   const [to, setTo] = React.useState("")
+  const [files, setFiles] = React.useState<File[]>([])
+  const [more, setMore] = React.useState(false)
   const [halfDay, setHalfDay] = React.useState(false)
   const [reason, setReason] = React.useState("")
   const [contact, setContact] = React.useState("")
+  const fileRef = React.useRef<HTMLInputElement>(null)
 
   const leaveTypes = useLiveLeaveTypes()
-  const selected = leaveTypes.find((x) => x.id === type)!
-  const days = halfDay ? 0.5 : workingDaysBetween(from, to)
-  const left = remaining(selected)
-  const overBalance = days > left && type !== "unpaid"
-  const canSubmit = !!from && !!to && days > 0 && !overBalance
+  const selected = leaveTypes.find((x) => x.id === type)
+  const me = personById(ME_ID)!
+  // colleagues who can cover: teammates under the same manager, then direct reports
+  const delegates = [...(me.managerId ? childrenOf(me.managerId).filter((p) => p.id !== ME_ID) : []), ...childrenOf(ME_ID)]
+  const delegate = delegates.find((p) => p.id === delegateId)
 
-  // only warn about colleagues whose leave genuinely overlaps the chosen window
+  const days = halfDay ? 0.5 : workingDaysBetween(from, to)
+  const left = selected ? remaining(selected) : 0
+  const overBalance = !!selected && days > left && type !== "unpaid"
+  const needsFiles = !!type && NEEDS_ATTACHMENT.includes(type)
+  const canSubmit = !!type && !!delegateId && !!from && !!to && days > 0 && !overBalance && (!needsFiles || files.length > 0)
   const clashes = teamAwayBetween(from, to)
 
-  const submit = () => {
-    if (!canSubmit) return
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!canSubmit || !type) return
     addLeaveRequest({
       id: newRequestId(), type,
       from: pretty(from), fromAr: prettyAr(from),
       to: pretty(to), toAr: prettyAr(to),
       days, submitted: "Just now", submittedAr: "الآن",
-      status: "Pending", approver: "Ahmed Mohammed", approverAr: "أحمد محمد",
+      status: "Pending", approver: emp.manager, approverAr: emp.managerAr,
       reason: reason.trim() || undefined, reasonAr: reason.trim() || undefined,
+      delegate: delegate?.name, delegateAr: delegate?.nameAr,
+      attachments: files.map((f) => f.name),
     })
     navigate("/leave")
   }
 
-  const label = (s: string) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
+  const selectWrap = (child: React.ReactNode) => (
+    <div className="relative">
+      {child}
+      <ChevronDown className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-icon" />
+    </div>
+  )
 
   return (
-    <main className="@container mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <button onClick={() => navigate("/leave")} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to leave", "العودة إلى الإجازات")}
-        </button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate("/leave")}>{t("Cancel", "إلغاء")}</Button>
-          <Button disabled={!canSubmit} onClick={submit}><Check className="size-4" />{t("Submit request", "إرسال الطلب")}</Button>
+    <Page>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,729fr)_minmax(0,480fr)]">
+        {/* ── form ── */}
+        <SectionCard icon={Umbrella} title={t("Leave request", "طلب إجازة")}>
+          <form onSubmit={submit} noValidate>
+            <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
+              <div>
+                <FieldLabel htmlFor="lv-type" required>{t("Leave type", "نوع الإجازة")}</FieldLabel>
+                {selectWrap(
+                  <select id="lv-type" value={type} onChange={(e) => setType(e.target.value as LeaveTypeId)} required
+                    className={cn(fieldClass, "appearance-none pe-9", !type && "text-muted-foreground")}>
+                    <option value="" disabled>{t("Choose from the list", "أختر من القائمة")}</option>
+                    {leaveTypes.map((x) => (
+                      <option key={x.id} value={x.id}>{isAr ? x.nameAr : x.name} — {remaining(x)} {t("days available", "يوم متاح")}</option>
+                    ))}
+                  </select>,
+                )}
+              </div>
+              <div>
+                <FieldLabel htmlFor="lv-delegate" required>{t("Covering colleague", "الموظف المناب عنك")}</FieldLabel>
+                {selectWrap(
+                  <select id="lv-delegate" value={delegateId} onChange={(e) => setDelegateId(e.target.value)} required
+                    className={cn(fieldClass, "appearance-none pe-9", !delegateId && "text-muted-foreground")}>
+                    <option value="" disabled>{t("Choose from the list", "أختر من القائمة")}</option>
+                    {delegates.map((p) => <option key={p.id} value={p.id}>{isAr ? p.nameAr : p.name} — {isAr ? p.titleAr : p.title}</option>)}
+                  </select>,
+                )}
+              </div>
+              <div>
+                <FieldLabel htmlFor="lv-from" required>{t("Leave start date", "تاريخ بداية الإجازة")}</FieldLabel>
+                <DateField id="lv-from" value={from} onChange={setFrom} placeholder={t("Choose a date", "أختر من القائمة")} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="lv-to" required>{t("Leave end date", "تاريخ إنتهاء الإجازة")}</FieldLabel>
+                <DateField id="lv-to" value={to} min={from || undefined} onChange={setTo} placeholder={t("Choose a date", "أختر من القائمة")} />
+              </div>
+            </div>
+
+            {/* attachments */}
+            <div className="mt-5">
+              <FieldLabel required={needsFiles || !type}>{needsFiles || !type ? t("Attachments required", "المرفقات مطلوبة") : t("Attachments (optional)", "المرفقات (اختياري)")}</FieldLabel>
+              <input ref={fileRef} type="file" multiple className="hidden" onChange={(e) => { setFiles((f) => [...f, ...Array.from(e.target.files ?? [])]); e.target.value = "" }} />
+              <GoldButton className="w-full sm:w-[calc(50%-8px)]" onClick={() => fileRef.current?.click()}>
+                {t("Upload attachments", "رفع مرفقات")}
+              </GoldButton>
+              {files.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {files.map((f, i) => (
+                    <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg bg-background px-3 py-2 text-[12.5px] ring-1 ring-border">
+                      <Paperclip className="size-3.5 shrink-0 text-primary" />
+                      <span className="min-w-0 flex-1 truncate" dir="ltr">{f.name}</span>
+                      <button type="button" onClick={() => setFiles((all) => all.filter((_, j) => j !== i))} className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-error" aria-label={t("Remove", "إزالة")}>
+                        <X className="size-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* live calculation + team cover check (shown once dates are chosen) */}
+            {from && to && (
+              <div className={cn("mt-5 flex items-start gap-2 rounded-lg p-3 text-[12.5px]", overBalance ? "bg-error-fill text-error" : "bg-soft-accent text-foreground")}>
+                {overBalance ? <AlertTriangle className="mt-0.5 size-4 shrink-0" /> : <Info className="mt-0.5 size-4 shrink-0 text-primary" />}
+                <span>
+                  {overBalance
+                    ? t(`This request is ${days} days but only ${left} are available.`, `الطلب ${days} يوم بينما المتاح ${left} فقط.`)
+                    : selected
+                      ? t(`${days} working day${days === 1 ? "" : "s"} — Fri/Sat and public holidays are not deducted. Balance after approval: ${left - days}.`, `${days} يوم عمل — لا تُحتسب الجمعة والسبت والعطل الرسمية. الرصيد بعد الموافقة: ${left - days}.`)
+                      : t(`${days} working day${days === 1 ? "" : "s"} — choose a leave type to check your balance.`, `${days} يوم عمل — اختر نوع الإجازة للتحقق من رصيدك.`)}
+                </span>
+              </div>
+            )}
+            {clashes.length > 0 && (
+              <div className="mt-3 rounded-lg bg-warning-fill p-3 text-[12.5px]">
+                <span className="inline-flex items-center gap-2 text-warning"><Users className="size-4 shrink-0" />
+                  {t(clashes.length === 1 ? "A colleague is already away in this period:" : "Colleagues are already away in this period:", "زملاء في إجازة خلال هذه الفترة:")}
+                </span>
+                <ul className="mt-1.5 list-disc ps-6 text-muted-foreground">
+                  {clashes.map((c) => <li key={c.id}>{isAr ? c.nameAr : c.name} · {isAr ? c.rangeAr : c.range}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {/* optional details kept from the earlier form */}
+            <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
+              className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline">
+              <ChevronDown className={cn("size-4 transition-transform", more && "rotate-180")} />
+              {t("More details (optional)", "تفاصيل إضافية (اختياري)")}
+            </button>
+            {more && (
+              <div className="mt-4 grid gap-4">
+                <label className="inline-flex items-center gap-2 text-[13px]">
+                  <input type="checkbox" checked={halfDay} onChange={(e) => setHalfDay(e.target.checked)} className="size-4 accent-[var(--primary)]" />
+                  {t("Half day", "نصف يوم")}
+                </label>
+                <div>
+                  <FieldLabel htmlFor="lv-reason">{t("Reason", "السبب")}</FieldLabel>
+                  <textarea id="lv-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)}
+                    placeholder={t("Anything your manager should know?", "أي معلومة يحتاجها مديرك؟")}
+                    className={cn(fieldClass, "h-auto py-2")} />
+                </div>
+                <div>
+                  <FieldLabel htmlFor="lv-contact">{t("Contact while away", "وسيلة تواصل أثناء الإجازة")}</FieldLabel>
+                  <input id="lv-contact" value={contact} onChange={(e) => setContact(e.target.value)} placeholder={t("Phone or email", "هاتف أو بريد")} className={fieldClass} />
+                </div>
+                <p className="text-[12px] text-muted-foreground">
+                  {t(`Goes to ${emp.manager} (${emp.managerTitle}) for approval.`, `يُرسل إلى ${emp.managerAr} (${emp.managerTitleAr}) للموافقة.`)}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <GoldButton type="submit" disabled={!canSubmit} className="w-full sm:w-auto sm:min-w-[89px]">{t("Submit request", "إرسال الطلب")}</GoldButton>
+              <OutlineButton className="w-full sm:w-auto sm:min-w-[63px]" onClick={() => navigate(-1)}>{t("Cancel", "إلغاء")}</OutlineButton>
+            </div>
+          </form>
+        </SectionCard>
+
+        {/* ── side: pending + balance ── */}
+        <div className="min-w-0 space-y-6">
+          <SectionCard icon={Umbrella} title={t("Leave requests under review", "طلبات الإجازات قيد المراجعة")}>
+            <div className="mb-3 text-[12.5px] text-muted-foreground">{t("Requests under review", "طلبات قيد المراجعة")}</div>
+            <PendingLeaveList columns={1} />
+          </SectionCard>
+          <SectionCard icon={Umbrella} title={t("My balance", "رصيدي")}>
+            <div className="text-[12.5px] text-muted-foreground">{t("Leave distribution", "توزيع الإجازات")}</div>
+            <LeaveDistribution />
+          </SectionCard>
         </div>
       </div>
+    </Page>
+  )
+}
 
-      <div className="mb-6 flex items-center gap-2 text-primary">
-        <CalendarPlus className="size-4" />
-        <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("New leave request", "طلب إجازة جديد")}</span>
-      </div>
-
-      <Card className="space-y-5 p-6 sm:p-8">
-        {/* type */}
-        <div>
-          {label(t("Leave type", "نوع الإجازة"))}
-          <div className="grid gap-2 @xl:grid-cols-2">
-            {leaveTypes.map((x) => {
-              const on = type === x.id
-              const Icon = TYPE_ICON[x.id]
-              return (
-                <button key={x.id} type="button" onClick={() => setType(x.id)} aria-pressed={on}
-                  className={cn("flex items-center gap-2.5 rounded-xl border p-3 text-start transition-colors", on ? "ring-1" : "border-border hover:border-primary/50")}
-                  style={on ? { backgroundColor: `${x.color}14`, borderColor: `${x.color}66` } : undefined}>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${x.color}1e`, color: x.color }}><Icon className="size-4" /></span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] font-semibold" style={on ? { color: x.color } : undefined}>{isAr ? x.nameAr : x.name}</span>
-                    <span className="block text-[11px] text-muted-foreground">{remaining(x)} {t("days available", "يوم متاح")}</span>
-                  </span>
-                  {on && <Check className="size-4 shrink-0" style={{ color: x.color }} />}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* dates */}
-        <div className="grid gap-4 @xl:grid-cols-2">
-          <div>{label(t("From", "من"))}<Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-11" /></div>
-          <div>{label(t("To", "إلى"))}<Input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="h-11" /></div>
-        </div>
-
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={halfDay} onChange={(e) => setHalfDay(e.target.checked)} className="size-4 accent-[var(--primary)]" />
-          {t("Half day", "نصف يوم")}
-        </label>
-
-        {/* live calculation */}
-        {(from && to) && (
-          <div className={cn("flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm",
-            overBalance ? "border-rose-500/30 bg-rose-500/[0.06]" : "border-primary/30 bg-primary/[0.05]")}>
-            {overBalance
-              ? <><AlertTriangle className="size-4 shrink-0 text-rose-500" />{t(`This request is ${days} days but only ${left} are available.`, `الطلب ${days} يوم بينما المتاح ${left} فقط.`)}</>
-              : <><Info className="size-4 shrink-0 text-primary" />{t(`${days} working day${days === 1 ? "" : "s"} — Fri/Sat and public holidays are not deducted. Balance after approval: ${left - days}.`, `${days} يوم عمل — لا تُحتسب الجمعة/السبت والعطل الرسمية. الرصيد بعد الموافقة: ${left - days}.`)}</>}
-          </div>
-        )}
-
-        {clashes.length > 0 && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-3 text-sm">
-            <span className="inline-flex items-center gap-2"><Users className="size-4 shrink-0 text-amber-500" />
-              {t(clashes.length === 1 ? "Heads up — a colleague is already away in this period:" : "Heads up — colleagues are already away in this period:", "تنبيه — زملاء في إجازة خلال هذه الفترة:")}
-            </span>
-            <ul className="mt-1.5 ps-6 text-[12.5px] text-muted-foreground">
-              {clashes.map((c) => <li key={c.id}>{isAr ? c.nameAr : c.name} · {isAr ? c.rangeAr : c.range}</li>)}
-            </ul>
-          </div>
-        )}
-
-        <div>{label(t("Reason (optional)", "السبب (اختياري)"))}<Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("Anything your manager should know?", "أي معلومة يحتاجها مديرك؟")} dir={isAr ? "rtl" : "ltr"} /></div>
-        <div>{label(t("Contact while away (optional)", "وسيلة تواصل أثناء الإجازة (اختياري)"))}<Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder={t("Phone or email", "هاتف أو بريد")} className="h-11" /></div>
-
-        <div className="rounded-xl border border-border bg-muted/20 p-3 text-[12px] text-muted-foreground">
-          {t("Goes to Ahmed Mohammed (VP, Commercial) for approval. You'll be notified once it's actioned.", "يُرسل إلى أحمد محمد (نائب الرئيس، التجاري) للموافقة. سيصلك إشعار عند اتخاذ القرار.")}
-        </div>
-      </Card>
-    </main>
+/** Date input drawn as the Figma picker field: placeholder text + calendar icon at the end. */
+function DateField({ id, value, onChange, min, placeholder }: { id: string; value: string; onChange: (v: string) => void; min?: string; placeholder: string }) {
+  return (
+    <div className="relative">
+      <input id={id} type="date" value={value} min={min} onChange={(e) => onChange(e.target.value)} required
+        className={cn(fieldClass, "relative pe-9 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0",
+          !value && "text-transparent")} />
+      {!value && <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-[13px] text-muted-foreground">{placeholder}</span>}
+      <CalendarDays className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-icon" />
+    </div>
   )
 }

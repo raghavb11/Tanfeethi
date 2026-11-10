@@ -201,7 +201,7 @@ export const railGroups: RailItem[][] = [
     },
     {
       key: "employee", title: "Employee", titleAr: "الموظف", path: "/employee", icon: UserRound, module: "employee",
-      match: ["/employee", "/leave", "/attendance", "/org-chart", "/directory", "/benefits", "/payslip"],
+      match: ["/employee", "/leave", "/attendance", "/org-chart", "/directory", "/benefits", "/payslip", "/profile"],
       children: [
         { title: "Employee center", titleAr: "مركز الموظف", path: "/employee" },
         { title: "Leave", titleAr: "الإجازات", path: "/leave" },
@@ -213,6 +213,9 @@ export const railGroups: RailItem[][] = [
         { title: "Payslips", titleAr: "كشوف الرواتب", path: "/payslip" },
         { title: "My family", titleAr: "عائلتي", path: "/employee/dependants" },
         { title: "Business card", titleAr: "بطاقة العمل", path: "/employee/card" },
+        { title: "Assets", titleAr: "الأصول", path: "/employee/assets" },
+        { title: "Shift roster", titleAr: "جدول المناوبات", path: "/employee/shifts" },
+        { title: "Profile", titleAr: "الملف الشخصي", path: "/profile" },
       ],
     },
     {

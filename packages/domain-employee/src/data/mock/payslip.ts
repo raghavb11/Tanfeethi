@@ -30,16 +30,16 @@ export const money = (n: number, isAr: boolean) =>
 
 const BASE_EARNINGS: PayLine[] = [
   { label: "Basic salary", labelAr: "الراتب الأساسي", amount: 15000, kind: "earning" },
-  { label: "Housing allowance", labelAr: "بدل السكن", amount: 4500, kind: "earning", note: "25% of basic", noteAr: "٢٥٪ من الأساسي" },
+  { label: "Housing allowance", labelAr: "بدل السكن", amount: 4500, kind: "earning", note: "25% of basic", noteAr: "25٪ من الأساسي" },
   { label: "Transport allowance", labelAr: "بدل النقل", amount: 1200, kind: "earning" },
   { label: "Education allowance", labelAr: "بدل التعليم", amount: 1500, kind: "earning" },
   { label: "Communication allowance", labelAr: "بدل الاتصالات", amount: 300, kind: "earning" },
 ]
 
 const BASE_DEDUCTIONS: PayLine[] = [
-  { label: "GOSI contribution", labelAr: "اشتراك التأمينات", amount: 1794, kind: "deduction", note: "Employee share, 9.75%", noteAr: "حصة الموظف، ٩٫٧٥٪" },
+  { label: "GOSI contribution", labelAr: "اشتراك التأمينات", amount: 1794, kind: "deduction", note: "Employee share, 9.75%", noteAr: "حصة الموظف، 9.75٪" },
   { label: "Company savings plan", labelAr: "برنامج الادخار", amount: 1500, kind: "deduction" },
-  { label: "Salary advance recovery", labelAr: "استرداد سلفة", amount: 806, kind: "deduction", note: "4 of 6 instalments", noteAr: "٤ من ٦ أقساط" },
+  { label: "Salary advance recovery", labelAr: "استرداد سلفة", amount: 806, kind: "deduction", note: "4 of 6 instalments", noteAr: "4 من 6 أقساط" },
 ]
 
 const slip = (
@@ -55,19 +55,13 @@ const slip = (
 })
 
 export const PAYSLIPS: Payslip[] = [
-  slip("ps-2608", "2026-08", "August 2026", "أغسطس ٢٠٢٦", "Aug 27, 2026", "٢٧ أغسطس ٢٠٢٦", { status: "Processing" }),
-  slip("ps-2607", "2026-07", "July 2026", "يوليو ٢٠٢٦", "Jul 27, 2026", "٢٧ يوليو ٢٠٢٦"),
-  slip("ps-2606", "2026-06", "June 2026", "يونيو ٢٠٢٦", "Jun 26, 2026", "٢٦ يونيو ٢٠٢٦", {
-    earnings: [{ label: "Eid Al-Adha bonus", labelAr: "مكافأة عيد الأضحى", amount: 7500, kind: "earning" }],
+  slip("ps-2604", "2026-04", "April 2026", "أبريل 2026", "Apr 30, 2026", "30 أبريل 2026", { status: "Processing",
+    earnings: [{ label: "Overtime", labelAr: "عمل إضافي", amount: 1250, kind: "earning", note: "12 hours", noteAr: "12 ساعة" }],
   }),
-  slip("ps-2605", "2026-05", "May 2026", "مايو ٢٠٢٦", "May 27, 2026", "٢٧ مايو ٢٠٢٦"),
-  slip("ps-2604", "2026-04", "April 2026", "أبريل ٢٠٢٦", "Apr 27, 2026", "٢٧ أبريل ٢٠٢٦", {
-    earnings: [{ label: "Overtime", labelAr: "عمل إضافي", amount: 1250, kind: "earning", note: "12 hours", noteAr: "١٢ ساعة" }],
-  }),
-  slip("ps-2603", "2026-03", "March 2026", "مارس ٢٠٢٦", "Mar 27, 2026", "٢٧ مارس ٢٠٢٦"),
-  slip("ps-2602", "2026-02", "February 2026", "فبراير ٢٠٢٦", "Feb 26, 2026", "٢٦ فبراير ٢٠٢٦"),
-  slip("ps-2601", "2026-01", "January 2026", "يناير ٢٠٢٦", "Jan 27, 2026", "٢٧ يناير ٢٠٢٦", {
-    earnings: [{ label: "Annual performance bonus", labelAr: "مكافأة الأداء السنوية", amount: 22500, kind: "earning", note: "2025 cycle", noteAr: "دورة ٢٠٢٥" }],
+  slip("ps-2603", "2026-03", "March 2026", "مارس 2026", "Mar 27, 2026", "27 مارس 2026"),
+  slip("ps-2602", "2026-02", "February 2026", "فبراير 2026", "Feb 26, 2026", "26 فبراير 2026"),
+  slip("ps-2601", "2026-01", "January 2026", "يناير 2026", "Jan 27, 2026", "27 يناير 2026", {
+    earnings: [{ label: "Annual performance bonus", labelAr: "مكافأة الأداء السنوية", amount: 22500, kind: "earning", note: "2025 cycle", noteAr: "دورة 2025" }],
   }),
 ]
 

@@ -11,6 +11,10 @@ export type ClockState = {
   /** Null until the person clocks in — the day has not started. */
   checkIn: string | null
   checkOut: string | null
+  /** Set while the person is on a break; break time is not counted as worked. */
+  breakStart: string | null
+  /** Completed break minutes so far today. */
+  breakMinutes: number
   location: string
   locationAr: string
   targetHours: number
@@ -21,9 +25,12 @@ export const SHIFT_START = "08:00"
 const GRACE_MINUTES = 15
 
 let state: ClockState = {
-  // the day opens unstarted; nothing is on the record until someone clocks in
-  checkIn: null,
+  // the demo day opens already clocked in at the shift start (Figma: checked-in
+  // state with Check out + Break available)
+  checkIn: SHIFT_START,
   checkOut: null,
+  breakStart: null,
+  breakMinutes: 0,
   location: today.location,
   locationAr: today.locationAr,
   targetHours: today.targetHours,
@@ -54,7 +61,8 @@ export const dayStatus = (s: ClockState = state): DayStatus =>
 export const workedMinutes = (s: ClockState = state) => {
   if (!s.checkIn) return 0
   const end = s.checkOut ? toMinutes(s.checkOut) : toMinutes(nowTime())
-  return Math.max(0, end - toMinutes(s.checkIn))
+  const openBreak = s.breakStart ? Math.max(0, end - toMinutes(s.breakStart)) : 0
+  return Math.max(0, end - toMinutes(s.checkIn) - s.breakMinutes - openBreak)
 }
 
 /** Minutes past the shift start, once the grace period is used up. */
@@ -107,15 +115,29 @@ export const remainingMinutes = (s: ClockState = state) =>
   Math.max(0, s.targetHours * 60 - workedMinutes(s))
 
 export function clockIn() {
-  state = { ...state, checkIn: nowTime(), checkOut: null }
+  state = { ...state, checkIn: nowTime(), checkOut: null, breakStart: null, breakMinutes: 0 }
   emit()
 }
 export function clockOut() {
-  state = { ...state, checkOut: nowTime() }
+  const t = nowTime()
+  const extra = state.breakStart ? Math.max(0, toMinutes(t) - toMinutes(state.breakStart)) : 0
+  state = { ...state, checkOut: t, breakStart: null, breakMinutes: state.breakMinutes + extra }
+  emit()
+}
+
+/** Start or end a break. Only meaningful while the day is open. */
+export function toggleBreak() {
+  if (!state.checkIn || state.checkOut) return
+  if (state.breakStart) {
+    const extra = Math.max(0, toMinutes(nowTime()) - toMinutes(state.breakStart))
+    state = { ...state, breakStart: null, breakMinutes: state.breakMinutes + extra }
+  } else {
+    state = { ...state, breakStart: nowTime() }
+  }
   emit()
 }
 /** Start a second session after clocking out — a late return to the office. */
 export function clockInAgain() {
-  state = { ...state, checkIn: nowTime(), checkOut: null }
+  state = { ...state, checkIn: nowTime(), checkOut: null, breakStart: null, breakMinutes: 0 }
   emit()
 }

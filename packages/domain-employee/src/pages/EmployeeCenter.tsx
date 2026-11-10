@@ -1,465 +1,556 @@
 import * as React from "react"
-import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
-import { Avatar, AvatarFallback, Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  ArrowRight, BadgeCheck, Banknote, Bell, Building2, CalendarCheck, CalendarClock, CalendarDays, Car, Check, CheckCircle2, ClipboardList, Clock, FileCheck2, FileText, Gift, GraduationCap, Heart, Home, IdCard, LogOut, MapPin, Phone, Plane, Plus, QrCode, Receipt, Share2, Shield, Sparkles, TrendingUp, UserCircle2, Users, Wallet, X,
+  AlertTriangle, ArrowLeft, ArrowRight, Banknote, BadgeCheck, BedDouble, Bell, Building2, CalendarCheck, CalendarDays, Car, Check,
+  ChevronLeft, ChevronRight, ClipboardList, Clock, Coffee, FileCheck2, FileText, Gift, GraduationCap, Heart, HeartHandshake, Home, IdCard,
+  Laptop, LineChart, Link2, LogIn, LogOut, Mail, MapPin, Phone, Plane, Plus, Receipt, Shield, TrendingUp, Umbrella, Users,
+  UtensilsCrossed, Wallet, X,
 } from "lucide-react"
 
-import { allowances, approvals, attendanceSummary, businessCard, emp, hrNotifications, leave, myRequests, payslip, today } from "../data/mock/center"
+import { allowances, approvals, emp, hrNotifications, myRequests, payslip } from "../data/mock/center"
 import { ageOf, RELATION, STATUS, useDependants } from "../data/mock/dependants"
-import { DigitalCard } from "../components/DigitalCard"
-import { ClockAction } from "../components/ClockAction"
-import { arNum, dayStatus, hm, hoursWord, remainingMinutes, useClock, workedMinutes } from "../data/mock/clock"
+import {
+  clockIn, clockInAgain, clockOut, dayStatus, lateBy, nowTime, remainingMinutes, toggleBreak, useClock, workedMinutes,
+} from "../data/mock/clock"
+import { executiveVisits, performance, ROTATIONS, SERVICES, TODAY, WEEK, WEEK_TARGET_H } from "../data/mock/hub"
+import { HOLIDAYS, type LeaveType, useLiveLeaveTypes } from "../data/mock/leave"
+import { LeaveDistribution, PendingLeaveList } from "../components/LeaveWidgets"
+import { childrenOf, ME_ID, personById } from "../data/mock/org"
+import {
+  Bar, Chip, GoldButton, hmShort, IconBadge, Initials, OutlineButton, Page, Ring, SectionCard, Separator, ServiceButton, Tile, to12h,
+} from "../components/wijha"
+import { HoursGlyph, WeeklyHoursDialog } from "../components/WeeklyHoursDialog"
+import { initialsOf, OrgStructureDialog } from "../components/OrgStructureDialog"
+import { RotationCard } from "../components/RotationCard"
 
-// ─── shared bits ─────────────────────────────────────────────────────────────
-function CardHead({ icon: Icon, title, desc, action }: { icon: React.ComponentType<{ className?: string }>; title: string; desc?: string; action?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-2 border-b border-border/60 px-5 py-4">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary"><Icon className="size-4" /></span>
-        <div className="min-w-0">
-          <div className="text-[13px] font-semibold leading-tight">{title}</div>
-          {desc && <div className="mt-0.5 truncate text-[11px] text-muted-foreground/65">{desc}</div>}
-        </div>
-      </div>
-      {action}
-    </div>
-  )
+type IconType = React.ComponentType<{ className?: string; strokeWidth?: number }>
+const SERVICE_ICON: Record<string, IconType> = {
+  plane: Plane, bed: BedDouble, utensils: UtensilsCrossed, car: Car, laptop: Laptop, graduation: GraduationCap, idcard: IdCard,
 }
+const ALLOW_ICONS: Record<string, IconType> = { home: Home, car: Car, phone: Phone, school: GraduationCap }
+const BENEFIT_ICONS: Record<string, IconType> = { heart: Heart, shield: Shield, plane: Plane }
+const NOTIF_ICONS: Record<string, IconType> = { "file-check": FileCheck2, wallet: Wallet, gift: Gift, "calendar-check": CalendarCheck }
+const REQ_ICONS: Record<string, IconType> = { leave: Plane, expense: Receipt, letter: FileText, document: FileText }
+const APPROVAL_ICONS: Record<string, IconType> = { leave: Plane, expense: Receipt, overtime: Clock }
 
-const money = (n: number, cur: string, isAr: boolean) => (isAr ? `${n.toLocaleString()} ${cur}` : `${cur} ${n.toLocaleString()}`)
+const money = (n: number, isAr: boolean) => (isAr ? `${n.toLocaleString("en-US")} ر.س` : `SAR ${n.toLocaleString("en-US")}`)
 
-const ALLOW_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { home: Home, car: Car, phone: Phone, school: GraduationCap }
-const BENEFIT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { heart: Heart, shield: Shield, plane: Plane }
-const NOTIF_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { "file-check": FileCheck2, wallet: Wallet, gift: Gift, "calendar-check": CalendarCheck }
-const REQ_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { leave: Plane, expense: Receipt, letter: FileText, document: FileText }
-const APPROVAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { leave: Plane, expense: Receipt, overtime: Clock }
-
-// ─── page ────────────────────────────────────────────────────────────────────
+/** Employee hub — Figma 2028:760 (web) / 3182:10064 (phone). */
 export default function EmployeeCenter() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
-  const dependants = useDependants()
+  const [weekOpen, setWeekOpen] = React.useState(false)
+  const [orgOpen, setOrgOpen] = React.useState(false)
 
-  // today reads the clock store, so the card shows an unstarted day honestly
+  // minute tick so the live worked time keeps moving
+  const [, tick] = React.useReducer((n: number) => n + 1, 0)
+  React.useEffect(() => { const id = window.setInterval(tick, 30_000); return () => window.clearInterval(id) }, [])
+
+  const clock = useClock()
+  const weekMin = WEEK.reduce((n, d) => n + (d.isToday ? workedMinutes(clock) : d.minutes ?? 0), 0)
+
+  return (
+    <Page>
+      <AttendanceHero />
+
+      {/* ── main grid: wide column (start) · narrow column (end) — 729 / 480 at 1440 ── */}
+      <div className="mt-10 grid items-start gap-5 xl:grid-cols-[minmax(0,729fr)_minmax(0,480fr)]">
+        <div className="min-w-0 space-y-6">
+          {/* three small cards */}
+          <div className="grid gap-6 sm:grid-cols-3">
+            <button type="button" onClick={() => navigate("/benefits/partners")}
+              className="flex h-[81px] items-center justify-center gap-3 rounded-xl bg-[#1aad70] px-5 text-white transition-[filter] hover:brightness-110"
+              aria-label={t("WalaPlus loyalty programme", "برنامج ولاء بلس")}>
+              <HeartHandshake className="size-9" strokeWidth={1.6} />
+              <span className="flex flex-col items-start leading-none">
+                <span className="text-[19px] font-bold">ولاء بلس</span>
+                <span className="mt-1 text-[16px] font-extrabold tracking-tight">WalaPlus</span>
+              </span>
+            </button>
+
+            <button type="button" onClick={() => navigate("/services")} className="panel flex h-[81px] items-center gap-3 rounded-xl px-5 text-start transition-colors hover:bg-secondary/40">
+              <Car className="size-6 shrink-0 text-primary" strokeWidth={1.6} />
+              <span className="min-w-0">
+                <span className="block text-[22px] font-semibold leading-tight">{executiveVisits.count} {t("visits", "زيارات")}</span>
+                <span className="block text-[12.5px] text-muted-foreground">{t("Executive services", "خدمات التنفيذي")}</span>
+              </span>
+            </button>
+
+            <button type="button" onClick={() => setWeekOpen(true)} className="panel flex h-[81px] items-center gap-3 rounded-xl px-5 text-start transition-colors hover:bg-secondary/40"
+              aria-haspopup="dialog">
+              <HoursGlyph className="size-7" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[16px] font-semibold leading-tight">
+                  {Math.floor(weekMin / 60)} {t("h", "ساعة")} <span className="text-[13px] font-medium text-muted-foreground">/ {WEEK_TARGET_H} {t("h", "ساعة")}</span>
+                </span>
+                <span className="block truncate text-[12.5px] text-muted-foreground">{t("Your hours this week", "دوامك لهذا الأسبوع")}</span>
+              </span>
+              {isAr ? <ChevronLeft className="size-4 shrink-0 text-icon" /> : <ChevronRight className="size-4 shrink-0 text-icon" />}
+            </button>
+          </div>
+
+          <BalanceCard />
+
+          <div className="grid items-stretch gap-6 md:grid-cols-2">
+            <PerformanceCard />
+            <OrgCard onOpen={() => setOrgOpen(true)} />
+          </div>
+        </div>
+
+        <div className="min-w-0 space-y-6">
+          <ShiftsCard />
+          <SectionCard icon={Link2} title={t("Services", "خدمات")}>
+            <div className="grid grid-cols-4 gap-x-2 gap-y-6 pt-2">
+              {SERVICES.map((s) => (
+                <ServiceButton key={s.id} icon={SERVICE_ICON[s.icon]} label={isAr ? s.labelAr : s.label} onClick={() => navigate(s.to)} />
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      </div>
+
+      {/* ── more of the employee record (kept from the previous Employee Center) ── */}
+      <MoreSection />
+
+      <WeeklyHoursDialog open={weekOpen} onOpenChange={setWeekOpen} />
+      <OrgStructureDialog open={orgOpen} onOpenChange={setOrgOpen} />
+    </Page>
+  )
+}
+
+// ─── hero: today's attendance ────────────────────────────────────────────────
+function AttendanceHero() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
   const clock = useClock()
   const status = dayStatus(clock)
-  const started = status !== "not-started"
-  const workedMin = workedMinutes(clock)
-  const targetMin = clock.targetHours * 60
-  const remainingMin = remainingMinutes(clock)
-  const fmtHM = (m: number) => hm(m, isAr)
-  const dayProgress = Math.min(100, Math.round((workedMin / targetMin) * 100))
+  const worked = workedMinutes(clock)
+  const remaining = remainingMinutes(clock)
+  const onBreak = !!clock.breakStart
+  const [confirm, setConfirm] = React.useState<null | { action: "in" | "out"; at: string }>(null)
+  const [flash, setFlash] = React.useState<string | null>(null)
 
-  const statusMeta: Record<string, { label: string; ar: string; cls: string; dot: string }> = {
-    present: { label: "Present", ar: "حاضر", cls: "border-emerald-500/35 bg-emerald-500/10 text-emerald-500", dot: "bg-emerald-500" },
-    remote: { label: "Remote", ar: "عن بُعد", cls: "border-violet-500/35 bg-violet-500/10 text-violet-500", dot: "bg-violet-500" },
-    leave: { label: "On leave", ar: "في إجازة", cls: "border-amber-500/35 bg-amber-500/10 text-amber-500", dot: "bg-amber-500" },
-    absent: { label: "Absent", ar: "غائب", cls: "border-rose-500/35 bg-rose-500/10 text-rose-500", dot: "bg-rose-500" },
+  const action: "in" | "out" = status === "working" ? "out" : "in"
+  const early = confirm?.action === "out" && remaining > 0
+  const late = confirm?.action === "in" ? lateBy(confirm.at) : 0
+
+  const commit = () => {
+    if (!confirm) return
+    if (confirm.action === "out") clockOut()
+    else if (status === "done") clockInAgain()
+    else clockIn()
+    setFlash(confirm.action === "out" ? t(`Checked out at ${to12h(confirm.at)}`, `تم تسجيل الخروج ${to12h(confirm.at)}`) : t(`Checked in at ${to12h(confirm.at)}`, `تم تسجيل الدخول ${to12h(confirm.at)}`))
+    setConfirm(null)
+    window.setTimeout(() => setFlash(null), 3000)
   }
-  const st = started
-    ? statusMeta[today.status]
-    : { label: "Not clocked in", ar: "لم يُسجّل الحضور",
-        cls: "border-amber-500/35 bg-amber-500/10 text-amber-500", dot: "bg-amber-500" }
 
-  // `to` is set only where the destination actually exists
-  const quickActions: { id: string; label: string; ar: string; icon: React.ComponentType<{ className?: string }>; to?: string }[] = [
-    { id: "clock", label: status === "working" ? "Clock out" : "Clock in", ar: status === "working" ? "تسجيل انصراف" : "تسجيل حضور", icon: LogOut, to: "/attendance" },
-    { id: "leave", label: "Request leave", ar: "طلب إجازة", icon: Plane, to: "/leave/request" },
-    { id: "expense", label: "Submit expense", ar: "تقديم مصروف", icon: Receipt, to: "/services" },
-    { id: "payslip", label: "View payslip", ar: "عرض القسيمة", icon: Wallet, to: "/payslip" },
-    { id: "letter", label: "Request letter", ar: "طلب خطاب", icon: FileText, to: "/services" },
-    { id: "card", label: "Business card", ar: "بطاقة العمل", icon: IdCard, to: "/employee/card" },
-    { id: "profile", label: "Update profile", ar: "تحديث الملف", icon: UserCircle2 },
-  ]
-
-  const identity = [
-    { icon: IdCard, label: t("Employee ID", "الرقم الوظيفي"), value: emp.empId },
-    { icon: Building2, label: t("Department / Sector", "الإدارة / القطاع"), value: `${isAr ? emp.departmentAr : emp.department} · ${isAr ? emp.sectorAr : emp.sector}` },
-    { icon: Users, label: t("Direct manager", "المدير المباشر"), value: isAr ? emp.managerAr : emp.manager },
-    { icon: MapPin, label: t("Work location", "موقع العمل"), value: `${isAr ? emp.locationAr : emp.location} · ${isAr ? emp.workModeAr : emp.workMode}` },
+  const rows = [
+    { label: t("Check-in", "حضور"), value: to12h(clock.checkIn) },
+    { label: t("Check-out", "إنصراف"), value: clock.checkOut ? to12h(clock.checkOut) : "—" },
+    { label: t("Hours remaining", "الساعات المتبقية"), value: status === "not-started" ? "—" : `${Math.floor(remaining / 60)}h : ${String(remaining % 60).padStart(2, "0")}m` },
   ]
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-7 md:px-8">
-      {/* heading */}
-      <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold tracking-tight md:text-[26px]">{t("Employee Center", "مركز الموظف")}</h1>
-        <p className="max-w-3xl text-[13px] text-muted-foreground">{t("Your profile, attendance, leave, pay and requests — all in one place.", "ملفك، حضورك، إجازاتك، راتبك وطلباتك — في مكان واحد.")}</p>
+    <section className="highlight-card hl-green rounded-2xl px-5 py-6 sm:py-10 sm:ps-6 sm:pe-14">
+      <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+        {/* start: date + actions */}
+        <div className="flex min-w-0 flex-col gap-6 md:w-[390px] md:justify-between md:self-stretch">
+          <div className="space-y-2">
+            <h2 className="text-[24px] font-normal leading-[38px] tracking-[-0.01em] sm:text-[27px]">
+              {isAr ? `${TODAY.weekdayAr} -- ${TODAY.dateAr}` : `${TODAY.weekday} — ${TODAY.date}`}
+            </h2>
+            <p className="text-[12.5px] text-foreground/90">{t("Manage your attendance, leave and expenses smoothly", "أدر حضورك و إجازاتك ومصاريفك بسلاسة")}</p>
+          </div>
+
+          {/* geofence strip — drawn on the phone frame only */}
+          <div className="flex items-center justify-between gap-2 rounded-lg bg-success-fill px-3 py-2 text-[12px] md:hidden">
+            <span className="inline-flex items-center gap-1.5 text-success"><MapPin className="size-3.5" />{isAr ? TODAY.geofenceAr : TODAY.geofence}</span>
+            <span className="text-muted-foreground">{t(`Accuracy ${TODAY.accuracyM} m`, `دقة ${TODAY.accuracyM} م`)}</span>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:gap-6">
+            {action === "out" ? (
+              <button type="button" onClick={() => setConfirm({ action: "out", at: nowTime() })}
+                className="inline-flex h-[34px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--error)] text-[13px] font-bold text-white transition-[filter] hover:brightness-110">
+                <LogOut className="size-4 md:hidden" />{t("Check out", "تسجيل خروج")}
+              </button>
+            ) : (
+              <GoldButton className="h-[34px] flex-1 text-[13px] font-bold" onClick={() => setConfirm({ action: "in", at: nowTime() })}>
+                <LogIn className="size-4" />{status === "done" ? t("Check in again", "تسجيل دخول مرة أخرى") : t("Check in", "تسجيل دخول")}
+              </GoldButton>
+            )}
+            {status === "working" && (
+              <OutlineButton className={cn("h-[34px] flex-1 text-[13px] font-bold", onBreak && "border-warning/60 text-warning")} onClick={toggleBreak} aria-pressed={onBreak}>
+                <Coffee className="size-4 md:hidden" />{onBreak ? t("End break", "إنهاء الإستراحة") : t("Break", "إستراحة")}
+              </OutlineButton>
+            )}
+          </div>
+
+          {flash && <p className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-success"><Check className="size-3.5" />{flash}</p>}
+
+          {confirm && (
+            <div className={cn("rounded-xl p-3.5 ring-1", early || late > 0 ? "bg-warning-fill ring-warning/30" : "bg-background/70 ring-border")}>
+              <p className="text-[13px] font-semibold">
+                {confirm.action === "out" ? t(`Check out at ${to12h(confirm.at)}?`, `تسجيل الخروج الساعة ${to12h(confirm.at)}؟`) : t(`Check in at ${to12h(confirm.at)}?`, `تسجيل الدخول الساعة ${to12h(confirm.at)}؟`)}
+              </p>
+              {early && (
+                <p className="mt-1.5 flex items-start gap-1.5 text-[12px] text-warning">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+                  {t(`That is ${hmShort(remaining, false)} short of your ${clock.targetHours}-hour day — your manager sees the shortfall.`, `هذا أقل بـ ${hmShort(remaining, true)} من يوم العمل (${clock.targetHours} ساعات) — سيظهر النقص لمديرك.`)}
+                </p>
+              )}
+              {late > 0 && (
+                <p className="mt-1.5 flex items-start gap-1.5 text-[12px] text-warning">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+                  {t("After the 8:00 AM start — the day is recorded as late.", "بعد بداية الدوام 8:00 AM — سيُسجَّل اليوم كتأخير.")}
+                </p>
+              )}
+              <div className="mt-3 flex justify-end gap-2">
+                <OutlineButton size="sm" onClick={() => setConfirm(null)}>{t("Cancel", "إلغاء")}</OutlineButton>
+                <GoldButton size="sm" onClick={commit}><Check className="size-3.5" />{t("Confirm", "تأكيد")}</GoldButton>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* end: ring + times */}
+        <div className="flex items-center gap-8 self-center md:self-auto">
+          <dl className="w-[150px] space-y-2.5 text-[12px]">
+            {rows.map((r) => (
+              <div key={r.label} className="flex items-center justify-between gap-3">
+                <dt className="text-foreground/90">{r.label}</dt>
+                <dd className="font-medium tabular-nums" dir="ltr">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <Ring value={worked / (clock.targetHours * 60)} size={140} stroke={14}>
+            <span>
+              <span className="block text-[10.5px] text-foreground/80">{onBreak ? t("On break", "في إستراحة") : t("Your attendance", "سجل حضورك")}</span>
+              <span className="mt-1 block text-[18px] font-bold">{hmShort(worked, isAr)}</span>
+            </span>
+          </Ring>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── my balance ──────────────────────────────────────────────────────────────
+function BalanceCard() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
+  const types = useLiveLeaveTypes()
+  const annual = types.find((x) => x.id === "annual")!
+  const holiday = HOLIDAYS[0]
+  const left = (x: LeaveType) => x.entitled - x.used
+
+  return (
+    <SectionCard icon={Umbrella} title={t("My balance", "رصيدي")}
+      action={<GoldButton size="sm" onClick={() => navigate("/leave/request")}><Plus className="size-4" />{t("Request leave", "طلب إجازة")}</GoldButton>}>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <Tile className="flex items-start gap-3">
+          <IconBadge icon={Umbrella} tone="violet" />
+          <div className="min-w-0">
+            <div className="text-[12.5px] text-muted-foreground">{t("Your leave balance", "رصيد إجازتك")}</div>
+            <div className="mt-1 text-[14.5px]"><b className="text-[17px] font-semibold">{left(annual)}</b> {t("days", "يوم")}</div>
+            <div className="mt-2 text-[12px] text-muted-foreground">{annual.used}/{annual.entitled} {t("used", "مستخدم")}</div>
+          </div>
+        </Tile>
+        <Tile className="flex items-start gap-3">
+          <IconBadge icon={Umbrella} tone="violet" />
+          <div className="min-w-0">
+            <div className="text-[12.5px] text-muted-foreground">{t("Upcoming holiday", "إجازة قادمة")}</div>
+            <div className="mt-1 text-[17px] font-semibold">{isAr ? holiday.nameAr : holiday.name}</div>
+            <div className="mt-2 text-[12px] text-muted-foreground">{isAr ? holiday.startAr : holiday.start} · {holiday.days} {t("days", "أيام")}</div>
+          </div>
+        </Tile>
       </div>
 
-      {/* ── 1–7 · identity band ── */}
-      <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="highlight-card hl-teal relative overflow-hidden rounded-3xl">
-        <div className="relative z-10 flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-          <div className="flex items-center gap-4 md:gap-5">
-            <Avatar className="size-16 ring-2 ring-white/20 md:size-20">
-              <AvatarFallback className="bg-[#CE7B5B] text-[20px] font-bold text-white md:text-[24px]">{emp.initials}</AvatarFallback>
-            </Avatar>
+      <div className="mb-3 mt-4 text-[12.5px] text-muted-foreground">{t("Requests under review", "طلبات قيد المراجعة")}</div>
+      <PendingLeaveList limit={2} />
+
+      <Separator className="mt-6 h-0.5" />
+      <div className="mt-4 text-[12.5px] text-muted-foreground">{t("Leave distribution", "توزيع الإجازات")}</div>
+      <div className="mt-1"><LeaveDistribution /></div>
+    </SectionCard>
+  )
+}
+
+// ─── org structure ───────────────────────────────────────────────────────────
+function OrgCard({ onOpen }: { onOpen: () => void }) {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  const me = personById(ME_ID)!
+  const mgr = me.managerId ? personById(me.managerId) : undefined
+  const reports = childrenOf(ME_ID)
+  const ini = (p: { nameAr: string; initials: string }) => (isAr ? initialsOf(p.nameAr) : p.initials)
+
+  return (
+    <SectionCard icon={Building2} title={t("Org structure", "الهيكل التنظيمي")} className="flex flex-col sm:px-4" bodyClassName="flex flex-1 flex-col">
+      <div className="relative space-y-3">
+        <span aria-hidden className="absolute inset-y-6 left-1/2 w-0.5 -translate-x-1/2 bg-secondary" />
+        {mgr && (
+          <div className="relative flex items-center gap-3 rounded-xl bg-background px-5 py-4">
+            <Initials text={ini(mgr)} tone="violet" className="size-10" />
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-[22px] font-bold tracking-tight md:text-[26px]" style={{ color: "#F3F0EE" }}>{isAr ? emp.nameAr : emp.name}</h2>
-                <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", st.cls)}>
-                  <span className={cn("size-1.5 rounded-full", st.dot)} />{isAr ? st.ar : st.label}
-                </span>
-              </div>
-              <p className="mt-1 text-[14px] font-medium" style={{ color: "rgba(243,240,238,0.78)" }}>{isAr ? emp.titleAr : emp.title}</p>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]" style={{ color: "rgba(243,240,238,0.55)" }}>
-                <span className="inline-flex items-center gap-1"><BadgeCheck className="size-3.5" />{emp.empId}</span>
-                <span className="inline-flex items-center gap-1"><Building2 className="size-3.5" />{isAr ? emp.departmentAr : emp.department}</span>
-                <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" />{isAr ? emp.locationAr : emp.location}</span>
-                <span>{isAr ? emp.gradeAr : emp.grade}</span>
-              </div>
+              <div className="text-[12px] text-muted-foreground">{t("Manager", "المدير")}</div>
+              <div className="truncate text-[15px] font-semibold">{isAr ? mgr.nameAr : mgr.name}</div>
             </div>
           </div>
-
-          {/* identity detail grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 md:min-w-[380px]">
-            {identity.map((it) => (
-              <div key={it.label} className="min-w-0">
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: "rgba(243,240,238,0.45)" }}><it.icon className="size-3" />{it.label}</div>
-                <div className="mt-0.5 truncate text-[12.5px] font-semibold" style={{ color: "#F3F0EE" }}>{it.value}</div>
-              </div>
-            ))}
+        )}
+        <div className="relative flex items-center gap-3 rounded-xl px-5 py-6 [background-color:color-mix(in_oklab,var(--primary)_22%,var(--background))]">
+          <Initials text={ini(me)} tone="accent" className="size-[46px]" />
+          <div className="min-w-0">
+            <div className="truncate text-[15px] font-semibold">{isAr ? me.nameAr : me.name}</div>
+            <div className="truncate text-[12px] text-muted-foreground">{isAr ? me.titleAr : me.title}</div>
           </div>
         </div>
-      </motion.section>
-
-      {/* ── 7–9 · today at work  +  16 · quick actions ── */}
-      <div className="grid items-stretch gap-6 lg:grid-cols-12">
-        <Card className="ring-1 ring-foreground/10 lg:col-span-8">
-          <CardHead icon={CalendarCheck} title={t("Today at work", "اليوم في العمل")} desc={`${isAr ? today.dayNameAr : today.dayName} · ${isAr ? today.dateLabelAr : today.dateLabel}`}
-            action={<span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold", st.cls)}><span className={cn("size-1.5 rounded-full", st.dot)} />{isAr ? st.ar : st.label}</span>} />
-          <div className="grid gap-4 p-5 sm:grid-cols-4">
-            <TodayTile icon={CheckCircle2} label={t("Status", "الحالة")} value={isAr ? st.ar : st.label} sub={`${isAr ? clock.locationAr : clock.location}`} tone={started ? "emerald" : "amber"} />
-            <TodayTile icon={Clock} label={t("Check-in", "الحضور")} value={clock.checkIn ?? "—"} sub={started ? t("On time", "في الوقت") : t("Not yet", "لم يتم بعد")} tone={started ? "primary" : "muted"} />
-            <TodayTile icon={LogOut} label={t("Check-out", "الانصراف")} value={clock.checkOut ?? "—"} sub={clock.checkOut ? "" : started ? t("Still working", "ما زلت أعمل") : ""} tone="muted" />
-            <TodayTile icon={CalendarClock} label={t("Remaining", "المتبقي")} value={fmtHM(remainingMin)} sub={`${t("of", "من")} ${hoursWord(clock.targetHours, isAr)}`} tone="amber" />
+        <div className="relative flex items-center justify-between gap-3 rounded-xl bg-background px-5 py-3.5">
+          <div className="min-w-0">
+            <div className="text-[12px] text-muted-foreground">{t("Your direct reports", "تقاريرك المباشرة")}</div>
+            <div className="text-[14px]"><b className="font-semibold">{reports.length}</b> {t(reports.length === 1 ? "employee" : "employees", reports.length >= 3 && reports.length <= 10 ? "موظفين" : "موظف")}</div>
           </div>
-          <div className="px-5 pb-5">
-            <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground/70">
-              <span>{t("Today's progress", "تقدّم اليوم")}</span>
-              <span className="tabular-nums">{fmtHM(workedMin)} / {hoursWord(clock.targetHours, isAr)} · {isAr ? arNum(dayProgress) : dayProgress}%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted/50"><motion.div initial={{ width: 0 }} animate={{ width: `${dayProgress}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary" /></div>
-            <div className="mt-4">
-              <ClockAction />
-            </div>
-          </div>
-        </Card>
-
-        {/* quick actions */}
-        <Card className="ring-1 ring-foreground/10 lg:col-span-4">
-          <CardHead icon={Sparkles} title={t("Quick actions", "إجراءات سريعة")} />
-          <div className="grid grid-cols-2 gap-2.5 p-4">
-            {quickActions.map((a) => (
-              <button key={a.id} type="button" onClick={() => a.to && navigate(a.to)}
-                className="group flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-muted/15 p-3 text-start ring-1 ring-foreground/5 transition-all hover:border-primary/30 hover:bg-primary/[0.04]">
-                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><a.icon className="size-4" /></span>
-                <span className="text-[12px] font-semibold leading-tight">{isAr ? a.ar : a.label}</span>
-              </button>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* ── main grid ── */}
-      <div className="grid items-start gap-6 lg:grid-cols-12">
-        {/* left column */}
-        <div className="space-y-6 lg:col-span-8">
-          {/* 18 · attendance summary */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={CalendarDays} title={t("Attendance summary", "ملخّص الحضور")} desc={isAr ? attendanceSummary.monthLabelAr : attendanceSummary.monthLabel}
-              action={<Badge variant="outline" className="gap-1 border-emerald-500/35 bg-emerald-500/10 text-[11px] text-emerald-500"><TrendingUp className="size-3" />{attendanceSummary.onTimePct}% {t("on-time", "في الوقت")}</Badge>} />
-            <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-5">
-              <SummaryStat value={attendanceSummary.presentDays} label={t("Present", "حضور")} tone="emerald" />
-              <SummaryStat value={attendanceSummary.remoteDays} label={t("Remote", "عن بُعد")} tone="violet" />
-              <SummaryStat value={attendanceSummary.leaveDays} label={t("Leave", "إجازة")} tone="amber" />
-              <SummaryStat value={attendanceSummary.lateDays} label={t("Late", "تأخير")} tone="rose" />
-              <SummaryStat value={`${attendanceSummary.avgHours}h`} label={t("Avg / day", "متوسط/يوم")} tone="primary" />
-            </div>
-            <div className="grid gap-2.5 border-t border-border/50 px-5 py-4 sm:grid-cols-5">
-              {attendanceSummary.week.map((d) => (
-                <div key={d.day} className={cn("flex flex-col gap-1.5 rounded-xl border p-2.5",
-                  d.status === "complete" && "border-emerald-500/25 bg-emerald-500/[0.05]",
-                  d.status === "current" && "border-primary/40 bg-primary/[0.06] ring-1 ring-primary/15",
-                  d.status === "leave" && "border-amber-500/25 bg-amber-500/[0.05]",
-                  d.status === "upcoming" && "border-border/60")}>
-                  <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                    {isAr ? d.dayAr : d.day}
-                    {d.status === "complete" && <CheckCircle2 className="size-3 text-emerald-500" />}
-                    {d.status === "current" && <span className="size-1.5 rounded-full bg-primary" />}
-                    {d.status === "leave" && <Plane className="size-3 text-amber-500" />}
-                  </div>
-                  <div className="text-[16px] font-bold tabular-nums leading-none">{d.hours != null ? d.hours.toFixed(1) : "—"}<span className="ms-0.5 text-[9px] font-medium text-muted-foreground/55">{d.hours != null ? "h" : ""}</span></div>
-                  <div className="text-[9.5px] tabular-nums text-muted-foreground/60">{d.clockIn ? `${d.clockIn}–${d.clockOut ?? "…"}` : t("—", "—")}</div>
-                </div>
+          {reports.length > 0 ? (
+            <div className="flex -space-x-1.5 rtl:space-x-reverse">
+              {reports.slice(0, 3).map((r) => (
+                <span key={r.id} className="grid size-6 place-items-center rounded-full bg-secondary text-[9px] font-medium ring-2 ring-background" dir="ltr">{r.initials}</span>
               ))}
+              {reports.length > 3 && <span className="grid size-6 place-items-center rounded-full bg-soft-accent text-[9px] text-primary ring-2 ring-background">+{reports.length - 3}</span>}
             </div>
-            <div className="flex items-center justify-between border-t border-border/50 px-5 py-3.5 text-[11px] text-muted-foreground/70">
-              <span>{t("Worked this month", "ساعات هذا الشهر")}</span>
-              <span className="tabular-nums"><span className="text-[15px] font-bold text-foreground">{attendanceSummary.workedHours}h</span> / {attendanceSummary.expectedHours}h</span>
-            </div>
-          </Card>
-
-          {/* 10–11 · leave balance + upcoming */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={Plane} title={t("Leave balance", "رصيد الإجازات")} desc={t("Entitlement and upcoming time off", "الاستحقاق والإجازات القادمة")}
-              action={<Button size="sm" variant="outline" className="gap-1.5"><Plus className="size-3.5" />{t("Request", "طلب")}</Button>} />
-            <div className="grid gap-4 p-5 md:grid-cols-[220px_1fr]">
-              {/* balance donut-ish */}
-              <div className="flex items-center gap-4 rounded-2xl border border-border/60 bg-muted/15 p-4">
-                <div className="relative grid size-20 shrink-0 place-items-center">
-                  <svg viewBox="0 0 36 36" className="size-20 -rotate-90">
-                    <circle cx="18" cy="18" r="15.5" fill="none" className="stroke-muted" strokeWidth="4" />
-                    <motion.circle cx="18" cy="18" r="15.5" fill="none" className="stroke-primary" strokeWidth="4" strokeLinecap="round" strokeDasharray={2 * Math.PI * 15.5} initial={{ strokeDashoffset: 2 * Math.PI * 15.5 }} animate={{ strokeDashoffset: 2 * Math.PI * 15.5 * (1 - leave.balanceDays / leave.totalDays) }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} />
-                  </svg>
-                  <div className="absolute text-center"><div className="text-[18px] font-bold tabular-nums leading-none">{leave.balanceDays}</div><div className="text-[8px] uppercase tracking-wider text-muted-foreground/60">{t("days", "يوم")}</div></div>
-                </div>
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("Available", "متاح")}</div>
-                  <div className="text-[13px] font-semibold">{leave.balanceDays} {t("of", "من")} {leave.totalDays} {t("days", "يوم")}</div>
-                  <div className="mt-0.5 text-[11px] text-muted-foreground/65">{leave.usedDays} {t("used this year", "مستخدمة هذا العام")}</div>
-                </div>
-              </div>
-              {/* breakdown */}
-              <div className="space-y-2.5">
-                {leave.breakdown.map((b) => {
-                  const remaining = b.total - b.used
-                  return (
-                    <div key={b.id} className="space-y-1">
-                      <div className="flex items-baseline justify-between text-[11.5px]"><span className="font-medium">{isAr ? b.labelAr : b.label}</span><span className="tabular-nums text-muted-foreground/65"><span className="font-semibold text-foreground">{remaining}</span> / {b.total} {t("days", "يوم")}</span></div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-muted/40"><motion.div initial={{ width: 0 }} animate={{ width: `${(b.used / b.total) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} className={cn("h-full rounded-full", b.color === "primary" && "bg-primary", b.color === "amber" && "bg-amber-400", b.color === "emerald" && "bg-emerald-400")} /></div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-            {/* upcoming leave */}
-            <div className="border-t border-border/50 px-5 py-4">
-              <div className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/65">{t("Upcoming leave", "الإجازات القادمة")}</div>
-              {leave.upcoming.map((u) => (
-                <div key={u.id} className="flex items-center justify-between gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.05] px-3 py-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-500"><Plane className="size-4" /></span>
-                    <div><div className="text-[12.5px] font-semibold">{isAr ? u.rangeAr : u.range}</div><div className="text-[11px] text-muted-foreground/70">{isAr ? u.typeAr : u.type} · {u.days} {t("days", "أيام")}</div></div>
-                  </div>
-                  <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-[10px] text-emerald-500"><Check className="me-1 size-3" />{isAr ? u.statusAr : u.status}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* 12 · my pending requests */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={ClipboardList} title={t("My pending requests", "طلباتي المعلّقة")} desc={t("Submissions awaiting action", "طلبات بانتظار الإجراء")}
-              action={<Badge variant="secondary">{myRequests.length}</Badge>} />
-            <div className="divide-y divide-border/60">
-              {myRequests.map((r) => {
-                const Icon = REQ_ICONS[r.kind] ?? FileText
-                return (
-                  <div key={r.id} className="flex items-center gap-3 px-5 py-3.5">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Icon className="size-4" /></span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[13px] font-semibold">{isAr ? r.titleAr : r.title}</div>
-                      <div className="mt-0.5 text-[11.5px] text-muted-foreground/70">{isAr ? r.detailAr : r.detail} · {isAr ? r.submittedAr : r.submitted}</div>
-                    </div>
-                    <Badge variant="outline" className="shrink-0 border-amber-400/40 bg-amber-400/10 text-[10px] text-amber-500">{isAr ? r.statusAr : r.status}</Badge>
-                  </div>
-                )
-              })}
-            </div>
-          </Card>
-        </div>
-
-        {/* right column */}
-        <div className="space-y-6 lg:col-span-4">
-          {/* my family */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead
-              icon={Users} title={t("My family", "عائلتي")}
-              desc={t("Dependants on your HR record", "المعالون في ملفك")}
-              action={
-                <Button variant="outline" size="sm" onClick={() => navigate("/employee/dependants/new")}>
-                  <Plus className="size-3.5" />{t("Add", "إضافة")}
-                </Button>
-              }
-            />
-            <div className="p-4">
-              <div className="space-y-2">
-                {dependants.map((d) => (
-                  <button
-                    key={d.id}
-                    onClick={() => navigate(`/employee/dependants/${d.id}`)}
-                    className="flex w-full items-center gap-2.5 rounded-xl border border-border/60 px-3 py-2 text-start transition-colors hover:border-primary/30 hover:bg-muted/30"
-                  >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[11px] font-bold text-primary">
-                      {d.initials}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[12.5px] font-medium">{isAr ? d.nameAr : d.name}</span>
-                      <span className="block truncate text-[11px] text-muted-foreground">
-                        {isAr ? RELATION[d.relation].ar : RELATION[d.relation].en} · {ageOf(d)}
-                      </span>
-                    </span>
-                    {d.status !== "verified" && (
-                      <Badge variant="outline" className={cn("shrink-0 text-[9.5px]", STATUS[d.status].chip)}>
-                        {isAr ? STATUS[d.status].ar : STATUS[d.status].en}
-                      </Badge>
-                    )}
-                  </button>
-                ))}
-                {dependants.length === 0 && (
-                  <p className="py-6 text-center text-[12.5px] text-muted-foreground">
-                    {t("No dependants registered yet.", "لا يوجد معالون مسجّلون بعد.")}
-                  </p>
-                )}
-              </div>
-              <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => navigate("/employee/dependants")}>
-                {t("Manage family", "إدارة العائلة")}
-              </Button>
-            </div>
-          </Card>
-
-          {/* 19 · digital business card */}
-          <Card className="overflow-hidden ring-1 ring-foreground/10">
-            <CardHead icon={IdCard} title={t("Digital business card", "بطاقة العمل الرقمية")} desc={t("Show it to identify yourself, or share it", "اعرضها للتعريف بنفسك أو شاركها")}
-              action={<Badge variant="outline" className="gap-1 text-[11px]"><QrCode className="size-3" />{businessCard.extension}</Badge>} />
-            <div className="p-4">
-              <button type="button" onClick={() => navigate("/employee/card")} className="block w-full text-start transition-transform hover:-translate-y-0.5">
-                <DigitalCard isAr={isAr} />
-              </button>
-              <div className="mt-3 grid grid-cols-2 gap-2.5">
-                <Button variant="outline" size="sm" onClick={() => navigate("/employee/card")}><IdCard className="size-4" />{t("Show card", "عرض البطاقة")}</Button>
-                <Button size="sm" onClick={() => navigate("/employee/card")}><Share2 className="size-4" />{t("Share", "مشاركة")}</Button>
-              </div>
-            </div>
-          </Card>
-
-          {/* 14 · latest payslip */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={Wallet} title={t("Latest payslip", "آخر قسيمة راتب")} desc={isAr ? payslip.monthAr : payslip.month}
-              action={<Badge variant="outline" className="border-emerald-500/35 bg-emerald-500/10 text-[10px] text-emerald-500">{isAr ? payslip.statusAr : payslip.status}</Badge>} />
-            <div className="p-5">
-              <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("Net pay", "صافي الراتب")}</div>
-                <div className="mt-1 metal-text text-[26px] font-bold tabular-nums leading-none">{money(payslip.net, isAr ? payslip.currencyAr : payslip.currency, isAr)}</div>
-                <div className="mt-1 text-[11px] text-muted-foreground/65">{t("Paid", "دُفع")} {isAr ? payslip.payDateAr : payslip.payDate}</div>
-              </div>
-              <div className="mt-3 space-y-2">
-                {payslip.lines.map((l) => (
-                  <div key={l.label} className="flex items-center justify-between text-[12px]">
-                    <span className="text-muted-foreground/80">{isAr ? l.labelAr : l.label}</span>
-                    <span className={cn("font-semibold tabular-nums", l.kind === "deduction" ? "text-rose-500" : "text-foreground")}>{l.amount < 0 ? "−" : ""}{money(Math.abs(l.amount), isAr ? payslip.currencyAr : payslip.currency, isAr)}</span>
-                  </div>
-                ))}
-              </div>
-              <Button variant="outline" size="sm" className="mt-4 w-full gap-1.5" onClick={() => navigate("/payslip")}><FileText className="size-3.5" />{t("View full payslip", "عرض القسيمة كاملة")}<ArrowRight className={cn("size-3.5", isAr && "rotate-180")} /></Button>
-            </div>
-          </Card>
-
-          {/* 15 · benefits / allowances */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={Gift} title={t("Benefits & allowances", "المزايا والبدلات")} desc={`${money(allowances.monthlyTotal, isAr ? allowances.currencyAr : allowances.currency, isAr)} / ${t("mo", "شهر")}`} />
-            <div className="grid grid-cols-2 gap-2.5 p-4">
-              {allowances.items.map((a) => {
-                const Icon = ALLOW_ICONS[a.icon] ?? Banknote
-                return (
-                  <div key={a.id} className="rounded-xl border border-border/60 bg-muted/15 p-3">
-                    <div className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/60"><Icon className="size-3.5 text-primary" />{isAr ? a.labelAr : a.label}</div>
-                    <div className="mt-1 text-[14px] font-bold tabular-nums">{money(a.amount, isAr ? allowances.currencyAr : allowances.currency, isAr)}</div>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="space-y-1.5 border-t border-border/50 px-4 py-3.5">
-              {allowances.benefits.map((b) => {
-                const Icon = BENEFIT_ICONS[b.icon] ?? Heart
-                return <div key={b.id} className="flex items-center gap-2 text-[11.5px] text-muted-foreground/80"><Icon className="size-3.5 shrink-0 text-primary/70" />{isAr ? b.labelAr : b.label}</div>
-              })}
-            </div>
-          </Card>
-
-          {/* 17 · HR notifications */}
-          <Card className="ring-1 ring-foreground/10">
-            <CardHead icon={Bell} title={t("HR notifications", "إشعارات الموارد البشرية")}
-              action={<Badge variant="secondary">{hrNotifications.length}</Badge>} />
-            <div className="divide-y divide-border/60">
-              {hrNotifications.map((n) => {
-                const Icon = NOTIF_ICONS[n.icon] ?? Bell
-                const tone = n.kind === "success" ? "text-emerald-500 bg-emerald-500/12" : n.kind === "action" ? "text-primary bg-primary/12" : n.kind === "alert" ? "text-rose-500 bg-rose-500/12" : "text-sky-500 bg-sky-500/12"
-                return (
-                  <div key={n.id} className="flex gap-3 px-5 py-3.5">
-                    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", tone)}><Icon className="size-4" /></span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2"><div className="text-[12.5px] font-semibold leading-snug">{isAr ? n.titleAr : n.title}</div><span className="shrink-0 text-[10px] text-muted-foreground/55">{isAr ? n.timeAr : n.time}</span></div>
-                      <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground/70">{isAr ? n.bodyAr : n.body}</div>
-                      {n.cta && <button className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">{isAr ? n.ctaAr : n.cta}<ArrowRight className={cn("size-3", isAr && "rotate-180")} /></button>}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </Card>
+          ) : <span className="text-[12px] text-muted-foreground">{t("None", "لا يوجد")}</span>}
         </div>
       </div>
 
-      {/* ── 13 · pending approvals (manager) ── */}
-      {emp.isManager && (
-        <Card className="ring-1 ring-foreground/10">
-          <CardHead icon={BadgeCheck} title={t("Pending approvals", "الموافقات المعلّقة")} desc={t("Requests from your team awaiting your decision", "طلبات من فريقك بانتظار قرارك")}
-            action={<Badge className="bg-primary/15 text-primary">{approvals.length} {t("to review", "للمراجعة")}</Badge>} />
-          <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-            {approvals.map((a) => {
-              const Icon = APPROVAL_ICONS[a.kind] ?? FileText
-              return (
-                <div key={a.id} className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/15 p-4 ring-1 ring-foreground/5">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar className="size-9"><AvatarFallback className="bg-primary/12 text-[11px] font-bold text-primary">{a.initials}</AvatarFallback></Avatar>
-                    <div className="min-w-0 flex-1"><div className="truncate text-[12.5px] font-semibold">{isAr ? a.whoAr : a.who}</div><div className="text-[10.5px] text-muted-foreground/65">{isAr ? a.submittedAr : a.submitted}</div></div>
-                    <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="size-3.5" /></span>
-                  </div>
-                  <div className="rounded-xl border border-border/50 bg-card px-3 py-2">
-                    <div className="text-[12px] font-semibold">{isAr ? a.titleAr : a.title}</div>
-                    <div className="mt-0.5 text-[11px] text-muted-foreground/70">{isAr ? a.detailAr : a.detail}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" className="flex-1 gap-1.5"><Check className="size-3.5" />{t("Approve", "موافقة")}</Button>
-                    <Button size="sm" variant="outline" className="flex-1 gap-1.5 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500"><X className="size-3.5" />{t("Decline", "رفض")}</Button>
-                  </div>
-                </div>
-              )
-            })}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 text-[12.5px] text-muted-foreground">
+        <span className="inline-flex min-w-0 items-center gap-1.5"><Mail className="size-4 shrink-0 text-primary" /><span className="truncate" dir="ltr">{emp.email}</span></span>
+        <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-primary" />{isAr ? `${emp.cityAr} · ${emp.workModeAr}` : `${emp.city} · ${emp.workMode}`}</span>
+      </div>
+
+      <button type="button" onClick={onOpen} aria-haspopup="dialog"
+        className="mt-auto inline-flex items-center gap-1.5 self-end pt-6 text-[13.5px] font-medium text-primary hover:underline">
+        {t("View org structure", "عرض الهيكل التنظيمي")}
+        {isAr ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+      </button>
+    </SectionCard>
+  )
+}
+
+// ─── performance ─────────────────────────────────────────────────────────────
+function PerformanceCard() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  return (
+    <SectionCard icon={LineChart} title={t("Performance", "الأداء")} className="flex flex-col" bodyClassName="flex flex-1 flex-col">
+      <div>
+        {performance.goals.map((g) => (
+          <div key={g.id} className="border-b border-secondary py-3.5 first:pt-1">
+            <div className="text-[14.5px]">{isAr ? g.titleAr : g.title}</div>
+            <div className="mt-2 flex items-center gap-4">
+              <Bar className="flex-1" value={g.pct} tone={g.pct >= 75 ? "success" : "warning"} />
+              <span className="w-9 shrink-0 text-end text-[12.5px] text-muted-foreground tabular-nums" dir="ltr">{g.pct}%</span>
+            </div>
           </div>
-        </Card>
+        ))}
+      </div>
+      <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-8">
+        <div className="max-w-[110px] text-[12.5px] text-muted-foreground">{t("Next review", "المراجعة القادمة")} · {isAr ? performance.nextReviewAr : performance.nextReview}</div>
+        <div className="flex items-baseline gap-1.5" dir="ltr">
+          <span className="text-[34px] font-bold leading-none">{performance.rating}</span>
+          <span className="text-[13px] text-muted-foreground">/ {performance.outOf}</span>
+        </div>
+        <Chip tone="success" icon={TrendingUp}>{isAr ? performance.verdictAr : performance.verdict}</Chip>
+      </div>
+    </SectionCard>
+  )
+}
+
+// ─── shift roster ────────────────────────────────────────────────────────────
+function ShiftsCard() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
+  return (
+    <SectionCard icon={CalendarDays} title={t("Shift roster", "جدول المناوبات")} className="sm:px-4"
+      action={<span className="text-[12px] text-muted-foreground">{ROTATIONS.length} {t("rotations", "مناوبات")}</span>}>
+      {ROTATIONS.length === 0 ? (
+        <p className="py-8 text-center text-[13px] text-muted-foreground">{t("No rotations scheduled.", "لا توجد مناوبات مجدولة.")}</p>
+      ) : (
+        <div className="space-y-4">
+          {ROTATIONS.slice(0, 3).map((r) => <RotationCard key={r.id} r={r} />)}
+        </div>
       )}
-    </div>
+      {ROTATIONS.length > 3 && (
+        <button type="button" onClick={() => navigate("/employee/shifts")} className="mx-auto mt-4 flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
+          {t("View all", "عرض جميع المواعيد")}{isAr ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+        </button>
+      )}
+    </SectionCard>
   )
 }
 
-// ─── tiles ───────────────────────────────────────────────────────────────────
-function TodayTile({ icon: Icon, label, value, sub, tone }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; tone: "emerald" | "primary" | "amber" | "muted" }) {
-  const toneCls = tone === "emerald" ? "bg-emerald-500/12 text-emerald-500" : tone === "primary" ? "bg-primary/12 text-primary" : tone === "amber" ? "bg-amber-500/12 text-amber-500" : "bg-muted text-muted-foreground"
-  return (
-    <div className="rounded-2xl border border-border/60 bg-muted/15 p-3.5">
-      <span className={cn("flex size-8 items-center justify-center rounded-lg", toneCls)}><Icon className="size-4" /></span>
-      <div className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/55">{label}</div>
-      <div className="mt-0.5 text-[17px] font-bold tabular-nums leading-tight">{value}</div>
-      {sub && <div className="text-[10.5px] text-muted-foreground/60">{sub}</div>}
-    </div>
-  )
-}
+// ─── the rest of the employee record (requests, family, pay, benefits, HR, approvals) ──
+function MoreSection() {
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
+  const dependants = useDependants()
+  const Arrow = isAr ? ArrowLeft : ArrowRight
 
-function SummaryStat({ value, label, tone }: { value: string | number; label: string; tone: "emerald" | "violet" | "amber" | "rose" | "primary" }) {
-  const toneCls = tone === "emerald" ? "text-emerald-500" : tone === "violet" ? "text-violet-500" : tone === "amber" ? "text-amber-500" : tone === "rose" ? "text-rose-500" : "text-primary"
   return (
-    <div className="rounded-xl border border-border/60 bg-muted/15 p-3 text-center">
-      <div className={cn("text-[22px] font-bold tabular-nums leading-none", toneCls)}>{value}</div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{label}</div>
+    <div className="mt-10 grid items-start gap-6 lg:grid-cols-2 2xl:grid-cols-3">
+      {/* my pending requests */}
+      <SectionCard icon={ClipboardList} title={t("My requests", "طلباتي")} action={<Chip>{myRequests.length}</Chip>}>
+        <div className="divide-y divide-border">
+          {myRequests.map((r) => {
+            const Icon = REQ_ICONS[r.kind] ?? FileText
+            return (
+              <div key={r.id} className="flex items-center gap-3 py-3 first:pt-0">
+                <IconBadge icon={Icon} />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[14px] font-medium">{isAr ? r.titleAr : r.title}</div>
+                  <div className="truncate text-[12px] text-muted-foreground">{isAr ? r.detailAr : r.detail} · {isAr ? r.submittedAr : r.submitted}</div>
+                </div>
+                <Chip tone={r.status === "Pending" ? "neutral" : "warning"}>{isAr ? r.statusAr : r.status}</Chip>
+              </div>
+            )
+          })}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <OutlineButton size="sm" onClick={() => navigate("/services")}><Receipt className="size-3.5" />{t("Submit expense", "تقديم مصروف")}</OutlineButton>
+          <OutlineButton size="sm" onClick={() => navigate("/services")}><FileText className="size-3.5" />{t("Request letter", "طلب خطاب")}</OutlineButton>
+        </div>
+      </SectionCard>
+
+      {/* my family */}
+      <SectionCard icon={Users} title={t("My family", "عائلتي")}
+        action={<OutlineButton size="sm" onClick={() => navigate("/employee/dependants/new")}><Plus className="size-3.5" />{t("Add", "إضافة")}</OutlineButton>}>
+        {dependants.length === 0 ? (
+          <p className="py-6 text-center text-[13px] text-muted-foreground">{t("No dependants registered yet.", "لا يوجد معالون مسجّلون بعد.")}</p>
+        ) : (
+          <div className="space-y-2">
+            {dependants.map((d) => (
+              <button key={d.id} type="button" onClick={() => navigate(`/employee/dependants/${d.id}`)}
+                className="flex w-full items-center gap-3 rounded-[10px] bg-background px-3 py-2.5 text-start transition-colors hover:bg-secondary/40">
+                <Initials text={d.initials} tone="accent" className="size-9 text-[11px]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[14px]">{isAr ? d.nameAr : d.name}</span>
+                  <span className="block truncate text-[12px] text-muted-foreground">{isAr ? RELATION[d.relation].ar : RELATION[d.relation].en} · {ageOf(d)}</span>
+                </span>
+                {d.status !== "verified" && <Chip tone={d.status === "pending" ? "warning" : "error"}>{isAr ? STATUS[d.status].ar : STATUS[d.status].en}</Chip>}
+              </button>
+            ))}
+          </div>
+        )}
+        <OutlineButton size="sm" className="mt-4 w-full" onClick={() => navigate("/employee/dependants")}>{t("Manage family", "إدارة العائلة")}</OutlineButton>
+      </SectionCard>
+
+      {/* latest payslip */}
+      <SectionCard icon={Wallet} title={t("Latest payslip", "آخر قسيمة راتب")} action={<Chip tone="success">{isAr ? payslip.statusAr : payslip.status}</Chip>}>
+        <Tile>
+          <div className="text-[12px] text-muted-foreground">{t("Net pay", "صافي الراتب")} · {isAr ? payslip.monthAr : payslip.month}</div>
+          <div className="mt-1 text-[26px] font-semibold tabular-nums text-primary">{money(payslip.net, isAr)}</div>
+          <div className="mt-1 text-[12px] text-muted-foreground">{t("Paid", "دُفع")} {isAr ? payslip.payDateAr : payslip.payDate}</div>
+        </Tile>
+        <div className="mt-3 space-y-2">
+          {payslip.lines.map((l) => (
+            <div key={l.label} className="flex items-center justify-between text-[13px]">
+              <span className="text-muted-foreground">{isAr ? l.labelAr : l.label}</span>
+              <span className={cn("font-medium tabular-nums", l.kind === "deduction" && "text-error")}>{l.amount < 0 ? "−" : ""}{money(Math.abs(l.amount), isAr)}</span>
+            </div>
+          ))}
+        </div>
+        <OutlineButton size="sm" className="mt-4 w-full" onClick={() => navigate("/payslip")}><FileText className="size-3.5" />{t("View full payslip", "عرض القسيمة كاملة")}<Arrow className="size-3.5" /></OutlineButton>
+      </SectionCard>
+
+      {/* benefits & allowances */}
+      <SectionCard icon={Gift} title={t("Benefits & allowances", "المزايا والبدلات")}
+        action={<span className="text-[12px] text-muted-foreground">{money(allowances.monthlyTotal, isAr)} / {t("mo", "شهر")}</span>}>
+        <div className="grid grid-cols-2 gap-3">
+          {allowances.items.map((a) => {
+            const Icon = ALLOW_ICONS[a.icon] ?? Banknote
+            return (
+              <Tile key={a.id} className="p-3">
+                <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground"><Icon className="size-3.5 text-primary" />{isAr ? a.labelAr : a.label}</div>
+                <div className="mt-1 text-[15px] font-semibold tabular-nums">{money(a.amount, isAr)}</div>
+              </Tile>
+            )
+          })}
+        </div>
+        <div className="mt-4 space-y-1.5">
+          {allowances.benefits.map((b) => {
+            const Icon = BENEFIT_ICONS[b.icon] ?? Heart
+            return <div key={b.id} className="flex items-center gap-2 text-[12.5px] text-muted-foreground"><Icon className="size-3.5 shrink-0 text-primary" />{isAr ? b.labelAr : b.label}</div>
+          })}
+        </div>
+        <OutlineButton size="sm" className="mt-4 w-full" onClick={() => navigate("/benefits")}>{t("All benefits", "جميع المزايا")}<Arrow className="size-3.5" /></OutlineButton>
+      </SectionCard>
+
+      {/* HR notifications */}
+      <SectionCard icon={Bell} title={t("HR notifications", "إشعارات الموارد البشرية")} action={<Chip>{hrNotifications.length}</Chip>}>
+        <div className="divide-y divide-border">
+          {hrNotifications.map((n) => {
+            const Icon = NOTIF_ICONS[n.icon] ?? Bell
+            const tone = n.kind === "success" ? "bg-success-fill text-success" : n.kind === "action" ? "bg-soft-accent text-primary" : n.kind === "alert" ? "bg-error-fill text-error" : "bg-info-fill text-info"
+            return (
+              <div key={n.id} className="flex gap-3 py-3 first:pt-0">
+                <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg", tone)}><Icon className="size-4" /></span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-[13.5px] font-medium leading-snug">{isAr ? n.titleAr : n.title}</div>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">{isAr ? n.timeAr : n.time}</span>
+                  </div>
+                  <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">{isAr ? n.bodyAr : n.body}</div>
+                  {n.cta && <button type="button" className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:underline">{isAr ? n.ctaAr : n.cta}<Arrow className="size-3" /></button>}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </SectionCard>
+
+      {/* pending approvals (manager) */}
+      {emp.isManager && (
+        <SectionCard icon={BadgeCheck} title={t("Pending approvals", "الموافقات المعلّقة")}
+          action={<Chip tone="accent">{approvals.length} {t("to review", "للمراجعة")}</Chip>}>
+          {approvals.length === 0 ? (
+            <p className="py-6 text-center text-[13px] text-muted-foreground">{t("Nothing waiting for you.", "لا شيء بانتظارك.")}</p>
+          ) : (
+            <div className="space-y-3">
+              {approvals.map((a) => {
+                const Icon = APPROVAL_ICONS[a.kind] ?? FileText
+                return (
+                  <Tile key={a.id} className="p-3.5">
+                    <div className="flex items-center gap-3">
+                      <Initials text={a.initials} tone="accent" className="size-9 text-[11px]" />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[13.5px] font-medium">{isAr ? a.whoAr : a.who}</div>
+                        <div className="truncate text-[12px] text-muted-foreground">{isAr ? a.titleAr : a.title} · {isAr ? a.detailAr : a.detail}</div>
+                      </div>
+                      <Icon className="size-4 shrink-0 text-primary" />
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <GoldButton size="sm" className="flex-1"><Check className="size-3.5" />{t("Approve", "موافقة")}</GoldButton>
+                      <OutlineButton size="sm" className="flex-1 text-error"><X className="size-3.5" />{t("Decline", "رفض")}</OutlineButton>
+                    </div>
+                  </Tile>
+                )
+              })}
+            </div>
+          )}
+          <OutlineButton size="sm" className="mt-4 w-full" onClick={() => navigate("/manager")}>{t("Open manager view", "فتح واجهة المدير")}<Arrow className="size-3.5" /></OutlineButton>
+        </SectionCard>
+      )}
     </div>
   )
 }

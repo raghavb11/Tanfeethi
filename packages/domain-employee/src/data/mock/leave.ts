@@ -37,28 +37,35 @@ export type LeaveRequest = {
   status: RequestStatus
   approver: string; approverAr: string
   reason?: string; reasonAr?: string
+  /** Colleague covering while away ("الموظف المناب عنك"). */
+  delegate?: string; delegateAr?: string
+  attachments?: string[]
 }
 
+/** Leave types that must carry a supporting document. */
+export const NEEDS_ATTACHMENT: LeaveTypeId[] = ["sick", "hajj"]
+
 const SEED_REQUESTS: LeaveRequest[] = [
-  { id: "lr1", type: "annual", from: "Sep 14, 2026", fromAr: "١٤ سبتمبر", to: "Sep 18, 2026", toAr: "١٨ سبتمبر", days: 5, submitted: "Aug 2, 2026", submittedAr: "٢ أغسطس", status: "Approved", approver: "Ahmed Mohammed", approverAr: "أحمد محمد", reason: "Family trip", reasonAr: "رحلة عائلية" },
-  { id: "lr2", type: "annual", from: "May 12, 2026", fromAr: "١٢ مايو", to: "May 16, 2026", toAr: "١٦ مايو", days: 5, submitted: "Aug 10, 2026", submittedAr: "١٠ أغسطس", status: "Pending", approver: "Ahmed Mohammed", approverAr: "أحمد محمد", reason: "Personal travel", reasonAr: "سفر شخصي" },
-  { id: "lr3", type: "sick", from: "Jun 3, 2026", fromAr: "٣ يونيو", to: "Jun 3, 2026", toAr: "٣ يونيو", days: 1, submitted: "Jun 3, 2026", submittedAr: "٣ يونيو", status: "Approved", approver: "Ahmed Mohammed", approverAr: "أحمد محمد", reason: "Medical appointment", reasonAr: "موعد طبي" },
-  { id: "lr4", type: "annual", from: "Mar 9, 2026", fromAr: "٩ مارس", to: "Mar 11, 2026", toAr: "١١ مارس", days: 3, submitted: "Feb 20, 2026", submittedAr: "٢٠ فبراير", status: "Approved", approver: "Ahmed Mohammed", approverAr: "أحمد محمد" },
-  { id: "lr5", type: "personal", from: "Jan 22, 2026", fromAr: "٢٢ يناير", to: "Jan 22, 2026", toAr: "٢٢ يناير", days: 1, submitted: "Jan 15, 2026", submittedAr: "١٥ يناير", status: "Rejected", approver: "Ahmed Mohammed", approverAr: "أحمد محمد", reason: "Clashes with audit week", reasonAr: "يتعارض مع أسبوع التدقيق" },
+  { id: "lr1", type: "annual", from: "Sep 14, 2026", fromAr: "14 سبتمبر", to: "Sep 18, 2026", toAr: "18 سبتمبر", days: 5, submitted: "Apr 2, 2026", submittedAr: "2 أبريل", status: "Approved", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي", reason: "Family trip", reasonAr: "رحلة عائلية" },
+  { id: "lr2", type: "annual", from: "May 12, 2026", fromAr: "12 مايو", to: "May 16, 2026", toAr: "16 مايو", days: 5, submitted: "Apr 20, 2026", submittedAr: "20 أبريل", status: "Pending", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي", reason: "Personal travel", reasonAr: "سفر شخصي" },
+  { id: "lr6", type: "personal", from: "Jun 4, 2026", fromAr: "4 يونيو", to: "Jun 4, 2026", toAr: "4 يونيو", days: 1, submitted: "Apr 26, 2026", submittedAr: "26 أبريل", status: "Pending", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي", reason: "Family occasion", reasonAr: "مناسبة عائلية" },
+  { id: "lr3", type: "sick", from: "Apr 7, 2026", fromAr: "7 أبريل", to: "Apr 7, 2026", toAr: "7 أبريل", days: 1, submitted: "Apr 7, 2026", submittedAr: "7 أبريل", status: "Approved", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي", reason: "Medical appointment", reasonAr: "موعد طبي" },
+  { id: "lr4", type: "annual", from: "Mar 9, 2026", fromAr: "9 مارس", to: "Mar 11, 2026", toAr: "11 مارس", days: 3, submitted: "Feb 20, 2026", submittedAr: "20 فبراير", status: "Approved", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي" },
+  { id: "lr5", type: "personal", from: "Jan 22, 2026", fromAr: "22 يناير", to: "Jan 22, 2026", toAr: "22 يناير", days: 1, submitted: "Jan 15, 2026", submittedAr: "15 يناير", status: "Rejected", approver: "Amani Al-Harthi", approverAr: "أماني الحارثي", reason: "Clashes with audit week", reasonAr: "يتعارض مع أسبوع التدقيق" },
 ]
 
 export const HOLIDAYS = [
-  { id: "h1", name: "Eid Al-Adha", nameAr: "عيد الأضحى", date: "Aug 26 – 30, 2026", dateAr: "٢٦ – ٣٠ أغسطس", days: 5 },
-  { id: "h2", name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: "Sep 23, 2026", dateAr: "٢٣ سبتمبر", days: 1 },
-  { id: "h3", name: "Founding Day", nameAr: "يوم التأسيس", date: "Feb 22, 2027", dateAr: "٢٢ فبراير", days: 1 },
+  { id: "h1", name: "Eid Al-Adha", nameAr: "عيد الأضحى", date: "May 26 – 29, 2026", dateAr: "26 – 29 مايو", start: "May 26", startAr: "26 مايو", days: 4 },
+  { id: "h2", name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: "Sep 23, 2026", dateAr: "23 سبتمبر", start: "Sep 23", startAr: "23 سبتمبر", days: 1 },
+  { id: "h3", name: "Founding Day", nameAr: "يوم التأسيس", date: "Feb 22, 2027", dateAr: "22 فبراير", start: "Feb 22", startAr: "22 فبراير", days: 1 },
 ]
 
 /** Colleagues away in the next fortnight — shown as a team-cover check. */
 export const TEAM_AWAY = [
-  { id: "u-sara", name: "Sara Al-Mutairi", nameAr: "سارة المطيري", initials: "SM", range: "Aug 18 – 20", rangeAr: "١٨ – ٢٠ أغسطس", from: "2026-08-18", to: "2026-08-20", type: "annual" as LeaveTypeId },
-  { id: "u-mohammad", name: "Mohammad Iqbal", nameAr: "محمد إقبال", initials: "MI", range: "Aug 24 – 28", rangeAr: "٢٤ – ٢٨ أغسطس", from: "2026-08-24", to: "2026-08-28", type: "annual" as LeaveTypeId },
-  { id: "u-noura", name: "Noura Saleh", nameAr: "نورة صالح", initials: "NS", range: "Aug 25", rangeAr: "٢٥ أغسطس", from: "2026-08-25", to: "2026-08-25", type: "sick" as LeaveTypeId },
-  { id: "u-faisal", name: "Faisal Al-Harbi", nameAr: "فيصل الحربي", initials: "FH", range: "Sep 7 – 11", rangeAr: "٧ – ١١ سبتمبر", from: "2026-09-07", to: "2026-09-11", type: "annual" as LeaveTypeId },
+  { id: "u-lina", name: "Lina Al-Harbi", nameAr: "لينا الحربي", initials: "LH", range: "May 3 – 7", rangeAr: "3 – 7 مايو", from: "2026-05-03", to: "2026-05-07", type: "annual" as LeaveTypeId },
+  { id: "u-rakan", name: "Rakan Al-Mutlaq", nameAr: "راكان المطلق", initials: "RM", range: "May 10 – 14", rangeAr: "10 – 14 مايو", from: "2026-05-10", to: "2026-05-14", type: "annual" as LeaveTypeId },
+  { id: "u-nouf", name: "Nouf Al-Shammari", nameAr: "نوف الشمري", initials: "NS", range: "May 13", rangeAr: "13 مايو", from: "2026-05-13", to: "2026-05-13", type: "sick" as LeaveTypeId },
+  { id: "u-omar", name: "Omar Haddad", nameAr: "عمر حداد", initials: "OH", range: "Jun 7 – 11", rangeAr: "7 – 11 يونيو", from: "2026-06-07", to: "2026-06-11", type: "annual" as LeaveTypeId },
 ]
 
 /** Colleagues whose leave actually overlaps the given window. */

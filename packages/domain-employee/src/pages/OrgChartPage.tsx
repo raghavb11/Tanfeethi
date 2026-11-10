@@ -1,7 +1,7 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import { useSearchParams } from "react-router-dom"
-import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Avatar, AvatarFallback, AvatarImage } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
@@ -11,6 +11,7 @@ import {
 import {
   chainTo, childrenOf, deptColor, ME_ID, type OrgPerson, personById, ROOT, searchPeople, teamSize,
 } from "../data/mock/org"
+import { Chip, OutlineButton, Page, fieldClass } from "../components/wijha"
 
 // ── layout constants ─────────────────────────────────────────────────────────
 const NODE_W = 252
@@ -147,68 +148,69 @@ export default function OrgChartPage() {
   }
 
   return (
-    // at least fills the viewport below the 3.5rem top bar, and grows past it
+    // at least fills the viewport below the top bar, and grows past it
     // when the tree (or the zoom level) needs more room
-    <main className="flex min-h-[calc(100svh-3.5rem)] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
+    <Page className="flex min-h-[calc(100svh-5rem)] flex-col gap-4">
       {/* one compact toolbar — breadcrumb, search, zoom */}
       <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-1 text-[12.5px]">
+        <div className="flex min-w-0 flex-wrap items-center gap-1 text-[13px]">
           {trail.map((p, i) => (
             <React.Fragment key={p.id}>
-              {i > 0 && <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground/40", isAr && "rotate-180")} />}
-              <button onClick={() => setRootId(p.id)}
-                className={cn("truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-primary/10 hover:text-primary",
-                  i === trail.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground")}>
+              {i > 0 && <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50 rtl:rotate-180" />}
+              <button type="button" onClick={() => setRootId(p.id)}
+                className={cn("truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-soft-accent hover:text-primary",
+                  i === trail.length - 1 ? "font-medium text-foreground" : "text-muted-foreground")}>
                 {isAr ? p.nameAr : p.name}
               </button>
             </React.Fragment>
           ))}
         </div>
 
-        <div className="ms-auto flex flex-wrap items-center gap-2">
-          <div className="relative w-[220px]">
+        <div className="ms-auto flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <div className="relative w-full sm:w-[240px]">
             <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
+            <input
               value={q}
               onChange={(e) => { setQ(e.target.value); setOpenSearch(true) }}
               onFocus={() => setOpenSearch(true)}
               placeholder={t("Search people", "ابحث عن شخص")}
-              className="h-9 ps-8 pe-7 text-[13px]" />
+              aria-label={t("Search people", "ابحث عن شخص")}
+              className={cn(fieldClass, "ps-8 pe-7")} />
             {q && (
-              <button onClick={() => { setQ(""); setOpenSearch(false) }} aria-label={t("Clear search", "مسح البحث")}
+              <button type="button" onClick={() => { setQ(""); setOpenSearch(false) }} aria-label={t("Clear search", "مسح البحث")}
                 className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
             )}
             {openSearch && q && (
-              <Card className="absolute z-30 mt-1.5 w-[280px] overflow-hidden p-0 shadow-lg">
+              <div className="panel absolute z-30 mt-1.5 w-full overflow-hidden rounded-xl shadow-lg sm:w-[300px]">
                 {results.length === 0 ? (
                   <div className="px-4 py-3 text-[13px] text-muted-foreground">{t("No one found.", "لا توجد نتائج.")}</div>
                 ) : results.map((p) => (
-                  <button key={p.id} onClick={() => focusOn(p.id)}
-                    className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2.5 text-start transition-colors last:border-0 hover:bg-primary/[0.05]">
+                  <button key={p.id} type="button" onClick={() => focusOn(p.id)}
+                    className="flex w-full items-center gap-3 border-b border-border px-3 py-2.5 text-start transition-colors last:border-0 hover:bg-soft-accent/50">
                     <PersonAvatar p={p} size="sm" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-semibold">{isAr ? p.nameAr : p.name}</span>
-                      <span className="block truncate text-[11.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
+                      <span className="block truncate text-[14px]">{isAr ? p.nameAr : p.name}</span>
+                      <span className="block truncate text-[12px] text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
                     </span>
                   </button>
                 ))}
-              </Card>
+              </div>
             )}
           </div>
 
-          <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => focusOn(ME_ID)}>
+          <OutlineButton size="sm" className="h-9" onClick={() => focusOn(ME_ID)}>
             <Crosshair className="size-3.5" />{t("Find me", "أين أنا")}
-          </Button>
+          </OutlineButton>
 
-          <div className="inline-flex items-center gap-1 rounded-lg border border-border p-0.5">
-            <button onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.15).toFixed(2)))} aria-label={t("Zoom out", "تصغير")}
-              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Minus className="size-3.5" /></button>
-            <span className="min-w-[2.75rem] text-center text-[11px] font-semibold tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
-            <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.15).toFixed(2)))} aria-label={t("Zoom in", "تكبير")}
-              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Plus className="size-3.5" /></button>
+          <div className="inline-flex items-center gap-1 rounded-lg bg-secondary p-0.5">
+            <button type="button" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.15).toFixed(2)))} aria-label={t("Zoom out", "تصغير")}
+              className="grid size-8 place-items-center rounded-md text-icon transition-colors hover:bg-soft-accent hover:text-primary"><Minus className="size-3.5" /></button>
+            <span className="min-w-[2.75rem] text-center text-[12px] font-medium tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
+            <button type="button" onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.15).toFixed(2)))} aria-label={t("Zoom in", "تكبير")}
+              className="grid size-8 place-items-center rounded-md text-icon transition-colors hover:bg-soft-accent hover:text-primary"><Plus className="size-3.5" /></button>
             <span className="mx-0.5 h-4 w-px bg-border" />
-            <button onClick={() => { setZoom(1); setCollapsed(new Set()); setRootId(ROOT.id); setSelectedId(null) }} aria-label={t("Reset view", "إعادة الضبط")}
-              className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Maximize2 className="size-3.5" /></button>
+            <button type="button" onClick={() => { setZoom(1); setCollapsed(new Set()); setRootId(ROOT.id); setSelectedId(null) }} aria-label={t("Reset view", "إعادة الضبط")}
+              className="grid size-8 place-items-center rounded-md text-icon transition-colors hover:bg-soft-accent hover:text-primary"><Maximize2 className="size-3.5" /></button>
           </div>
         </div>
       </div>
@@ -216,8 +218,8 @@ export default function OrgChartPage() {
       {/* the chart owns everything else. The card is at least tall enough for the
           whole tree, so it never scrolls vertically inside — it just makes the
           page longer and the normal page scroll takes over. */}
-      <Card
-        className="relative flex-1 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px] p-0"
+      <section
+        className="panel relative flex-1 overflow-hidden rounded-xl bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:22px_22px]"
         style={{ minHeight: height * zoom + 48 }}>
         <div
           ref={scroller}
@@ -234,7 +236,7 @@ export default function OrgChartPage() {
                 {edges.map((e) => (
                   <path key={`${e.from.id}-${e.to.id}`}
                     d={edgePath(mcx(e.from.x + NODE_W / 2), e.from.y + NODE_H, mcx(e.to.x + NODE_W / 2), e.to.y)}
-                    fill="none" stroke="var(--border)" strokeWidth={1.5} strokeLinecap="round" />
+                    fill="none" stroke="var(--secondary)" strokeWidth={2} strokeLinecap="round" />
                 ))}
               </svg>
               {nodes.map((n) => {
@@ -258,12 +260,12 @@ export default function OrgChartPage() {
         {selected && (
           <motion.aside
             initial={{ opacity: 0, x: isAr ? -12 : 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}
-            className="absolute end-3 top-3 z-20 max-h-[calc(100svh-8rem)] w-[290px] overflow-y-auto rounded-2xl border border-border bg-card/95 shadow-xl backdrop-blur">
+            className="absolute inset-x-3 top-3 z-20 max-h-[calc(100svh-8rem)] overflow-y-auto rounded-xl bg-popover shadow-xl ring-1 ring-inset ring-border sm:inset-x-auto sm:end-3 sm:w-[300px]">
             <DetailPanel p={selected} isAr={isAr} t={t} onNavigate={focusOn} onClose={() => setSelectedId(null)} />
           </motion.aside>
         )}
-      </Card>
-    </main>
+      </section>
+    </Page>
   )
 }
 
@@ -274,7 +276,6 @@ function NodeCard({ p, x, y, selected, atDepthLimit, collapsed, isAr, t, onSelec
   isAr: boolean; t: (en: string, ar: string) => string
   onSelect: () => void; onDrill: () => void; onToggle: () => void
 }) {
-  const color = deptColor(p.department)
   const reports = childrenOf(p.id).length
   const total = teamSize(p.id)
   // at the depth limit the only way further down is to re-root the chart
@@ -285,38 +286,35 @@ function NodeCard({ p, x, y, selected, atDepthLimit, collapsed, isAr, t, onSelec
       initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.22 }}
       className="absolute" style={{ left: x, top: y, width: NODE_W, height: NODE_H }}>
       <button
+        type="button"
         onClick={onSelect}
         onDoubleClick={() => reports && onDrill()}
         className={cn(
-          "group relative flex h-full w-full flex-col justify-between rounded-2xl border bg-card p-3.5 text-start shadow-sm transition-all duration-200",
+          "group relative flex h-full w-full flex-col justify-between rounded-xl p-3.5 text-start ring-1 ring-inset transition-all duration-200",
           "hover:-translate-y-0.5 hover:shadow-lg",
-          selected ? "border-primary/60 shadow-md ring-2 ring-primary/20" : "border-border/80 hover:border-border",
-          p.isMe && !selected && "border-primary/40",
+          // the signed-in employee is highlighted gold, as in the Figma org modal
+          p.isMe ? "bg-soft-accent" : "bg-background",
+          selected ? "ring-2 ring-primary/70" : p.isMe ? "ring-primary/30" : "ring-border hover:ring-primary/30",
         )}>
         <div className="flex items-start gap-3">
           <span className="relative shrink-0">
-            <Avatar className="size-11 ring-2 ring-offset-2 ring-offset-card" style={{ ["--tw-ring-color" as string]: `${color}66` }}>
-              {p.photo && <AvatarImage src={p.photo} alt="" />}
-              <AvatarFallback className="text-[12px] font-bold" style={{ backgroundColor: `${color}1f`, color }}>{p.initials}</AvatarFallback>
-            </Avatar>
+            <PersonAvatar p={p} size="lg" />
             {p.isMe && (
-              <span className="absolute -bottom-0.5 -end-0.5 rounded-full bg-primary px-1.5 py-px text-[8.5px] font-bold uppercase tracking-wide text-primary-foreground ring-2 ring-card">
+              <span className="absolute -bottom-0.5 -end-0.5 rounded-full bg-primary px-1.5 py-px text-[9px] font-semibold text-primary-foreground ring-2 ring-[var(--card)]">
                 {t("You", "أنت")}
               </span>
             )}
           </span>
           <span className="min-w-0 flex-1 pt-0.5">
-            <span className="block truncate text-[14px] font-semibold leading-tight">{isAr ? p.nameAr : p.name}</span>
-            <span className="mt-0.5 block truncate text-[11.5px] leading-snug text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
+            <span className="block truncate text-[14.5px] font-medium leading-tight">{isAr ? p.nameAr : p.name}</span>
+            <span className="mt-0.5 block truncate text-[12px] leading-snug text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${color}16`, color }}>
-            {isAr ? p.departmentAr : p.department}
-          </span>
+          <DeptChip p={p} isAr={isAr} />
           {reports > 0 && (
-            <span className="inline-flex shrink-0 items-center gap-1 text-[10.5px] tabular-nums text-muted-foreground/70">
+            <span className="inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
               <Users className="size-3" />{reports}{total > reports && <span className="opacity-60">/{total}</span>}
             </span>
           )}
@@ -326,11 +324,12 @@ function NodeCard({ p, x, y, selected, atDepthLimit, collapsed, isAr, t, onSelec
       {/* expand / collapse handle sits on the bottom edge, the standard org-chart affordance */}
       {reports > 0 && (
         <button
+          type="button"
           onClick={(e) => { e.stopPropagation(); hasHidden && atDepthLimit ? onDrill() : onToggle() }}
           aria-label={hasHidden ? t("Expand", "توسيع") : t("Collapse", "طي")}
           className={cn(
-            "absolute -bottom-3 start-1/2 z-10 inline-flex h-6 -translate-x-1/2 items-center gap-0.5 rounded-full border bg-card px-2 text-[10px] font-semibold tabular-nums shadow-sm transition-colors rtl:translate-x-1/2",
-            hasHidden ? "border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/40 hover:text-primary",
+            "absolute -bottom-3 start-1/2 z-10 inline-flex h-6 -translate-x-1/2 items-center gap-0.5 rounded-full bg-secondary px-2 text-[11px] font-medium tabular-nums shadow-sm ring-1 ring-inset transition-colors rtl:translate-x-1/2",
+            hasHidden ? "text-primary ring-primary/40 hover:bg-primary hover:text-primary-foreground" : "text-muted-foreground ring-border hover:text-primary",
           )}>
           {hasHidden ? <Plus className="size-3" /> : <Minus className="size-3" />}
           {hasHidden && reports}
@@ -340,12 +339,23 @@ function NodeCard({ p, x, y, selected, atDepthLimit, collapsed, isAr, t, onSelec
   )
 }
 
-function PersonAvatar({ p, size = "md" }: { p: OrgPerson; size?: "sm" | "md" }) {
-  const color = deptColor(p.department)
+/** Neutral department chip with the department's legend dot. */
+function DeptChip({ p, isAr }: { p: OrgPerson; isAr: boolean }) {
   return (
-    <Avatar className={cn("shrink-0", size === "sm" ? "size-8" : "size-9")}>
+    <span className="inline-flex min-w-0 items-center gap-1.5 truncate rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
+      <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: deptColor(p.department) }} />
+      <span className="truncate">{isAr ? p.departmentAr : p.department}</span>
+    </span>
+  )
+}
+
+function PersonAvatar({ p, size = "md" }: { p: OrgPerson; size?: "sm" | "md" | "lg" | "xl" }) {
+  return (
+    <Avatar className={cn("shrink-0", size === "sm" ? "size-8" : size === "md" ? "size-9" : size === "lg" ? "size-11" : "size-16")}>
       {p.photo && <AvatarImage src={p.photo} alt="" />}
-      <AvatarFallback className="text-[11px] font-semibold" style={{ backgroundColor: `${color}22`, color }}>{p.initials}</AvatarFallback>
+      <AvatarFallback className={cn("font-medium",
+        size === "xl" ? "text-[18px]" : "text-[12px]",
+        p.isMe ? "bg-soft-accent text-primary" : "bg-secondary text-muted-foreground")}>{p.initials}</AvatarFallback>
     </Avatar>
   )
 }
@@ -358,39 +368,34 @@ function DetailPanel({ p, isAr, t, onNavigate, onClose }: {
 }) {
   const manager = p.managerId ? personById(p.managerId) : undefined
   const reports = childrenOf(p.id)
-  const color = deptColor(p.department)
   return (
     <>
       <div className="relative p-5 text-center">
-        <span className="absolute inset-x-0 top-0 h-20 rounded-t-2xl" style={{ background: `linear-gradient(${color}1c, transparent)` }} />
-        <button onClick={onClose} aria-label={t("Close", "إغلاق")}
-          className="absolute end-2.5 top-2.5 z-10 grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <span className="absolute inset-x-0 top-0 h-20 rounded-t-xl bg-gradient-to-b from-soft-accent to-transparent" />
+        <button type="button" onClick={onClose} aria-label={t("Close", "إغلاق")}
+          className="absolute end-2.5 top-2.5 z-10 grid size-8 place-items-center rounded-lg text-icon transition-colors hover:bg-secondary hover:text-foreground">
           <X className="size-4" />
         </button>
-        <span className="relative">
-          <Avatar className="mx-auto size-16 ring-2 ring-card">
-            {p.photo && <AvatarImage src={p.photo} alt="" />}
-            <AvatarFallback className="text-[18px] font-bold" style={{ backgroundColor: `${color}26`, color }}>{p.initials}</AvatarFallback>
-          </Avatar>
+        <span className="relative block">
+          <span className="mx-auto block w-fit"><PersonAvatar p={p} size="xl" /></span>
           <div className="mt-2.5 flex items-center justify-center gap-1.5">
-            <span className="font-heading text-[16px] font-bold leading-tight">{isAr ? p.nameAr : p.name}</span>
-            {p.isMe && <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[10px] text-primary">{t("You", "أنت")}</Badge>}
+            <span className="text-[17px] font-medium leading-tight">{isAr ? p.nameAr : p.name}</span>
+            {p.isMe && <Chip tone="accent">{t("You", "أنت")}</Chip>}
           </div>
           <p className="mt-0.5 text-[12.5px] text-muted-foreground">{isAr ? p.titleAr : p.title}</p>
-          <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide"
-            style={{ backgroundColor: `${color}1e`, color }}>{isAr ? p.departmentAr : p.department}</span>
+          <span className="mt-2 inline-flex"><DeptChip p={p} isAr={isAr} /></span>
         </span>
       </div>
 
-      <div className="space-y-2.5 p-4">
-        <Row icon={Mail} value={p.email} href={`mailto:${p.email}`} />
-        {p.phone && <Row icon={Phone} value={p.phone} href={`tel:${p.phone.replace(/\s/g, "")}`} />}
+      <div className="space-y-2.5 border-t border-border p-4">
+        <Row icon={Mail} value={p.email} href={`mailto:${p.email}`} ltr />
+        {p.phone && <Row icon={Phone} value={p.phone} href={`tel:${p.phone.replace(/\s/g, "")}`} ltr />}
         <Row icon={MapPin} value={isAr ? p.locationAr : p.location} />
       </div>
 
       {manager && (
         <div className="border-t border-border p-4">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("Reports to", "يتبع لـ")}</div>
+          <div className="mb-2 text-[12px] text-muted-foreground">{t("Reports to", "يتبع لـ")}</div>
           <MiniPerson p={manager} isAr={isAr} onClick={() => onNavigate(manager.id)} />
         </div>
       )}
@@ -398,10 +403,10 @@ function DetailPanel({ p, isAr, t, onNavigate, onClose }: {
       {reports.length > 0 && (
         <div className="border-t border-border p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("Direct reports", "التابعون المباشرون")}</span>
-            <span className="text-[10px] tabular-nums text-muted-foreground">{reports.length} · {teamSize(p.id)} {t("total", "الإجمالي")}</span>
+            <span className="text-[12px] text-muted-foreground">{t("Direct reports", "التابعون المباشرون")}</span>
+            <span className="text-[11px] tabular-nums text-muted-foreground">{reports.length} · {teamSize(p.id)} {t("total", "الإجمالي")}</span>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {reports.map((r) => <MiniPerson key={r.id} p={r} isAr={isAr} onClick={() => onNavigate(r.id)} />)}
           </div>
         </div>
@@ -410,11 +415,11 @@ function DetailPanel({ p, isAr, t, onNavigate, onClose }: {
   )
 }
 
-function Row({ icon: Icon, value, href }: { icon: React.ComponentType<{ className?: string }>; value: string; href?: string }) {
+function Row({ icon: Icon, value, href, ltr }: { icon: React.ComponentType<{ className?: string }>; value: string; href?: string; ltr?: boolean }) {
   const body = (
-    <span className="flex items-center gap-2.5 text-[12.5px]">
-      <Icon className="size-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate">{value}</span>
+    <span className="flex items-center gap-2.5 text-[13px]">
+      <Icon className="size-4 shrink-0 text-primary" />
+      <span className="min-w-0 flex-1 truncate text-start" dir={ltr ? "ltr" : undefined}>{value}</span>
     </span>
   )
   return href ? <a href={href} className="block transition-colors hover:text-primary">{body}</a> : <div className="text-muted-foreground">{body}</div>
@@ -422,11 +427,11 @@ function Row({ icon: Icon, value, href }: { icon: React.ComponentType<{ classNam
 
 function MiniPerson({ p, isAr, onClick }: { p: OrgPerson; isAr: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-start transition-colors hover:bg-primary/[0.06]">
+    <button type="button" onClick={onClick} className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-start transition-colors hover:bg-soft-accent/50">
       <PersonAvatar p={p} size="sm" />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[12.5px] font-medium leading-tight">{isAr ? p.nameAr : p.name}</span>
-        <span className="block truncate text-[11px] leading-tight text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
+        <span className="block truncate text-[13.5px] leading-tight">{isAr ? p.nameAr : p.name}</span>
+        <span className="block truncate text-[12px] leading-tight text-muted-foreground">{isAr ? p.titleAr : p.title}</span>
       </span>
     </button>
   )

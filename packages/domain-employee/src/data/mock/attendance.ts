@@ -17,47 +17,50 @@ export type AttendanceDay = {
   note?: string; noteAr?: string
 }
 
-export const MONTH = { label: "August 2026", labelAr: "أغسطس ٢٠٢٦", year: 2026, month: 8, days: 31, firstWeekday: 6 /* Sat */ }
+export const MONTH = { label: "April 2026", labelAr: "أبريل 2026", year: 2026, month: 4, days: 30, firstWeekday: 3 /* Wed */ }
 
 /** Working week is Sunday–Thursday; Friday & Saturday are the weekend. */
 const WD = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const WD_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
 
-const HQ = { location: "HQ · L14", locationAr: "المقر · ط14" }
+const HQ = { location: "Riyadh HQ", locationAr: "مقر الرياض" }
 const REMOTE = { location: "Remote", locationAr: "عن بُعد" }
 
+/** April 2026 — 1 Apr is a Wednesday; weekends are 3–4, 10–11, 17–18, 24–25. */
 const RECORDS: Partial<Record<number, Partial<AttendanceDay>>> = {
-  2: { kind: "present", checkIn: "08:28", checkOut: "17:05", hours: 8.6, ...HQ },
-  3: { kind: "present", checkIn: "08:35", checkOut: "17:10", hours: 8.6, ...HQ },
-  4: { kind: "remote", checkIn: "08:50", checkOut: "17:15", hours: 8.4, ...REMOTE },
-  5: { kind: "present", checkIn: "08:31", checkOut: "17:02", hours: 8.5, ...HQ },
-  6: { kind: "present", checkIn: "08:44", checkOut: "16:58", hours: 8.2, ...HQ },
-  9: { kind: "present", checkIn: "09:12", checkOut: "17:30", hours: 8.3, late: true, ...HQ, note: "Traffic delay", noteAr: "تأخير مروري" },
-  10: { kind: "remote", checkIn: "08:40", checkOut: "17:00", hours: 8.3, ...REMOTE },
-  11: { kind: "leave", note: "Annual leave", noteAr: "إجازة سنوية" },
-  12: { kind: "present", checkIn: "08:30", checkOut: "17:12", hours: 8.7, ...HQ },
-  13: { kind: "present", checkIn: "08:26", checkOut: "17:04", hours: 8.6, location: "Terminal 1", locationAr: "الصالة ١" },
-  16: { kind: "present", checkIn: "08:33", checkOut: "17:08", hours: 8.6, ...HQ },
-  17: { kind: "remote", checkIn: "08:45", checkOut: "17:05", hours: 8.3, ...REMOTE },
-  18: { kind: "present", checkIn: "08:29", checkOut: "17:01", hours: 8.5, ...HQ },
-  19: { kind: "present", checkIn: "08:30", checkOut: "17:12", hours: 8.7, ...HQ },
-  20: { kind: "present", checkIn: "08:42", checkOut: undefined, hours: 4.4, ...HQ }, // today
-  26: { kind: "holiday", note: "Eid Al-Adha", noteAr: "عيد الأضحى" },
-  27: { kind: "holiday", note: "Eid Al-Adha", noteAr: "عيد الأضحى" },
-  30: { kind: "holiday", note: "Eid Al-Adha", noteAr: "عيد الأضحى" },
+  1: { kind: "holiday", note: "Eid Al-Fitr holiday", noteAr: "إجازة عيد الفطر" },
+  2: { kind: "present", checkIn: "08:05", checkOut: "16:10", hours: 8.1, ...HQ },
+  5: { kind: "present", checkIn: "07:58", checkOut: "16:02", hours: 8.1, ...HQ },
+  6: { kind: "remote", checkIn: "08:10", checkOut: "16:20", hours: 8.2, ...REMOTE },
+  7: { kind: "leave", note: "Sick leave", noteAr: "إجازة مرضية" },
+  8: { kind: "present", checkIn: "08:02", checkOut: "16:05", hours: 8.1, ...HQ },
+  9: { kind: "present", checkIn: "08:31", checkOut: "16:40", hours: 8.2, late: true, ...HQ, note: "Traffic delay", noteAr: "تأخير مروري" },
+  12: { kind: "present", checkIn: "07:55", checkOut: "16:00", hours: 8.1, ...HQ },
+  13: { kind: "remote", checkIn: "08:00", checkOut: "16:15", hours: 8.3, ...REMOTE },
+  14: { kind: "present", checkIn: "08:04", checkOut: "16:06", hours: 8, ...HQ },
+  15: { kind: "present", checkIn: "08:01", checkOut: "16:12", hours: 8.2, location: "Terminal 1", locationAr: "الصالة 1" },
+  16: { kind: "absent", note: "No check-in recorded — correction requested", noteAr: "لا يوجد تسجيل حضور — طُلب التصحيح" },
+  19: { kind: "present", checkIn: "08:03", checkOut: "16:05", hours: 8, ...HQ },
+  20: { kind: "remote", checkIn: "08:12", checkOut: "16:20", hours: 8.1, ...REMOTE },
+  21: { kind: "present", checkIn: "07:59", checkOut: "16:01", hours: 8, ...HQ },
+  22: { kind: "present", checkIn: "08:26", checkOut: "16:30", hours: 8.1, late: true, ...HQ, note: "Late arrival", noteAr: "تأخر في الحضور" },
+  23: { kind: "present", checkIn: "08:00", checkOut: "16:05", hours: 8.1, ...HQ },
+  26: { kind: "present", checkIn: "08:00", checkOut: "16:00", hours: 8, ...HQ },
+  27: { kind: "present", checkIn: "08:10", checkOut: "15:40", hours: 7.5, ...HQ },
+  28: { kind: "present", checkIn: "08:00", checkOut: undefined, ...HQ }, // today — hours come from the clock
 }
 
-export const TODAY_DAY = 20
+export const TODAY_DAY = 28
 
 export const DAYS: AttendanceDay[] = Array.from({ length: MONTH.days }, (_, i) => {
   const day = i + 1
-  // 1 Aug 2026 is a Saturday → weekday index cycles from 6
+  // 1 Apr 2026 is a Wednesday → weekday index cycles from 3
   const wd = (MONTH.firstWeekday + i) % 7
   const isWeekend = wd === 5 || wd === 6
   const rec = RECORDS[day]
   const kind: DayKind = rec?.kind ?? (isWeekend ? "weekend" : day > TODAY_DAY ? "future" : "absent")
   return {
-    date: `2026-08-${String(day).padStart(2, "0")}`,
+    date: `2026-04-${String(day).padStart(2, "0")}`,
     day,
     weekday: WD[wd], weekdayAr: WD_AR[wd],
     kind,
@@ -67,12 +70,12 @@ export const DAYS: AttendanceDay[] = Array.from({ length: MONTH.days }, (_, i) =
 
 export const today = {
   status: "present" as const,
-  checkIn: "08:42",
+  checkIn: "08:00",
   checkOut: null as string | null,
   targetHours: 8,
-  workedMinutes: 263,
-  location: "HQ · L14", locationAr: "المقر · ط14",
-  dayLabel: "Thursday, 20 August 2026", dayLabelAr: "الخميس، ٢٠ أغسطس ٢٠٢٦",
+  workedMinutes: 244,
+  location: "Riyadh HQ", locationAr: "مقر الرياض",
+  dayLabel: "Tuesday, 28 April 2026", dayLabelAr: "الثلاثاء، 28 أبريل 2026",
 }
 
 /** Rolled-up stats for the month to date. */

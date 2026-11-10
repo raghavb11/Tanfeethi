@@ -10,9 +10,9 @@ export const enrolment = {
   /** The 2027 window is not open yet — the page shows a countdown, not a form. */
   status: "upcoming" as "open" | "upcoming" | "closed",
   year: 2027,
-  opens: "Sep 1, 2026", opensAr: "١ سبتمبر ٢٠٢٦",
-  closes: "Sep 30, 2026", closesAr: "٣٠ سبتمبر ٢٠٢٦",
-  daysUntil: 12,
+  opens: "May 1, 2026", opensAr: "1 مايو 2026",
+  closes: "May 31, 2026", closesAr: "31 مايو 2026",
+  daysUntil: 3,
   note: "You'll be able to change your medical class, add dependants and opt into voluntary cover.",
   noteAr: "ستتمكن من تغيير فئة التأمين الطبي وإضافة المعالين والاشتراك في التغطية الاختيارية.",
 }
@@ -21,7 +21,7 @@ export const enrolment = {
 export type Allowance = { id: string; label: string; labelAr: string; amount: number; icon: string; note?: string; noteAr?: string }
 
 export const allowances: Allowance[] = [
-  { id: "housing", label: "Housing", labelAr: "بدل سكن", amount: 4500, icon: "home", note: "25% of basic salary", noteAr: "٢٥٪ من الراتب الأساسي" },
+  { id: "housing", label: "Housing", labelAr: "بدل سكن", amount: 4500, icon: "home", note: "25% of basic salary", noteAr: "25٪ من الراتب الأساسي" },
   { id: "transport", label: "Transport", labelAr: "بدل نقل", amount: 1200, icon: "car" },
   { id: "education", label: "Education", labelAr: "بدل تعليم", amount: 1500, icon: "school", note: "Up to 2 children", noteAr: "حتى طفلين" },
   { id: "phone", label: "Communication", labelAr: "بدل اتصالات", amount: 300, icon: "phone" },
@@ -34,9 +34,9 @@ export const allowanceTotal = allowances.reduce((s, a) => s + a.amount, 0)
  *  up on a payslip. */
 export const reward = {
   components: [
-    { id: "base", label: "Base salary", labelAr: "الراتب الأساسي", amount: 180000, note: "15,000 × 12", noteAr: "١٥٬٠٠٠ × ١٢" },
-    { id: "allowances", label: "Allowances", labelAr: "البدلات", amount: 90000, note: "7,500 × 12", noteAr: "٧٬٥٠٠ × ١٢" },
-    { id: "bonus", label: "Performance bonus", labelAr: "مكافأة الأداء", amount: 22500, note: "2025 cycle, variable", noteAr: "دورة ٢٠٢٥، متغيرة" },
+    { id: "base", label: "Base salary", labelAr: "الراتب الأساسي", amount: 180000, note: "15,000 × 12", noteAr: "15,000 × 12" },
+    { id: "allowances", label: "Allowances", labelAr: "البدلات", amount: 90000, note: "7,500 × 12", noteAr: "7,500 × 12" },
+    { id: "bonus", label: "Performance bonus", labelAr: "مكافأة الأداء", amount: 22500, note: "2025 cycle, variable", noteAr: "دورة 2025، متغيرة" },
     { id: "benefits", label: "Employer-paid benefits", labelAr: "مزايا يتحملها صاحب العمل", amount: 74795, note: "GOSI, medical, life, tickets, end-of-service", noteAr: "التأمينات، الطبي، الحياة، التذاكر، نهاية الخدمة" },
   ],
   /** The employer-paid line above, itemised. */
@@ -77,18 +77,18 @@ export const PLANS: BenefitPlan[] = [
     provider: "Bupa Arabia", providerAr: "بوبا العربية", policyNo: "BA-4471-08822",
     details: [
       { label: "Class", labelAr: "الفئة", value: "A", valueAr: "أ" },
-      { label: "Annual limit", labelAr: "الحد السنوي", value: "SAR 500,000", valueAr: "٥٠٠٬٠٠٠ ر.س" },
-      { label: "Covered", labelAr: "المشمولون", value: "You + 3 dependants", valueAr: "أنت + ٣ معالين" },
+      { label: "Annual limit", labelAr: "الحد السنوي", value: "SAR 500,000", valueAr: "500,000 ر.س" },
+      { label: "Covered", labelAr: "المشمولون", value: "You + 3 dependants", valueAr: "أنت + 3 معالين" },
       { label: "Dental & optical", labelAr: "الأسنان والبصريات", value: "Included", valueAr: "مشمول" },
-      { label: "Renews", labelAr: "التجديد", value: "Jan 1, 2027", valueAr: "١ يناير ٢٠٢٧" },
+      { label: "Renews", labelAr: "التجديد", value: "Jan 1, 2027", valueAr: "1 يناير 2027" },
     ],
   },
   {
     id: "life", name: "Life insurance", nameAr: "التأمين على الحياة", category: "protection", icon: "shield", status: "active",
-    summary: "24× basic salary", summaryAr: "٢٤× الراتب الأساسي",
+    summary: "24× basic salary", summaryAr: "24× الراتب الأساسي",
     provider: "Tawuniya", providerAr: "التعاونية", policyNo: "TW-99-201455",
     details: [
-      { label: "Cover", labelAr: "التغطية", value: "SAR 441,600", valueAr: "٤٤١٬٦٠٠ ر.س" },
+      { label: "Cover", labelAr: "التغطية", value: "SAR 441,600", valueAr: "441,600 ر.س" },
       { label: "Accidental death", labelAr: "الوفاة العرضية", value: "Doubled", valueAr: "مضاعف" },
       { label: "Beneficiary", labelAr: "المستفيد", value: "On file", valueAr: "مسجّل" },
     ],
@@ -97,34 +97,34 @@ export const PLANS: BenefitPlan[] = [
     id: "tickets", name: "Annual air tickets", nameAr: "تذاكر السفر السنوية", category: "travel", icon: "plane", status: "active",
     summary: "Family · economy, once a year", summaryAr: "للعائلة · اقتصادية، مرة سنويًا",
     details: [
-      { label: "Entitlement", labelAr: "الاستحقاق", value: "4 tickets", valueAr: "٤ تذاكر" },
-      { label: "Used this year", labelAr: "المستخدم هذا العام", value: "0", valueAr: "٠" },
+      { label: "Entitlement", labelAr: "الاستحقاق", value: "4 tickets", valueAr: "4 تذاكر" },
+      { label: "Used this year", labelAr: "المستخدم هذا العام", value: "0", valueAr: "0" },
       { label: "Route", labelAr: "الوجهة", value: "Point of origin", valueAr: "بلد المنشأ" },
     ],
     usage: { used: 0, total: 4, unit: "tickets", unitAr: "تذاكر" },
   },
   {
     id: "gosi", name: "GOSI · social insurance", nameAr: "التأمينات الاجتماعية", category: "financial", icon: "landmark", status: "active",
-    summary: "Employer 11.75% · employee 9.75%", summaryAr: "صاحب العمل ١١٫٧٥٪ · الموظف ٩٫٧٥٪",
+    summary: "Employer 11.75% · employee 9.75%", summaryAr: "صاحب العمل 11.75٪ · الموظف 9.75٪",
     details: [
-      { label: "Registered since", labelAr: "مسجّل منذ", value: "Mar 2019", valueAr: "مارس ٢٠١٩" },
-      { label: "Monthly contribution", labelAr: "الاشتراك الشهري", value: "SAR 1,794", valueAr: "١٬٧٩٤ ر.س" },
+      { label: "Registered since", labelAr: "مسجّل منذ", value: "Feb 2022", valueAr: "فبراير 2022" },
+      { label: "Monthly contribution", labelAr: "الاشتراك الشهري", value: "SAR 1,794", valueAr: "1,794 ر.س" },
     ],
   },
   {
     id: "eos", name: "End-of-service award", nameAr: "مكافأة نهاية الخدمة", category: "financial", icon: "wallet", status: "active",
     summary: "Accrued per Saudi Labour Law", summaryAr: "تُحتسب وفق نظام العمل السعودي",
     details: [
-      { label: "Service", labelAr: "مدة الخدمة", value: "7 years 5 months", valueAr: "٧ سنوات و٥ أشهر" },
-      { label: "Accrued to date", labelAr: "المستحق حتى تاريخه", value: "SAR 96,600", valueAr: "٩٦٬٦٠٠ ر.س" },
+      { label: "Service", labelAr: "مدة الخدمة", value: "4 years 2 months", valueAr: "4 سنوات وشهران" },
+      { label: "Accrued to date", labelAr: "المستحق حتى تاريخه", value: "SAR 31,250", valueAr: "31,250 ر.س" },
     ],
   },
   {
     id: "wellness", name: "Wellness allowance", nameAr: "بدل العافية", category: "wellbeing", icon: "dumbbell", status: "eligible",
-    summary: "SAR 3,000 a year — gym, sports, fitness", summaryAr: "٣٬٠٠٠ ر.س سنويًا — النوادي والرياضة",
+    summary: "SAR 3,000 a year — gym, sports, fitness", summaryAr: "3,000 ر.س سنويًا — النوادي والرياضة",
     details: [
-      { label: "Claimed", labelAr: "المطالب به", value: "SAR 0 of 3,000", valueAr: "٠ من ٣٬٠٠٠ ر.س" },
-      { label: "Claim by", labelAr: "آخر موعد", value: "Dec 31, 2026", valueAr: "٣١ ديسمبر ٢٠٢٦" },
+      { label: "Claimed", labelAr: "المطالب به", value: "SAR 0 of 3,000", valueAr: "0 من 3,000 ر.س" },
+      { label: "Claim by", labelAr: "آخر موعد", value: "Dec 31, 2026", valueAr: "31 ديسمبر 2026" },
     ],
     usage: { used: 0, total: 3000, unit: "SAR", unitAr: "ر.س" },
   },
@@ -132,17 +132,17 @@ export const PLANS: BenefitPlan[] = [
     id: "eap", name: "Employee assistance", nameAr: "برنامج مساندة الموظفين", category: "wellbeing", icon: "life-buoy", status: "active",
     summary: "Confidential counselling, 24/7", summaryAr: "استشارات سرية على مدار الساعة",
     details: [
-      { label: "Sessions", labelAr: "الجلسات", value: "2 of 8 used, free", valueAr: "٢ من ٨ مستخدمة، مجانًا" },
+      { label: "Sessions", labelAr: "الجلسات", value: "2 of 8 used, free", valueAr: "2 من 8 مستخدمة، مجانًا" },
       { label: "Covers", labelAr: "يشمل", value: "You and household", valueAr: "أنت وأفراد أسرتك" },
     ],
     usage: { used: 2, total: 8, unit: "sessions", unitAr: "جلسات" },
   },
   {
     id: "voluntary", name: "Voluntary critical illness", nameAr: "تأمين الأمراض الحرجة الاختياري", category: "protection", icon: "shield", status: "not-enrolled",
-    summary: "Opt in during enrolment — from SAR 85/month", summaryAr: "الاشتراك خلال فترة التسجيل — من ٨٥ ر.س شهريًا",
+    summary: "Opt in during enrolment — from SAR 85/month", summaryAr: "الاشتراك خلال فترة التسجيل — من 85 ر.س شهريًا",
     details: [
-      { label: "Cover options", labelAr: "خيارات التغطية", value: "SAR 100k – 500k", valueAr: "١٠٠ ألف – ٥٠٠ ألف ر.س" },
-      { label: "Opens", labelAr: "يبدأ", value: "Sep 1, 2026", valueAr: "١ سبتمبر ٢٠٢٦" },
+      { label: "Cover options", labelAr: "خيارات التغطية", value: "SAR 100k – 500k", valueAr: "100 ألف – 500 ألف ر.س" },
+      { label: "Opens", labelAr: "يبدأ", value: "May 1, 2026", valueAr: "1 مايو 2026" },
     ],
   },
 ]
@@ -159,9 +159,9 @@ export type Dependant = {
 }
 
 export const DEPENDANTS: Dependant[] = [
-  { id: "d1", name: "Amal Al-Saadi", nameAr: "أمل السعدي", relation: "Spouse", relationAr: "الزوجة", age: 38, initials: "AS", medical: true, tickets: true },
-  { id: "d2", name: "Rakan Al-Saadi", nameAr: "راكان السعدي", relation: "Son", relationAr: "ابن", age: 11, initials: "RS", medical: true, tickets: true },
-  { id: "d3", name: "Jood Al-Saadi", nameAr: "جود السعدي", relation: "Daughter", relationAr: "ابنة", age: 7, initials: "JS", medical: true, tickets: true },
+  { id: "d1", name: "Amal Al-Ghailan", nameAr: "أمل الغيلان", relation: "Spouse", relationAr: "الزوجة", age: 38, initials: "AG", medical: true, tickets: true },
+  { id: "d2", name: "Rakan Al-Ghailan", nameAr: "راكان الغيلان", relation: "Son", relationAr: "ابن", age: 11, initials: "RG", medical: true, tickets: true },
+  { id: "d3", name: "Jood Al-Ghailan", nameAr: "جود الغيلان", relation: "Daughter", relationAr: "ابنة", age: 7, initials: "JG", medical: true, tickets: true },
 ]
 
 // ── perks ────────────────────────────────────────────────────────────────────
@@ -169,16 +169,16 @@ export type Perk = { id: string; name: string; nameAr: string; category: string;
 
 export const PERKS: Perk[] = [
   { id: "k1", name: "Airport lounge access", nameAr: "دخول صالات المطار", category: "Travel", categoryAr: "السفر", offer: "Unlimited, all ALTANFEETHI lounges", offerAr: "غير محدود، جميع صالات التنفيذي", icon: "sofa" },
-  { id: "k2", name: "Saudia", nameAr: "السعودية", category: "Travel", categoryAr: "السفر", offer: "15% off published fares", offerAr: "خصم ١٥٪ على الأسعار المعلنة", icon: "plane" },
-  { id: "k3", name: "Fitness Time", nameAr: "وقت اللياقة", category: "Wellbeing", categoryAr: "العافية", offer: "30% off annual membership", offerAr: "خصم ٣٠٪ على العضوية السنوية", icon: "dumbbell" },
-  { id: "k4", name: "Jarir Bookstore", nameAr: "مكتبة جرير", category: "Retail", categoryAr: "التجزئة", offer: "10% off electronics", offerAr: "خصم ١٠٪ على الإلكترونيات", icon: "shopping-bag" },
+  { id: "k2", name: "Saudia", nameAr: "السعودية", category: "Travel", categoryAr: "السفر", offer: "15% off published fares", offerAr: "خصم 15٪ على الأسعار المعلنة", icon: "plane" },
+  { id: "k3", name: "Fitness Time", nameAr: "وقت اللياقة", category: "Wellbeing", categoryAr: "العافية", offer: "30% off annual membership", offerAr: "خصم 30٪ على العضوية السنوية", icon: "dumbbell" },
+  { id: "k4", name: "Jarir Bookstore", nameAr: "مكتبة جرير", category: "Retail", categoryAr: "التجزئة", offer: "10% off electronics", offerAr: "خصم 10٪ على الإلكترونيات", icon: "shopping-bag" },
   { id: "k5", name: "Al Rajhi Bank", nameAr: "مصرف الراجحي", category: "Financial", categoryAr: "مالية", offer: "Preferential salary-transfer rates", offerAr: "أسعار تفضيلية لتحويل الراتب", icon: "landmark" },
-  { id: "k6", name: "Careem", nameAr: "كريم", category: "Travel", categoryAr: "السفر", offer: "SAR 25 off first 4 rides monthly", offerAr: "خصم ٢٥ ر.س على أول ٤ رحلات شهريًا", icon: "car" },
+  { id: "k6", name: "Careem", nameAr: "كريم", category: "Travel", categoryAr: "السفر", offer: "SAR 25 off first 4 rides monthly", offerAr: "خصم 25 ر.س على أول 4 رحلات شهريًا", icon: "car" },
 ]
 
 // ── documents ────────────────────────────────────────────────────────────────
 export const BENEFIT_DOCS = [
-  { id: "doc1", name: "Medical insurance card", nameAr: "بطاقة التأمين الطبي", meta: "PDF · 240 KB", metaAr: "PDF · ٢٤٠ ك.ب" },
-  { id: "doc2", name: "Benefits handbook 2026", nameAr: "دليل المزايا ٢٠٢٦", meta: "PDF · 3.1 MB", metaAr: "PDF · ٣٫١ م.ب" },
-  { id: "doc3", name: "Bupa network hospitals", nameAr: "شبكة مستشفيات بوبا", meta: "PDF · 1.4 MB", metaAr: "PDF · ١٫٤ م.ب" },
+  { id: "doc1", name: "Medical insurance card", nameAr: "بطاقة التأمين الطبي", meta: "PDF · 240 KB", metaAr: "PDF · 240 ك.ب" },
+  { id: "doc2", name: "Benefits handbook 2026", nameAr: "دليل المزايا 2026", meta: "PDF · 3.1 MB", metaAr: "PDF · 3.1 م.ب" },
+  { id: "doc3", name: "Bupa network hospitals", nameAr: "شبكة مستشفيات بوبا", meta: "PDF · 1.4 MB", metaAr: "PDF · 1.4 م.ب" },
 ]
