@@ -219,6 +219,18 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   }
   const err = (k: keyof typeof errors) => (tried ? errors[k] : undefined)
   const invalid = Object.values(errors).some(Boolean)
+  // Fields still missing, named next to the save button so a blocked save is never silent.
+  const missing = [
+    errors.title && (isTask ? t("title", "العنوان") : t("name", "الاسم")),
+    errors.due && t("due date", "تاريخ الاستحقاق"),
+    errors.start && t("start/due dates", "تاريخا البدء والاستحقاق"),
+  ].filter(Boolean) as string[]
+  /** Bring the first invalid field into view and focus it (Details can be below the fold). */
+  const revealFirstInvalid = () => requestAnimationFrame(() => {
+    const el = document.querySelector<HTMLElement>('main [aria-invalid="true"]')
+    el?.scrollIntoView({ block: "center", behavior: "smooth" })
+    el?.focus({ preventScroll: true })
+  })
 
   // ── writes ────────────────────────────────────────────────────────────
   const assign = (ownerId: string) => {
@@ -234,7 +246,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 
   const save = () => {
     if (!draft || !loaded) return
-    if (invalid) { setTried(true); return }
+    if (invalid) { setTried(true); revealFirstInvalid(); return }
     if (draft.ownerId !== loaded.ownerId) assign(draft.ownerId)
     const descKey = isAr ? "descriptionAr" : "description"
     const newName = draft.title?.trim()
@@ -261,7 +273,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   /** Create mode: add the record to the store, then open it. */
   const createRecord = () => {
     if (!draft) return
-    if (invalid) { setTried(true); if (errors.title) titleRef.current?.focus(); return }
+    if (invalid) { setTried(true); revealFirstInvalid(); return }
     const main = draft.title!.trim()
     const alt = draft.titleAlt?.trim() || main
     const en = isAr ? alt : main
@@ -397,6 +409,11 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
               </>
             ) : (
               <>
+                {tried && missing.length > 0 && (
+                  <span role="alert" className="text-[12.5px] text-error">
+                    {t(`Fill in: ${missing.join(", ")}`, `أكمل: ${missing.join("، ")}`)}
+                  </span>
+                )}
                 <Btn variant="outline" className="bg-secondary" onClick={cancel}>{t("Cancel", "إلغاء")}</Btn>
                 <Btn variant="primary" onClick={create ? createRecord : save}>
                   {!create ? t("Save changes", "حفظ التعديلات") : isTask ? (asManager ? t("Assign task", "إسناد المهمة") : t("Create task", "إنشاء المهمة")) : t("Create project", "إنشاء المشروع")}
