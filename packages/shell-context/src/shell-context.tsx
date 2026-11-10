@@ -48,9 +48,10 @@ function readStoredLocale(): Locale {
 
 function readStoredRole(): Role {
   try {
-    return localStorage.getItem(ROLE_KEY) === "user" ? "user" : "admin"
+    // Figma shows the employee view with a "switch to admin" action.
+    return localStorage.getItem(ROLE_KEY) === "admin" ? "admin" : "user"
   } catch {
-    return "admin"
+    return "user"
   }
 }
 
