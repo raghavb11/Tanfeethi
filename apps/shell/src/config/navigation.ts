@@ -76,6 +76,7 @@ export const adminNav: NavItem[] = [
   { title: "Configuration", path: "/config", icon: SlidersHorizontal },
   { title: "Content Management", path: "/cms", icon: Gauge },
   { title: "Notifications", path: "/admin/notifications", icon: Bell },
+  { title: "Partners", path: "/config/partners", icon: Handshake },
   { title: "Roles & Permissions", path: "/admin/roles", icon: ShieldCheck },
   { title: "Audit Logs", path: "/admin/audit", icon: History },
 ]
@@ -89,6 +90,7 @@ export const compareNav: ExternalNavItem[] = [
   { title: "Original app", titleAr: "التطبيق الأصلي", url: "http://localhost:5174", icon: ExternalLink },
   { title: "Home v2 (no side nav)", titleAr: "الرئيسية v2 (بدون قائمة جانبية)", url: "/#/v2", icon: LayoutGrid },
   { title: "Tea boy app", titleAr: "تطبيق خدمة الضيافة", url: "/#/tea-boy/login", icon: Coffee },
+  { title: "Partner portal", titleAr: "بوابة الشركاء", url: "/#/partner", icon: Handshake },
 ]
 
 /** Kept for the command palette / inline search preview hubs. */
@@ -132,6 +134,9 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "Employee Community", path: "/community", group: "Resources" },
   { label: "Quick Links", path: "/links", group: "Resources" },
   { label: "Configuration", path: "/config", group: "Administration" },
+  { label: "Partners", path: "/config/partners", group: "Administration" },
+  { label: "Partner portal", path: "/partner", group: "Administration" },
+  { label: "Partner voucher tracking", path: "/partner/vouchers", group: "Administration" },
   { label: "Approval Rule Engine", path: "/config/rules", group: "Administration" },
   { label: "Content Management", path: "/cms", group: "Administration" },
   { label: "Notifications", path: "/admin/notifications", group: "Administration" },

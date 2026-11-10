@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion"
 
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { notifications as items } from "@reach/shared-mocks"
+import { useNotifications } from "@reach/shared-mocks"
 import { Bell, BriefcaseBusiness, CheckCheck, Flame, Shield, Sparkles } from "lucide-react"
 
 type Category = "security" | "ai" | "operations" | "employee"
@@ -26,6 +26,7 @@ const PANEL_WIDTH = 380
 const VIEWPORT_MARGIN = 12
 
 export function InlineNotifications({ isAr }: { isAr: boolean }) {
+  const items = useNotifications()
   const [open, setOpen] = React.useState(false)
   const [readIds, setReadIds] = React.useState<Set<string>>(new Set())
   const [alignRight, setAlignRight] = React.useState(true)
@@ -34,7 +35,7 @@ export function InlineNotifications({ isAr }: { isAr: boolean }) {
 
   const computed = React.useMemo(
     () => items.map((n) => ({ ...n, unread: n.unread && !readIds.has(n.id) })),
-    [readIds],
+    [items, readIds],
   )
   const unreadCount = computed.filter((n) => n.unread).length
 

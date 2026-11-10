@@ -11,6 +11,8 @@ import {
 import { MANAGER, team } from "../data/team"
 import { getProjectById } from "../data/projects"
 import { ProjectPicker } from "../components/ProjectPicker"
+import { MilestonePicker } from "../components/MilestonePicker"
+import { getMilestone } from "../data/milestones"
 
 const PRIORITIES: { id: TaskPriority; label: string; ar: string; dot: string }[] = [
   { id: "high", label: "High", ar: "عالية", dot: "bg-rose-400" },
@@ -42,6 +44,7 @@ export default function TaskEditorPage() {
   const [titleAr, setTitleAr] = React.useState("")
   // a project is a master row, selected by id — never free text
   const [projectId, setProjectId] = React.useState(params.get("project") ?? "")
+  const [milestoneId, setMilestoneId] = React.useState(params.get("milestone") ?? "")
   const [dueISO, setDueISO] = React.useState(TASK_TODAY_ISO)
   const [priority, setPriority] = React.useState<TaskPriority>("medium")
   // the board's per-column "+" pre-selects the column it was pressed in
@@ -67,7 +70,13 @@ export default function TaskEditorPage() {
     if (STATUSES.some((x) => x.id === st)) setStatus(st as TaskStatus)
     setAssigneeId(params.get("assignee") ?? "")
     if (params.get("project")) setProjectId(params.get("project") as string)
+    if (params.get("milestone")) setMilestoneId(params.get("milestone") as string)
   }, [params])
+
+  // a milestone belongs to one project, so changing project clears it
+  React.useEffect(() => {
+    if (milestoneId && getMilestone(milestoneId)?.projectId !== projectId) setMilestoneId("")
+  }, [projectId])           // eslint-disable-line react-hooks/exhaustive-deps
 
   const [description, setDescription] = React.useState("")
 
@@ -81,6 +90,7 @@ export default function TaskEditorPage() {
       title: title.trim(),
       titleAr: titleAr.trim() || title.trim(),
       projectId: project?.id,
+      milestoneId: project && milestoneId ? milestoneId : undefined,
       project: project ? project.name : "General",
       projectAr: project ? project.nameAr : "عام",
       due: pretty(dueISO), dueAr: prettyAr(dueISO), dueISO,
@@ -177,6 +187,16 @@ export default function TaskEditorPage() {
                 onCreate={() => navigate("/projects/new?from=task")}
               />
             </div>
+            <div>
+              {label(t("Milestone", "المعلم"))}
+              <MilestonePicker
+                projectId={projectId} value={milestoneId} onChange={setMilestoneId} isAr={isAr} t={t}
+                onCreate={projectId ? () => navigate(`/projects/${projectId}/milestones/new`) : undefined}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               {label(t("Due date", "تاريخ الاستحقاق"))}
               <Input type="date" value={dueISO} onChange={(e) => setDueISO(e.target.value)} />

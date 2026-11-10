@@ -8,10 +8,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@reach/shared-mocks": "*",
     "@reach/shared-ui": "*",
     "framer-motion": "^12.41.0",
     "lucide-react": "^1.21.0",
     "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.0"
   }
 }

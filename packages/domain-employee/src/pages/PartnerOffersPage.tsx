@@ -10,7 +10,8 @@ import {
 } from "lucide-react"
 
 import {
-  CATEGORY, CATEGORY_ART, type EligibleWho, OFFERS, type PartnerCategory,
+  CATEGORY, CATEGORY_ART, type EligibleWho, hasStarted, ME, type PartnerCategory, publishedOffers, useOffers,
+  voucherStatus,
   type PartnerOffer, toggleSaved, useSavedOffers, useVouchers, WHO,
 } from "../data/mock/partners"
 
@@ -34,7 +35,7 @@ export default function PartnerOffersPage() {
   const [params, setParams] = useSearchParams()
 
   const saved = useSavedOffers()
-  const vouchers = useVouchers().filter((v) => !v.used)
+  const vouchers = useVouchers().filter((v) => v.claimedById === ME.id && voucherStatus(v) === "active")
 
   const rawCat = params.get("cat")
   const cat = (CATS as string[]).includes(rawCat ?? "") ? (rawCat as typeof CATS[number]) : "all"
@@ -50,7 +51,9 @@ export default function PartnerOffersPage() {
 
   const [query, setQuery] = React.useState("")
 
-  const visible = OFFERS.filter((o) => {
+  useOffers()                       // re-render when an offer is published
+  const all = publishedOffers()
+  const visible = all.filter((o) => {
     if (cat !== "all" && o.category !== cat) return false
     if (who !== "anyone" && !o.eligible.includes(who)) return false
     const q = query.trim().toLowerCase()
@@ -59,7 +62,7 @@ export default function PartnerOffersPage() {
       .some((f) => f.toLowerCase().includes(q))
   })
 
-  const familyOffers = OFFERS.filter((o) => o.eligible.some((e) => e !== "employee")).length
+  const familyOffers = all.filter((o) => o.eligible.some((e) => e !== "employee")).length
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-5 px-4 py-7 md:px-8">
@@ -79,8 +82,8 @@ export default function PartnerOffersPage() {
           {t("Offers from our partners", "عروض شركائنا")}
         </h1>
         <p className="max-w-3xl text-[13px] text-muted-foreground">
-          {t(`${OFFERS.length} vendors extend a rate to ALTANFEETHI staff — ${familyOffers} of them cover your family too. Each offer says who can use it and how it is claimed.`,
-             `${OFFERS.length} شركاء يقدمون أسعارًا خاصة لمنسوبي التنفيذي، منها ${familyOffers} تشمل عائلتك. يوضّح كل عرض من يمكنه الاستفادة وكيفية المطالبة.`)}
+          {t(`${all.length} vendors extend a rate to ALTANFEETHI staff — ${familyOffers} of them cover your family too. Each offer says who can use it and how it is claimed.`,
+             `${all.length} شركاء يقدمون أسعارًا خاصة لمنسوبي التنفيذي، منها ${familyOffers} تشمل عائلتك. يوضّح كل عرض من يمكنه الاستفادة وكيفية المطالبة.`)}
         </p>
       </div>
 
@@ -96,7 +99,7 @@ export default function PartnerOffersPage() {
           </div>
           <div className="divide-y divide-border/40">
             {vouchers.map((v) => {
-              const offer = OFFERS.find((o) => o.id === v.offerId)
+              const offer = all.find((o) => o.id === v.offerId)
               return (
                 <button
                   key={v.id}
@@ -268,7 +271,12 @@ function OfferCard({ offer, isAr, t, saved, onOpen }: {
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground/75">
         <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{cities.join(", ")}</span>
-        <span className="inline-flex items-center gap-1"><CalendarClock className="size-3" />{t(`Until ${offer.validTo}`, `حتى ${offer.validTo}`)}</span>
+        <span className="inline-flex items-center gap-1">
+          <CalendarClock className="size-3" />
+          {hasStarted(offer)
+            ? t(`Until ${offer.validTo}`, `حتى ${offer.validTo}`)
+            : t(`From ${offer.validFrom}`, `من ${offer.validFrom}`)}
+        </span>
       </div>
 
       <div className="mt-3 flex items-center justify-end">

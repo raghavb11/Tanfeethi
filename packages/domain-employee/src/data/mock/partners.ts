@@ -1,4 +1,5 @@
 import * as React from "react"
+import { pushNotification } from "@reach/shared-mocks"
 
 import { RELATION, verifiedDependants } from "./dependants"
 
@@ -38,11 +39,116 @@ export type Branch = {
   name: string; nameAr: string
   city: string; cityAr: string
   phone: string
+  /** The line staff read. Built from the times below when they are given. */
   hours: string; hoursAr: string
+  /** Opening and closing times, 24-hour. */
+  opensAt?: string
+  closesAt?: string
+  /** Which days those times apply to, as a label. */
+  days?: string; daysAr?: string
+  /** Where it is. The pin comes from a Google Maps link the partner pastes;
+   *  without one, directions fall back to searching the branch by name. */
+  lat?: number
+  lng?: number
+  mapsUrl?: string
+  address?: string
+}
+
+const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"
+const arTime = (t: string) => t.replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)])
+
+/** "Sun-Thu 09:00-17:00" from the parts, so the editor and the card agree. */
+export function hoursLine(b: Pick<Branch, "opensAt" | "closesAt" | "days">, isAr = false) {
+  if (!b.opensAt || !b.closesAt) return ""
+  const span = isAr ? `${arTime(b.opensAt)}–${arTime(b.closesAt)}` : `${b.opensAt}–${b.closesAt}`
+  return b.days ? `${b.days} ${span}` : span
+}
+
+/** A Google Maps link the partner pasted carries the pin in one of a few
+ *  shapes. Pull the coordinates out of whichever one it is. */
+export function coordsFromMapsUrl(url: string): { lat: number; lng: number } | null {
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,            // /maps/@24.71,46.67,15z
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,        // place links
+    /[?&](?:q|query|destination)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/, // ?q=24.71,46.67
+    /^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/,   // pasted coordinates
+  ]
+  for (const re of patterns) {
+    const m = url.match(re)
+    if (m) {
+      const lat = Number(m[1]), lng = Number(m[2])
+      if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng }
+    }
+  }
+  return null
+}
+
+/** Directions straight into Google Maps. With a pin it routes to the exact
+ *  spot; without one it searches the branch by name, which still gets there. */
+export function directionsUrl(b: Branch, vendor: string) {
+  // branch names read "Riyadh · Al Olaya"; as a search that separator and a
+  // repeated city only get in the way
+  const branch = b.name.replace(/\s*·\s*/g, " ").trim()
+  const city = branch.toLowerCase().includes(b.city.toLowerCase()) ? "" : b.city
+  const destination = b.lat != null && b.lng != null
+    ? `${b.lat},${b.lng}`
+    : [vendor, branch, city].filter(Boolean).join(" ")
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`
+}
+
+/** Photographs that ship with the portal, offered when a partner has none of
+ *  their own. */
+export const IMAGE_LIBRARY = [
+  "images/cms/wellbeing.jpg", "images/cms/gathering.jpg", "images/cms/celebrate.jpg",
+  "images/cms/office.jpg", "images/cms/teamwork.jpg", "images/cms/training.jpg",
+  "images/cms/conference.jpg", "images/cms/aviation.jpg", "images/cms/ramadan.jpg",
+  "images/cms/dashboard.jpg",
+]
+
+/** An offer runs between two moments. The ISO values carry a time when the
+ *  partner set one ("2026-10-01T18:00"), and a bare date when they did not. */
+export const prettyWhen = (iso: string, isAr = false) => {
+  if (!iso) return ""
+  const hasTime = iso.includes("T")
+  const d = new Date(hasTime ? iso : `${iso}T00:00`)
+  if (Number.isNaN(d.getTime())) return iso
+  const date = d.toLocaleDateString(isAr ? "ar-EG" : "en-GB",
+    { day: "numeric", month: "short", year: "numeric" })
+  if (!hasTime) return date
+  const time = d.toLocaleTimeString(isAr ? "ar-EG" : "en-GB",
+    { hour: "2-digit", minute: "2-digit", hour12: false })
+  return `${date}, ${time}`
+}
+
+/** True once the start moment has passed, or when no start was set. */
+export const hasStarted = (o: Pick<PartnerOffer, "validFromISO">) => {
+  if (!o.validFromISO) return true
+  const d = new Date(o.validFromISO.includes("T") ? o.validFromISO : `${o.validFromISO}T00:00`)
+  return Number.isNaN(d.getTime()) || d.getTime() <= Date.now()
+}
+
+/** Where a partner goes to find their branch and copy its link. */
+export const mapsSearchUrl = (q: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+
+/** Where an offer is in its life: the partner drafts it, submits it, and an
+ *  administrator publishes it. Employees only ever see published offers. */
+export type OfferStatus = "draft" | "submitted" | "published" | "returned"
+
+export const OFFER_STATUS: Record<OfferStatus, { en: string; ar: string; chip: string }> = {
+  draft:     { en: "Draft",     ar: "\u0645\u0633\u0648\u062f\u0629", chip: "border-border bg-muted/50 text-muted-foreground" },
+  submitted: { en: "Submitted", ar: "\u0645\u064f\u0631\u0633\u0644 \u0644\u0644\u0645\u0631\u0627\u062c\u0639\u0629", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+  published: { en: "Published", ar: "\u0645\u0646\u0634\u0648\u0631", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  returned:  { en: "Returned",  ar: "\u0645\u064f\u0639\u0627\u062f", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
 }
 
 export type PartnerOffer = {
   id: string
+  /** The partner who owns it. The vendor name below is a snapshot for display. */
+  partnerId?: string
+  status?: OfferStatus
+  /** Why an administrator sent it back, shown to the partner. */
+  reviewNote?: string
   vendor: string; vendorAr: string
   category: PartnerCategory
   /** The headline saving, as it reads on the card. */
@@ -52,11 +158,16 @@ export type PartnerOffer = {
   eligible: EligibleWho[]
   /** Cap on family members per visit, where the vendor sets one. */
   guestLimit?: number
+  /** How many vouchers the partner will honour in total. Undefined = no cap.
+   *  Only the partner sees what is left; staff never see a countdown. */
+  voucherQuota?: number
   redeem: RedeemMethod
   /** For "code" offers — quoted at the counter or online. */
   code?: string
   howTo: string[]; howToAr: string[]
   branches: Branch[]
+  /** When it opens. Empty means it is live as soon as it is published. */
+  validFrom?: string; validFromISO?: string
   validTo: string; validToISO: string
   terms: string[]; termsAr: string[]
   contact: { name: string; nameAr: string; phone: string; email: string }
@@ -79,7 +190,8 @@ export const CATEGORY_ART: Record<PartnerCategory, string> = {
   education: "from-primary/85 via-primary/70 to-amber-400/60",
 }
 
-export const OFFERS: PartnerOffer[] = [
+/** Seed only. The live list is `offers` below, which the portal mutates. */
+const SEED_OFFERS: PartnerOffer[] = [
   {
     id: "p-spa-almasa", image: "images/cms/wellbeing.jpg",
     vendor: "Al Masa Spa & Wellness", vendorAr: "منتجع الماسة للعافية",
@@ -292,7 +404,6 @@ export const OFFERS: PartnerOffer[] = [
   },
 ]
 
-export const getOffer = (id: string) => OFFERS.find((o) => o.id === id)
 
 /** The people this employee can put on a voucher, for a given offer. */
 export type Beneficiary = { id: string; name: string; nameAr: string; relation: string; relationAr: string; initials: string }
@@ -323,31 +434,254 @@ export function beneficiariesFor(offer: PartnerOffer): Beneficiary[] {
 }
 
 
+// ── partners ─────────────────────────────────────────────────────────────────
+/** A vendor with a signed agreement. Offers point at one of these rather than
+ *  repeating a typed vendor name, so branches and contacts are kept once. */
+export type PartnerStatus = "active" | "suspended"
+
+export const PARTNER_STATUS: Record<PartnerStatus, { en: string; ar: string; chip: string }> = {
+  active:    { en: "Active",    ar: "نشِط",  chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  suspended: { en: "Suspended", ar: "موقوف", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+}
+
+export type Partner = {
+  id: string
+  /** Shown on screen and quoted in correspondence — unique, never reused. */
+  code: string
+  name: string; nameAr: string
+  category: PartnerCategory
+  contact: { name: string; nameAr: string; phone: string; email: string }
+  branches: Branch[]
+  agreementTo: string; agreementToISO: string
+  status: PartnerStatus
+}
+
+const pad = (n: number) => String(n).padStart(4, "0")
+
+/** The six seeded offers came with a vendor, branches and a contact, so the
+ *  partners are derived from them and the offers are pointed back. */
+let partners: Partner[] = SEED_OFFERS.map((o, i) => ({
+  id: `ptr-${i + 1}`,
+  code: `PTR-${pad(i + 1)}`,
+  name: o.vendor, nameAr: o.vendorAr,
+  category: o.category,
+  contact: o.contact,
+  branches: o.branches,
+  agreementTo: o.validTo, agreementToISO: o.validToISO,
+  status: "active",
+}))
+
+let offers: PartnerOffer[] = SEED_OFFERS.map((o, i) => ({
+  ...o, partnerId: `ptr-${i + 1}`, status: "published",
+}))
+
+const listeners = new Set<() => void>()
+const emit = () => listeners.forEach((l) => l())
+const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
+
+export const usePartners = () => React.useSyncExternalStore(subscribe, () => partners)
+export const getPartner = (id?: string) => partners.find((p) => p.id === id)
+export const activePartners = () => partners.filter((p) => p.status === "active")
+
+export const newPartnerId = () => `ptr-${Date.now().toString(36)}`
+/** Codes count up and are never reused, so an old one always means one partner. */
+export const nextPartnerCode = () =>
+  `PTR-${pad(partners.reduce((m, p) => Math.max(m, Number(p.code.replace(/\D/g, "")) || 0), 0) + 1)}`
+
+export function addPartner(p: Partner) {
+  partners = [p, ...partners]
+  log("partner", p.id, "created", `${p.code} · ${p.name}`)
+  emit()
+}
+export function updatePartner(id: string, fields: Partial<Partner>) {
+  partners = partners.map((p) => (p.id === id ? { ...p, ...fields } : p))
+  const p = getPartner(id)
+  if (p) {
+    // the name is stamped onto every offer, so a rename has to follow through
+    if (fields.name || fields.nameAr) {
+      offers = offers.map((o) => (o.partnerId === id ? { ...o, vendor: p.name, vendorAr: p.nameAr } : o))
+    }
+    log("partner", id, "updated", `${p.code} · ${p.name}`)
+  }
+  emit()
+}
+export function setPartnerStatus(id: string, status: PartnerStatus) {
+  partners = partners.map((p) => (p.id === id ? { ...p, status } : p))
+  const p = getPartner(id)
+  log("partner", id, status === "active" ? "reinstated" : "suspended", p ? `${p.code} · ${p.name}` : id)
+  emit()
+}
+
+// ── offers ───────────────────────────────────────────────────────────────────
+export const useOffers = () => React.useSyncExternalStore(subscribe, () => offers)
+/** What employees see. Everything else is still being written or reviewed. */
+export const publishedOffers = () => offers.filter((o) => o.status === "published")
+export const offersFor = (partnerId: string) => offers.filter((o) => o.partnerId === partnerId)
+export const offersAwaitingReview = () => offers.filter((o) => o.status === "submitted")
+export const getOffer = (id: string) => offers.find((o) => o.id === id)
+
+export const newOfferId = (vendor: string) =>
+  `p-${vendor.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 18)}-${Date.now().toString(36).slice(-4)}`
+
+export function addOffer(o: PartnerOffer) {
+  offers = [o, ...offers]
+  log("offer", o.id, o.status === "submitted" ? "submitted" : "created", o.headline)
+  emit()
+}
+export function updateOffer(id: string, fields: Partial<PartnerOffer>) {
+  offers = offers.map((o) => (o.id === id ? { ...o, ...fields } : o))
+  const o = getOffer(id)
+  if (o) log("offer", id, "updated", o.headline)
+  emit()
+}
+/** The partner hands it over for review; the review note from any earlier
+ *  return is cleared so it does not read as a standing objection. */
+export function submitOffer(id: string) {
+  offers = offers.map((o) => (o.id === id ? { ...o, status: "submitted", reviewNote: undefined } : o))
+  const o = getOffer(id)
+  if (o) log("offer", id, "submitted", o.headline)
+  emit()
+}
+export function publishOffer(id: string) {
+  offers = offers.map((o) => (o.id === id ? { ...o, status: "published", reviewNote: undefined } : o))
+  const o = getOffer(id)
+  if (o) log("offer", id, "published", o.headline)
+  emit()
+}
+export function returnOffer(id: string, note: string) {
+  offers = offers.map((o) => (o.id === id ? { ...o, status: "returned", reviewNote: note } : o))
+  const o = getOffer(id)
+  if (o) log("offer", id, "returned", `${o.headline} — ${note}`)
+  emit()
+}
+export function withdrawOffer(id: string) {
+  offers = offers.map((o) => (o.id === id ? { ...o, status: "draft" } : o))
+  const o = getOffer(id)
+  if (o) log("offer", id, "withdrawn", o.headline)
+  emit()
+}
+
+// ── audit trail ──────────────────────────────────────────────────────────────
+/** Every change to a partner or an offer is written down. Agreements and
+ *  discounts are money, so who changed what has to be answerable later. */
+export type PartnerLogEntry = {
+  id: string
+  at: string
+  entity: "partner" | "offer"
+  entityId: string
+  action: string
+  detail: string
+}
+
+let partnerLog: PartnerLogEntry[] = []
+export const usePartnerLog = () => React.useSyncExternalStore(subscribe, () => partnerLog)
+export const logFor = (entityId: string) => partnerLog.filter((e) => e.entityId === entityId)
+
+function log(entity: PartnerLogEntry["entity"], entityId: string, action: string, detail: string) {
+  partnerLog = [{
+    id: `log-${Date.now().toString(36)}-${partnerLog.length}`,
+    at: new Date().toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    entity, entityId, action, detail,
+  }, ...partnerLog]
+}
+
+
 // ── vouchers ─────────────────────────────────────────────────────────────────
 export type Voucher = {
   id: string
   ref: string
   offerId: string
+  /** The employee who claimed it — the account it was issued from. */
+  claimedById: string
+  claimedByName: string; claimedByNameAr: string
   /** Who it is issued to — the vendor checks the name at the counter. */
   forId: string
   forName: string; forNameAr: string
+  /** How that person relates to the employee: You, Spouse, Son… */
+  relation: string; relationAr: string
   issued: string; issuedAr: string
+  issuedISO: string
   expires: string; expiresAr: string
+  expiresISO: string
   used: boolean
+  /** Set by the partner at the counter, never by the employee. */
+  usedAtISO?: string
+  usedBranch?: string; usedBranchAr?: string
+  /** Cancelled vouchers are kept, not deleted, so the partner's history stays whole. */
+  cancelled?: boolean
 }
 
-let vouchers: Voucher[] = [
-  {
-    id: "v1", ref: "TNF-9F42", offerId: "p-spa-almasa",
-    forId: "d1", forName: "Amal Al-Saadi", forNameAr: "أمل السعدي",
-    issued: "2 days ago", issuedAr: "قبل يومين",
-    expires: "22 Sep 2026", expiresAr: "٢٢ سبتمبر ٢٠٢٦", used: false,
-  },
-]
+export type VoucherStatus = "active" | "used" | "expired" | "cancelled"
 
-const listeners = new Set<() => void>()
-const emit = () => listeners.forEach((l) => l())
-const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
+export const VOUCHER_STATUS: Record<VoucherStatus, { en: string; ar: string; chip: string }> = {
+  active:    { en: "Not used yet", ar: "لم تُستخدم", chip: "border-amber-500/35 bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+  used:      { en: "Used",         ar: "مستخدمة", chip: "border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  expired:   { en: "Expired",      ar: "منتهية", chip: "border-border bg-muted/50 text-muted-foreground" },
+  cancelled: { en: "Cancelled",    ar: "ملغاة", chip: "border-rose-500/35 bg-rose-500/10 text-rose-600 dark:text-rose-400" },
+}
+
+export function voucherStatus(v: Voucher, now = Date.now()): VoucherStatus {
+  if (v.cancelled) return "cancelled"
+  if (v.used) return "used"
+  return new Date(v.expiresISO).getTime() < now ? "expired" : "active"
+}
+
+const fmt = (d: Date, isAr = false) =>
+  d.toLocaleDateString(isAr ? "ar-EG" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
+export const fmtWhen = (iso: string, isAr = false) => {
+  const d = new Date(iso)
+  return `${fmt(d, isAr)}, ${d.toLocaleTimeString(isAr ? "ar-EG" : "en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })}`
+}
+
+/** A demo history spread across employees and families, dated relative to
+ *  today so the statuses stay sensible whenever the prototype is opened. */
+function seedVoucher(v: {
+  id: string; ref: string; offerId: string
+  by: [string, string, string]; forP: [string, string, string]; rel: [string, string]
+  daysAgo: number; usedDaysAgo?: number; branch?: [string, string]; cancelled?: boolean
+}): Voucher {
+  const issued = new Date(); issued.setDate(issued.getDate() - v.daysAgo); issued.setHours(10 + (v.daysAgo % 7), 15, 0, 0)
+  const expires = new Date(issued); expires.setDate(expires.getDate() + 30)
+  const used = v.usedDaysAgo != null ? new Date() : undefined
+  if (used) { used.setDate(used.getDate() - v.usedDaysAgo!); used.setHours(17, 40, 0, 0) }
+  return {
+    id: v.id, ref: v.ref, offerId: v.offerId,
+    claimedById: v.by[0], claimedByName: v.by[1], claimedByNameAr: v.by[2],
+    forId: v.forP[0], forName: v.forP[1], forNameAr: v.forP[2],
+    relation: v.rel[0], relationAr: v.rel[1],
+    issued: fmt(issued), issuedAr: fmt(issued, true), issuedISO: issued.toISOString(),
+    expires: fmt(expires), expiresAr: fmt(expires, true), expiresISO: expires.toISOString(),
+    used: !!used, usedAtISO: used?.toISOString(),
+    usedBranch: v.branch?.[0], usedBranchAr: v.branch?.[1],
+    cancelled: v.cancelled,
+  }
+}
+
+const KHALID: [string, string, string] = ["me", "Khalid Al-Saadi", "خالد السعدي"]
+const NOURA: [string, string, string] = ["e-noura", "Noura Al-Qahtani", "نورة القحطاني"]
+const SAUD: [string, string, string] = ["e-saud", "Saud Al-Dosari", "سعود الدوسري"]
+const FAHAD: [string, string, string] = ["e-fahad", "Fahad Al-Harbi", "فهد الحربي"]
+const SELF: [string, string] = ["You", "أنت"]
+const SPOUSE: [string, string] = ["Spouse", "الزوج/الزوجة"]
+const OLAYA: [string, string] = ["Riyadh · Al Olaya", "الرياض · العليا"]
+const HITTIN: [string, string] = ["Riyadh · Hittin", "الرياض · حطين"]
+
+let vouchers: Voucher[] = [
+  seedVoucher({ id: "v1", ref: "TNF-9F42", offerId: "p-spa-almasa", by: KHALID,
+    forP: ["d1", "Amal Al-Saadi", "أمل السعدي"], rel: SPOUSE, daysAgo: 2 }),
+  seedVoucher({ id: "v2", ref: "TNF-K7PM", offerId: "p-spa-almasa", by: NOURA,
+    forP: NOURA, rel: SELF, daysAgo: 12, usedDaysAgo: 9, branch: OLAYA }),
+  seedVoucher({ id: "v3", ref: "TNF-3RQW", offerId: "p-spa-almasa", by: SAUD,
+    forP: ["e-saud-w", "Hessa Al-Dosari", "حصة الدوسري"], rel: SPOUSE, daysAgo: 8, usedDaysAgo: 3, branch: HITTIN }),
+  seedVoucher({ id: "v4", ref: "TNF-Z2DX", offerId: "p-spa-almasa", by: SAUD,
+    forP: SAUD, rel: SELF, daysAgo: 6 }),
+  seedVoucher({ id: "v5", ref: "TNF-8HNB", offerId: "p-spa-almasa", by: FAHAD,
+    forP: ["e-fahad-m", "Latifa Al-Harbi", "لطيفة الحربي"], rel: ["Mother", "الأم"], daysAgo: 41 }),
+  seedVoucher({ id: "v6", ref: "TNF-4LCT", offerId: "p-spa-almasa", by: FAHAD,
+    forP: FAHAD, rel: SELF, daysAgo: 20, cancelled: true }),
+  seedVoucher({ id: "v7", ref: "TNF-Q9VA", offerId: "p-education-britus", by: KHALID,
+    forP: ["d2", "Rakan Al-Saadi", "راكان السعدي"], rel: ["Son", "الابن"], daysAgo: 15, usedDaysAgo: 11 }),
+]
 
 export const useVouchers = () => React.useSyncExternalStore(subscribe, () => vouchers)
 export const vouchersFor = (offerId: string) => vouchers.filter((v) => v.offerId === offerId)
@@ -356,31 +690,130 @@ const REF_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const newRef = () =>
   `TNF-${Array.from({ length: 4 }, () => REF_CHARS[Math.floor(Math.random() * REF_CHARS.length)]).join("")}`
 
+/** How many have gone out, and how many the partner has left to honour. */
+export const usedCount = (offerId: string) =>
+  vouchers.filter((v) => v.offerId === offerId && v.used && !v.cancelled).length
+export const issuedCount = (offerId: string) =>
+  vouchers.filter((v) => v.offerId === offerId && !v.cancelled).length
+export function vouchersLeft(o: PartnerOffer) {
+  if (o.voucherQuota == null) return null          // no cap set
+  return Math.max(0, o.voucherQuota - issuedCount(o.id))
+}
+/** False only when the partner's allocation is used up. */
+export const canIssueVoucher = (o: PartnerOffer) => {
+  const left = vouchersLeft(o)
+  return left == null || left > 0
+}
+
 /** Vouchers run for 30 days, which is what the agreements say. */
 export function issueVoucher(offerId: string, who: Beneficiary): Voucher {
   const expiry = new Date()
   expiry.setDate(expiry.getDate() + 30)
+  const now = new Date()
   const v: Voucher = {
     id: `v-${Date.now().toString(36)}`,
     ref: newRef(),
     offerId,
+    claimedById: ME.id, claimedByName: ME.name, claimedByNameAr: ME.nameAr,
     forId: who.id, forName: who.name, forNameAr: who.nameAr,
-    issued: "Just now", issuedAr: "الآن",
-    expires: expiry.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-    expiresAr: expiry.toLocaleDateString("ar-EG", { day: "numeric", month: "long", year: "numeric" }),
+    relation: who.relation, relationAr: who.relationAr,
+    issued: fmt(now), issuedAr: fmt(now, true), issuedISO: now.toISOString(),
+    expires: fmt(expiry), expiresAr: fmt(expiry, true), expiresISO: expiry.toISOString(),
     used: false,
   }
   vouchers = [v, ...vouchers]
+
+  // both sides hear about it: the employee gets the reference, the partner
+  // gets the name to expect and what is left of their allocation
+  const offer = getOffer(offerId)
+  if (offer) {
+    pushNotification({
+      title: `Voucher ${v.ref} issued — ${offer.vendor}`,
+      titleAr: `صدرت القسيمة ${v.ref} — ${offer.vendorAr}`,
+      body: `For ${who.name}. ${offer.headline}. Valid until ${v.expires}.`,
+      bodyAr: `باسم ${who.nameAr}. ${offer.headlineAr}. صالحة حتى ${v.expiresAr}.`,
+    })
+    const left = vouchersLeft(offer)
+    notifyPartner(offer.partnerId, offerId, {
+      title: `Voucher ${v.ref} issued`,
+      titleAr: `صدرت القسيمة ${v.ref}`,
+      body: `${who.name} on "${offer.headline}". ${left == null ? "No allocation limit." : `${left} of ${offer.voucherQuota} left.`}`,
+      bodyAr: `${who.nameAr} على "${offer.headlineAr}". ${left == null ? "لا يوجد حد للإصدار." : `متبقٍ ${left} من ${offer.voucherQuota}.`}`,
+    })
+  }
+
   emit()
   return v
 }
-export function markVoucherUsed(id: string) {
-  vouchers = vouchers.map((v) => (v.id === id ? { ...v, used: true } : v))
+
+// ── what the partner is told ─────────────────────────────────────────────────
+/** The partner's own feed. Staff never see it, and it never carries more than
+ *  the vendor needs: who to expect, and how much allocation is left. */
+export type PartnerNotice = {
+  id: string
+  partnerId?: string
+  offerId?: string
+  title: string; titleAr: string
+  body: string; bodyAr: string
+  at: string
+  unread: boolean
+}
+
+let notices: PartnerNotice[] = []
+export const usePartnerNotices = () => React.useSyncExternalStore(subscribe, () => notices)
+export const noticesFor = (partnerId: string) => notices.filter((n) => n.partnerId === partnerId)
+
+function notifyPartner(partnerId: string | undefined, offerId: string, n: {
+  title: string; titleAr: string; body: string; bodyAr: string
+}) {
+  notices = [{
+    id: `pn-${Date.now().toString(36)}-${notices.length}`,
+    partnerId, offerId,
+    ...n,
+    at: new Date().toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    unread: true,
+  }, ...notices]
+}
+
+export function markNoticesRead(partnerId: string) {
+  notices = notices.map((n) => (n.partnerId === partnerId ? { ...n, unread: false } : n))
   emit()
 }
-export function cancelVoucher(id: string) {
-  vouchers = vouchers.filter((v) => v.id !== id)
+/** The partner confirms the voucher was honoured, and where. The employee is
+ *  told, and the change goes on the partner audit trail. */
+export function markVoucherUsed(id: string, branch?: Branch) {
+  const now = new Date()
+  vouchers = vouchers.map((v) => (v.id === id
+    ? { ...v, used: true, usedAtISO: now.toISOString(), usedBranch: branch?.name, usedBranchAr: branch?.nameAr }
+    : v))
+  const v = vouchers.find((x) => x.id === id)
+  const offer = v ? getOffer(v.offerId) : undefined
+  if (v && offer) {
+    const where = branch ? ` at ${branch.name}` : ""
+    const whereAr = branch ? ` في ${branch.nameAr}` : ""
+    pushNotification({
+      title: `Voucher ${v.ref} used — ${offer.vendor}`,
+      titleAr: `استُخدمت القسيمة ${v.ref} — ${offer.vendorAr}`,
+      body: `${v.forName} used it${where}. Thank you for using partner benefits.`,
+      bodyAr: `استخدمها ${v.forNameAr}${whereAr}.`,
+    })
+    log("offer", offer.id, "voucher used", `${v.ref} · ${v.forName}${where}`)
+  }
   emit()
+}
+/** Soft cancel: the voucher stops being usable but stays in the history, and
+ *  its place in the allocation is given back. */
+export function cancelVoucher(id: string) {
+  vouchers = vouchers.map((v) => (v.id === id ? { ...v, cancelled: true } : v))
+  emit()
+}
+
+/** Everything the partner has issued, across all their offers, newest first. */
+export const vouchersForPartner = (partnerId: string) => {
+  const ids = new Set(offers.filter((o) => o.partnerId === partnerId).map((o) => o.id))
+  return vouchers
+    .filter((v) => ids.has(v.offerId))
+    .sort((a, b) => b.issuedISO.localeCompare(a.issuedISO))
 }
 
 // ── saved offers ─────────────────────────────────────────────────────────────

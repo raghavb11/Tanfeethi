@@ -1,4 +1,6 @@
-export const notifications = [
+import * as React from "react"
+
+const SEED = [
   {
     id: "n1",
     title: "Security · access review batch",
@@ -44,3 +46,34 @@ export const notifications = [
     unread: false,
   },
 ]
+
+export type Notification = (typeof SEED)[number]
+
+/** The bell reads this. Anything in the portal can add to it — issuing a
+ *  voucher, for one — so the seed is only a starting point. */
+let items: Notification[] = [...SEED]
+
+const listeners = new Set<() => void>()
+const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
+
+export const useNotifications = () =>
+  React.useSyncExternalStore(subscribe, () => items)
+
+export function pushNotification(n: {
+  title: string; titleAr: string
+  body: string; bodyAr: string
+  category?: Notification["category"]
+}) {
+  items = [{
+    id: `n-${Date.now().toString(36)}`,
+    title: n.title, titleAr: n.titleAr,
+    body: n.body, bodyAr: n.bodyAr,
+    time: "Now", timeAr: "\u0627\u0644\u0622\u0646",
+    category: n.category ?? ("service" as Notification["category"]),
+    unread: true,
+  }, ...items]
+  listeners.forEach((l) => l())
+}
+
+/** Kept for anything still reading the plain list. */
+export const notifications = SEED

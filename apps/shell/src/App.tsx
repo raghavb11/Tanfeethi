@@ -32,6 +32,9 @@ const ProjectEditorPage = lazy(() =>
 const ProjectDetailPage = lazy(() =>
   import("@reach/domain-work").then((m) => ({ default: m.ProjectDetailPage })),
 )
+const MilestoneEditorPage = lazy(() =>
+  import("@reach/domain-work").then((m) => ({ default: m.MilestoneEditorPage })),
+)
 const EmployeePage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.EmployeePage })),
 )
@@ -58,6 +61,21 @@ const PartnerOffersPage = lazy(() =>
 )
 const PartnerOfferPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.PartnerOfferPage })),
+)
+const PartnersAdminPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnersAdminPage })),
+)
+const PartnerEditorPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerEditorPage })),
+)
+const PartnerPortalPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerPortalPage })),
+)
+const PartnerOfferEditorPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerOfferEditorPage })),
+)
+const PartnerVouchersPage = lazy(() =>
+  import("@reach/domain-employee").then((m) => ({ default: m.PartnerVouchersPage })),
 )
 const DependantsPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.DependantsPage })),
@@ -195,6 +213,8 @@ export default function App() {
         <Route path="projects/new" element={<ProjectEditorPage />} />
         <Route path="projects/:id" element={<ProjectDetailPage />} />
         <Route path="projects/:id/edit" element={<ProjectEditorPage />} />
+        <Route path="projects/:id/milestones/new" element={<MilestoneEditorPage />} />
+        <Route path="projects/:id/milestones/:mid/edit" element={<MilestoneEditorPage />} />
         <Route path="manager/approvals/:id" element={<ApprovalDetailPage />} />
         <Route path="leave" element={<LeaveBalancesPage />} />
         <Route path="leave/request" element={<LeaveRequestPage />} />
@@ -204,6 +224,15 @@ export default function App() {
         <Route path="benefits" element={<BenefitsPage />} />
         <Route path="benefits/partners" element={<PartnerOffersPage />} />
         <Route path="benefits/partners/:id" element={<PartnerOfferPage />} />
+        {/* administration: the partner master and the review queue */}
+        <Route path="config/partners" element={<PartnersAdminPage />} />
+        <Route path="config/partners/new" element={<PartnerEditorPage />} />
+        <Route path="config/partners/:id/edit" element={<PartnerEditorPage />} />
+        {/* the partner's own area — their offers and nothing else */}
+        <Route path="partner" element={<PartnerPortalPage />} />
+        <Route path="partner/offers/new" element={<PartnerOfferEditorPage />} />
+        <Route path="partner/offers/:id/edit" element={<PartnerOfferEditorPage />} />
+        <Route path="partner/vouchers" element={<PartnerVouchersPage />} />
         <Route path="payslip" element={<PayslipPage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="cafeteria" element={<CafeteriaPage />} />

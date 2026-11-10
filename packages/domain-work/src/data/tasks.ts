@@ -10,6 +10,8 @@ export type Task = {
   /** The project master row this task is filed under, plus a name snapshot. */
   projectId?: string
   project: string; projectAr: string
+  /** The milestone inside that project, if the task has been placed under one. */
+  milestoneId?: string
   due: string; dueAr: string; dueISO: string
   priority: TaskPriority
   status: TaskStatus
@@ -69,9 +71,24 @@ const TEAM_SEED: Task[] = [
   { id: "tm19", assigneeId: "r8", assignee: "Turki Al-Shehri", assigneeAr: "تركي الشهري", title: "Submit July overtime sheet", titleAr: "تقديم كشف العمل الإضافي ليوليو", project: "Finance", projectAr: "المالية", due: "Aug 16, 2026", dueAr: "١٦ أغسطس", dueISO: "2026-08-16", priority: "low", status: "open", assignedBy: "Finance", assignedByAr: "المالية" },
 ]
 
+/** Where the seeded tasks sit in their projects' milestones. */
+const SEED_MILESTONE: Record<string, string> = {
+  tm2: "m-p1-1", tm3: "m-p1-1",
+  tm7: "m-p1-2", tm16: "m-p1-2",
+  t7: "m-p1-3",
+  tm4: "m-p2-1", tm18: "m-p2-1",
+  tm1: "m-p2-2", tm11: "m-p2-2",
+  t13: "m-p6-1",
+  t5: "m-p6-2",
+}
+
 /** Seeded rows were written before the project master existed — link them. */
 const linked = (list: Task[]) =>
-  list.map((t) => (t.projectId ? t : { ...t, projectId: projectIdForName(t.project) }))
+  list.map((t) => ({
+    ...t,
+    projectId: t.projectId ?? projectIdForName(t.project),
+    milestoneId: t.milestoneId ?? SEED_MILESTONE[t.id],
+  }))
 
 let tasks: Task[] = linked([...SEED, ...TEAM_SEED])
 const listeners = new Set<() => void>()
@@ -100,6 +117,16 @@ export function toggleComplete(id: string) {
   emit()
 }
 export const getTaskById = (id: string) => tasks.find((t) => t.id === id)
+/** Move a task under a milestone, or out of one (empty id). */
+export function setTaskMilestone(id: string, milestoneId: string) {
+  tasks = tasks.map((t) => (t.id === id ? { ...t, milestoneId: milestoneId || undefined } : t))
+  emit()
+}
+/** When a milestone is removed its tasks stay in the project, just ungrouped. */
+export function clearMilestone(milestoneId: string) {
+  tasks = tasks.map((t) => (t.milestoneId === milestoneId ? { ...t, milestoneId: undefined } : t))
+  emit()
+}
 
 // ── progress updates ─────────────────────────────────────────────
 

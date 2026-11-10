@@ -6,8 +6,11 @@ import { useShell } from "@reach/shell-context"
 import { AlertTriangle, ArrowLeft, CalendarClock, Check, ClipboardList, Flag, FolderKanban, MessageSquare, Pencil, RotateCcw, Send, TrendingUp, UserCircle2 } from "lucide-react"
 import { Textarea } from "@reach/shared-ui"
 
+import { MilestonePicker } from "../components/MilestonePicker"
+import { HealthPill } from "../components/HealthPill"
+import { getMilestone, milestoneHealth, useMilestones } from "../data/milestones"
 import {
-  addTaskComment, isOverdue, setTaskDue, setTaskStatus, TASK_TODAY_ISO,
+  addTaskComment, isOverdue, setTaskDue, setTaskMilestone, setTaskStatus, TASK_TODAY_ISO,
   type TaskEvent, type TaskStatus, toggleComplete,
   useTaskEvents, useTasks,
 } from "../data/tasks"
@@ -19,7 +22,9 @@ export default function TaskDetailPage() {
   const navigate = useNavigate()
   const { id = "" } = useParams()
   const [params] = useSearchParams()
-  const task = useTasks().find((x) => x.id === id)
+  const allTasks = useTasks()
+  useMilestones()
+  const task = allTasks.find((x) => x.id === id)
   const events = useTaskEvents(id)
 
   // opened from the team board: the manager is commenting on someone else's task
@@ -59,6 +64,7 @@ export default function TaskDetailPage() {
 
   const done = task.status === "completed"
   const overdue = isOverdue(task)
+  const milestone = getMilestone(task.milestoneId)
 
   const priorityMeta = task.priority === "high"
     ? { cls: "text-rose-500", dot: "bg-rose-400", label: t("High", "عالية") }
@@ -73,7 +79,22 @@ export default function TaskDetailPage() {
   ]
 
   const details: [React.ComponentType<{ className?: string }>, string, React.ReactNode][] = [
-    [FolderKanban, t("Project", "المشروع"), isAr ? task.projectAr : task.project],
+    [FolderKanban, t("Project", "المشروع"),
+      task.projectId
+        ? <button onClick={() => navigate(`/projects/${task.projectId}`)} className="text-start hover:text-primary hover:underline">
+            {isAr ? task.projectAr : task.project}
+          </button>
+        : (isAr ? task.projectAr : task.project)],
+    [Flag, t("Milestone", "المعلم"),
+      task.projectId ? (
+        <span className="flex w-full min-w-[12rem] flex-col gap-1.5">
+          <MilestonePicker
+            projectId={task.projectId} value={task.milestoneId ?? ""} isAr={isAr} t={t}
+            onChange={(mid) => setTaskMilestone(task.id, mid)}
+          />
+          {milestone && <HealthPill health={milestoneHealth(milestone, allTasks).health} isAr={isAr} size="sm" className="self-start" />}
+        </span>
+      ) : <span className="text-muted-foreground">{t("No project", "بدون مشروع")}</span>],
     [CalendarClock, t("Due date", "تاريخ الاستحقاق"),
       editingDue ? (
         <span className="flex flex-wrap items-center gap-1.5">

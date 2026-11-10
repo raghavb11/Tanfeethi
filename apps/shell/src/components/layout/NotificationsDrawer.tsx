@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@reach/shared-ui"
-import { notifications as items } from "@reach/shared-mocks"
+import { useNotifications } from "@reach/shared-mocks"
 
 export function NotificationsDrawer({
   open,
@@ -19,6 +19,7 @@ export function NotificationsDrawer({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const items = useNotifications()
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">

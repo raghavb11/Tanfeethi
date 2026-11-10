@@ -8,6 +8,8 @@ import {
 } from "lucide-react"
 
 import { STATUS_LABEL, type ProjectStatus, useProjects } from "../data/projects"
+import { projectHealth, useMilestones } from "../data/milestones"
+import { HealthPill } from "../components/HealthPill"
 import { isOverdue, useTasks } from "../data/tasks"
 
 const FILTERS: { id: "all" | ProjectStatus; en: string; ar: string }[] = [
@@ -29,6 +31,8 @@ export default function ProjectsPage() {
 
   const projects = useProjects()
   const tasks = useTasks()
+  const allTasks = tasks
+  useMilestones()
   const [q, setQ] = React.useState("")
 
   const raw = params.get("status")
@@ -109,9 +113,12 @@ export default function ProjectsPage() {
                   <p className="truncate text-[14px] font-semibold leading-tight">{isAr ? p.nameAr : p.name}</p>
                   <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{p.code}</p>
                 </div>
-                <Badge variant="outline" className={cn("shrink-0 text-[10.5px]", STATUS_LABEL[p.status].chip)}>
-                  {isAr ? STATUS_LABEL[p.status].ar : STATUS_LABEL[p.status].en}
-                </Badge>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <Badge variant="outline" className={cn("text-[10.5px]", STATUS_LABEL[p.status].chip)}>
+                    {isAr ? STATUS_LABEL[p.status].ar : STATUS_LABEL[p.status].en}
+                  </Badge>
+                  {(() => { const h = projectHealth(p.id, allTasks); return h && <HealthPill health={h} isAr={isAr} size="sm" /> })()}
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">

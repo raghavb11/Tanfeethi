@@ -1,17 +1,18 @@
 import * as React from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, Check, CreditCard, Dumbbell,
-  Globe, GraduationCap, Hotel, Info, Mail, MapPin, Phone, ShoppingBag, Sparkles,
-  Stethoscope, Ticket, Users, UtensilsCrossed,
+  ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, Check, CreditCard, Dumbbell, Eye,
+  Globe, GraduationCap, Hotel, Info, Mail, MapPin, Navigation, Pencil, Phone, Send, ShoppingBag,
+  Sparkles, Stethoscope, Ticket, Users, UtensilsCrossed,
 } from "lucide-react"
 
 import {
-  beneficiariesFor, CATEGORY, CATEGORY_ART, cancelVoucher, getOffer, issueVoucher,
-  markVoucherUsed, type Beneficiary, type PartnerCategory, type RedeemMethod,
+  beneficiariesFor, CATEGORY, CATEGORY_ART, cancelVoucher, directionsUrl, getOffer, hasStarted, issueVoucher,
+  canIssueVoucher, OFFER_STATUS, publishOffer, submitOffer, useOffers, withdrawOffer,
+  ME, type Beneficiary, fmtWhen, type PartnerCategory, type RedeemMethod, voucherStatus, VOUCHER_STATUS,
   toggleSaved, useSavedOffers, useVouchers, WHO,
 } from "../data/mock/partners"
 
@@ -34,7 +35,12 @@ export default function PartnerOfferPage() {
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
   const { id = "" } = useParams()
+  const [params] = useSearchParams()
+  /** Reached from the partner portal or the review queue, rather than by a
+   *  member of staff browsing the benefits. */
+  const fromBackstage = params.get("preview") === "1"
 
+  useOffers()                        // the preview follows the offer's status
   const offer = getOffer(id)
   const saved = useSavedOffers()
   const allVouchers = useVouchers()
@@ -55,7 +61,8 @@ export default function PartnerOfferPage() {
   }
 
   const people = beneficiariesFor(offer)
-  const mine = allVouchers.filter((v) => v.offerId === offer.id)
+  // an employee sees the vouchers they claimed; everyone else's are the partner's business
+  const mine = allVouchers.filter((v) => v.offerId === offer.id && v.claimedById === ME.id && !v.cancelled)
   const isSaved = saved.includes(offer.id)
   const CatIcon = CAT_ICON[offer.category]
   const RedeemIcon = REDEEM[offer.redeem].icon
@@ -66,6 +73,9 @@ export default function PartnerOfferPage() {
     setPicked(null); setConfirming(false)
   }
 
+  const status = offer.status ?? "published"
+  const unpublished = status !== "published"
+
   return (
     <div className="mx-auto max-w-[1100px] space-y-5 px-4 py-7 md:px-8">
       <button
@@ -74,6 +84,66 @@ export default function PartnerOfferPage() {
       >
         <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to partner benefits", "العودة إلى مزايا الشركاء")}
       </button>
+
+      {/* published, and opened from the portal: confirm what staff are seeing */}
+      {!unpublished && fromBackstage && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-500/35 bg-emerald-500/[0.06] p-3.5">
+          <Check className="size-4 shrink-0 text-emerald-500" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold">
+              {t("Published — this is what staff see", "منشور — هذا ما يراه الموظفون")}
+            </p>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              {t("Withdraw it to make changes. It comes off the benefits page while you edit.",
+                 "اسحبه لإجراء تعديلات؛ سيرتفع من صفحة المزايا أثناء ذلك.")}
+            </p>
+          </div>
+          <Button
+            variant="outline" size="sm" className="shrink-0 gap-1.5"
+            onClick={() => { withdrawOffer(offer.id); navigate(`/partner/offers/${offer.id}/edit`) }}
+          >
+            <Pencil className="size-3.5" />{t("Withdraw to edit", "اسحب للتعديل")}
+          </Button>
+        </div>
+      )}
+
+      {/* not live yet: say so plainly, and offer the next step from here */}
+      {unpublished && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/35 bg-amber-500/[0.07] p-3.5">
+          <Eye className="size-4 shrink-0 text-amber-500" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold">
+              {t("Preview — staff cannot see this offer yet", "معاينة — الموظفون لا يرون هذا العرض بعد")}
+            </p>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              {status === "submitted"
+                ? t("It is with ALTANFEETHI for review.", "هو لدى التنفيذي للمراجعة.")
+                : t("This is exactly how it will read once it is published.", "هكذا سيظهر بالضبط بعد النشر.")}
+            </p>
+          </div>
+          <Badge variant="outline" className={cn("shrink-0 text-[10px]", OFFER_STATUS[status].chip)}>
+            {isAr ? OFFER_STATUS[status].ar : OFFER_STATUS[status].en}
+          </Badge>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {status !== "submitted" && (
+              <Button variant="outline" size="sm" className="gap-1.5"
+                      onClick={() => navigate(`/partner/offers/${offer.id}/edit`)}>
+                <Pencil className="size-3.5" />{t("Edit", "تعديل")}
+              </Button>
+            )}
+            {status !== "submitted" && (
+              <Button size="sm" className="gap-1.5" onClick={() => submitOffer(offer.id)}>
+                <Send className="size-3.5" />{t("Submit for review", "إرسال للمراجعة")}
+              </Button>
+            )}
+            {status === "submitted" && (
+              <Button size="sm" className="gap-1.5" onClick={() => publishOffer(offer.id)}>
+                <Check className="size-3.5" />{t("Publish to staff", "نشر للموظفين")}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* header */}
       <div className="relative overflow-hidden rounded-2xl">
@@ -102,7 +172,10 @@ export default function PartnerOfferPage() {
               {isAr ? CATEGORY[offer.category].ar : CATEGORY[offer.category].en}
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2.5 py-0.5 text-[11px] text-white/90 backdrop-blur">
-              <CalendarClock className="size-3" />{t(`Valid until ${offer.validTo}`, `ساري حتى ${offer.validTo}`)}
+              <CalendarClock className="size-3" />
+              {offer.validFrom && !hasStarted(offer)
+                ? t(`From ${offer.validFrom} until ${offer.validTo}`, `من ${offer.validFrom} حتى ${offer.validTo}`)
+                : t(`Valid until ${offer.validTo}`, `ساري حتى ${offer.validTo}`)}
             </span>
           </div>
           <h1 className="mt-2.5 font-heading text-2xl font-bold tracking-tight text-white drop-shadow-sm sm:text-3xl">
@@ -224,10 +297,18 @@ export default function PartnerOfferPage() {
                     <p className="text-[13px] font-medium">{isAr ? b.nameAr : b.name}</p>
                     <p className="text-[11.5px] text-muted-foreground">{isAr ? b.hoursAr : b.hours}</p>
                   </div>
-                  <a href={`tel:${b.phone.replace(/\s/g, "")}`}
-                     className="inline-flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-primary hover:underline">
-                    <Phone className="size-3.5" />{b.phone}
-                  </a>
+                  <div className="flex shrink-0 flex-wrap items-center gap-3">
+                    <a href={`tel:${b.phone.replace(/\s/g, "")}`}
+                       className="inline-flex items-center gap-1.5 text-[12px] font-medium text-primary hover:underline">
+                      <Phone className="size-3.5" />{b.phone}
+                    </a>
+                    <a
+                      href={directionsUrl(b, offer.vendor)} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-[12px] font-medium transition-colors hover:border-primary/40 hover:text-primary"
+                    >
+                      <Navigation className="size-3.5" />{t("Directions", "الاتجاهات")}
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -259,6 +340,16 @@ export default function PartnerOfferPage() {
                    "تُصدر باسم شخص واحد وصالحة لمدة ٣٠ يومًا.")}
               </p>
 
+              {/* the allocation is the partner's business; staff see only
+                  whether a voucher can be had */}
+              {!canIssueVoucher(offer) && (
+                <p className="mt-3 rounded-xl border border-border/70 bg-muted/30 p-3 text-[12px] text-muted-foreground">
+                  {t("Vouchers for this offer have all been taken. The partner may release more — check back, or contact them directly.",
+                     "نفدت قسائم هذا العرض. قد يوفّر الشريك المزيد — عاود لاحقًا أو تواصل معه مباشرة.")}
+                </p>
+              )}
+
+              {canIssueVoucher(offer) && (
               <div className="mt-3 space-y-1.5">
                 {people.map((p) => (
                   <button
@@ -279,8 +370,9 @@ export default function PartnerOfferPage() {
                   </button>
                 ))}
               </div>
+              )}
 
-              {picked && !confirming && (
+              {picked && canIssueVoucher(offer) && !confirming && (
                 <Button className="mt-3 w-full" onClick={() => setConfirming(true)}>
                   <Ticket className="size-4" />{t("Issue voucher", "إصدار القسيمة")}
                 </Button>
@@ -332,23 +424,28 @@ export default function PartnerOfferPage() {
                       <span className="rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[13px] font-bold tracking-wider text-primary">
                         {v.ref}
                       </span>
-                      {v.used && (
-                        <Badge variant="outline" className="text-[10px] text-muted-foreground">{t("Used", "مستخدمة")}</Badge>
-                      )}
+                      <Badge variant="outline" className={cn("text-[10px]", VOUCHER_STATUS[voucherStatus(v)].chip)}>
+                        {isAr ? VOUCHER_STATUS[voucherStatus(v)].ar : VOUCHER_STATUS[voucherStatus(v)].en}
+                      </Badge>
                     </div>
                     <p className="mt-1.5 text-[12px]">
-                      {t(`For ${v.forName}`, `لـ ${v.forNameAr}`)}
+                      {t(`For ${v.forName} · ${v.relation}`, `لـ ${v.forNameAr} · ${v.relationAr}`)}
                     </p>
                     <p className="text-[11px] text-muted-foreground">
                       {t(`Issued ${v.issued} · expires ${v.expires}`, `صدرت ${v.issuedAr} · تنتهي ${v.expiresAr}`)}
                     </p>
-                    {!v.used && (
+                    {v.used && v.usedAtISO && (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                        {t(`Used ${fmtWhen(v.usedAtISO)}${v.usedBranch ? ` at ${v.usedBranch}` : ""}`,
+                           `استُخدمت ${fmtWhen(v.usedAtISO, true)}${v.usedBranchAr ? ` في ${v.usedBranchAr}` : ""}`)}
+                      </p>
+                    )}
+                    {/* the partner marks it used at the counter; staff can only
+                        give back a voucher they will not use */}
+                    {voucherStatus(v) === "active" && (
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => markVoucherUsed(v.id)}>
-                          <Check className="size-3.5" />{t("Mark as used", "تعليمها كمستخدمة")}
-                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => cancelVoucher(v.id)}>
-                          {t("Cancel", "إلغاء")}
+                          {t("Cancel voucher", "إلغاء القسيمة")}
                         </Button>
                       </div>
                     )}

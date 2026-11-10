@@ -4,7 +4,7 @@ import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
   ArrowRight, Bell, Building2, CalendarDays, Coffee, FolderTree, GitBranch,
-  ShieldCheck, Tags,
+  Handshake, ShieldCheck, Tags,
 } from "lucide-react"
 
 import { useRules } from "../data/rules"
@@ -71,6 +71,13 @@ export default function ConfigurationPage() {
       label: "Cafeteria menu & places", labelAr: "قائمة الكافتيريا والمواقع",
       desc: "What can be ordered, and where it can be delivered.",
       descAr: "ما يمكن طلبه، وأين يمكن توصيله.",
+      ready: true,
+    },
+    {
+      to: "/config/partners", icon: Handshake,
+      label: "Partners & offers", labelAr: "الشركاء والعروض",
+      desc: "Vendors with an agreement, and the offers they submit for staff.",
+      descAr: "الجهات المتعاقدة والعروض التي تقدّمها للموظفين.",
       ready: true,
     },
     {
