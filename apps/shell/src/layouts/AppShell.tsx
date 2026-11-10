@@ -8,7 +8,7 @@ import { AIAssistantPanel } from "@/components/layout/AIAssistantPanel"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
 import { railItemForPath } from "@/config/navigation"
-import { titleForPath } from "@/config/page-titles"
+import { intermediateCrumbs, titleForPath } from "@/config/page-titles"
 import { useShell } from "@reach/shell-context"
 
 /** Lightweight placeholder shown while a lazily-loaded domain chunk resolves. */
@@ -45,7 +45,10 @@ export function AppShell() {
   const isAr = locale === "ar"
   const crumbs =
     railItem && railItem.path !== location.pathname
-      ? [{ label: isAr ? railItem.titleAr : railItem.title, to: railItem.path }]
+      ? [
+          { label: isAr ? railItem.titleAr : railItem.title, to: railItem.path },
+          ...intermediateCrumbs(location.pathname, locale),
+        ]
       : undefined
 
   return (

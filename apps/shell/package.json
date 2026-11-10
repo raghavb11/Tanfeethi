@@ -11,10 +11,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reach/domain-content": "*",
     "@reach/domain-dashboard": "*",
     "@reach/domain-employee": "*",
     "@reach/domain-intelligence": "*",
-    "@reach/domain-content": "*",
+    "@reach/domain-learning": "*",
+    "@reach/domain-operations": "*",
     "@reach/domain-preview": "*",
     "@reach/domain-services": "*",
     "@reach/domain-surveys": "*",

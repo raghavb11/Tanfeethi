@@ -1,6 +1,18 @@
 import { hubMeta } from "@reach/domain-preview/nav"
 
 const titlesEn: Record<string, string> = {
+  "/learning": "Learning",
+  "/operations": "Operations & Performance",
+  "/operations/delegation/new": "New delegation request",
+  "/operations/incentives": "Incentives",
+  "/operations/evaluations": "Previous evaluations log",
+  "/operations/personal": "Personal evaluation",
+  "/operations/personal/goals": "Goals list",
+  "/operations/personal/history": "My previous evaluations",
+  "/operations/personal/half-year": "Half-year evaluation",
+  "/operations/personal/annual": "Annual evaluation",
+  "/operations/personal/operational-log": "My operational evaluations",
+  "/operations/evaluate": "Team annual evaluation",
   "/": "Home",
   "/notifications": "Notification history",
   "/work": "Work Hub",
@@ -34,6 +46,18 @@ const titlesEn: Record<string, string> = {
 }
 
 const titlesAr: Record<string, string> = {
+  "/learning": "التعلم",
+  "/operations": "العمليات والأداء",
+  "/operations/delegation/new": "طلب إنابة جديد",
+  "/operations/incentives": "الحوافز",
+  "/operations/evaluations": "سجل التقييمات السابقة",
+  "/operations/personal": "التقييم الشخصي",
+  "/operations/personal/goals": "قائمة الأهداف",
+  "/operations/personal/history": "عرض تقييماتي السابقة",
+  "/operations/personal/half-year": "التقييم النصف سنوي",
+  "/operations/personal/annual": "التقييم السنوي",
+  "/operations/personal/operational-log": "سجل تقييماتي التشغيلية",
+  "/operations/evaluate": "التقييم السنوي للفريق",
   "/": "الرئيسية",
   "/notifications": "سجل التنبيهات",
   "/work": "مركز العمل",
@@ -76,5 +100,24 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
     return locale === "ar" ? hubMeta[m[1]].titleAr : hubMeta[m[1]].title
   }
   if (pathname.startsWith("/hubs/")) return locale === "ar" ? "مركز المعاينة" : "Preview hub"
-  return "Reach"
+  // Operations & Performance detail routes
+  const ar = locale === "ar"
+  if (pathname.startsWith("/operations/checklists/")) return ar ? "قوائم التحقق التشغيلية" : "Operational checklists"
+  if (pathname.startsWith("/operations/evaluations/employee/")) return ar ? "سجل تقييمات الموظف" : "Employee evaluation history"
+  if (pathname.startsWith("/operations/evaluations/")) return ar ? "تفاصيل التقييم" : "Evaluation details"
+  if (pathname.startsWith("/operations/evaluate/")) return ar ? "تقييم الموظف" : "Employee evaluation"
+  return ar ? "وجهة" : "WIJHA"
+}
+
+/** Breadcrumb steps between the rail section and the current page, for the
+ *  deeper Figma trails (e.g. العمليات والأداء › التقييم الشخصي › قائمة الأهداف). */
+export function intermediateCrumbs(pathname: string, locale: "en" | "ar" = "en"): { label: string; to: string }[] {
+  const ar = locale === "ar"
+  if (pathname.startsWith("/operations/personal/"))
+    return [{ label: ar ? "التقييم الشخصي" : "Personal evaluation", to: "/operations/personal" }]
+  if (pathname.startsWith("/operations/evaluations/"))
+    return [{ label: ar ? "سجل التقييمات السابقة" : "Previous evaluations log", to: "/operations/evaluations" }]
+  if (pathname.startsWith("/operations/evaluate/"))
+    return [{ label: ar ? "التقييم السنوي للفريق" : "Team annual evaluation", to: "/operations/evaluate" }]
+  return []
 }

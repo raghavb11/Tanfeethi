@@ -97,6 +97,22 @@ const ApprovalDetailPage = lazy(() =>
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const NotificationHistoryPage = lazy(() => import("@/pages/NotificationHistory"))
+const OperationsHubPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.OperationsHubPage })))
+const ChecklistRunPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.ChecklistRunPage })))
+const DelegationRequestPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.DelegationRequestPage })))
+const IncentivesPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.IncentivesPage })))
+const EvaluationsLogPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.EvaluationsLogPage })))
+const EmployeeEvaluationsPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.EmployeeEvaluationsPage })))
+const EvaluationDetailPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.EvaluationDetailPage })))
+const PersonalEvaluationPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.PersonalEvaluationPage })))
+const GoalsListPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.GoalsListPage })))
+const MyGoalResultsPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.MyGoalResultsPage })))
+const HalfYearReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.HalfYearReviewPage })))
+const AnnualReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.AnnualReviewPage })))
+const MyChecklistEvaluationsPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.MyChecklistEvaluationsPage })))
+const EmployeeReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.EmployeeReviewPage })))
+const TeamAnnualReviewPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.TeamAnnualReviewPage })))
+const LearningPage = lazy(() => import("@reach/domain-learning").then((m) => ({ default: m.LearningPage })))
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
 )
@@ -297,8 +313,22 @@ export default function App() {
         <Route path="hubs/:hubId" element={<PreviewHubPage />} />
         {/* WIJHA rail destinations — stand-ins until their pages land */}
         <Route path="calendar" element={<Navigate to="/events" replace />} />
-        <Route path="learning" element={<Navigate to="/hubs/productivity" replace />} />
-        <Route path="operations" element={<Navigate to="/manager" replace />} />
+        <Route path="learning" element={<LearningPage />} />
+        <Route path="operations" element={<OperationsHubPage />} />
+        <Route path="operations/checklists/:runId" element={<ChecklistRunPage />} />
+        <Route path="operations/delegation/new" element={<DelegationRequestPage />} />
+        <Route path="operations/incentives" element={<IncentivesPage />} />
+        <Route path="operations/evaluations" element={<EvaluationsLogPage />} />
+        <Route path="operations/evaluations/employee/:employeeId" element={<EmployeeEvaluationsPage />} />
+        <Route path="operations/evaluations/:evaluationId" element={<EvaluationDetailPage />} />
+        <Route path="operations/personal" element={<PersonalEvaluationPage />} />
+        <Route path="operations/personal/goals" element={<GoalsListPage />} />
+        <Route path="operations/personal/history" element={<MyGoalResultsPage />} />
+        <Route path="operations/personal/half-year" element={<HalfYearReviewPage />} />
+        <Route path="operations/personal/annual" element={<AnnualReviewPage />} />
+        <Route path="operations/personal/operational-log" element={<MyChecklistEvaluationsPage />} />
+        <Route path="operations/evaluate" element={<TeamAnnualReviewPage />} />
+        <Route path="operations/evaluate/:employeeId" element={<EmployeeReviewPage />} />
       </Route>
     </Routes>
   )
