@@ -46,6 +46,8 @@ export default function LeaveRequestPage() {
   const [halfDay, setHalfDay] = React.useState(false)
   const [reason, setReason] = React.useState("")
   const [contact, setContact] = React.useState("")
+  // the button stays live as drawn; a submit with gaps shows what is missing
+  const [tried, setTried] = React.useState(false)
   const fileRef = React.useRef<HTMLInputElement>(null)
 
   const leaveTypes = useLiveLeaveTypes()
@@ -64,7 +66,7 @@ export default function LeaveRequestPage() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!canSubmit || !type) return
+    if (!canSubmit || !type) { setTried(true); return }
     addLeaveRequest({
       id: newRequestId(), type,
       from: pretty(from), fromAr: prettyAr(from),
@@ -78,6 +80,9 @@ export default function LeaveRequestPage() {
     navigate("/leave")
   }
 
+  // Figma 4871:16776: 17px label line + 7px gap, 36px borderless page-fill inputs, 17px between rows
+  const lbl = "mb-[7px] leading-[17px]"
+  const fc = cn(fieldClass, "rounded-[8px] border-transparent")
   const selectWrap = (child: React.ReactNode) => (
     <div className="relative">
       {child}
@@ -89,15 +94,15 @@ export default function LeaveRequestPage() {
     <Page>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,729fr)_minmax(0,480fr)]">
         {/* ── form ── */}
-        <SectionCard icon={Umbrella} title={t("Request leave", "طلب إجازة")}>
+        <SectionCard icon={Umbrella} title={t("Request leave", "طلب إجازة")} className="sm:px-4">
           <form onSubmit={submit} noValidate>
-            <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
+            <div className="grid gap-x-4 gap-y-[17px] sm:grid-cols-2">
               <div>
-                <FieldLabel htmlFor="lv-type" required>{t("Leave type", "نوع الإجازة")}</FieldLabel>
+                <FieldLabel htmlFor="lv-type" required className={lbl}>{t("Leave type", "نوع الإجازة")}</FieldLabel>
                 {selectWrap(
                   <select id="lv-type" value={type} onChange={(e) => setType(e.target.value as LeaveTypeId)} required
-                    className={cn(fieldClass, "appearance-none pe-9", !type && "text-muted-foreground")}>
-                    <option value="" disabled>{t("Choose from the list", "أختر من القائمة")}</option>
+                    className={cn(fc, "appearance-none pe-9", !type && "text-muted-foreground", tried && !type && "border-error")}>
+                    <option value="" disabled>{t("Choose from the list", "اختر من القائمة")}</option>
                     {leaveTypes.map((x) => (
                       <option key={x.id} value={x.id}>{isAr ? x.nameAr : x.name} — {remaining(x)} {t("days available", "يوم متاح")}</option>
                     ))}
@@ -105,30 +110,30 @@ export default function LeaveRequestPage() {
                 )}
               </div>
               <div>
-                <FieldLabel htmlFor="lv-delegate" required>{t("Covering colleague", "الموظف المناب عنك")}</FieldLabel>
+                <FieldLabel htmlFor="lv-delegate" required className={lbl}>{t("Covering colleague", "الموظف المناب عنك")}</FieldLabel>
                 {selectWrap(
                   <select id="lv-delegate" value={delegateId} onChange={(e) => setDelegateId(e.target.value)} required
-                    className={cn(fieldClass, "appearance-none pe-9", !delegateId && "text-muted-foreground")}>
-                    <option value="" disabled>{t("Choose from the list", "أختر من القائمة")}</option>
+                    className={cn(fc, "appearance-none pe-9", !delegateId && "text-muted-foreground", tried && !delegateId && "border-error")}>
+                    <option value="" disabled>{t("Choose from the list", "اختر من القائمة")}</option>
                     {delegates.map((p) => <option key={p.id} value={p.id}>{isAr ? p.nameAr : p.name} — {isAr ? p.titleAr : p.title}</option>)}
                   </select>,
                 )}
               </div>
               <div>
-                <FieldLabel htmlFor="lv-from" required>{t("Leave start date", "تاريخ بداية الإجازة")}</FieldLabel>
-                <DateField id="lv-from" value={from} onChange={setFrom} placeholder={t("Choose a date", "أختر من القائمة")} />
+                <FieldLabel htmlFor="lv-from" required className={lbl}>{t("Leave start date", "تاريخ بداية الإجازة")}</FieldLabel>
+                <DateField id="lv-from" value={from} onChange={setFrom} placeholder={t("Choose a date", "اختر من القائمة")} />
               </div>
               <div>
-                <FieldLabel htmlFor="lv-to" required>{t("Leave end date", "تاريخ إنتهاء الإجازة")}</FieldLabel>
-                <DateField id="lv-to" value={to} min={from || undefined} onChange={setTo} placeholder={t("Choose a date", "أختر من القائمة")} />
+                <FieldLabel htmlFor="lv-to" required className={lbl}>{t("Leave end date", "تاريخ انتهاء الإجازة")}</FieldLabel>
+                <DateField id="lv-to" value={to} min={from || undefined} onChange={setTo} placeholder={t("Choose a date", "اختر من القائمة")} />
               </div>
             </div>
 
             {/* attachments */}
-            <div className="mt-5">
-              <FieldLabel required={needsFiles || !type}>{needsFiles || !type ? t("Attachments required", "المرفقات مطلوبة") : t("Attachments (optional)", "المرفقات (اختياري)")}</FieldLabel>
+            <div className="mt-[17px]">
+              <FieldLabel required={needsFiles || !type} className={lbl}>{needsFiles || !type ? t("Attachments required", "المرفقات مطلوبة") : t("Attachments (optional)", "المرفقات (اختياري)")}</FieldLabel>
               <input ref={fileRef} type="file" multiple className="hidden" onChange={(e) => { setFiles((f) => [...f, ...Array.from(e.target.files ?? [])]); e.target.value = "" }} />
-              <GoldButton className="w-full sm:w-[calc(50%-8px)]" onClick={() => fileRef.current?.click()}>
+              <GoldButton className="h-[34px] w-full rounded-[8px] text-[13px] sm:w-[208px]" onClick={() => fileRef.current?.click()}>
                 {t("Upload Attachments", "رفع مرفقات")}
               </GoldButton>
               {files.length > 0 && (
@@ -170,12 +175,7 @@ export default function LeaveRequestPage() {
               </div>
             )}
 
-            {/* optional details kept from the earlier form */}
-            <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
-              className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline">
-              <ChevronDown className={cn("size-4 transition-transform", more && "rotate-180")} />
-              {t("More details (optional)", "تفاصيل إضافية (اختياري)")}
-            </button>
+            {/* optional details kept from the earlier form — opened from the link beside the buttons */}
             {more && (
               <div className="mt-4 grid gap-4">
                 <label className="inline-flex items-center gap-2 text-[13px]">
@@ -198,9 +198,20 @@ export default function LeaveRequestPage() {
               </div>
             )}
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <GoldButton type="submit" disabled={!canSubmit} className="w-full sm:w-auto sm:min-w-[89px]">{t("Submit Request", "إرسال الطلب")}</GoldButton>
-              <OutlineButton className="w-full sm:w-auto sm:min-w-[63px]" onClick={() => navigate(-1)}>{t("Cancel", "إلغاء")}</OutlineButton>
+            {tried && !canSubmit && (
+              <p className="mt-4 text-[12.5px] text-error" role="alert">
+                {overBalance ? t("This request is longer than your balance.", "مدة الطلب أطول من رصيدك.")
+                  : t("Complete the required fields marked *.", "أكمل الحقول المطلوبة المعلّمة بـ *.")}
+              </p>
+            )}
+            <div className="mt-[25px] flex flex-col gap-4 sm:flex-row sm:items-center">
+              <GoldButton type="submit" aria-disabled={!canSubmit} className="h-[34px] w-full rounded-[8px] text-[13px] sm:w-auto sm:min-w-[118px]">{t("Submit Request", "إرسال الطلب")}</GoldButton>
+              <OutlineButton className="h-[34px] w-full rounded-[8px] text-[13px] sm:w-auto sm:min-w-[83px]" onClick={() => navigate(-1)}>{t("Cancel", "إلغاء")}</OutlineButton>
+              <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
+                className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-primary sm:ms-auto">
+                <ChevronDown className={cn("size-3.5 transition-transform", more && "rotate-180")} />
+                {t("More details (optional)", "تفاصيل إضافية (اختياري)")}
+              </button>
             </div>
           </form>
         </SectionCard>
@@ -226,7 +237,7 @@ function DateField({ id, value, onChange, min, placeholder }: { id: string; valu
   return (
     <div className="relative">
       <input id={id} type="date" value={value} min={min} onChange={(e) => onChange(e.target.value)} required
-        className={cn(fieldClass, "relative pe-9 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0",
+        className={cn(fieldClass, "relative rounded-[8px] border-transparent pe-9 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:size-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0",
           !value && "text-transparent")} />
       {!value && <span className="pointer-events-none absolute inset-y-0 start-3 flex items-center text-[13px] text-muted-foreground">{placeholder}</span>}
       <CalendarDays className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-icon" />

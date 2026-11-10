@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import {
   AlertTriangle, CalendarClock, CheckCircle2, ChevronRight, Circle, CirclePause, CirclePlay, Clock,
-  Flag, FolderKanban, Inbox, LayoutGrid, List, Plus, RotateCcw, Search, Sparkles,
+  Flag, Inbox, LayoutGrid, List, Plus, RotateCcw, Search, Sparkles,
 } from "lucide-react"
 
 import {
@@ -113,8 +113,8 @@ export default function MyTasksPage() {
   return (
     <Page>
       {/* ── hero ───────────────────────────────────────────────────────── */}
-      <section className="highlight-card hl-green flex flex-col gap-8 rounded-2xl px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:ps-6 lg:pe-14 lg:py-10">
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-5">
+      <section className="highlight-card hl-green flex flex-col gap-8 rounded-[16px] px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:ps-6 lg:pe-14 lg:py-10">
+        <div className="flex min-w-0 flex-col justify-between gap-5 lg:min-h-[163px] lg:w-[693px] lg:gap-[15px]">
           <div className="flex flex-col gap-2">
             <h1 className="text-[28px] font-medium leading-[38px] tracking-tight">{t("Projects & Tasks", "المشاريع و المهام")}</h1>
             <p className="text-[14px] text-muted-foreground">
@@ -128,12 +128,13 @@ export default function MyTasksPage() {
             ))}
           </div>
         </div>
-        <span aria-hidden className="hidden w-[2.5px] self-stretch bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
+        <span aria-hidden className="hidden w-[2.5px] self-stretch lg:my-px bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
         <div className="flex items-center justify-center gap-8 lg:w-[300px] lg:justify-between">
           <Legend rows={(["open", "on-hold", "in-progress"] as const).map((s) => ({
             label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: count(s), dot: STATUS_META[s].dot,
           }))} />
           <Donut
+            mirror={!isAr}
             total={active} label={t("Tasks", "مهام")}
             slices={(["open", "on-hold", "in-progress"] as const).map((s) => ({ value: count(s), color: STATUS_META[s].color }))}
           />
@@ -155,19 +156,6 @@ export default function MyTasksPage() {
               </button>
             ))}
           </div>
-          <button
-            onClick={() => newTask()}
-            className="btn-primary-grad inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-[13px] font-medium"
-          >
-            <Plus className="size-4" />
-            {managerView ? t("Assign task", "إسناد مهمة") : t("New task", "مهمة جديدة")}
-          </button>
-          <button
-            onClick={() => navigate("/projects")}
-            className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <FolderKanban className="size-4" />{t("Projects", "المشاريع")}
-          </button>
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-3 lg:w-auto">
@@ -231,25 +219,35 @@ export default function MyTasksPage() {
           </div>
 
           {/* web: five columns, scrolling sideways inside their own track */}
-          <div className="mt-4 hidden overflow-x-auto pb-3 md:block [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-sm [&::-webkit-scrollbar-thumb]:bg-foreground [&::-webkit-scrollbar-track]:rounded-sm [&::-webkit-scrollbar-track]:bg-secondary">
-            <div className="flex min-w-max gap-4 lg:min-w-0">
+          <BoardScroller>
               {STATUS_ORDER.map((s) => {
-                const cards = visible.filter((x) => x.status === s).sort((a, b) => a.dueISO.localeCompare(b.dueISO))
+                // board order is the manual (seeded) order, not due date
+                const cards = visible.filter((x) => x.status === s)
                 return (
                   <div
                     key={s}
                     onDragOver={(e) => { e.preventDefault(); setOverCol(s) }}
                     onDragLeave={() => setOverCol((c) => (c === s ? null : c))}
                     onDrop={() => drop(s)}
-                    className={cn("flex w-[208px] shrink-0 flex-col gap-3 rounded-[10px] transition-colors lg:w-auto lg:min-w-[208px] lg:flex-1",
+                    className={cn("group/col flex w-[208px] shrink-0 flex-col gap-3 rounded-[10px] transition-colors",
                       overCol === s && "bg-soft-accent/40 outline-1 outline-dashed outline-primary/50")}
                   >
-                    <div className="flex h-12 items-center justify-between rounded-[10px] bg-[var(--card-elevated)] px-3.5 ring-1 ring-inset ring-[var(--card-ring)]">
+                    <div className="flex h-12 items-center justify-between rounded-[10px] bg-card px-3.5 ring-1 ring-inset ring-[var(--card-ring)]">
                       <span className="flex items-center gap-2">
                         <StatusDot status={s} />
                         <span className="text-[12.4px] font-medium">{isAr ? STATUS_META[s].ar : STATUS_META[s].en}</span>
                       </span>
-                      <span className="text-[12px] tabular-nums">{cards.length}</span>
+                      <span className="flex items-center gap-2">
+                        {/* add-to-column: revealed on hover / keyboard focus so the column reads as drawn */}
+                        <button
+                          onClick={() => newTask(s)}
+                          aria-label={managerView ? t("Assign task", "إسناد مهمة") : t("New task", "مهمة جديدة")}
+                          className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-foreground/5 hover:text-primary focus-visible:opacity-100 group-hover/col:opacity-100"
+                        >
+                          <Plus className="size-3.5" />
+                        </button>
+                        <span className="text-[12px] tabular-nums">{cards.length}</span>
+                      </span>
                     </div>
                     {cards.map((x) => (
                       <BoardCard
@@ -265,17 +263,10 @@ export default function MyTasksPage() {
                         {t("Drop a task here", "أفلت مهمة هنا")}
                       </div>
                     )}
-                    <button
-                      onClick={() => newTask(s)}
-                      className="flex items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-primary"
-                    >
-                      <Plus className="size-3.5" />{t("Add", "إضافة")}
-                    </button>
                   </div>
                 )
               })}
-            </div>
-          </div>
+          </BoardScroller>
           {visible.length === 0 && (
             <Empty icon={CheckCircle2} text={t("No tasks match these filters.", "لا توجد مهام مطابقة لهذه التصفية.")} />
           )}
@@ -327,6 +318,37 @@ export default function MyTasksPage() {
   )
 }
 
+/** The board track (2062:2570): 208px columns centred with 16px gaps, scrolling
+ *  sideways inside itself, and the drawn 4px scroll indicator (2062:2923) under it. */
+function BoardScroller({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  // thumb share and offset; the frame draws a 66% thumb at the start when nothing overflows
+  const [bar, setBar] = React.useState({ size: 0.658, at: 0 })
+  const measure = React.useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    const over = el.scrollWidth - el.clientWidth
+    if (over <= 1) { setBar({ size: 0.658, at: 0 }); return }
+    const size = el.clientWidth / el.scrollWidth
+    setBar({ size, at: (Math.abs(el.scrollLeft) / over) * (1 - size) })
+  }, [])
+  React.useEffect(() => {
+    measure()
+    window.addEventListener("resize", measure)
+    return () => window.removeEventListener("resize", measure)
+  }, [measure])
+  return (
+    <div className="mt-4 hidden md:block">
+      <div ref={ref} onScroll={measure} className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max justify-center gap-4 lg:min-w-0">{children}</div>
+      </div>
+      <div aria-hidden className="relative mt-4 h-1 rounded-[2px] bg-secondary">
+        <span className="absolute inset-y-0 rounded-[2px] bg-muted-foreground" style={{ width: `${bar.size * 100}%`, insetInlineStart: `${bar.at * 100}%` }} />
+      </div>
+    </div>
+  )
+}
+
 /** Hero selector card ("Work Card Selector"): 81 high, radius 12, icon 32. */
 function StatusCard({ status, value, isAr, onClick }: { status: "open" | "on-hold" | "in-progress"; value: number; isAr: boolean; onClick: () => void }) {
   const Icon = status === "open" ? Inbox : status === "on-hold" ? CirclePause : CirclePlay
@@ -335,12 +357,12 @@ function StatusCard({ status, value, isAr, onClick }: { status: "open" | "on-hol
   return (
     <button
       onClick={onClick}
-      className="group flex h-[81px] items-center gap-3 rounded-xl bg-[var(--card-elevated)] px-[18px] py-4 text-start ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 lg:w-[215px]"
+      className="group flex min-h-[81px] items-center gap-3 rounded-[12px] bg-card px-[18px] py-4 text-start ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 lg:w-[215px]"
     >
       <Icon className={cn("size-8 shrink-0 stroke-[1.6]", tone)} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[16px] font-semibold leading-8">{value} {isAr ? (status === "open" ? "قيد الانتظار" : m.ar) : (status === "open" ? "pending" : m.en.toLowerCase())}</span>
-        <span className="text-[11.5px] text-muted-foreground">{isAr ? m.hintAr : m.hint}</span>
+        <span className="text-[11.5px] leading-[13px] text-muted-foreground">{isAr ? m.hintAr : m.hint}</span>
       </span>
       <ChevronRight className={cn("size-4 shrink-0 text-icon transition-transform", isAr && "rotate-180")} />
     </button>
@@ -388,20 +410,20 @@ function BoardCard({ task, isAr, t, dragging, onDragStart, onDragEnd, onOpen }: 
             <span className="truncate text-[11px] text-muted-foreground">{first}</span>
           </span>
           <span className={cn("flex shrink-0 items-center gap-1 text-[11px]", overdue ? "font-semibold text-error" : "text-muted-foreground")}>
-            {overdue ? <AlertTriangle className="size-3" /> : <Clock className="size-3" />}
             {shortDate(task.dueISO, isAr)}
+            {overdue ? <AlertTriangle className="size-3" /> : <Clock className="size-3" />}
           </span>
         </div>
       </div>
       {hint ? (
         <div className="flex items-center justify-center gap-2 border-t border-input px-3 py-3">
           <Sparkles className="size-[13px] shrink-0 text-primary" />
-          <span className="truncate text-[10px] font-medium">{hint}</span>
+          <span className="text-center text-[10px] leading-[13px] text-muted-foreground">{hint}</span>
         </div>
       ) : overdue ? (
         <div className="flex items-center justify-center gap-2 border-t border-input px-3 py-3 text-error">
           <AlertTriangle className="size-[13px] shrink-0" />
-          <span className="text-[10px] font-medium">{t("Overdue — needs a new date", "متأخرة — تحتاج موعدًا جديدًا")}</span>
+          <span className="text-[10px] font-medium leading-[13px]">{t("Overdue — needs a new date", "متأخرة — تحتاج موعدًا جديدًا")}</span>
         </div>
       ) : null}
     </div>

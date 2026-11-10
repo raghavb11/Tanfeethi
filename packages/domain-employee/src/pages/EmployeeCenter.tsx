@@ -106,7 +106,9 @@ export default function EmployeeCenter() {
         <div className="min-w-0 space-y-6">
           <ShiftsCard />
           <SectionCard icon={Link2} title={t("Services", "خدمات")} bodyClassName="mt-[22px]">
-            <div className="grid grid-cols-4 gap-y-6 pb-2 sm:grid-cols-[repeat(4,62px)] sm:justify-start sm:gap-x-[43px] sm:ps-[19px]">
+            <div className={cn("grid grid-cols-4 gap-y-6 pb-2 sm:justify-start sm:ps-[19px]",
+              // columns hug their longest label (the English labels are wider than the 62px circles)
+              isAr ? "sm:grid-cols-[repeat(4,62px)] sm:gap-x-[43px]" : "sm:grid-cols-[repeat(4,minmax(62px,auto))] sm:gap-x-[43px] sm:ps-9 [&_button>span:last-child]:text-[12px]")}>
               {SERVICES.map((s) => (
                 <ServiceButton key={s.id} icon={SERVICE_ICON[s.icon]} label={isAr ? s.labelAr : s.label} onClick={() => navigate(s.to)} />
               ))}
@@ -382,9 +384,10 @@ function PerformanceCard() {
       </div>
       <div className="mt-auto flex items-center justify-between gap-2.5 pt-8">
         <div className="max-w-[114px] text-[11.5px] leading-[15px] text-muted-foreground">{t("Next review", "المراجعة القادمة")} · {isAr ? performance.nextReviewAr : performance.nextReview}</div>
-        <div className="flex items-baseline gap-2" dir="ltr">
-          <span className="text-[28px] font-bold leading-9">{performance.rating}</span>
-          <span className="text-[13px] leading-[17px] text-muted-foreground">/ {performance.outOf}</span>
+        {/* "/ 5" sits on the start side of the score in both directions (AR and EN frames) */}
+        <div className="flex items-baseline gap-2">
+          <span className="text-[13px] leading-[17px] text-muted-foreground" dir="ltr">/ {performance.outOf}</span>
+          <span className="text-[28px] font-bold leading-9" dir="ltr">{performance.rating}</span>
         </div>
         <Chip tone="success" icon={TrendingUp} className="px-2.5 text-[11.5px] [&_svg]:size-3">{isAr ? performance.verdictAr : performance.verdict}</Chip>
       </div>

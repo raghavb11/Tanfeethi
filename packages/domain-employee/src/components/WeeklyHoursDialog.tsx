@@ -31,7 +31,7 @@ export function WeeklyHoursDialog({ open, onOpenChange }: { open: boolean; onOpe
       <DialogContent
         showCloseButton={false}
         dir={isAr ? "rtl" : "ltr"}
-        className="max-h-[90svh] gap-0 overflow-hidden rounded-2xl bg-popover p-0 ring-1 ring-border sm:max-w-[378px]"
+        className="max-h-[90svh] gap-0 overflow-hidden rounded-2xl bg-[color-mix(in_srgb,var(--primary)_18%,var(--background))] p-0 ring-1 ring-border sm:max-w-[378px]"
       >
         <div className="flex items-start justify-between gap-3 px-4 pb-4 pt-5">
           <DialogTitle className="sr-only">{t("Your hours this week", "دوامك لهذا الأسبوع")}</DialogTitle>

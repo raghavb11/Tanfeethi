@@ -10,9 +10,9 @@ export const CALENDARS: { id: CalendarId; en: string; ar: string; color: string 
   { id: "ops",        en: "Operations team",        ar: "فريق العمليات",       color: "#a997c7" },
   { id: "lounges",    en: "Lounges & hospitality",  ar: "الصالات والضيافة",    color: "#2e9b62" },
   { id: "learning",   en: "Learning & workshops",   ar: "التعلم والورش",       color: "#ce7a5b" },
-  // the design leaves these two rows as "*تقويم*" placeholders
-  { id: "recruiting", en: "Recruiting & interviews", ar: "التوظيف والمقابلات", color: "#d14f45" },
-  { id: "leave",      en: "Team leave",             ar: "إجازات الفريق",       color: "#d14f45" },
+  // the design leaves these two rows as "*تقويم*" placeholders; their entries are drawn rose-gold
+  { id: "recruiting", en: "Recruiting & interviews", ar: "التوظيف والمقابلات", color: "#ce7a5b" },
+  { id: "leave",      en: "Team leave",             ar: "إجازات الفريق",       color: "#ce7a5b" },
 ]
 export const calendarById = (id: CalendarId) => CALENDARS.find((c) => c.id === id)!
 

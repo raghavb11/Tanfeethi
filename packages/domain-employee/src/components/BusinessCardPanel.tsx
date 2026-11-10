@@ -87,7 +87,8 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
     image: { icon: Download, label: t("Save Code as Image", "حفظ الرمز كصورة") },
   }
 
-  const subtitle = [share.title ? (isAr ? emp.titleAr : emp.title) : "", share.department ? (isAr ? emp.departmentAr : emp.department) : ""].filter(Boolean).join(" · ")
+  // the owner's own card always reads title · department (the toggles govern what the QR shares)
+  const subtitle = [isAr ? emp.titleAr : emp.title, isAr ? emp.departmentAr : emp.department].filter(Boolean).join(" · ")
 
   return (
     <SectionCard icon={IdCard} title={t("Business Card", "بطاقة العمل")} className={className}>
@@ -106,13 +107,13 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
         <div ref={qrRef} className="size-[188px] bg-white p-0">
           <QrMatrix payload={vcard} size={29} />
         </div>
-        <p className="mt-9 max-w-[250px] text-[12.5px] leading-5 text-muted-foreground">
+        <p className={`mt-[29px] text-[12.5px] leading-5 text-muted-foreground ${isAr ? "max-w-[250px]" : "max-w-[420px]"}`}>
           {t("Scan the code to add me to your contacts directly, no app needed.", "امسح الرمز لإضافتي إلى جهات الاتصال مباشرة دون الحاجة إلى التطبيق.")}
         </p>
         <div className="mt-4 flex items-center gap-1.5">
           <WijhaMark className="size-9" />
           <span className="flex flex-col items-start leading-none">
-            <span className="text-[15px]">وجهة</span>
+            <span className="text-[15px]">{isAr ? "وجهة" : "Wijha"}</span>
             <span className="mt-[3px] text-[10px] tracking-wide text-muted-foreground">WIJHA</span>
           </span>
         </div>
@@ -123,7 +124,7 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
             const A = ACTIONS[a]
             const Icon = done === a ? Check : A.icon
             return (
-              <button key={a} type="button" onClick={() => run(a)} className="group flex w-24 flex-col items-center gap-3">
+              <button key={a} type="button" onClick={() => run(a)} className="group flex min-w-24 flex-col items-center gap-3 whitespace-nowrap">
                 <span className="grid size-[62px] place-items-center rounded-full bg-secondary transition-colors group-hover:bg-soft-accent">
                   <Icon className="size-6 text-primary" strokeWidth={1.6} />
                 </span>
@@ -135,7 +136,7 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
       </div>
 
       {/* what is shared */}
-      <div className="mt-8 px-0 pb-4 sm:px-4 text-[17px] font-medium">{t("What's Being Shared", "ما الذي تتم مشاركته")}</div>
+      <div className="mt-[26px] px-0 pb-4 sm:px-4 text-[17px] font-medium">{t("What's Being Shared", "ما الذي تتم مشاركته")}</div>
       <div aria-hidden className="h-0.5 bg-secondary" />
       <ul>
         {SHARE_FIELDS.map((f) => (

@@ -26,7 +26,7 @@ export default function ProfilePage() {
 
         {/* end column — profile + settings */}
         <div className="order-1 min-w-0 space-y-6 xl:order-2">
-          <SectionCard icon={UserRound} title={t("Profile", "الملف الشخصي")}>
+          <SectionCard icon={UserRound} title={t("Profile", "الملف الشخصي")} className="sm:px-4">
             {/* phone Account header: avatar, name, title */}
             <div className="mb-4 flex items-center gap-3 xl:hidden">
               <span className="grid size-14 shrink-0 place-items-center rounded-full bg-soft-accent text-[18px] font-medium text-primary ring-1 ring-primary" dir="ltr">{emp.initials}</span>
@@ -44,7 +44,7 @@ export default function ProfilePage() {
             </div>
           </SectionCard>
 
-          <SectionCard icon={Settings} title={t("Settings", "الإعدادات")}>
+          <SectionCard icon={Settings} title={t("Settings", "الإعدادات")} className="sm:px-4">
             <div className="divide-y divide-border">
               <div className="flex items-center justify-between gap-4 px-4 py-4">
                 <span className="text-[17px]">{t("Notifications", "التنبيهات")}</span>

@@ -78,12 +78,14 @@ export function StatusDot({ status, className }: { status: TaskStatus; className
 }
 
 /** A ring chart over a set of slices, with the total in the hole. */
-export function Donut({ slices, total, label, size = 124, stroke = 16 }: {
+export function Donut({ slices, total, label, size = 124, stroke = 16, mirror }: {
   slices: { value: number; color: string }[]
   total: number
   label: string
   size?: number
   stroke?: number
+  /** run the slices anticlockwise (the English frames draw the ring mirrored) */
+  mirror?: boolean
 }) {
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
@@ -91,7 +93,7 @@ export function Donut({ slices, total, label, size = 124, stroke = 16 }: {
   let offset = 0
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: mirror ? "rotate(-90deg) scaleY(-1)" : "rotate(-90deg)" }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--secondary)" strokeWidth={stroke} />
         {sum > 0 && slices.map((s, i) => {
           const len = (s.value / sum) * c
@@ -146,7 +148,7 @@ export type Option = { value: string; label: string; hint?: React.ReactNode; lea
 
 /** Figma filter dropdown (h36 · radius 8 · Card/Fill · px 12 · gap 9):
  *  [leading mark] label  value ………… [count] ⌄ . Opens a small list inline. */
-export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue }: {
+export function FilterSelect({ lead, label, value, options, onChange, count, className, ariaLabel, menuClassName, hideValue, triggerClassName }: {
   lead?: React.ReactNode
   label?: string
   value: string
@@ -158,6 +160,8 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
   menuClassName?: string
   /** Show only the label on the trigger (the header "Reassign" button). */
   hideValue?: boolean
+  /** extra classes for the trigger button (height / fill overrides) */
+  triggerClassName?: string
 }) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
@@ -175,10 +179,10 @@ export function FilterSelect({ lead, label, value, options, onChange, count, cla
       <button
         type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="listbox"
         aria-label={ariaLabel ?? label}
-        className="flex h-9 w-full items-center gap-[9px] rounded-lg bg-[var(--card-elevated)] ps-3 pe-3 text-start outline-none ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 focus-visible:ring-primary"
+        className={cn("flex h-9 w-full items-center gap-[9px] rounded-[8px] bg-[var(--card-elevated)] ps-3 pe-3 text-start outline-none ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 focus-visible:ring-primary", triggerClassName)}
       >
         {lead}
-        {label && <span className={cn("shrink-0 text-muted-foreground", hideValue ? "flex-1 text-[13.5px] font-medium text-foreground" : "text-[11.5px]")}>{label}</span>}
+        {label && <span className={cn("shrink-0 text-muted-foreground", hideValue ? "flex-1 text-[13.5px] text-foreground" : "text-[11.5px]")}>{label}</span>}
         {!hideValue && <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{current?.label}</span>}
         {count !== undefined && <span className="shrink-0 text-[12px] tabular-nums text-muted-foreground">{count}</span>}
         <ChevronDown className={cn("size-[13px] shrink-0 text-icon transition-transform", open && "rotate-180")} />

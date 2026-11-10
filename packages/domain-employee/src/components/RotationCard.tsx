@@ -33,7 +33,7 @@ export function RotationCard({ r }: { r: Rotation }) {
         <>
           <div aria-hidden className="my-4 h-0.5 rounded-full bg-[#1aad70]/15" />
           <div className="truncate text-[14.5px] leading-[22.75px]">{t("Substitute employee", "الموظف البديل")}: {isAr ? r.substituteAr : r.substitute}</div>
-          <div className="mt-[3px] truncate text-[12.5px] leading-[19px] text-muted-foreground">{t("Email", "أيميل")}: <span dir="ltr">{r.substituteEmail}</span></div>
+          <div className="mt-[3px] truncate text-[12.5px] leading-[19px] text-muted-foreground">{t("Email", "إيميل")}: <span dir="ltr">{r.substituteEmail}</span></div>
         </>
       )}
     </div>

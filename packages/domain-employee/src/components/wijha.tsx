@@ -139,7 +139,7 @@ export function Toggle({ checked, onChange, label, className }: { checked: boole
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-7 w-16 shrink-0 items-center rounded-full p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring",
-        checked ? "bg-primary/80" : "bg-secondary",
+        checked ? "bg-primary" : "bg-secondary",
         className,
       )}
     >
@@ -250,7 +250,7 @@ export function Separator({ className }: { className?: string }) {
 /** Key/value row (Profile "الملف الشخصي" list). */
 export function InfoRow({ label, value, ltr }: { label: string; value: React.ReactNode; ltr?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-4 last:border-b-0">
+    <div className="flex items-center justify-between gap-4 border-b border-input px-4 py-4 last:border-b-0">
       <span className="shrink-0 text-[12.5px] text-muted-foreground">{label}</span>
       <span className="min-w-0 truncate text-[14px] text-foreground" dir={ltr ? "ltr" : undefined}>{value}</span>
     </div>

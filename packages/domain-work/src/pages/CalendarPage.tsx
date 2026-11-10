@@ -79,46 +79,49 @@ export default function CalendarPage() {
   return (
     <Page>
       {/* ── toolbar (h72 · radius 12 · px 18) ─────────────────────────── */}
-      <div className="panel flex flex-wrap items-center justify-between gap-3 rounded-xl px-[18px] py-4">
+      <div className="panel flex min-h-[72px] flex-wrap items-center justify-between gap-3 rounded-[12px] px-[18px] py-4">
         <div className="flex flex-wrap items-center gap-4 lg:gap-8">
           <button onClick={() => set({ date: CAL_TODAY_ISO })}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-input bg-background px-4 text-[14px] font-medium hover:bg-foreground/5">
-            <span>{t("Today", "اليوم")}</span><CalendarDays className="size-4 text-icon" />
+            className="inline-flex h-[34px] items-center gap-2 rounded-[8px] border border-input px-4 text-[13px] font-semibold hover:bg-foreground/5">
+            <CalendarDays className="size-3 text-foreground" /><span>{t("Today", "اليوم")}</span>
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-8">
             <button onClick={() => step(-1)} aria-label={t("Previous", "السابق")}
-              className="inline-flex size-6 items-center justify-center rounded-md bg-secondary hover:bg-secondary/70">
+              className="inline-flex size-6 items-center justify-center rounded-[5.6px] bg-secondary hover:bg-secondary/70">
               <ChevronLeft className={cn("size-3.5", isAr && "rotate-180")} />
             </button>
-            <span className="min-w-[150px] text-center text-[15px] font-medium tabular-nums" aria-live="polite">{rangeLabel(view, date, isAr)}</span>
+            <span className="text-center text-[13.7px] font-medium leading-[14.5px] tabular-nums" aria-live="polite">{rangeLabel(view, date, isAr)}</span>
             <button onClick={() => step(1)} aria-label={t("Next", "التالي")}
-              className="inline-flex size-6 items-center justify-center rounded-md bg-secondary hover:bg-secondary/70">
+              className="inline-flex size-6 items-center justify-center rounded-[5.6px] bg-secondary hover:bg-secondary/70">
               <ChevronRight className={cn("size-3.5", isAr && "rotate-180")} />
             </button>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 lg:gap-8">
-          <div className="inline-flex h-10 items-center gap-0.5 rounded-lg bg-background p-1 ring-1 ring-inset ring-[var(--card-ring)]" role="tablist">
+          <div className="inline-flex h-9 items-center gap-[2px] rounded-[9px] p-[3px]" role="tablist"
+            style={{ backgroundColor: "color-mix(in oklab, var(--card-elevated) 50%, transparent)" }}>
             {(["day", "week", "month"] as const).map((v) => (
               <button key={v} role="tab" aria-selected={view === v} onClick={() => set({ view: v })}
-                className={cn("h-8 rounded-md px-3.5 text-[14px] transition-colors",
-                  view === v ? "bg-soft-accent font-medium text-primary" : "text-muted-foreground hover:text-foreground")}>
+                className={cn("h-[30px] w-[57px] rounded-[6px] transition-colors",
+                  view === v ? "bg-soft-accent text-[15px] font-semibold text-primary" : "text-[13px] text-muted-foreground hover:text-foreground")}>
                 {v === "day" ? t("Day", "يوم") : v === "week" ? t("Week", "أسبوع") : t("Month", "شهر")}
               </button>
             ))}
           </div>
-          <button onClick={() => navigate(`/calendar/new?date=${CAL_TODAY_ISO}&now=1`)}
-            className="inline-flex h-[34px] items-center gap-2 rounded-lg border border-input px-5 text-[14px] font-medium hover:bg-foreground/5">
-            <span>{t("Meet now", "اجتماع الآن")}</span><Video className="size-4 text-icon" />
-          </button>
-          <button onClick={() => openNew(date)}
-            className="btn-primary-grad inline-flex h-[34px] items-center gap-2 rounded-lg px-5 text-[14px] font-medium">
-            <Plus className="size-4" />{t("New appointment", "موعد جديد")}
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate(`/calendar/new?date=${CAL_TODAY_ISO}&now=1`)}
+              className="inline-flex h-[34px] min-w-[124px] items-center justify-center gap-2 rounded-[8px] border border-input px-3 text-[13px] font-medium hover:bg-foreground/5">
+              <Video className="size-[13px] text-foreground" /><span>{t("Meet now", "اجتماع الآن")}</span>
+            </button>
+            <button onClick={() => openNew(date)}
+              className="btn-primary-grad inline-flex h-[34px] min-w-[124px] items-center justify-center gap-2 rounded-[8px] px-3 text-[13px] font-medium">
+              <Plus className="size-3" strokeWidth={3} />{t("New appointment", "موعد جديد")}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className={cn("mt-6 grid items-start gap-5 lg:grid-cols-[300px_minmax(0,1fr)]", view !== "month" && "lg:ps-1")}>
         {/* ── main grid ─────────────────────────────────────────────── */}
         <div className="min-w-0">
           {!ready ? <Skeleton className="h-[811px]" /> : (
@@ -138,7 +141,7 @@ export default function CalendarPage() {
         </div>
 
         {/* ── sidebar ─────────────────────────────────────────────────── */}
-        <aside className="order-first flex flex-col gap-6 lg:order-none">
+        <aside className="order-first flex flex-col gap-6">
           <MiniMonth date={date} view={view} isAr={isAr} t={t} events={events} onPick={(d) => set({ date: d })} />
           <MyCalendars hidden={hidden} all={all} isAr={isAr} t={t} booked={booked} />
         </aside>
@@ -156,21 +159,24 @@ function TimeGrid({ days, onDay, isAr, t, onOpen, onNew }: {
   const bodyH = hours.length * HOUR_PX
   const cols = `56px repeat(${days.length}, minmax(0, 1fr))`
   const nowTop = ((CAL_NOW_MIN - FIRST_HOUR * 60) / 60) * HOUR_PX
+  // the day view (2521:6688) draws one untinted heading across the whole card
+  const single = days.length === 1
+  const tint = (d: string) => !single && d === CAL_TODAY_ISO
   return (
-    <div className="panel overflow-hidden rounded-xl">
+    <div className="panel overflow-hidden rounded-[12px]">
       {/* day headings */}
-      <div className="grid border-b border-input" style={{ gridTemplateColumns: cols }}>
-        <span />
+      <div className="grid border-b border-input" style={{ gridTemplateColumns: single ? "1fr" : cols }}>
+        {!single && <span />}
         {days.map((d) => {
           const today = d === CAL_TODAY_ISO
           return (
-            <div key={d} className={cn("relative flex h-[66px] flex-col items-center justify-center border-s border-input", today && "bg-foreground/[0.04]")}>
-              <span className={cn("text-[18px] font-semibold leading-6 tabular-nums", today && "text-primary")}>{toDate(d).getDate()}</span>
-              <span className={cn("text-[11px] text-muted-foreground", today && "text-primary")}>{fmt(d, isAr, { weekday: "long" })}</span>
+            <div key={d} className={cn("relative flex h-[66px] flex-col items-center justify-center gap-[5px] text-muted-foreground", !single && "border-s border-input", tint(d) && "bg-primary/[0.09] text-primary")}>
+              <span className={cn("text-[20px] font-medium leading-[20px] tabular-nums", today && "font-bold")}>{toDate(d).getDate()}</span>
+              <span className={cn("text-[11px] leading-[11.5px]", today && "font-semibold")}>{fmt(d, isAr, { weekday: "long" })}</span>
               {today && (
                 <button onClick={() => onNew(d)} aria-label={t("New appointment today", "موعد جديد اليوم")}
-                  className="absolute end-2.5 top-2.5 inline-flex size-5 items-center justify-center rounded-full bg-primary/80 text-background hover:bg-primary">
-                  <Plus className="size-3.5" strokeWidth={2.5} />
+                  className="absolute end-[9px] top-3 inline-flex size-[22px] items-center justify-center rounded-full bg-primary text-background hover:brightness-110">
+                  <Plus className="size-2.5" strokeWidth={3} />
                 </button>
               )}
             </div>
@@ -181,7 +187,7 @@ function TimeGrid({ days, onDay, isAr, t, onOpen, onNew }: {
       <div className="grid min-h-10 border-b border-input" style={{ gridTemplateColumns: cols }}>
         <span className="flex items-center justify-center text-[10px] text-muted-foreground">{t("All day", "طوال اليوم")}</span>
         {days.map((d) => (
-          <div key={d} className={cn("flex flex-col gap-1 border-s border-input p-1", d === CAL_TODAY_ISO && "bg-foreground/[0.04]")}>
+          <div key={d} className={cn("flex flex-col gap-1 border-s border-input p-1", tint(d) && "bg-primary/[0.09]")}>
             {onDay(d).filter((e) => e.allDay).map((e) => <EventChip key={e.id} e={e} isAr={isAr} onOpen={onOpen} />)}
           </div>
         ))}
@@ -190,7 +196,7 @@ function TimeGrid({ days, onDay, isAr, t, onOpen, onNew }: {
       <div className="relative grid" style={{ gridTemplateColumns: cols, height: bodyH }}>
         <div className="relative">
           {hours.map((h, i) => (
-            <span key={h} className="absolute inset-x-0 text-center text-[11px] tabular-nums text-muted-foreground" style={{ top: i * HOUR_PX + 8 }}>
+            <span key={h} className="absolute inset-x-0 text-center text-[10.5px] leading-3 tabular-nums text-muted-foreground" style={{ top: i * HOUR_PX + 5 }}>
               {String(h).padStart(2, "0")}:00
             </span>
           ))}
@@ -198,25 +204,25 @@ function TimeGrid({ days, onDay, isAr, t, onOpen, onNew }: {
         {days.map((d) => {
           const today = d === CAL_TODAY_ISO
           return (
-            <div key={d} className={cn("relative border-s border-input", today && "bg-foreground/[0.04]")}>
+            <div key={d} className={cn("relative border-s border-input", tint(d) && "bg-primary/[0.09]")}>
               {hours.map((h, i) => (
                 <button key={h} onClick={() => onNew(d, `${String(h).padStart(2, "0")}:00`)}
                   aria-label={t(`New appointment at ${h}:00`, `موعد جديد الساعة ${h}:00`)}
-                  className="absolute inset-x-0 border-t border-input/70 transition-colors hover:bg-foreground/[0.03]"
+                  className="absolute inset-x-0 border-t border-input/40 transition-colors hover:bg-foreground/[0.03]"
                   style={{ top: i * HOUR_PX, height: HOUR_PX }} />
               ))}
               {onDay(d).filter((e) => !e.allDay && e.start && e.end).map((e) => {
                 const top = ((minutes(e.start!) - FIRST_HOUR * 60) / 60) * HOUR_PX
-                const h = Math.max(28, (durationMin(e) / 60) * HOUR_PX - 4)
+                const h = Math.max(28, (durationMin(e) / 60) * HOUR_PX - 1)
                 return (
-                  <div key={e.id} className="absolute inset-x-1" style={{ top: top + 2, height: h }}>
-                    <EventBlock e={e} isAr={isAr} onOpen={onOpen} />
+                  <div key={e.id} className="absolute inset-x-1" style={{ top, height: h }}>
+                    <EventBlock e={e} isAr={isAr} onOpen={onOpen} wide={single} />
                   </div>
                 )
               })}
               {today && nowTop > 0 && nowTop < bodyH && (
                 <div className="pointer-events-none absolute inset-x-0 z-10 h-0.5 bg-primary" style={{ top: nowTop }}>
-                  <span className="absolute -end-1 -top-[4px] size-2.5 rounded-full bg-primary" />
+                  <span className="absolute -start-1 -top-[4px] size-2.5 rounded-full bg-primary" />
                 </div>
               )}
             </div>
@@ -228,17 +234,19 @@ function TimeGrid({ days, onDay, isAr, t, onOpen, onNew }: {
 }
 
 /** A timed event: calendar-tinted fill, a 2px edge at the end side. */
-function EventBlock({ e, isAr, onOpen }: { e: CalendarEvent; isAr: boolean; onOpen: (e: CalendarEvent) => void }) {
+function EventBlock({ e, isAr, onOpen, wide }: { e: CalendarEvent; isAr: boolean; onOpen: (e: CalendarEvent) => void; wide?: boolean }) {
   const c = calendarById(e.calendar).color
-  const short = durationMin(e) <= 30
+  const short = durationMin(e) < 45
   return (
     <button
       onClick={() => onOpen(e)}
-      className="flex h-full w-full flex-col overflow-hidden rounded-md border-e-2 px-2 py-1.5 text-start transition-[filter] hover:brightness-125"
-      style={{ backgroundColor: `color-mix(in oklab, ${c} 18%, var(--background))`, borderInlineEndColor: c }}
+      className={cn("flex h-full w-full flex-col overflow-hidden rounded-[4px] border-s-2 px-2 text-start transition-[filter] hover:brightness-125", short ? "justify-center" : "pt-[7px] pb-2")}
+      style={{ backgroundColor: `color-mix(in srgb, ${c} 15%, transparent)`, borderInlineStartColor: c }}
     >
-      <span className="truncate text-[11.5px] font-medium leading-4">{isAr ? e.titleAr : e.title}</span>
-      {!short && <span className="mt-1.5 text-[10px] tabular-nums text-muted-foreground">{timeRange(e)}</span>}
+      <span className="truncate text-[11px] leading-[14px]">{isAr ? e.titleAr : e.title}</span>
+      {!short && (e.online && durationMin(e) < 90
+        ? <span className="mt-1 flex items-center gap-1.5 self-start text-[10px] leading-3 tabular-nums text-muted-foreground"><Video className="size-3" />{timeRange(e)}</span>
+        : <span className={cn("mt-1 text-[10px] leading-3 tabular-nums text-muted-foreground", wide ? "self-start" : "self-end")}>{timeRange(e)}</span>)}
       {!short && (e.location || e.online) && durationMin(e) >= 90 && (
         <span className="mt-auto flex items-center gap-1 text-[10px] text-muted-foreground">
           {e.online ? <Video className="size-3" /> : <MapPin className="size-3" />}
@@ -253,10 +261,10 @@ function EventChip({ e, isAr, onOpen, withTime }: { e: CalendarEvent; isAr: bool
   const c = calendarById(e.calendar).color
   return (
     <button onClick={() => onOpen(e)}
-      className="flex w-full flex-col rounded-md border-e-2 px-2 py-1 text-start hover:brightness-125"
-      style={{ backgroundColor: `color-mix(in oklab, ${c} 18%, var(--background))`, borderInlineEndColor: c }}>
+      className="flex w-full flex-col rounded-[4px] border-s-2 px-2 py-1 text-start hover:brightness-125"
+      style={{ backgroundColor: `color-mix(in srgb, ${c} 15%, transparent)`, borderInlineStartColor: c }}>
       <span className="truncate text-[11px] font-medium" style={{ color: e.allDay ? c : undefined }}>{isAr ? e.titleAr : e.title}</span>
-      {withTime && e.start && <span className="mt-1 text-[10px] tabular-nums text-muted-foreground">{timeRange(e)}</span>}
+      {withTime && e.start && <span className="mt-1 self-end text-[10px] tabular-nums text-muted-foreground">{timeRange(e)}</span>}
     </button>
   )
 }
@@ -271,10 +279,10 @@ function MonthGrid({ date, onDay, isAr, t, onOpen, onPickDay }: {
   const cells = Array.from({ length: 42 }, (_, i) => addDays(start, i))
   const month = toDate(date).getMonth()
   return (
-    <div className="panel overflow-hidden rounded-xl">
-      <div className="grid grid-cols-7 border-b border-input">
+    <div className="overflow-hidden rounded-[12px] border border-input">
+      <div className="grid h-10 grid-cols-7 items-center border-b border-input">
         {cells.slice(0, 7).map((d) => (
-          <span key={d} className="py-3 text-center text-[12.5px] font-medium">{fmt(d, isAr, { weekday: "long" })}</span>
+          <span key={d} className="text-center text-[12.5px] text-muted-foreground">{fmt(d, isAr, { weekday: "long" })}</span>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -283,10 +291,10 @@ function MonthGrid({ date, onDay, isAr, t, onOpen, onPickDay }: {
           const inMonth = toDate(d).getMonth() === month
           const today = d === CAL_TODAY_ISO
           return (
-            <div key={d} className={cn("flex h-32 min-w-0 flex-col gap-1.5 border-input p-2", i % 7 !== 0 && "border-s", i >= 7 && "border-t")}>
-              <button onClick={() => onPickDay(d)}
+            <div key={d} className={cn("flex h-32 min-w-0 flex-col gap-1.5 border-input/70 p-2", i % 7 !== 0 && "border-s", i >= 7 && "border-t")}>
+              <button onClick={() => onPickDay(d)} aria-current={today ? "date" : undefined}
                 className={cn("self-start rounded-md px-1 text-[12.5px] tabular-nums hover:text-primary",
-                  !inMonth && "text-muted-foreground/60", today && "bg-primary/80 px-1.5 font-semibold text-background")}>
+                  !inMonth && "text-muted-foreground/80")}>
                 {toDate(d).getDate()}
               </button>
               {items[0] && <EventChip e={items[0]} isAr={isAr} onOpen={onOpen} withTime />}
@@ -346,29 +354,31 @@ function MiniMonth({ date, view, isAr, t, events, onPick }: {
   const initials = isAr ? ["ح", "ن", "ث", "ر", "خ", "ج", "س"] : ["S", "M", "T", "W", "T", "F", "S"]
   const has = new Set(events.map((e) => e.dateISO))
   return (
-    <div className="panel rounded-xl px-4 py-5">
-      <div className="flex items-center justify-between">
-        <span className="text-[14px] font-semibold">{fmt(shown, isAr, { month: "long", year: "numeric" })}</span>
-        <div className="flex gap-2">
+    <div className="panel rounded-[12px] px-4 py-5">
+      <div className="flex h-6 items-center justify-between">
+        <span className="text-[14px] font-medium">{fmt(shown, isAr, { month: "long", year: "numeric" })}</span>
+        <div className="flex gap-3">
           <button onClick={() => setShown(addMonths(shown, -1))} aria-label={t("Previous month", "الشهر السابق")}
-            className="inline-flex size-6 items-center justify-center rounded-md bg-secondary"><ChevronUp className="size-3.5" /></button>
+            className="inline-flex size-6 items-center justify-center rounded-[6px] bg-secondary"><ChevronUp className="size-3.5" /></button>
           <button onClick={() => setShown(addMonths(shown, 1))} aria-label={t("Next month", "الشهر التالي")}
-            className="inline-flex size-6 items-center justify-center rounded-md bg-secondary"><ChevronDown className="size-3.5" /></button>
+            className="inline-flex size-6 items-center justify-center rounded-[6px] bg-secondary"><ChevronDown className="size-3.5" /></button>
         </div>
       </div>
-      <div className="mt-5 grid grid-cols-7 gap-y-1 text-center">
-        {initials.map((d, i) => <span key={i} className="pb-3 text-[11px] text-muted-foreground">{d}</span>)}
+      <div className="mt-4 grid grid-cols-7 gap-x-[2px] text-center">
+        {initials.map((d, i) => <span key={i} className="flex h-[22px] items-center justify-center text-[11px] text-muted-foreground">{d}</span>)}
+      </div>
+      <div className="mt-4 grid grid-cols-7 gap-[2px] text-center">
         {cells.map((d) => {
           const inMonth = toDate(d).getMonth() === month
           const today = d === CAL_TODAY_ISO
-          const inWeek = view === "week" && d >= ws && d <= addDays(ws, 4)
+          const inWeek = d >= ws && d <= addDays(ws, 4) // every view shades the working week (all three frames)
           const selected = view !== "week" && d === date
           return (
             <button key={d} onClick={() => onPick(d)}
-              className={cn("relative mx-auto flex h-7 w-9 items-center justify-center rounded-md text-[12px] tabular-nums transition-colors hover:bg-foreground/10",
-                !inMonth && "text-muted-foreground/60",
-                (inWeek || selected) && "bg-secondary font-semibold",
-                today && "bg-primary/80 font-semibold text-background hover:bg-primary")}>
+              className={cn("relative flex h-[30px] items-center justify-center rounded-[8px] text-[12px] tabular-nums transition-colors hover:bg-foreground/10",
+                inMonth ? "text-foreground" : "text-muted-foreground",
+                (inWeek || selected) && "bg-soft-accent font-semibold",
+                today && "bg-primary font-semibold text-background hover:bg-primary")}>
               {toDate(d).getDate()}
               {has.has(d) && !today && <span className="absolute bottom-0.5 size-1 rounded-full bg-primary md:hidden" />}
             </button>
@@ -386,31 +396,36 @@ function MyCalendars({ hidden, all, isAr, t, booked }: {
   const h = Math.floor(booked / 60)
   const m = booked % 60
   return (
-    <div className="panel hidden rounded-xl px-4 py-5 md:block">
+    <div className="panel hidden rounded-[12px] px-4 py-5 md:block">
       <CardHeader icon={CalendarDays} title={t("My calendars", "تقاويمي")} />
-      <ul className="mt-5 border-s-2 border-secondary ps-4">
-        {CALENDARS.map((c) => {
-          const on = !hidden.has(c.id)
-          return (
-            <li key={c.id} className="border-b border-input last:border-b-0">
-              <label className="flex h-[49px] cursor-pointer items-center gap-3">
-                <input type="checkbox" checked={on} onChange={() => toggleCalendar(c.id)} className="sr-only" />
-                <span aria-hidden className={cn("inline-flex size-5 shrink-0 items-center justify-center rounded-[5px] border-[1.5px]",
-                  on ? "border-[#a997c7] bg-[#a997c7] text-background" : "border-foreground/80")}>
-                  {on && <Check className="size-3.5" strokeWidth={3} />}
-                </span>
-                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: c.color }} />
-                <span className="min-w-0 flex-1 truncate text-[14px]">{isAr ? c.ar : c.en}</span>
-                <span className="text-[14px] tabular-nums text-muted-foreground">{all.filter((e) => e.calendar === c.id).length}</span>
-              </label>
-            </li>
-          )
-        })}
-      </ul>
-      <div className="card-separator mt-10" />
-      <div className="mt-5 flex items-center justify-between gap-3 text-[14px]">
-        <span className="text-muted-foreground">{t("Time booked this week", "الوقت المحجوز هذا الأسبوع")}</span>
-        <span className="font-medium tabular-nums text-primary">{isAr ? `${h} س ${m} د` : `${h} h ${m} m`}</span>
+      <div className="flex gap-4 pt-[14px] pb-5">
+        <ul className="min-w-0 flex-1">
+          {CALENDARS.map((c) => {
+            const on = !hidden.has(c.id)
+            return (
+              <li key={c.id} className="border-b border-input last:border-b-0">
+                <label className="flex h-12 cursor-pointer items-center gap-3">
+                  <input type="checkbox" checked={on} onChange={() => toggleCalendar(c.id)} className="sr-only" />
+                  <span aria-hidden className={cn("inline-flex size-5 shrink-0 items-center justify-center rounded-[5px] border-[1.5px]",
+                    on ? "border-[#a997c7] bg-[#a997c7] text-background" : "border-foreground/80")}>
+                    {on && <Check className="size-3.5" strokeWidth={3} />}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[14px]">{isAr ? c.ar : c.en}</span>
+                  <span className="ps-1 text-[14px] tabular-nums text-muted-foreground">{all.filter((e) => e.calendar === c.id).length}</span>
+                </label>
+              </li>
+            )
+          })}
+        </ul>
+        <div aria-hidden className="relative w-1 shrink-0 rounded-[2px] bg-secondary">
+          <span className="absolute inset-x-0 top-0 h-[78px] rounded-[2px] bg-muted-foreground" />
+        </div>
+      </div>
+      <div className="py-2">
+        <div className="flex h-[43px] items-end justify-between gap-3 border-t border-input text-[14px]">
+          <span className="text-muted-foreground">{t("Time booked this week", "الوقت المحجوز هذا الأسبوع")}</span>
+          <span className="font-medium tabular-nums text-primary">{isAr ? `${h} س ${m} د` : `${h} h ${m} m`}</span>
+        </div>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import {
   ArrowLeft, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList,
-  FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw, Send,
+  FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
   Sparkles, Trash2, UserRoundCog,
 } from "lucide-react"
 
@@ -88,7 +88,6 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
 
   const [draft, setDraft] = React.useState<Fields | undefined>(fields)
   React.useEffect(() => { if (editing) setDraft(fields) }, [editing, id])  // eslint-disable-line react-hooks/exhaustive-deps
-  const dirty = editing && !!draft && !!fields && JSON.stringify(draft) !== JSON.stringify(fields)
 
   const [confirmDelete, setConfirmDelete] = React.useState(false)
 
@@ -184,7 +183,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                   lead={<UserRoundCog className="size-4 shrink-0 text-icon" />}
                   label={t("Reassign", "إعادة إسناد")}
                   value={fields.ownerId} options={ownerOptions} onChange={assign}
-                  menuClassName="w-64" hideValue
+                  menuClassName="w-64" hideValue triggerClassName="h-[34px] bg-foreground/[0.08]"
                 />
                 {task && (
                   <FilterSelect
@@ -193,10 +192,11 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                     value={task.status}
                     onChange={(v) => updateTask(task.id, { status: v as TaskStatus })}
                     options={STATUS_ORDER.map((s) => ({ value: s, label: isAr ? STATUS_META[s].ar : STATUS_META[s].en, lead: <StatusDot status={s} /> }))}
+                    triggerClassName="h-[34px] bg-foreground/[0.08]"
                   />
                 )}
-                <Btn onClick={() => setEditing(true)}><span>{t("Edit", "تعديل")}</span><Pencil className="size-[14px]" /></Btn>
-                <Btn variant="danger" onClick={() => setConfirmDelete(true)}><span>{t("Delete", "حذف")}</span><Trash2 className="size-[14px]" /></Btn>
+                <Btn className="rounded-[8px] bg-foreground/[0.08] px-3 font-normal" onClick={() => setEditing(true)}><Pencil className="size-[14px]" /><span>{t("Edit", "تعديل")}</span></Btn>
+                <Btn variant="danger" className="rounded-[8px] bg-foreground/[0.08] font-normal" onClick={() => setConfirmDelete(true)}><Trash2 className="size-4" /><span>{t("Delete", "حذف")}</span></Btn>
               </>
             ) : (
               <>
@@ -205,17 +205,17 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
               </>
             )}
             {siblings.length > 1 && pos >= 0 && (
-              <div className="flex items-center gap-2 border-s border-input ps-3">
-                <span className="text-[13px] tabular-nums">
+              <div className="ms-1 flex items-center gap-2 border-s border-input ps-3">
+                <span className="text-[13px] tabular-nums text-muted-foreground">
                   {kind === "task" ? t(`Task ${pos + 1} of ${siblings.length}`, `المهمة ${pos + 1} من ${siblings.length}`)
                     : t(`Project ${pos + 1} of ${siblings.length}`, `المشروع ${pos + 1} من ${siblings.length}`)}
                 </span>
                 <button onClick={() => go(-1)} aria-label={t("Previous", "السابق")}
-                  className="inline-flex size-[34px] items-center justify-center rounded-lg bg-foreground/[0.06] ring-1 ring-inset ring-[var(--card-ring)] hover:bg-foreground/10">
+                  className="inline-flex size-[34px] items-center justify-center rounded-[8px] bg-foreground/[0.06] ring-1 ring-inset ring-[var(--card-ring)] hover:bg-foreground/10">
                   <ChevronLeft className={cn("size-4", isAr && "rotate-180")} />
                 </button>
                 <button onClick={() => go(1)} aria-label={t("Next", "التالي")}
-                  className="inline-flex size-[34px] items-center justify-center rounded-lg bg-foreground/[0.06] ring-1 ring-inset ring-[var(--card-ring)] hover:bg-foreground/10">
+                  className="inline-flex size-[34px] items-center justify-center rounded-[8px] bg-foreground/[0.06] ring-1 ring-inset ring-[var(--card-ring)] hover:bg-foreground/10">
                   <ChevronRight className={cn("size-4", isAr && "rotate-180")} />
                 </button>
               </div>
@@ -224,8 +224,8 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-4">
-            <h1 className={cn("text-[28px] font-medium leading-[38px] tracking-tight", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
+          <div className="flex min-w-0 flex-col gap-3">
+            <h1 className={cn("text-[27px] font-normal leading-[38px] tracking-[-0.27px]", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
             <div className="flex flex-wrap items-center gap-2.5 text-[14px]">
               {task && <><CategoryChip id={task.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">·</span></>}
               <Initials text={ownerInitials(fields.ownerId)} className="size-6 text-[9px]" />
@@ -233,7 +233,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
             </div>
           </div>
           {project && (
-            <div className="flex items-center gap-8 self-center lg:self-auto">
+            <div className="flex items-center gap-10 self-center lg:self-auto">
               <Legend rows={STATUS_ORDER.map((s) => ({ label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: statusCount(s), dot: STATUS_META[s].dot }))} />
               <Donut total={projectTasks.length} label={t("Tasks", "مهام")}
                 slices={STATUS_ORDER.map((s) => ({ value: statusCount(s), color: s === "completed" ? "color-mix(in oklab, var(--success) 70%, var(--background))" : STATUS_META[s].color }))} />
@@ -248,19 +248,19 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
           {/* description */}
           <Panel>
             <CardHeader icon={FileText} title={t("Description", "الوصف")}
-              actions={dirty ? <span className="text-[12px] text-warning">{t("Unsaved changes", "تغييرات غير محفوظة")}</span> : undefined} />
+              actions={editing ? <span className="text-[12px] text-warning">{t("Unsaved changes", "تغييرات غير محفوظة")}</span> : undefined} />
             <div className="mt-[18px]">
               {editing && draft ? (
                 <div className="flex flex-col gap-4">
                   <textarea
                     value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })}
                     rows={5} aria-label={t("Description", "الوصف")}
-                    className="min-h-[135px] w-full resize-y rounded-lg border border-primary bg-background p-4 text-[13.5px] leading-[20.25px] outline-none"
+                    className="min-h-[135px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none"
                   />
                   <TextCounter text={draft.description} isAr={isAr} />
                 </div>
               ) : (
-                <p className="text-[14px] leading-relaxed text-foreground">
+                <p className="text-[13.5px] leading-[20.25px] text-foreground">
                   {fields.description || <span className="text-muted-foreground">{t("No description yet.", "لا يوجد وصف بعد.")}</span>}
                 </p>
               )}
@@ -276,9 +276,10 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
           />
 
           {project && <SubTasks project={project} tasks={projectTasks} isAr={isAr} t={t} />}
-          {project && <Milestones project={project} tasks={allTasks} isAr={isAr} t={t} />}
-
           <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} />
+
+          {/* kept from the earlier project page; below the drawn cards */}
+          {project && <Milestones project={project} tasks={allTasks} isAr={isAr} t={t} />}
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
@@ -406,9 +407,17 @@ function DateField({ value, onChange, label }: { value: string; onChange: (v: st
 }
 
 /** "ملاحظة النشر" — always editable; Save / Cancel appear once it differs. */
+const NOTE_DRAFT = {
+  en: "Version 2.4 deployed to production. Verification: run quality checks on April data. Rollback plan: restore version 2.3",
+  ar: "تم نشر الإصدار 2.4 على بيئة الإنتاج. التحقق: تشغيل فحوصات الجودة على بيانات أبريل. خطة التراجع: استعادة الإصدار 2.3",
+}
+
 function ReleaseNote({ value, onSave, isAr, t }: { value: string; onSave: (v: string) => void; isAr: boolean; t: TFn }) {
-  const [text, setText] = React.useState(value)
-  React.useEffect(() => setText(value), [value])
+  // ?note=draft opens the note mid-edit with a sample draft (Figma 3580:9156 / 9423)
+  const [params] = useSearchParams()
+  const seeded = params.get("note") === "draft" ? (isAr ? NOTE_DRAFT.ar : NOTE_DRAFT.en) : value
+  const [text, setText] = React.useState(seeded)
+  React.useEffect(() => setText(seeded), [seeded])
   const dirty = text !== value
   return (
     <Panel>
@@ -419,14 +428,14 @@ function ReleaseNote({ value, onSave, isAr, t }: { value: string; onSave: (v: st
           value={text} onChange={(e) => setText(e.target.value)} rows={5}
           aria-label={t("Release note", "ملاحظة النشر")}
           placeholder={t("Write release notes: what changed, verification steps and rollback plan…", "اكتب ملاحظات النشر: ما الذي تغيّر، خطوات التحقق، وخطة التراجع…")}
-          className={cn("min-h-[135px] w-full resize-y rounded-lg border bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground",
-            dirty ? "border-primary" : "border-input focus:border-primary/60")}
+          className={cn("min-h-[135px] w-full resize-none rounded-[8px] border bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground",
+            dirty ? "border-primary/70" : "border-input focus:border-primary/60")}
         />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <TextCounter text={text} isAr={isAr} />
           {dirty && (
             <div className="flex items-center gap-2">
-              <Btn onClick={() => setText(value)}>{t("Cancel", "الغاء")}</Btn>
+              <Btn onClick={() => setText(value)}>{t("Cancel", "إلغاء")}</Btn>
               <Btn variant="primary" onClick={() => onSave(text.trim())}>{t("Save changes", "حفظ التعديلات")}</Btn>
             </div>
           )}
@@ -449,7 +458,8 @@ function SubTasks({ project, tasks, isAr, t }: { project: Project; tasks: Task[]
             <Plus className="size-3.5" />{t("New task", "مهمة جديدة")}
           </button>
         } />
-      <ul className="mt-[18px]">
+      {/* six rows show, as drawn; longer lists scroll inside the card */}
+      <ul className="mt-[18px] max-h-[300px] overflow-y-auto [scrollbar-width:thin]">
         {rows.map((x) => {
           const done = x.status === "completed"
           const due = relativeDue(x.dueISO, isAr)
@@ -551,9 +561,9 @@ function Suggestions({ project, isAr, t }: { project: Project; isAr: boolean; t:
       <CardHeader icon={Sparkles} title={t("Assistant suggestion", "اقتراح المساعد")} />
       <div className="mt-[18px] flex flex-col gap-4">
         {list.map((s) => (
-          <div key={s.id} className="flex flex-col gap-5 rounded-xl bg-background/60 p-6 ring-1 ring-inset ring-input">
+          <div key={s.id} className="flex flex-col gap-3 rounded-[12px] bg-background/60 p-6 ring-1 ring-inset ring-input">
             <p className="text-[14px]">{isAr ? s.textAr : s.text}</p>
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-10 [&>button]:h-8">
               <Btn variant="primary" onClick={() => accept(s.id, s.text, s.textAr)}>{t("Add as subtask", "أضفه كمهمة فرعية")}</Btn>
               <Btn onClick={() => { addAiEvent(project.id, `Suggestion turned down: ${s.text}`, `رُفض الاقتراح: ${s.textAr}`); dismissSuggestion(s.id) }}>{t("Reject", "رفض")}</Btn>
             </div>
@@ -591,7 +601,7 @@ function Activity({ subjectId, isAr, t, asManager, task }: { subjectId: string; 
       </ul>
       {events.length === 0 && <p className="py-6 text-center text-[13px] text-muted-foreground">{t("No activity yet.", "لا يوجد نشاط بعد.")}</p>}
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-[23px] flex items-center gap-3">
         <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-background ps-2 pe-3 focus-within:border-primary/60">
           <Initials text={ME.initials} className="size-6" />
           <input
@@ -605,8 +615,8 @@ function Activity({ subjectId, isAr, t, asManager, task }: { subjectId: string; 
           />
         </div>
         <button onClick={post} disabled={!draft.trim()}
-          className="btn-primary-grad inline-flex h-10 w-20 shrink-0 items-center justify-center gap-1.5 rounded-lg text-[13.5px] font-medium disabled:opacity-60">
-          <Send className={cn("size-3.5", isAr && "-scale-x-100")} />{t("Send", "إرسال")}
+          className="btn-primary-grad inline-flex h-10 w-20 shrink-0 items-center justify-center gap-1.5 rounded-[8px] text-[13.5px] font-medium disabled:cursor-not-allowed">
+          {t("Send", "إرسال")}
         </button>
       </div>
 
@@ -639,19 +649,19 @@ function ActivityRow({ e, isAr, t }: { e: TaskEvent; isAr: boolean; t: TFn }) {
   if (e.kind === "due") text = t(`Moved the due date from ${e.fromDue} to ${e.toDue}`, `غيّر تاريخ الاستحقاق من ${e.fromDue} إلى ${e.toDue}`)
   const ai = e.kind === "ai"
   return (
-    <li className="flex items-center gap-3 border-b border-input py-3 last:border-b-0">
+    <li className="flex items-center gap-3 border-b border-input py-2.5 last:border-b-0">
       <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[12px] font-medium", ai && "text-primary")}>
         {ai ? <Sparkles className="size-4" /> : e.kind === "status" ? <RotateCcw className="size-3.5 text-icon" />
           : e.kind === "due" ? <CalendarClock className="size-3.5 text-icon" /> : who.charAt(0)}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[14px] font-medium">{who}</span>
+          <span className="text-[13.5px] font-medium leading-5">{who}</span>
           {(ai || e.kind === "comment") && <span className="size-1.5 rounded-full bg-primary" />}
           {e.manager && <span className="rounded-full bg-soft-accent px-1.5 text-[10px] text-primary">{t("Manager", "المدير")}</span>}
           {e.progress !== undefined && <span className="rounded-full bg-soft-accent px-1.5 text-[10px] tabular-nums text-primary">{e.progress}%</span>}
         </div>
-        <p className="mt-0.5 whitespace-pre-wrap text-[12.5px] text-muted-foreground">{text}</p>
+        <p className="whitespace-pre-wrap text-[12px] leading-[18px] text-muted-foreground">{text}</p>
       </div>
       <span className="shrink-0 text-[12px] tabular-nums text-muted-foreground">{when}</span>
     </li>
