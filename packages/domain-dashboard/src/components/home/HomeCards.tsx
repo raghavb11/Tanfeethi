@@ -87,8 +87,9 @@ export function ApprovalsCard({ isAr, t, className }: { isAr: boolean; t: T; cla
           )}
         </div>
 
-        {/* Figma 2013:5689 draws this note under the list (102px block). */}
-        {!query && (
+        {/* All-done state (Figma 2013:5689, 102px block): only once nothing is
+            left awaiting a decision — items under review don't need one. */}
+        {!query && !items.some((a) => a.status === "pending") && (
           <div className="flex flex-col items-center gap-2 pb-2 pt-6 text-center">
             <BadgeCheck className="size-5 text-primary" strokeWidth={1.8} />
             <div className="flex flex-col gap-0.5">
