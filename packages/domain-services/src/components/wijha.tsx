@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { cn } from "@reach/shared-core"
-import { SearchableSelect } from "@reach/shared-ui"
+import { RequiredMark, SearchableSelect, withAriaRequired } from "@reach/shared-ui"
 import { Check, ChevronDown, type LucideIcon } from "lucide-react"
 
 import type { CategoryTone } from "../data/mock/services"
@@ -297,13 +297,13 @@ export function Field({ label, required, hint, children, className, htmlFor }: {
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      {/* EN frames: 15px label line and a white asterisk; Arabic: 17px line, red asterisk. */}
+      {/* EN frames: 15px label line; Arabic: 17px line. The asterisk follows the text (RequiredMark). */}
       <label htmlFor={htmlFor} className="px-1 text-[13px] font-semibold leading-[17px] text-foreground ltr:leading-[15px]">
         {label}
-        {required && <span className="ms-1 text-error ltr:text-foreground">*</span>}
+        {required && <RequiredMark />}
         {hint && <span className="ms-1.5 text-[11px] font-normal text-muted-foreground">{hint}</span>}
       </label>
-      {children}
+      {withAriaRequired(children, required)}
     </div>
   )
 }
@@ -320,7 +320,7 @@ export function TextArea(p: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...p} className={cn(controlCls, "h-auto min-h-9 resize-y py-2.5 leading-[18px]", p.className)} />
 }
 
-export function SelectInput({ value, onChange, options, placeholder, id, className, disabled, prefix, invalid, searchable }: {
+export function SelectInput({ value, onChange, options, placeholder, id, className, disabled, prefix, invalid, searchable, "aria-required": ariaRequired }: {
   value: string
   onChange: (v: string) => void
   /** `alt` = the other-language name, matched by the search but not shown */
@@ -334,6 +334,8 @@ export function SelectInput({ value, onChange, options, placeholder, id, classNa
   invalid?: boolean
   /** Searchable list (people / departments). Defaults to on above 10 options; the closed field looks the same. */
   searchable?: boolean
+  /** Set by `Field required`. */
+  "aria-required"?: boolean
 }) {
   const { isAr } = useT()
   if (searchable ?? options.length > 10) {
@@ -348,7 +350,7 @@ export function SelectInput({ value, onChange, options, placeholder, id, classNa
               <span className="pointer-events-none absolute inset-y-0 start-3 z-[1] flex items-center gap-1 text-[11px] text-muted-foreground">{prefix}</span>
             )}
             <button
-              {...triggerProps} id={id} disabled={disabled} aria-invalid={invalid || undefined}
+              {...triggerProps} id={id} disabled={disabled} aria-invalid={invalid || undefined} aria-required={ariaRequired}
               className={cn(controlCls, "flex items-center pe-8 text-start", invalid && "border-error/70", prefix && "ps-[92px]", !current && "text-[11.3px] text-muted-foreground")}
             >
               <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? "—"}</span>
@@ -369,6 +371,7 @@ export function SelectInput({ value, onChange, options, placeholder, id, classNa
         value={value}
         disabled={disabled}
         aria-invalid={invalid || undefined}
+        aria-required={ariaRequired}
         onChange={(e) => onChange(e.target.value)}
         className={cn(controlCls, "appearance-none pe-8", invalid && "border-error/70", prefix && "ps-[92px]", !value && "text-[11.3px] text-muted-foreground")}
       >

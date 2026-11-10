@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 
-import { Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Badge, Button, Card, Input, RequiredMark } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, CheckCircle2, ListChecks, Plus, Star, Trash2, Type } from "lucide-react"
@@ -96,8 +96,9 @@ export default function SurveyBuilderPage() {
         {/* details */}
         <Card className="rounded-[12px] space-y-5 p-5">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t("Survey title", "عنوان الاستبيان")}</label>
+            <label className="text-sm font-medium">{t("Survey title", "عنوان الاستبيان")}<RequiredMark /></label>
             <Input
+              aria-required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("e.g. Q4 Employee Pulse", "مثال: نبض الموظفين — الربع الرابع")}
@@ -147,7 +148,7 @@ export default function SurveyBuilderPage() {
             <Card key={q.id} className="space-y-3 p-5">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t("Question", "سؤال")} {qi + 1}
+                  {t("Question", "سؤال")} {qi + 1}<RequiredMark />
                 </span>
                 {questions.length > 1 && (
                   <button
@@ -177,6 +178,7 @@ export default function SurveyBuilderPage() {
               </div>
 
               <Input
+                aria-required
                 value={q.text}
                 onChange={(e) => setQ(q.id, { text: e.target.value })}
                 placeholder={t("Type your question…", "اكتب سؤالك…")}
@@ -189,6 +191,7 @@ export default function SurveyBuilderPage() {
                     <div key={oi} className="flex items-center gap-2">
                       <span className="w-4 text-xs text-muted-foreground">{oi + 1}.</span>
                       <Input
+                        aria-required={oi < 2 || undefined}
                         value={opt}
                         onChange={(e) => setQ(q.id, { options: q.options.map((o, i) => (i === oi ? e.target.value : o)) })}
                         placeholder={t("Option", "خيار")}

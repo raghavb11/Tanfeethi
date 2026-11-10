@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Button, Card, Input } from "@reach/shared-ui"
+import { Button, Card, Input, RequiredMark } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { Archive, ArrowLeft, Upload } from "lucide-react"
@@ -73,8 +73,8 @@ export default function DocumentEditorPage() {
           <input type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f && !name) setName(f.name.replace(/\.[^.]+$/, "")) }} />
         </label>
         <div>
-          <label htmlFor="doc-name" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Document name", "اسم المستند")}</label>
-          <Input id="doc-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Q3 Report", "مثال: تقرير الربع الثالث")} autoFocus className="h-11 text-base" />
+          <label htmlFor="doc-name" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Document name", "اسم المستند")}<RequiredMark /></label>
+          <Input id="doc-name" aria-required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Q3 Report", "مثال: تقرير الربع الثالث")} autoFocus className="h-11 text-base" />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>

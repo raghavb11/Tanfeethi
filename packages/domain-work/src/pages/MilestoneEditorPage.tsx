@@ -240,10 +240,10 @@ export default function MilestoneEditorPage() {
               <Row label={t("Project", "المشروع")} edit={false}
                 view={<button onClick={() => navigate(`/projects/${project.id}`)} className="text-start hover:text-primary hover:underline">{isAr ? project.nameAr : project.name}</button>} />
               <Row label={t("Code", "الرمز")} edit={false} view={<span className="tabular-nums">{code}</span>} />
-              <Row label={t("Start date", "تاريخ البدء")} edit error={err("start")} view={null}
-                control={<DateField value={draft.startISO} onChange={(v) => patch({ startISO: v })} label={t("Start date", "تاريخ البدء")} invalid={!!err("start")} />} />
-              <Row label={t("Due date", "تاريخ الاستحقاق")} edit error={err("due")} view={null}
-                control={<DateField value={draft.dueISO} onChange={(v) => patch({ dueISO: v })} label={t("Due date", "تاريخ الاستحقاق")} invalid={!!err("due")} />} />
+              <Row label={t("Start date", "تاريخ البدء")} edit required error={err("start")} view={null}
+                control={<DateField value={draft.startISO} onChange={(v) => patch({ startISO: v })} label={t("Start date", "تاريخ البدء")} required invalid={!!err("start")} />} />
+              <Row label={t("Due date", "تاريخ الاستحقاق")} edit required error={err("due")} view={null}
+                control={<DateField value={draft.dueISO} onChange={(v) => patch({ dueISO: v })} label={t("Due date", "تاريخ الاستحقاق")} required invalid={!!err("due")} />} />
               <Row label={t("Health", "لون الحالة")} edit view={null}
                 control={
                   <span className="flex w-full max-w-[265px] flex-col items-end gap-1.5">
@@ -258,11 +258,11 @@ export default function MilestoneEditorPage() {
                   </span>
                 } />
               {draft.mode !== "auto" && (
-                <Row label={t("Reason", "السبب")} edit error={err("reason")} view={null}
+                <Row label={t("Reason", "السبب")} edit required error={err("reason")} view={null}
                   control={
                     <textarea
                       value={draft.reason} onChange={(e) => patch({ reason: e.target.value })} rows={3}
-                      aria-label={t("Reason for setting the colour by hand", "سبب تحديد اللون يدويًا")} aria-invalid={!!err("reason")}
+                      aria-label={t("Reason for setting the colour by hand", "سبب تحديد اللون يدويًا")} aria-invalid={!!err("reason")} aria-required
                       placeholder={t("What the numbers do not show — this appears next to the colour.", "ما لا تظهره الأرقام — سيظهر بجانب اللون.")}
                       className={cn("w-full max-w-[265px] resize-none rounded-lg bg-[var(--card-elevated)] px-3 py-2 text-start text-[12.5px] leading-[18px] outline-none ring-1 ring-inset placeholder:text-muted-foreground focus:ring-primary",
                         err("reason") ? "ring-error" : "ring-[var(--card-ring)]")}

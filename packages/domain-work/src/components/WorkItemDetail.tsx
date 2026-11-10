@@ -2,6 +2,7 @@ import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import { usePageTitle } from "@reach/shell-context"
+import { RequiredMark } from "@reach/shared-ui"
 import {
   ArrowLeft, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList,
   FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
@@ -575,9 +576,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     label={create ? t("Assign:", "إسناد:") : t("Reassign:", "إعادة إسناد:")} value={draft.ownerId}
                     onChange={(v) => patch({ ownerId: v })} options={ownerOptions} searchable />
                 )} />
-              <Row label={t("Due date", "تاريخ الاستحقاق")} edit={editing} error={err("due") ?? err("start")}
+              <Row label={t("Due date", "تاريخ الاستحقاق")} edit={editing} required error={err("due") ?? err("start")}
                 view={<span className={cn(task && task.status !== "completed" && task.dueISO < TASK_TODAY_ISO && "text-error")}>{shortDate(fields.dueISO, isAr)}</span>}
-                control={draft && <DateField value={draft.dueISO} onChange={(v) => patch({ dueISO: v })} label={t("Date", "تاريخ")} invalid={!!(err("due") ?? err("start"))} />} />
+                control={draft && <DateField value={draft.dueISO} onChange={(v) => patch({ dueISO: v })} label={t("Date", "تاريخ")} required invalid={!!(err("due") ?? err("start"))} />} />
               {isProject && (
                 <Row label={t("Start date", "تاريخ البدء")} edit={editing}
                   view={shortDate(fields.startISO ?? "", isAr)}
@@ -693,23 +694,27 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
 }
 
 /** One key/value line of the Details card; becomes a control in edit mode. */
-export function Row({ label, view, control, edit, error }: { label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean; error?: string }) {
+export function Row({ label, view, control, edit, error, required }: {
+  label: string; view: React.ReactNode; control?: React.ReactNode; edit: boolean; error?: string
+  /** Edit mode only: the Figma required asterisk after the label (pass `required` to the control too). */
+  required?: boolean
+}) {
   return (
     <div className={cn("flex min-h-[54px] items-center justify-between gap-4 border-b border-input px-4 py-2.5 last:border-b-0", error && "flex-wrap gap-y-1")}>
-      <dt className="shrink-0 text-[12px] text-muted-foreground">{label}</dt>
+      <dt className="shrink-0 text-[12px] text-muted-foreground">{label}{edit && control && required && <RequiredMark />}</dt>
       <dd className="flex min-w-0 flex-1 justify-end text-end text-[14px] text-foreground">{edit && control ? control : view}</dd>
       {error && <p role="alert" className="w-full text-end text-[11.5px] text-error">{error}</p>}
     </div>
   )
 }
 
-export function DateField({ value, onChange, label, invalid }: { value: string; onChange: (v: string) => void; label: string; invalid?: boolean }) {
+export function DateField({ value, onChange, label, invalid, required }: { value: string; onChange: (v: string) => void; label: string; invalid?: boolean; required?: boolean }) {
   return (
     <label className={cn("relative flex h-9 w-full max-w-[265px] items-center rounded-lg bg-[var(--card-elevated)] ring-1 ring-inset focus-within:ring-primary",
       invalid ? "ring-error" : "ring-[var(--card-ring)]")}>
       <CalendarDays className="pointer-events-none absolute end-3 size-4 text-icon" />
       <input
-        type="date" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} aria-label={label} aria-invalid={invalid}
+        type="date" value={value} onChange={(e) => e.target.value && onChange(e.target.value)} aria-label={label} aria-invalid={invalid} aria-required={required || undefined}
         className={cn("h-full w-full rounded-lg bg-transparent ps-3 pe-9 text-[12.5px] font-medium tabular-nums outline-none [&::-webkit-calendar-picker-indicator]:opacity-0",
           !value && "text-muted-foreground")}
       />

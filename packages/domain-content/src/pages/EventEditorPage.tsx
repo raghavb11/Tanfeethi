@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   Button, Card, Input, Textarea,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -56,8 +56,8 @@ export default function EventEditorPage() {
   }
   const remove = () => { if (editing) { deleteEvent(editing.id); logAudit("deleted", editing.title, "Events") } navigate("/events") }
 
-  const field = (id: string, label: string, node: React.ReactNode) => (
-    <div><label htmlFor={id} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</label>{node}</div>
+  const field = (id: string, label: string, node: React.ReactNode, required = false) => (
+    <div><label htmlFor={id} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}{required && <RequiredMark />}</label>{node}</div>
   )
   const selectCls = "h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
 
@@ -80,7 +80,7 @@ export default function EventEditorPage() {
       </div>
 
       <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
-        {field("ev-title", t("Title", "العنوان"), <Input id="ev-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Event name", "اسم الفعالية")} autoFocus className="h-11 text-base" />)}
+        {field("ev-title", t("Title", "العنوان"), <Input id="ev-title" aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Event name", "اسم الفعالية")} autoFocus className="h-11 text-base" />, true)}
         {field("ev-desc", t("Description", "الوصف"), <Textarea id="ev-desc" rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} className="text-[15px] leading-relaxed" />)}
         <div className="grid gap-4 sm:grid-cols-3">
           {field("ev-day", t("Day", "اليوم"), <Input id="ev-day" value={day} onChange={(e) => setDay(e.target.value)} className="h-11" />)}

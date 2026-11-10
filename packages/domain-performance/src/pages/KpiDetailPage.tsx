@@ -266,13 +266,13 @@ function UpdateValueCard({ k, slotLabel }: { k: Kpi; slotLabel: (m: number) => s
           />
         </Field>
         <Field
-          label={t("Value", "القيمة")} htmlFor="kpi-value"
+          label={t("Value", "القيمة")} htmlFor="kpi-value" required
           hint={current !== null ? t(`replaces ${fmtValue(k.unit, current, false)}`, `تستبدل ${fmtValue(k.unit, current, true)}`) : `${t("target", "المستهدف")} ${fmtNum(k.targets[m])}`}
           error={tried && error ? error : undefined}
         >
           <div className="relative">
             <input
-              id="kpi-value" inputMode="decimal" value={value} autoComplete="off"
+              id="kpi-value" inputMode="decimal" value={value} autoComplete="off" aria-required
               onChange={(e) => { setValue(e.target.value.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).replace(/٫/g, ".").replace(/,/g, "")); setSaved(null) }}
               aria-invalid={(tried && !!error) || undefined}
               placeholder={fmtNum(k.targets[m])}

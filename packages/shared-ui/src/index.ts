@@ -11,6 +11,7 @@ export {
   CardAction,
 } from "./card"
 export { Badge, badgeVariants } from "./badge"
+export { RequiredMark, withAriaRequired } from "./required-mark"
 export {
   Tabs,
   TabsList,

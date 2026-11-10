@@ -6,7 +6,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { useLocation } from "react-router-dom"
 import { cn } from "@reach/shared-core"
-import { MenuNoMatches, MenuSearchInput, SearchableSelect, useMenuSearch } from "@reach/shared-ui"
+import { MenuNoMatches, MenuSearchInput, RequiredMark, SearchableSelect, useMenuSearch, withAriaRequired } from "@reach/shared-ui"
 import { Check, ChevronDown, ChevronLeft, ChevronRight, CircleX, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -153,11 +153,11 @@ export function toneForCategory(cat: string): TagTone {
 
 export const FIELD = "h-9 w-full min-w-0 rounded-[8px] bg-[var(--card-elevated)] px-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/60"
 
-export function Field({ label, children, className }: { label: React.ReactNode; children: React.ReactNode; className?: string }) {
+export function Field({ label, children, className, required }: { label: React.ReactNode; children: React.ReactNode; className?: string; required?: boolean }) {
   return (
     <label className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <span className="px-1 text-[13px] font-semibold leading-[17px]">{label}</span>
-      {children}
+      <span className="px-1 text-[13px] font-semibold leading-[17px]">{label}{required && <RequiredMark />}</span>
+      {withAriaRequired(children, required)}
     </label>
   )
 }

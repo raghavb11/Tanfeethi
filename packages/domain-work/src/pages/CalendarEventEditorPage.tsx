@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
+import { RequiredMark } from "@reach/shared-ui"
 import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react"
 
 import { Btn, CardHeader, ConfirmDialog, Empty, FilterSelect, Page, Panel, useT } from "../components/ui"
@@ -59,7 +60,7 @@ export default function CalendarEventEditorPage() {
     navigate(back)
   }
 
-  const label = (s: string) => <span className="mb-1.5 block text-[12px] text-muted-foreground">{s}</span>
+  const label = (s: string, required = false) => <span className="mb-1.5 block text-[12px] text-muted-foreground">{s}{required && <RequiredMark />}</span>
   const input = "h-10 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] outline-none focus:border-primary/60"
 
   return (
@@ -83,8 +84,8 @@ export default function CalendarEventEditorPage() {
       <Panel className="mt-6">
         <CardHeader icon={CalendarPlus} title={t("Appointment details", "تفاصيل الموعد")} />
         <div className="mt-[18px] grid gap-5">
-          <label>{label(t("Title", "العنوان"))}
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className={input} placeholder={t("What is it about?", "ما موضوع الموعد؟")} />
+          <label>{label(t("Title", "العنوان"), true)}
+            <input required value={title} onChange={(e) => setTitle(e.target.value)} className={input} placeholder={t("What is it about?", "ما موضوع الموعد؟")} />
           </label>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>{label(t("Calendar", "التقويم"))}
@@ -92,8 +93,8 @@ export default function CalendarEventEditorPage() {
                 lead={<span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: CALENDARS.find((c) => c.id === calendar)?.color }} />}
                 options={CALENDARS.map((c) => ({ value: c.id, label: isAr ? c.ar : c.en, lead: <span className="size-2 rounded-full" style={{ backgroundColor: c.color }} /> }))} />
             </div>
-            <label>{label(t("Date", "التاريخ"))}
-              <input type="date" value={dateISO} onChange={(e) => setDateISO(e.target.value)} className={cn(input, "tabular-nums")} />
+            <label>{label(t("Date", "التاريخ"), true)}
+              <input type="date" required value={dateISO} onChange={(e) => setDateISO(e.target.value)} className={cn(input, "tabular-nums")} />
             </label>
           </div>
           <label className="inline-flex items-center gap-2 text-[13.5px]">
@@ -102,11 +103,11 @@ export default function CalendarEventEditorPage() {
           </label>
           {!allDay && (
             <div className="grid gap-5 sm:grid-cols-2">
-              <label>{label(t("Starts", "يبدأ"))}
-                <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={cn(input, "tabular-nums")} />
+              <label>{label(t("Starts", "يبدأ"), true)}
+                <input type="time" required value={start} onChange={(e) => setStart(e.target.value)} className={cn(input, "tabular-nums")} />
               </label>
-              <label>{label(t("Ends", "ينتهي"))}
-                <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={cn(input, "tabular-nums")} />
+              <label>{label(t("Ends", "ينتهي"), true)}
+                <input type="time" required value={end} onChange={(e) => setEnd(e.target.value)} className={cn(input, "tabular-nums")} />
                 {!timesOk && <span className="mt-1.5 block text-[12px] text-error">{t("The end has to be after the start.", "يجب أن يكون الانتهاء بعد البدء.")}</span>}
               </label>
             </div>

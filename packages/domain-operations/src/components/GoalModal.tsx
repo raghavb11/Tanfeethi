@@ -123,7 +123,7 @@ export function GoalModal({
         </DialogDescription>
 
         <div className="flex flex-col gap-4 pb-4">
-          <Field label={t("Goal", "الهدف")} htmlFor="goal-title" error={err("title", required)}>
+          <Field label={t("Goal", "الهدف")} required={!readOnly} htmlFor="goal-title" error={err("title", required)}>
             <input
               id="goal-title"
               className={cn(inputCls(surface, tried && errors.title), roCls)}
@@ -132,7 +132,7 @@ export function GoalModal({
               onChange={(e) => set({ title: e.target.value })}
             />
           </Field>
-          <Field label={t("KPI", "المؤشر")} htmlFor="goal-indicator" error={err("indicator", required)}>
+          <Field label={t("KPI", "المؤشر")} required={!readOnly} htmlFor="goal-indicator" error={err("indicator", required)}>
             <input
               id="goal-indicator"
               className={cn(inputCls(surface, tried && errors.indicator), roCls)}
@@ -142,11 +142,12 @@ export function GoalModal({
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={t("Start date", "تاريخ البدء")} htmlFor="goal-start" error={err("start", required)}>
+            <Field label={t("Start date", "تاريخ البدء")} required={!readOnly} htmlFor="goal-start" error={err("start", required)}>
               <DateBox id="goal-start" value={draft.start} onChange={(v) => set({ start: v })} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.start} className={roCls} />
             </Field>
             <Field
               label={t("End date", "تاريخ الانتهاء")}
+              required={!readOnly}
               htmlFor="goal-end"
               error={err("end", draft.end ? t("Must be after the start date", "يجب أن يكون بعد تاريخ البدء") : required)}
             >
@@ -154,7 +155,7 @@ export function GoalModal({
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label={t("Unit of measure", "وحدة القياس")} htmlFor="goal-unit" error={err("unit", required)}>
+            <Field label={t("Unit of measure", "وحدة القياس")} required={!readOnly} htmlFor="goal-unit" error={err("unit", required)}>
               <SelectBox
                 id="goal-unit"
                 value={draft.unit}
@@ -167,7 +168,7 @@ export function GoalModal({
                 options={measureUnits.map((u) => ({ value: u.id, label: l(u.label) }))}
               />
             </Field>
-            <Field label={t("Target", "المستهدف")} htmlFor="goal-target" error={err("target", t("Enter a number", "أدخل رقماً"))}>
+            <Field label={t("Target", "المستهدف")} required={!readOnly} htmlFor="goal-target" error={err("target", t("Enter a number", "أدخل رقماً"))}>
               <input
                 id="goal-target"
                 type="number"
@@ -181,6 +182,7 @@ export function GoalModal({
             </Field>
             <Field
               label={t("Weight (%)", "الوزن")}
+              required={!readOnly}
               htmlFor="goal-weight"
               error={err(
                 "weight",

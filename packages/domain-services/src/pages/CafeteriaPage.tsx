@@ -5,6 +5,7 @@ import {
   Minus, Plus, RotateCcw, Search, Send, ShieldCheck, ShoppingBag, Star, Trash2, X,
 } from "lucide-react"
 import { cn } from "@reach/shared-core"
+import { RequiredMark } from "@reach/shared-ui"
 
 import {
   Card, CardHeader, CardTitle, EmptyState, GoldButton, ImagePlaceholder, OutlineButton, PageBody, TextArea, TextInput, Toast } from "../components/wijha"
@@ -222,7 +223,7 @@ export default function CafeteriaPage() {
                 {/* delivery — kept from the existing ordering flow */}
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                    <span className="text-[13px] font-semibold text-foreground">{t("Deliver to", "التوصيل إلى")}</span>
+                    <span className="text-[13px] font-semibold text-foreground">{t("Deliver to", "التوصيل إلى")}<RequiredMark /></span>
                     {locationId && locationId !== prefs.locationId && (
                       <button type="button" onClick={() => setPrefs({ locationId })} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
                         <Star className="size-3" />{t("Make this my default", "اجعله الافتراضي")}

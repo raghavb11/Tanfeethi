@@ -13,8 +13,8 @@ import {
 import { FieldLabel, fieldClass, GoldButton, OutlineButton, Page, SectionCard } from "../components/wijha"
 
 /** The shared inputs, at the design's 36px / radius 8 / page-fill chrome. */
-const In = (p: React.ComponentProps<typeof Input>) => <In {...p} className={cn("h-9 rounded-lg bg-background", p.className)} />
-const TA = (p: React.ComponentProps<typeof Textarea>) => <TA {...p} className={cn("rounded-lg bg-background", p.className)} />
+const In = (p: React.ComponentProps<typeof Input>) => <Input {...p} className={cn("h-9 rounded-lg bg-background", p.className)} />
+const TA = (p: React.ComponentProps<typeof Textarea>) => <Textarea {...p} className={cn("rounded-lg bg-background", p.className)} />
 
 const CATEGORIES = Object.keys(CATEGORY) as PartnerCategory[]
 const WHO_IDS = Object.keys(WHO) as EligibleWho[]
@@ -198,7 +198,7 @@ export default function PartnerOfferEditorPage() {
         </p>
         <div className="space-y-5">
           <div>
-            {label(t("Partner", "الشريك"), true)}
+            {label(t("Partner", "الشريك"), !readOnly)}
             {editing || readOnly ? (
               <In value={partner ? (isAr ? partner.nameAr : partner.name) : ""} readOnly className="bg-secondary/50 text-muted-foreground" />
             ) : (
@@ -234,9 +234,9 @@ export default function PartnerOfferEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("Valid to", "سارٍ حتى"), true)}
+              {label(t("Valid to", "سارٍ حتى"), !readOnly)}
               <In
-                type="datetime-local" value={validToISO} disabled={readOnly}
+                aria-required={!readOnly || undefined} type="datetime-local" value={validToISO} disabled={readOnly}
                 onChange={(e) => setValidToISO(e.target.value)}
               />
             </div>
@@ -252,8 +252,8 @@ export default function PartnerOfferEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("The saving", "قيمة الخصم"), true)}
-              <In value={discount} disabled={readOnly} onChange={(e) => setDiscount(e.target.value)} placeholder={t("30% off", "خصم 30٪")} />
+              {label(t("The saving", "قيمة الخصم"), !readOnly)}
+              <In aria-required={!readOnly || undefined} value={discount} disabled={readOnly} onChange={(e) => setDiscount(e.target.value)} placeholder={t("30% off", "خصم 30٪")} />
             </div>
             <div>
               {label(t("The saving in Arabic", "قيمة الخصم بالعربية"))}
@@ -262,8 +262,8 @@ export default function PartnerOfferEditorPage() {
           </div>
 
           <div>
-            {label(t("Headline", "العنوان"), true)}
-            <In value={headline} disabled={readOnly} onChange={(e) => setHeadline(e.target.value)}
+            {label(t("Headline", "العنوان"), !readOnly)}
+            <In aria-required={!readOnly || undefined} value={headline} disabled={readOnly} onChange={(e) => setHeadline(e.target.value)}
                    placeholder={t("30% off all spa treatments", "خصم 30٪ على جميع جلسات المنتجع")} />
           </div>
           <div>

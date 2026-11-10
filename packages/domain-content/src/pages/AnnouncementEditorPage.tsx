@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   Badge, Button, Card, Input, Textarea,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -68,8 +68,8 @@ export default function AnnouncementEditorPage() {
 
       <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
         <div>
-          <label htmlFor="ann-title" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Title", "العنوان")}</label>
-          <Input id="ann-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Announcement title", "عنوان الإعلان")} autoFocus className="h-11 text-base" />
+          <label htmlFor="ann-title" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Title", "العنوان")}<RequiredMark /></label>
+          <Input id="ann-title" aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Announcement title", "عنوان الإعلان")} autoFocus className="h-11 text-base" />
         </div>
         <div>
           <label htmlFor="ann-body" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Message", "الرسالة")}</label>

@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import {
   Button, Card, Input,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -76,8 +76,8 @@ export default function FaqCategoriesPage() {
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Add a topic", "إضافة موضوع")}</div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="cat-name" className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("Name (English)", "الاسم (إنجليزي)")}</label>
-            <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Payroll", "مثال: الرواتب")} className="h-10" />
+            <label htmlFor="cat-name" className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("Name (English)", "الاسم (إنجليزي)")}<RequiredMark /></label>
+            <Input id="cat-name" aria-required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Payroll", "مثال: الرواتب")} className="h-10" />
           </div>
           <div>
             <label htmlFor="cat-namear" className="mb-1.5 block text-xs font-medium text-muted-foreground">{t("Name (Arabic)", "الاسم (عربي)")}</label>

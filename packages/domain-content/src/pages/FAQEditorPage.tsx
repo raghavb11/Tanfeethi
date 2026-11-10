@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   Button, Card, Input,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -62,7 +62,7 @@ export default function FAQEditorPage() {
   }
   const remove = () => { if (editing) { deleteFaq(editing.id); logAudit("deleted", editing.q, "FAQs") } navigate("/faqs") }
 
-  const label = (text: string) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}</label>
+  const label = (text: string, required = false) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}{required && <RequiredMark />}</label>
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
@@ -83,7 +83,7 @@ export default function FAQEditorPage() {
       </div>
 
       <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
-        <div>{label(t("Question", "السؤال"))}<Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("What do employees ask?", "ما الذي يسأل عنه الموظفون؟")} autoFocus dir={isAr ? "rtl" : "ltr"} className="h-11 text-base" /></div>
+        <div>{label(t("Question", "السؤال"), true)}<Input aria-required value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("What do employees ask?", "ما الذي يسأل عنه الموظفون؟")} autoFocus dir={isAr ? "rtl" : "ltr"} className="h-11 text-base" /></div>
         <div>{label(t("Answer", "الإجابة"))}<RichTextEditor initialHTML={a} onChange={setA} dir={isAr ? "rtl" : "ltr"} placeholder={t("Write a clear, complete answer — headings, lists, links…", "اكتب إجابة واضحة وكاملة — عناوين، قوائم، روابط…")} /></div>
 
         {/* category tags */}

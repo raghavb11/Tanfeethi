@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Button, Card, Input, Textarea, RequiredMark } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Check } from "lucide-react"
@@ -57,8 +57,8 @@ export default function HolidayEditorPage() {
     navigate(back)
   }
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
+  const label = (s: string, required = false) => (
+    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}{required && <RequiredMark />}</label>
   )
 
   const days = orderOk ? dayCount(startISO, endISO) : 0
@@ -94,8 +94,8 @@ export default function HolidayEditorPage() {
       <Card className="rounded-[12px] p-5">
         <div className="space-y-5">
           <div>
-            {label(t("Holiday name", "اسم الإجازة"))}
-            <Input value={name} onChange={(e) => setName(e.target.value)}
+            {label(t("Holiday name", "اسم الإجازة"), true)}
+            <Input aria-required value={name} onChange={(e) => setName(e.target.value)}
                    placeholder={t("Eid al-Fitr, National Day…", "عيد الفطر، اليوم الوطني…")} />
           </div>
 
@@ -128,8 +128,8 @@ export default function HolidayEditorPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              {label(t("First day", "أول يوم"))}
-              <Input type="date" value={startISO}
+              {label(t("First day", "أول يوم"), true)}
+              <Input type="date" aria-required value={startISO}
                      onChange={(e) => {
                        setStartISO(e.target.value)
                        // a single-day holiday is the common case — keep the end with it
@@ -137,8 +137,8 @@ export default function HolidayEditorPage() {
                      }} />
             </div>
             <div>
-              {label(t("Last day", "آخر يوم"))}
-              <Input type="date" value={endISO} onChange={(e) => setEndISO(e.target.value)} />
+              {label(t("Last day", "آخر يوم"), true)}
+              <Input type="date" aria-required value={endISO} onChange={(e) => setEndISO(e.target.value)} />
             </div>
           </div>
 

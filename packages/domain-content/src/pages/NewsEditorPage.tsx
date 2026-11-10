@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"
 
 import {
   Badge, Button, Card,
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
@@ -133,7 +133,7 @@ export default function NewsEditorPage() {
     navigate("/news")
   }
 
-  const fieldLabel = (text: string) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}</label>
+  const fieldLabel = (text: string, required = false) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}{required && <RequiredMark />}</label>
 
   return (
     <main className="ambient-page w-full px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
@@ -170,8 +170,8 @@ export default function NewsEditorPage() {
         <div className="space-y-5 lg:col-span-2">
           <Card className="rounded-[12px] space-y-4 p-5">
             <div>
-              {fieldLabel(t("Title", "العنوان"))}
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Article title goes here…", "عنوان المقال هنا…")} dir={isAr ? "rtl" : "ltr"} autoFocus
+              {fieldLabel(t("Title", "العنوان"), true)}
+              <input aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Article title goes here…", "عنوان المقال هنا…")} dir={isAr ? "rtl" : "ltr"} autoFocus
                 className={cn("w-full rounded-[8px] border bg-[var(--card-elevated)] px-3 py-2.5 text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
             </div>
 

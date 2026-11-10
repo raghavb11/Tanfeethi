@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Button, Card, Input, Textarea, RequiredMark } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import { ArrowLeft, Check, FlaskConical, Layers, ShieldCheck } from "lucide-react"
@@ -41,7 +41,7 @@ export default function PermissionGroupEditorPage() {
     navigate("/admin/permission-groups")
   }
 
-  const label = (text: string) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}</label>
+  const label = (text: string, required = false) => <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{text}{required && <RequiredMark />}</label>
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
@@ -61,11 +61,11 @@ export default function PermissionGroupEditorPage() {
       </div>
 
       <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
-        <div>{label(t("Group name", "اسم المجموعة"))}<Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Content Team", "مثال: فريق المحتوى")} autoFocus className="h-11 text-base" /></div>
+        <div>{label(t("Group name", "اسم المجموعة"), true)}<Input aria-required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Content Team", "مثال: فريق المحتوى")} autoFocus className="h-11 text-base" /></div>
         <div>{label(t("Description", "الوصف"))}<Textarea rows={2} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("What is this group responsible for?", "ما مسؤولية هذه المجموعة؟")} /></div>
 
         <div>
-          {label(t("Roles in this group", "الأدوار في هذه المجموعة"))}
+          {label(t("Roles in this group", "الأدوار في هذه المجموعة"), true)}
           <p className="-mt-1 mb-3 text-xs text-muted-foreground">{t("Members inherit every selected role. What each role can do is fixed by the platform — you only choose which roles the group grants.", "يرث الأعضاء كل الأدوار المحددة. صلاحيات كل دور ثابتة في المنصة — تختار هنا فقط الأدوار التي تمنحها المجموعة.")}</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {SELECTABLE.map((r) => {

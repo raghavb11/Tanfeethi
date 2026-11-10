@@ -113,11 +113,12 @@ export default function DelegationRequestPage() {
         <Panel className="flex-1">
           <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابة جديد")} />
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Field label={t("Delegation start date", "تاريخ بداية الإنابة")} htmlFor="dl-start" error={tried && !start ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Delegation start date", "تاريخ بداية الإنابة")} required htmlFor="dl-start" error={tried && !start ? t("Required", "مطلوب") : undefined}>
               <DateBox id="dl-start" value={start} onChange={setStart} placeholder={t("Date", "تاريخ")} invalid={tried && !start} />
             </Field>
             <Field
               label={t("Delegation end date", "تاريخ انتهاء الإنابة")}
+              required
               htmlFor="dl-end"
               error={
                 tried && !end
@@ -129,7 +130,7 @@ export default function DelegationRequestPage() {
             >
               <DateBox id="dl-end" value={end} onChange={setEnd} min={start || undefined} placeholder={t("Date", "تاريخ")} invalid={(tried && !end) || endBeforeStart} />
             </Field>
-            <Field label={t("Your delegate", "الموظف المناب عنك")} htmlFor="dl-emp" error={tried && !delegate ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Your delegate", "الموظف المناب عنك")} required htmlFor="dl-emp" error={tried && !delegate ? t("Required", "مطلوب") : undefined}>
               <SelectBox
                 id="dl-emp"
                 value={delegate}

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input } from "@reach/shared-ui"
+import { Button, Card, Input, RequiredMark } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Check } from "lucide-react"
@@ -79,8 +79,8 @@ export default function CafeteriaItemEditorPage({ kind }: { kind: "item" | "plac
     navigate(back)
   }
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
+  const label = (s: string, required = false) => (
+    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}{required && <RequiredMark />}</label>
   )
 
   const heading = kind === "item"
@@ -120,8 +120,8 @@ export default function CafeteriaItemEditorPage({ kind }: { kind: "item" | "plac
       <Card className="p-5">
         <div className="space-y-5">
           <div>
-            {label(kind === "item" ? t("Item name", "اسم الصنف") : t("Place name", "اسم الموقع"))}
-            <Input value={name} onChange={(e) => setName(e.target.value)}
+            {label(kind === "item" ? t("Item name", "اسم الصنف") : t("Place name", "اسم الموقع"), true)}
+            <Input aria-required value={name} onChange={(e) => setName(e.target.value)}
                    placeholder={kind === "item"
                      ? t("Karak tea, Fresh juice…", "شاي كرك، عصير طازج…")
                      : t("HQ · Level 14 · Boardroom", "المقر · الطابق 14 · قاعة المجلس")} />
@@ -237,8 +237,8 @@ export default function CafeteriaItemEditorPage({ kind }: { kind: "item" | "plac
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  {label(t("Site", "المبنى"))}
-                  <Input list="cafeteria-sites" value={site} onChange={(e) => setSite(e.target.value)}
+                  {label(t("Site", "المبنى"), true)}
+                  <Input aria-required list="cafeteria-sites" value={site} onChange={(e) => setSite(e.target.value)}
                          placeholder={t("Headquarters, Terminal 1…", "المقر الرئيسي، الصالة 1…")} />
                   <datalist id="cafeteria-sites">
                     {knownSites.map((s) => <option key={s} value={s} />)}

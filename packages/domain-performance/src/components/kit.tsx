@@ -6,7 +6,7 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { cn } from "@reach/shared-core"
-import { SearchableSelect } from "@reach/shared-ui"
+import { RequiredMark, SearchableSelect, withAriaRequired } from "@reach/shared-ui"
 import {
   Check, ChevronDown, ChevronLeft, ChevronRight, Cpu, Gauge, Inbox, Search, Sparkles, TrendingUp, UsersRound,
   type LucideIcon,
@@ -388,16 +388,17 @@ export function SearchBox({ value, onChange, placeholder, className }: {
   )
 }
 
-export function Field({ label, htmlFor, error, hint, children, className }: {
-  label: string; htmlFor?: string; error?: string; hint?: string; children: React.ReactNode; className?: string
+export function Field({ label, htmlFor, error, hint, required, children, className }: {
+  label: string; htmlFor?: string; error?: string; hint?: string; required?: boolean; children: React.ReactNode; className?: string
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       <label htmlFor={htmlFor} className="px-1 text-[13px] font-semibold leading-[17px] text-foreground">
         {label}
+        {required && <RequiredMark />}
         {hint && <span className="ms-1.5 text-[11px] font-normal text-muted-foreground">{hint}</span>}
       </label>
-      {children}
+      {withAriaRequired(children, required)}
       {error && <span className="px-1 text-[11.5px] text-error">{error}</span>}
     </div>
   )

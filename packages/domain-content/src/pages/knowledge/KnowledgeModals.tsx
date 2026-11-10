@@ -209,16 +209,16 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
         {/* 2485:3150 / 2464:2865: 212px type select + title (12px gap). */}
         <div className="grid gap-3 sm:grid-cols-[212px_minmax(0,1fr)]">
           {kindSelect}
-          <Field label={t("Main Title", "العنوان الرئيسي")}>
-            <WInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} />
+          <Field label={t("Main Title", "العنوان الرئيسي")} required>
+            <WInput aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} />
             {tried && !title.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a title", "أدخل العنوان")}</span>}
           </Field>
         </div>
 
         {isNews ? (
           <>
-            <Field label={t("News Text", "نص الخبر")}>
-              <WTextarea rows={1} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("Text", "نص")} />
+            <Field label={t("News Text", "نص الخبر")} required>
+              <WTextarea aria-required rows={1} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("Text", "نص")} />
               {tried === "publish" && !text.trim() && <span className="px-1 text-[11px] text-error">{t("Enter the news text", "أدخل نص الخبر")}</span>}
             </Field>
             {metaRow}
@@ -261,9 +261,9 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
           <>
             {metaRow}
             {options.map((o, i) => (
-              <Field key={i} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : ORDINALS_EN[i] ? `${ORDINALS_EN[i]} Option` : `Option ${i + 1}`}>
+              <Field key={i} required={i < 2} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : ORDINALS_EN[i] ? `${ORDINALS_EN[i]} Option` : `Option ${i + 1}`}>
                 <div className="flex items-center gap-4">
-                  <WInput value={o} onChange={(e) => setOptions(options.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("Text", "نص")} />
+                  <WInput aria-required={i < 2 || undefined} value={o} onChange={(e) => setOptions(options.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("Text", "نص")} />
                   <WButton variant="danger" className={MODAL_OUTLINE} disabled={options.length <= 2} onClick={() => setOptions(options.filter((_, j) => j !== i))}>
                     <Trash2 />{t("Delete", "حذف")}
                   </WButton>
@@ -320,8 +320,8 @@ export function CreateFolderModal({ open, onClose, isAr, folders, currentId, onC
       </>}>
       <div className="flex flex-col gap-4 pb-4">
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_214px]">
-          <Field label={t("Folder name", "اسم المجلد")}>
-            <WInput value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Title", "عنوان")}
+          <Field label={t("Folder name", "اسم المجلد")} required>
+            <WInput aria-required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Title", "عنوان")}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); create() } }} />
             {tried && !name.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a folder name", "أدخل اسم المجلد")}</span>}
           </Field>
@@ -402,12 +402,12 @@ export function FaqModal({ open, onClose, isAr, edit }: { open: boolean; onClose
         </div>
       )}
       <div className="flex flex-col gap-4">
-        <Field label={t("Main title", "العنوان الرئيسي")}>
-          <WInput value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Title", "عنوان")} />
+        <Field label={t("Main title", "العنوان الرئيسي")} required>
+          <WInput aria-required value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Title", "عنوان")} />
           {tried && !q.trim() && <span className="px-1 text-[11px] text-error">{t("Enter a title", "أدخل العنوان")}</span>}
         </Field>
-        <Field label={t("Text", "النص")}>
-          <WTextarea rows={1} value={a} onChange={(e) => setA(e.target.value)} placeholder={t("Text", "نص")} />
+        <Field label={t("Text", "النص")} required>
+          <WTextarea aria-required rows={1} value={a} onChange={(e) => setA(e.target.value)} placeholder={t("Text", "نص")} />
           {tried === "publish" && !a.trim() && <span className="px-1 text-[11px] text-error">{t("Enter the answer", "أدخل النص")}</span>}
         </Field>
         <Field label={<><span className="font-semibold">{t("Link", "رابط")}</span><span className="font-normal">{t(" to the solution", " لحل المشكلة الشائعة")}</span></>}>

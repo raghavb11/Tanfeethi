@@ -2,7 +2,7 @@ import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   Button, Card, Input, Textarea,
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, RequiredMark,
 } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
@@ -154,7 +154,7 @@ export default function PolicyEditorPage() {
   }
   const remove = () => { if (editing) { deletePolicy(editing.id); logAudit("deleted", `${editing.number} ${editing.title}`, "Policies") } navigate("/policies") }
 
-  const label = (text: React.ReactNode) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}</label>
+  const label = (text: React.ReactNode, required = false) => <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{text}{required && <RequiredMark />}</label>
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
@@ -177,7 +177,7 @@ export default function PolicyEditorPage() {
       <div className="space-y-5">
         <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
           <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-            <div>{label(t("Title", "العنوان"))}<Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Policy title", "عنوان السياسة")} autoFocus className="h-11 text-base" /></div>
+            <div>{label(t("Title", "العنوان"), true)}<Input aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Policy title", "عنوان السياسة")} autoFocus className="h-11 text-base" /></div>
             <div>{label(<span className="inline-flex items-center gap-1.5"><Hash className="size-3.5 text-primary" />{t("Policy number", "رقم السياسة")}</span>)}<Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="TF-POL-###" className="h-11 font-mono text-sm" /></div>
           </div>
           <div>{label(t("Summary", "الملخص"))}<Textarea rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder={t("One or two lines describing the policy", "سطر أو سطران يصفان السياسة")} className="text-[15px] leading-relaxed" /></div>

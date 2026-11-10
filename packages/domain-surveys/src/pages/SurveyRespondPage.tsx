@@ -2,7 +2,7 @@ import * as React from "react"
 import { motion } from "framer-motion"
 import { useNavigate, useParams } from "react-router-dom"
 
-import { Badge, Button, Card, Textarea } from "@reach/shared-ui"
+import { Badge, Button, Card, RequiredMark, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, CheckCircle2, ClipboardList, Lock, Star, Timer } from "lucide-react"
@@ -115,7 +115,7 @@ export default function SurveyRespondPage() {
                 return (
                   <div key={q.id} className={cn("rounded-[8px]", missing && "-mx-2 bg-destructive/5 px-2 py-2 ring-1 ring-destructive/30")}>
                     <p className="mb-2 text-sm font-medium">
-                      {isAr ? q.qAr : q.q}{q.required && <span className="ms-1 text-primary">*</span>}
+                      {isAr ? q.qAr : q.q}{q.required && <RequiredMark />}
                     </p>
 
                     {q.kind === "rating" && (

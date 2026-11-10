@@ -63,6 +63,7 @@ export function ChecklistAnswers({
                 <div className="flex flex-col gap-4 md:flex-row">
                   <Field
                     label={t("Responsible people", "الأشخاص المسؤولون")}
+                    required={!readOnly}
                     className="md:w-[300px] md:shrink-0"
                     error={missingPeople ? t("Choose at least one person.", "اختر شخصاً واحداً على الأقل.") : undefined}
                   >

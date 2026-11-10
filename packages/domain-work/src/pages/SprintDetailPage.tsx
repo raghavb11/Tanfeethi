@@ -344,12 +344,12 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
               ) : sprint && (
                 <Row edit={false} label={t("Name in Arabic", "الاسم بالإنجليزية")} view={<span dir={isAr ? "ltr" : "rtl"}>{isAr ? sprint.name : sprint.nameAr}</span>} />
               )}
-              <Row label={t("Start date", "تاريخ البدء")} edit={editing} error={err("start")}
+              <Row label={t("Start date", "تاريخ البدء")} edit={editing} required error={err("start")}
                 view={shortDate(view.startISO, isAr)}
-                control={d && <DateField value={d.startISO} onChange={(v) => patch({ startISO: v })} label={t("Start date", "تاريخ البدء")} invalid={!!err("start")} />} />
-              <Row label={t("End date", "تاريخ الانتهاء")} edit={editing} error={err("end")}
+                control={d && <DateField value={d.startISO} onChange={(v) => patch({ startISO: v })} label={t("Start date", "تاريخ البدء")} required invalid={!!err("start")} />} />
+              <Row label={t("End date", "تاريخ الانتهاء")} edit={editing} required error={err("end")}
                 view={shortDate(view.endISO, isAr)}
-                control={d && <DateField value={d.endISO} onChange={(v) => patch({ endISO: v })} label={t("End date", "تاريخ الانتهاء")} invalid={!!err("end")} />} />
+                control={d && <DateField value={d.endISO} onChange={(v) => patch({ endISO: v })} label={t("End date", "تاريخ الانتهاء")} required invalid={!!err("end")} />} />
               <Row label={t("Length", "المدة")} edit={false} view={length ? dayCount(length, isAr) : "—"} />
               {!create && sprint && (
                 <Row label={t("Status", "الحالة")} edit={false}

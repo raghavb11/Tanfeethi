@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Laptop } from "lucide-react"
+import { RequiredMark } from "@reach/shared-ui"
 
 import {
   AttachmentsButton, Card, CardHeader, Field, FormActions, GroupRow, PageBody, SelectInput, TextInput, Toast } from "../components/wijha"
@@ -58,7 +59,7 @@ export default function ReportFaultPage() {
             <GroupRow icon={Laptop} label={t("Report a fault", "الإبلاغ عن عطل")} filled />
             <div className="text-[13px] font-semibold leading-[17px] text-foreground">{t("Required fields:", "الحقول المطلوبة:")}</div>
             <ul className="list-disc ps-5 text-[11.3px] leading-6 text-foreground">
-              {required.map((r) => <li key={r}>{r} <span className="text-error">*</span></li>)}
+              {required.map((r) => <li key={r}>{r}<RequiredMark /></li>)}
             </ul>
           </div>
         </Card>

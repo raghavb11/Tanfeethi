@@ -71,7 +71,7 @@ export function SurveyCreateModal({ open, onClose, isAr }: { open: boolean; onCl
               <option value="news">{t("News", "خبر")}</option>
             </WSelect>
           </Field>
-          <Field label={t("Main title", "العنوان الرئيسي")}><WInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} autoFocus /></Field>
+          <Field label={t("Main title", "العنوان الرئيسي")} required><WInput aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Title", "عنوان")} autoFocus /></Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t("Publish date", "تاريخ النشر")}>
@@ -86,9 +86,9 @@ export function SurveyCreateModal({ open, onClose, isAr }: { open: boolean; onCl
           <Field label={t("Target employees", "الموظفين المستهدفين")}><CountSelect options={deptOptions} value={audience} onChange={setAudience} allLabel={t("All", "الكل")} isAr={isAr} /></Field>
         </div>
         {options.map((o, i) => (
-          <Field key={i} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : `Option ${i + 1}`}>
+          <Field key={i} required={i < 2} label={isAr ? `الخيار ${ORDINALS_AR[i] ?? i + 1}` : `Option ${i + 1}`}>
             <div className="flex items-center gap-4">
-              <WInput value={o} onChange={(e) => setOptions(options.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("Text", "نص")} />
+              <WInput aria-required={i < 2 || undefined} value={o} onChange={(e) => setOptions(options.map((x, j) => (j === i ? e.target.value : x)))} placeholder={t("Text", "نص")} />
               <WButton variant="danger" className={MODAL_OUTLINE} disabled={options.length <= 2} onClick={() => setOptions(options.filter((_, j) => j !== i))}><Trash2 />{t("Delete", "حذف")}</WButton>
             </div>
           </Field>

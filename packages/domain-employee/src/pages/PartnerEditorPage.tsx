@@ -134,7 +134,7 @@ export default function PartnerEditorPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               {label(t("Name", "الاسم"), true)}
-              <Input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Al Masa Spa & Wellness", "منتجع الماسة للعافية")} />
+              <Input aria-required className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Al Masa Spa & Wellness", "منتجع الماسة للعافية")} />
             </div>
             <div>
               {label(t("Name in Arabic", "الاسم بالعربية"))}
@@ -145,7 +145,7 @@ export default function PartnerEditorPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               {label(t("Agreement valid to", "الاتفاقية سارية حتى"), true)}
-              <Input className={inputCls} type="date" value={agreementToISO} onChange={(e) => setAgreementToISO(e.target.value)} />
+              <Input aria-required className={inputCls} type="date" value={agreementToISO} onChange={(e) => setAgreementToISO(e.target.value)} />
             </div>
             <div>
               {label(t("Status", "الحالة"))}

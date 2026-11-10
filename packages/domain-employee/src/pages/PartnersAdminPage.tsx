@@ -206,7 +206,7 @@ export default function PartnersAdminPage() {
                   <div className="mt-4 rounded-[10px] bg-secondary/50 p-3.5">
                     <FieldLabel required>{t("Why it is going back", "سبب الإعادة")}</FieldLabel>
                     <Textarea
-                      rows={2} value={note} onChange={(e) => setNote(e.target.value)}
+                      aria-required rows={2} value={note} onChange={(e) => setNote(e.target.value)}
                       className="rounded-lg bg-background"
                       placeholder={t("The partner sees this and can correct the offer.", "سيظهر هذا للشريك ليصحّح العرض.")}
                     />

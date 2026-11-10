@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Card, Input, Textarea } from "@reach/shared-ui"
+import { Button, Card, Input, Textarea, RequiredMark } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { ArrowLeft, Check, Lock } from "lucide-react"
@@ -88,8 +88,8 @@ export default function MasterRowEditorPage() {
     navigate(back)
   }
 
-  const label = (s: string) => (
-    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}</label>
+  const label = (s: string, required = false) => (
+    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s}{required && <RequiredMark />}</label>
   )
 
   return (
@@ -122,8 +122,8 @@ export default function MasterRowEditorPage() {
       <Card className="rounded-[12px] p-5">
         <div className="space-y-5">
           <div>
-            {label(t("Name", "الاسم"))}
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            {label(t("Name", "الاسم"), true)}
+            <Input aria-required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div>
@@ -185,8 +185,8 @@ export default function MasterRowEditorPage() {
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  {label(t("Routes to", "يُوجَّه إلى"))}
-                  <Input value={routeTo} onChange={(e) => setRouteTo(e.target.value)}
+                  {label(t("Routes to", "يُوجَّه إلى"), true)}
+                  <Input aria-required value={routeTo} onChange={(e) => setRouteTo(e.target.value)}
                          placeholder={t("IT & Security", "تقنية المعلومات والأمن")} />
                 </div>
                 <div>

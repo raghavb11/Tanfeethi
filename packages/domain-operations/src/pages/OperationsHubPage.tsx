@@ -106,7 +106,7 @@ function ChecklistsCard() {
       {creating && (
         <div className="mt-2 flex flex-col gap-4 pb-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label={t("Choose lounge", "اختر الصالة")} htmlFor="ops-lounge" error={tried && !lounge ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Choose lounge", "اختر الصالة")} required htmlFor="ops-lounge" error={tried && !lounge ? t("Required", "مطلوب") : undefined}>
               <SelectBox
                 id="ops-lounge"
                 value={lounge}
@@ -116,7 +116,7 @@ function ChecklistsCard() {
                 options={lounges.map((x) => ({ value: x.id, label: l(x.name) }))}
               />
             </Field>
-            <Field label={t("Choose audit checklist", "اختر قائمة التدقيق")} htmlFor="ops-template" error={tried && !template ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Choose audit checklist", "اختر قائمة التدقيق")} required htmlFor="ops-template" error={tried && !template ? t("Required", "مطلوب") : undefined}>
               <SelectBox
                 id="ops-template"
                 value={template}
@@ -126,7 +126,7 @@ function ChecklistsCard() {
                 options={templates.map((x) => ({ value: x.id, label: l(x.name) }))}
               />
             </Field>
-            <Field label={t("Choose date", "اختر التاريخ")} htmlFor="ops-date" error={tried && !date ? t("Required", "مطلوب") : undefined}>
+            <Field label={t("Choose date", "اختر التاريخ")} required htmlFor="ops-date" error={tried && !date ? t("Required", "مطلوب") : undefined}>
               <DateBox id="ops-date" value={date} onChange={setDate} placeholder={t("Date", "تاريخ")} invalid={tried && !date} />
             </Field>
           </div>

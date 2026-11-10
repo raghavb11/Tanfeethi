@@ -3,7 +3,7 @@
  *  gold underline, 34px buttons, 36px inputs, 12.5px table headers, 13.5px cells). */
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { SearchableSelect } from "@reach/shared-ui"
+import { RequiredMark, SearchableSelect, withAriaRequired } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { CalendarDays, ChevronDown, Inbox, Info } from "lucide-react"
 
@@ -234,19 +234,23 @@ export function Field({
   children,
   className,
   error,
+  required,
 }: {
   label: string
   htmlFor?: string
   children: React.ReactNode
   className?: string
   error?: string
+  /** Shows the Figma required asterisk after the label and sets aria-required on the control. */
+  required?: boolean
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       <label htmlFor={htmlFor} className="px-1 text-[13px] font-semibold leading-[15px] text-foreground rtl:leading-[17px]">
         {label}
+        {required && <RequiredMark />}
       </label>
-      {children}
+      {withAriaRequired(children, required)}
       {error && <p className="px-1 text-xs text-error">{error}</p>}
     </div>
   )
@@ -267,6 +271,7 @@ export function SelectBox({
   controlClassName,
   ariaLabel,
   searchable,
+  "aria-required": ariaRequired,
 }: {
   id?: string
   value: string
@@ -282,6 +287,8 @@ export function SelectBox({
   ariaLabel?: string
   /** Searchable list (people / departments). Defaults to on above 10 options; the closed field looks the same. */
   searchable?: boolean
+  /** Set by `Field required`. */
+  "aria-required"?: boolean
 }) {
   const { isAr } = useT()
   if (searchable ?? options.length > 10) {
@@ -291,7 +298,7 @@ export function SelectBox({
         className={className} options={options} value={value} onChange={onChange} searchable isAr={isAr} disabled={disabled}
         renderTrigger={({ triggerProps }) => (
           <button
-            {...triggerProps} id={id} aria-label={ariaLabel} disabled={disabled}
+            {...triggerProps} id={id} aria-label={ariaLabel} aria-required={ariaRequired} disabled={disabled}
             className={cn(inputCls(surface, invalid), "relative flex items-center pe-8 text-start", !current && "text-muted-foreground", controlClassName)}
           >
             <span className="min-w-0 flex-1 truncate">{current?.label ?? placeholder ?? ""}</span>
@@ -306,6 +313,7 @@ export function SelectBox({
       <select
         id={id}
         aria-label={ariaLabel}
+        aria-required={ariaRequired}
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
@@ -340,6 +348,7 @@ export function DateBox({
   ariaLabel,
   min,
   className,
+  "aria-required": ariaRequired,
 }: {
   id?: string
   value: string
@@ -351,6 +360,8 @@ export function DateBox({
   ariaLabel?: string
   min?: string
   className?: string
+  /** Set by `Field required`. */
+  "aria-required"?: boolean
 }) {
   const ref = React.useRef<HTMLInputElement>(null)
   return (
@@ -372,6 +383,7 @@ export function DateBox({
         id={id}
         type="date"
         aria-label={ariaLabel ?? placeholder}
+        aria-required={ariaRequired}
         value={value}
         min={min}
         disabled={disabled}

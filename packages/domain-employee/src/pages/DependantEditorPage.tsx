@@ -138,7 +138,7 @@ export default function DependantEditorPage() {
 
               <div>
                 {label(t("Full name", "الاسم الكامل"), true)}
-                <Input className={fieldClass} value={name} onChange={(e) => setName(e.target.value)}
+                <Input aria-required className={fieldClass} value={name} onChange={(e) => setName(e.target.value)}
                        placeholder={t("As it appears on the ID", "كما يظهر في الهوية")} />
               </div>
 
@@ -151,12 +151,12 @@ export default function DependantEditorPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   {label(t("Date of birth", "تاريخ الميلاد"), true)}
-                  <Input className={fieldClass} type="date" value={dobISO} max={new Date().toISOString().slice(0, 10)}
+                  <Input aria-required className={fieldClass} type="date" value={dobISO} max={new Date().toISOString().slice(0, 10)}
                          onChange={(e) => setDobISO(e.target.value)} />
                 </div>
                 <div>
                   {label(t("National ID / Iqama", "رقم الهوية / الإقامة"), true)}
-                  <Input className={fieldClass} value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
+                  <Input aria-required className={fieldClass} value={idNumber} onChange={(e) => setIdNumber(e.target.value)}
                          inputMode="numeric" placeholder="1XXXXXXXXX" />
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@reach/shared-core"
+import { RequiredMark } from "@reach/shared-ui"
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Local WIJHA primitives for the Employee module (Figma "Final Design 1.0").
@@ -204,7 +205,7 @@ export function FieldLabel({ children, required, htmlFor, className }: { childre
   return (
     <label htmlFor={htmlFor} className={cn("mb-2 block text-[13px] font-medium text-foreground", className)}>
       {children}
-      {required && <span className="ms-1 text-error">*</span>}
+      {required && <RequiredMark />}
     </label>
   )
 }

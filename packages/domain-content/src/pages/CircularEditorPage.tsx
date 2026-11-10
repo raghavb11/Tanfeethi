@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 
-import { Badge, Button, Card, Input } from "@reach/shared-ui"
+import { Badge, Button, Card, Input, RequiredMark } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { AlertTriangle, ArrowLeft, Megaphone, Paperclip } from "lucide-react"
@@ -60,8 +60,8 @@ export default function CircularEditorPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">{t("Circular title", "عنوان التعميم")}</label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("e.g. Updated Remote Work Guidelines", "مثال: تحديث إرشادات العمل عن بُعد")} className={isAr ? "text-right" : undefined} />
+          <label className="text-sm font-medium">{t("Circular title", "عنوان التعميم")}<RequiredMark /></label>
+          <Input aria-required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("e.g. Updated Remote Work Guidelines", "مثال: تحديث إرشادات العمل عن بُعد")} className={isAr ? "text-right" : undefined} />
         </div>
 
         <div className="space-y-1.5">
