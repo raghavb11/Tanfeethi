@@ -16,7 +16,7 @@ import {
 } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { WijhaLockup } from "@/components/BrandLogo"
-import { compareNav, railGroups, railItemForPath, type RailItem } from "@/config/navigation"
+import { railGroups, railItemForPath, type RailItem } from "@/config/navigation"
 import { useShell } from "@reach/shell-context"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { ShieldCheck, UserRound } from "lucide-react"
@@ -114,7 +114,6 @@ function RailNav({ isAr }: { isAr: boolean }) {
       ))}
       <div aria-hidden className="my-2 h-px w-[85px] bg-border" />
       <RoleSwitchTile isAr={isAr} />
-      <CompareTiles isAr={isAr} />
     </nav>
   )
 }
@@ -245,32 +244,6 @@ function RoleSwitchTile({ isAr }: { isAr: boolean }) {
       {toAdmin ? <ShieldCheck className="size-5" strokeWidth={1.6} /> : <UserRound className="size-5" strokeWidth={1.6} />}
       <span className="text-muted-foreground">{label}</span>
     </button>
-  )
-}
-
-/** Dev-only links to the other builds (kept from v1, demoted below the rail). */
-function CompareTiles({ isAr }: { isAr: boolean }) {
-  return (
-    <div className="mt-2 flex flex-col items-center gap-1">
-      {compareNav.map((item) => (
-        <Tooltip key={item.url}>
-          <TooltipTrigger
-            render={
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={isAr ? item.titleAr : item.title}
-                className="flex size-8 items-center justify-center rounded-lg text-icon opacity-60 transition-colors hover:bg-[var(--btn-ghost-hover)] hover:opacity-100"
-              />
-            }
-          >
-            <item.icon className="size-4" strokeWidth={1.6} />
-          </TooltipTrigger>
-          <TooltipContent side={isAr ? "left" : "right"}>{isAr ? item.titleAr : item.title}</TooltipContent>
-        </Tooltip>
-      ))}
-    </div>
   )
 }
 

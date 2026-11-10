@@ -96,6 +96,7 @@ const ApprovalDetailPage = lazy(() =>
   import("@reach/domain-employee").then((m) => ({ default: m.ApprovalDetailPage })),
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
+const NotificationHistoryPage = lazy(() => import("@/pages/NotificationHistory"))
 const ServicesPage = lazy(() =>
   import("@reach/domain-services").then((m) => ({ default: m.ServicesPage })),
 )
@@ -197,6 +198,7 @@ export default function App() {
       <Route path="tea-boy" element={<React.Suspense fallback={null}><TeaBoyQueuePage /></React.Suspense>} />
       <Route element={<AppShell />}>
         <Route index element={<DashboardPage />} />
+        <Route path="notifications" element={<NotificationHistoryPage />} />
         <Route path="work" element={<WorkPage />} />
         <Route path="tasks" element={<MyTasksPage />} />
         <Route path="tasks/new" element={<TaskEditorPage />} />

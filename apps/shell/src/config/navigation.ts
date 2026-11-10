@@ -179,7 +179,7 @@ export type RailItem = {
 
 export const railGroups: RailItem[][] = [
   [
-    { key: "home", title: "Home", titleAr: "الرئيسية", path: "/", icon: LayoutDashboard, module: "home" },
+    { key: "home", title: "Home", titleAr: "الرئيسية", path: "/", icon: LayoutDashboard, module: "home", match: ["/notifications"] },
     {
       key: "calendar", title: "Calendar", titleAr: "التقويم", path: "/calendar", icon: CalendarDays, module: "work",
       match: ["/events", "/config/holidays"],

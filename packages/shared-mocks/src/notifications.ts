@@ -1,78 +1,146 @@
 import * as React from "react"
 
-const SEED = [
-  {
-    id: "n1",
-    title: "Security · access review batch",
-    titleAr: "الأمن · مراجعة الصلاحيات",
-    body: "14 exceptions require manager sign-off by Friday.",
-    bodyAr: "14 استثناء يحتاج اعتماد المدير قبل الجمعة.",
-    time: "Now",
-    timeAr: "الآن",
-    category: "security" as const,
-    unread: true,
-  },
-  {
-    id: "n2",
-    title: "Reach Assistant",
-    titleAr: "مساعد وصل",
-    body: "Meeting summary ready — Portfolio review.",
-    bodyAr: "ملخص الاجتماع جاهز — مراجعة المحفظة.",
-    time: "32m ago",
-    timeAr: "قبل 32 دقيقة",
-    category: "ai" as const,
-    unread: true,
-  },
-  {
-    id: "n3",
-    title: "Operations",
-    titleAr: "العمليات",
-    body: "Incident INC-8891 correlated with upstream DNS drift.",
-    bodyAr: "الحادثة INC-8891 مرتبطة بانحراف في DNS العلوي.",
-    time: "1h ago",
-    timeAr: "قبل ساعة",
-    category: "operations" as const,
-    unread: false,
-  },
-  {
-    id: "n4",
-    title: "Employee Hub",
-    titleAr: "مركز الموظف",
-    body: "Expense report ER-4422 marked ready for payroll.",
-    bodyAr: "تقرير المصاريف ER-4422 جاهز للرواتب.",
-    time: "Yesterday",
-    timeAr: "أمس",
-    category: "employee" as const,
-    unread: false,
-  },
+/** Which icon a notification shows (Figma 2146:4876). */
+export type NotificationKind =
+  | "leave" | "expense" | "meeting" | "recognition" | "shift" | "payslip" | "course" | "system"
+/** "From" column / category filter on the Notification History page (4693:23706). */
+export type NotificationSource = "system" | "hr" | "finance" | "meetings" | "learning"
+
+export type Notification = {
+  id: string
+  title: string; titleAr: string
+  body: string; bodyAr: string
+  time: string; timeAr: string
+  /** yyyy/mm/dd, as the history table prints it */
+  date: string
+  category: NotificationKind
+  source: NotificationSource
+  unread: boolean
+  /** where clicking the notification goes */
+  to?: string
+  /** older items live only in the history log, not the bell dropdown */
+  archived?: boolean
+}
+
+export const notificationSources: { id: NotificationSource; en: string; ar: string }[] = [
+  { id: "system", en: "System notifications", ar: "تنبيهات النظام" },
+  { id: "hr", en: "Human resources", ar: "الموارد البشرية" },
+  { id: "finance", en: "Finance", ar: "المالية" },
+  { id: "meetings", en: "Meetings", ar: "الاجتماعات" },
+  { id: "learning", en: "Learning", ar: "التعلم" },
 ]
 
-export type Notification = (typeof SEED)[number]
+const SYSTEM_HISTORY: [string, string, string, string, string][] = [
+  ["s1", "Scheduled maintenance tonight", "صيانة مجدولة الليلة", "The portal will be unavailable from 01:00 to 03:00.", "ستكون البوابة غير متاحة من ٠١:٠٠ إلى ٠٣:٠٠."],
+  ["s2", "Password expires in 7 days", "كلمة المرور تنتهي خلال ٧ أيام", "Update your password from Settings to keep access.", "حدّث كلمة المرور من الإعدادات للحفاظ على الوصول."],
+  ["s3", "New sign-in from a new device", "تسجيل دخول من جهاز جديد", "Chrome on Windows · Riyadh. Not you? Contact IT.", "Chrome على Windows · الرياض. لست أنت؟ تواصل مع التقنية."],
+  ["s4", "Two-step verification enabled", "تم تفعيل التحقق بخطوتين", "Your account is now protected with a second factor.", "حسابك الآن محمي بعامل تحقق إضافي."],
+  ["s5", "Portal updated to version 2.4", "تم تحديث البوابة إلى الإصدار 2.4", "New: employee card search and the notification log.", "جديد: البحث عن بطاقة الموظف وسجل التنبيهات."],
+  ["s6", "Storage limit almost reached", "اقتربت مساحة التخزين من الحد", "Your document space is 90% full.", "مساحة مستنداتك ممتلئة بنسبة ٩٠٪."],
+]
 
-/** The bell reads this. Anything in the portal can add to it — issuing a
- *  voucher, for one — so the seed is only a starting point. */
+const SEED: Notification[] = [
+  // ── the bell dropdown (Figma 2146:4876, in order) ──
+  {
+    id: "n1", category: "leave", source: "hr", unread: true, to: "/leave", date: "2026/09/15",
+    title: "Your leave request was approved", titleAr: "تمت الموافقة على طلب إجازتك",
+    body: "12 – 16 May · 5-day annual leave — approved by Ahmed Mohammed.", bodyAr: "١٢ – ١٦ مايو · إجازة سنوية ٥ أيام — اعتمدها أحمد محمد.",
+    time: "4m ago", timeAr: "قبل ٤ د",
+  },
+  {
+    id: "n2", category: "expense", source: "finance", unread: true, to: "/employee", date: "2026/09/15",
+    title: "Expense awaiting a document", titleAr: "مصروف بانتظار مستند",
+    body: "Riyadh hotel invoice SAR 2,480 needs a photo of the receipt.", bodyAr: "فاتورة فندق الرياض ٢٬٤٨٠ ر.س تحتاج صورة الإيصال.",
+    time: "22m ago", timeAr: "قبل ٢٢ د",
+  },
+  {
+    id: "n3", category: "meeting", source: "meetings", unread: false, to: "/calendar", date: "2026/09/15",
+    title: "Reminder: second-wave meeting", titleAr: "تذكير: اجتماع الموجة الثانية",
+    body: "Today 10:00 · HQ hall, floor 4, with 12 participants.", bodyAr: "اليوم ١٠:٠٠ · قاعة المقر ط٤ مع ١٢ مشاركًا.",
+    time: "40m ago", timeAr: "قبل ٤٠ د",
+  },
+  {
+    id: "n4", category: "recognition", source: "hr", unread: false, to: "/employee", date: "2026/09/15",
+    title: "New recognition from Sara Al-Mutairi", titleAr: "تقدير جديد من سارة المطيري",
+    body: "“Great leadership running the Q2 operations review.”", bodyAr: "\"قيادة رائعة في إدارة مراجعة عمليات الربع الثاني.\"",
+    time: "1h ago", timeAr: "قبل ساعة",
+  },
+  {
+    id: "n5", category: "shift", source: "hr", unread: false, to: "/attendance", date: "2026/09/15",
+    title: "Shift update", titleAr: "تحديث المناوبة",
+    body: "Thursday is now a client visit · Financial Centre 10:00 – 18:00.", bodyAr: "الخميس أصبح زيارة عميل · المركز المالي ١٠:٠٠ – ١٨:٠٠.",
+    time: "3h ago", timeAr: "قبل ٣ س",
+  },
+  {
+    id: "n6", category: "payslip", source: "finance", unread: false, to: "/payslip", date: "2026/09/14",
+    title: "Payslip ready", titleAr: "كشف الراتب جاهز",
+    body: "April salary SAR 18,400 · deposited on 27 May.", bodyAr: "راتب أبريل ١٨٬٤٠٠ ر.س · يودع في ٢٧ مايو.",
+    time: "Yesterday", timeAr: "أمس",
+  },
+  {
+    id: "n7", category: "course", source: "learning", unread: false, to: "/learning", date: "2026/09/14",
+    title: "A course suggested for you", titleAr: "دورة تدريبية مقترحة لك",
+    body: "Executive portfolio management · starts 9 June, 4 sessions.", bodyAr: "إدارة المحافظ التنفيذية · تبدأ ٩ يونيو، ٤ جلسات.",
+    time: "Yesterday", timeAr: "أمس",
+  },
+  // ── older system notices — history log only ──
+  ...SYSTEM_HISTORY.map(([id, title, titleAr, body, bodyAr]): Notification => ({
+    id, title, titleAr, body, bodyAr,
+    category: "system", source: "system", unread: false, archived: true, date: "2026/09/15",
+    time: "15 Sep", timeAr: "١٥ سبتمبر",
+  })),
+]
+
+/** The bell and the history page read this. Anything in the portal can add to
+ *  it — issuing a voucher, for one — so the seed is only a starting point. */
 let items: Notification[] = [...SEED]
 
 const listeners = new Set<() => void>()
-const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }
+const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l) } }
+const emit = () => listeners.forEach((l) => l())
 
 export const useNotifications = () =>
   React.useSyncExternalStore(subscribe, () => items)
 
+function today() {
+  const d = new Date()
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`
+}
+
 export function pushNotification(n: {
   title: string; titleAr: string
   body: string; bodyAr: string
-  category?: Notification["category"]
+  category?: NotificationKind
+  source?: NotificationSource
+  to?: string
 }) {
   items = [{
     id: `n-${Date.now().toString(36)}`,
     title: n.title, titleAr: n.titleAr,
     body: n.body, bodyAr: n.bodyAr,
-    time: "Now", timeAr: "\u0627\u0644\u0622\u0646",
-    category: n.category ?? ("service" as Notification["category"]),
+    time: "Now", timeAr: "الآن",
+    date: today(),
+    category: n.category ?? "system",
+    source: n.source ?? "system",
     unread: true,
+    to: n.to,
   }, ...items]
-  listeners.forEach((l) => l())
+  emit()
+}
+
+export function markNotificationRead(id: string) {
+  items = items.map((n) => (n.id === id && n.unread ? { ...n, unread: false } : n))
+  emit()
+}
+
+export function markAllNotificationsRead() {
+  items = items.map((n) => (n.unread ? { ...n, unread: false } : n))
+  emit()
+}
+
+export function removeNotification(id: string) {
+  items = items.filter((n) => n.id !== id)
+  emit()
 }
 
 /** Kept for anything still reading the plain list. */

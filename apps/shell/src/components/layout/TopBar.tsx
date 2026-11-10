@@ -72,9 +72,12 @@ export function TopBar({
         <InlineSearch isAr={isAr} onOpenFullPalette={() => setCommandOpen(true)} />
 
         <div className="flex items-center gap-4">
-          <IconTile label={isAr ? "بحث" : "Search"} onClick={() => setCommandOpen(true)} className="md:hidden">
-            <Search className="size-[18px]" strokeWidth={1.6} />
-          </IconTile>
+          {/* wrapper owns the breakpoint: .icon-tile sets its own display */}
+          <span className="contents md:hidden">
+            <IconTile label={isAr ? "بحث" : "Search"} onClick={() => setCommandOpen(true)}>
+              <Search className="size-[18px]" strokeWidth={1.6} />
+            </IconTile>
+          </span>
 
           <IconTile label={isAr ? "المساعد الشخصي" : "Personal assistant"} onClick={() => setAiPanelOpen((o) => !o)}>
             <Sparkles className="size-[18px]" strokeWidth={1.6} />
@@ -85,7 +88,8 @@ export function TopBar({
             onClick={() => setLocale(isAr ? "en" : "ar")}
             className="text-[15px] font-semibold"
           >
-            {isAr ? "EN" : "ع"}
+            {/* Figma: the tile shows the active language ("ع" in Arabic) */}
+            {isAr ? "ع" : "EN"}
           </IconTile>
 
           <IconTile

@@ -1,205 +1,280 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 
-import {
-  Button,
-  Input,
-  ScrollArea,
-  Separator,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@reach/shared-ui"
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@reach/shared-ui"
+import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { ChevronRight, SendHorizontal, Sparkles } from "lucide-react"
+import { CalendarDays, FileText, RotateCcw, Search, ShieldCheck, Sparkles, UsersRound, X } from "lucide-react"
 
-const promptsEn = [
-  "Summarize my riskiest approvals today.",
-  "What should I delegate before 5pm?",
-  "Draft an incident update for executives.",
+type Msg = { id: string; role: "assistant" | "user"; text: string }
+
+const SUGGESTIONS = [
+  { id: "q1", icon: FileText, en: "Q1 report", ar: "تقرير الربع الأول" },
+  { id: "meetings", icon: CalendarDays, en: "Tomorrow’s meetings", ar: "اجتماعات الغد" },
+  { id: "pending", icon: UsersRound, en: "Show transactions awaiting reply", ar: "عرض المعاملات بانتظار الرد" },
 ]
 
-const promptsAr = [
-  "لخّص الموافقات الأكثر خطورة اليوم.",
-  "ما الذي يجب أن أفوّضه قبل الساعة 5 مساءً؟",
-  "أعدّ تحديثًا للحوادث لإدارة التنفيذيين.",
-]
+const greeting = (isAr: boolean): Msg => ({
+  id: "greet",
+  role: "assistant",
+  text: isAr
+    ? "أهلاً فواز. أستطيع تلخيص بريدك، مراجعة الموافقات المعلقة، أو إعادة تنظيم جدولك."
+    : "Hi Fawaz. I can summarise your mail, review pending approvals, or reorganise your schedule.",
+})
 
+const reply = (isAr: boolean): string =>
+  isAr
+    ? "حسناً فواز، أعمل على ذلك الآن وسأعرض لك النتيجة من بياناتك داخل وجهة خلال لحظات."
+    : "On it, Fawaz — I'm pulling that together from your WIJHA data and will show you the result in a moment."
+
+/**
+ * Personal assistant — Figma 315:680 ("المساعد الشخصي"). On desktop it docks
+ * at the inline-end of the shell below the top bar (516px card); when closed
+ * it takes no space at all — it opens from the top-bar sparkle tile or ⌘J.
+ * Below `lg` it is a sheet. Pages can hand it a prompt with
+ * `window.dispatchEvent(new CustomEvent("wijha:ask", { detail: { text } }))`.
+ */
 export function AIAssistantPanel() {
   const { aiPanelOpen, setAiPanelOpen, locale } = useShell()
   const isAr = locale === "ar"
   const isLg = useMediaQuery("(min-width: 1024px)")
+  const isXl = useMediaQuery("(min-width: 1280px)")
+
+  const [messages, setMessages] = React.useState<Msg[]>(() => [greeting(isAr)])
+  const [thinking, setThinking] = React.useState(false)
+  const timer = React.useRef<number | undefined>(undefined)
+
+  const send = React.useCallback((text: string) => {
+    const q = text.trim()
+    if (!q) return
+    setMessages((m) => [...m, { id: `u-${Date.now()}`, role: "user", text: q }])
+    setThinking(true)
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => {
+      setThinking(false)
+      setMessages((m) => [...m, { id: `a-${Date.now()}`, role: "assistant", text: reply(isAr) }])
+    }, 700)
+  }, [isAr])
+
+  const reset = () => {
+    window.clearTimeout(timer.current)
+    setThinking(false)
+    setMessages([greeting(isAr)])
+  }
+
+  // Keep the greeting in the active language until the conversation starts.
+  const [prevAr, setPrevAr] = React.useState(isAr)
+  if (prevAr !== isAr) {
+    setPrevAr(isAr)
+    if (messages.length === 1) setMessages([greeting(isAr)])
+  }
+
+  // ⌘J / Ctrl+J toggles the panel; pages hand prompts over via "wijha:ask".
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault()
+        setAiPanelOpen((o) => !o)
+      }
+    }
+    const onAsk = (e: Event) => {
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text ?? ""
+      setAiPanelOpen(true)
+      send(text)
+    }
+    window.addEventListener("keydown", onKey)
+    window.addEventListener("wijha:ask", onAsk)
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("wijha:ask", onAsk)
+    }
+  }, [send, setAiPanelOpen])
+
+  React.useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  const body = (
+    <AssistantBody
+      isAr={isAr}
+      messages={messages}
+      thinking={thinking}
+      onSend={send}
+      onReset={reset}
+      onClose={() => setAiPanelOpen(false)}
+    />
+  )
 
   if (!isLg) {
     return (
       <Sheet open={aiPanelOpen} onOpenChange={setAiPanelOpen}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-          <SheetHeader className="border-b border-border/60 p-4 text-left">
-            <SheetTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="size-4 text-primary" />
-              {isAr ? "مساعد ريتش" : "Reach Assistant"}
-            </SheetTitle>
-            <SheetDescription>
-              {isAr ? "ذكاء متكامل — مرتبط بمراكز عملك." : "Embedded intelligence — grounded in your hubs."}
-            </SheetDescription>
-          </SheetHeader>
-          <AssistantBody isAr={isAr} />
+        <SheetContent
+          side={isAr ? "left" : "right"}
+          showCloseButton={false}
+          className="flex w-full flex-col gap-0 bg-card-elevated p-0 sm:max-w-[516px]"
+        >
+          <SheetTitle className="sr-only">{isAr ? "المساعد الشخصي" : "Personal assistant"}</SheetTitle>
+          <SheetDescription className="sr-only">
+            {isAr ? "يقرأ بياناتك داخل منصة وجهة فقط" : "Reads your data inside WIJHA only"}
+          </SheetDescription>
+          {body}
         </SheetContent>
       </Sheet>
     )
   }
 
-  const expandedWidth = 380
-  const collapsedWidth = 52
-
+  const width = isXl ? 516 : 420
+  if (!aiPanelOpen) return null
   return (
-    <motion.div
-      className="chrome-light relative hidden h-svh shrink-0 bg-background transition-[width] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex"
-      style={{ width: aiPanelOpen ? expandedWidth : collapsedWidth }}
+    <aside
+      aria-label={isAr ? "المساعد الشخصي" : "Personal assistant"}
+      style={{ width }}
+      className="relative h-svh shrink-0 overflow-hidden pt-20"
     >
-      {/* Inner-edge divider — logical `start` so it sits on the edge facing the
-          content in both LTR and RTL; begins below the top header (top-14). */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-14 bottom-0 start-0 z-10 w-px bg-border/60"
-      />
-
-      {!aiPanelOpen && (
-        <div className="flex h-full w-full flex-col items-center gap-3 py-4">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="text-primary"
-            aria-label="Expand assistant"
-            onClick={() => setAiPanelOpen(true)}
-          >
-            <Sparkles className="size-5" />
-          </Button>
-          <div className="pointer-events-none flex-1 select-none text-[10px] font-medium text-muted-foreground [writing-mode:vertical-rl]">
-            {isAr ? "اسأل ريتش" : "Ask Reach"}
-          </div>
-        </div>
-      )}
-
-      {aiPanelOpen && (
-        <div className="flex h-full min-w-0 flex-1 flex-col">
-          <div className="flex h-14 items-center justify-between gap-2 border-b border-border/60 px-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <Sparkles className="size-4 shrink-0 text-primary" />
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">
-                  {isAr ? "مساعد ريتش" : "Reach Assistant"}
-                </div>
-                <div className="truncate text-[11px] text-muted-foreground">
-                  {isAr ? "مرتبط بمخطط عملك" : "Grounded in your work graph"}
-                </div>
-              </div>
-            </div>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label="Collapse assistant" onClick={() => setAiPanelOpen(false)}>
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-          <AssistantBody isAr={isAr} />
-        </div>
-      )}
-    </motion.div>
+      {/* 80px top offset = the top bar; the card is Figma's 516×737 frame. */}
+      <div className="flex h-[min(737px,calc(100svh-104px))] flex-col rounded-b-xl border border-background bg-card-elevated shadow-[0_12px_40px_-20px_rgba(0,0,0,0.5)]">
+        {body}
+      </div>
+    </aside>
   )
 }
 
-function AssistantBody({ isAr }: { isAr: boolean }) {
+function AssistantBody({
+  isAr, messages, thinking, onSend, onReset, onClose,
+}: {
+  isAr: boolean
+  messages: Msg[]
+  thinking: boolean
+  onSend: (text: string) => void
+  onReset: () => void
+  onClose: () => void
+}) {
+  const t = (en: string, ar: string) => (isAr ? ar : en)
   const [draft, setDraft] = React.useState("")
-  const prompts = isAr ? promptsAr : promptsEn
+  const endRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" })
+  }, [messages.length, thinking])
+
+  const submit = (text: string) => {
+    if (!text.trim()) return
+    onSend(text)
+    setDraft("")
+  }
 
   return (
-    <>
-      <ScrollArea className="min-h-0 flex-1 px-4 py-4">
-        <div className="space-y-4 text-sm leading-relaxed">
-          <div className="rounded-xl border border-border bg-muted/40 p-4">
-            <div className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              {isAr ? "الملخص" : "Summary"}
+    <div className="flex min-h-0 flex-1 flex-col justify-between px-[18px] py-5">
+      {/* header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-[#8f743e] bg-[linear-gradient(180deg,rgba(171,128,37,0.24),rgba(171,128,37,0.09))] text-primary">
+            <Sparkles className="size-[18px]" strokeWidth={1.6} />
+          </span>
+          <div className="min-w-0">
+            <div className="truncate text-[17px] font-medium leading-[25.5px] text-foreground">{t("Personal assistant", "المساعد الشخصي")}</div>
+            <div className="flex items-center gap-1 truncate text-[12px] text-muted-foreground">
+              <ShieldCheck className="size-3.5 shrink-0" strokeWidth={1.6} />
+              {t("Reads your data inside WIJHA only", "يقرأ بياناتك داخل منصة وجهة فقط")}
             </div>
-            <p>
-              {isAr
-                ? "الوضع اليوم بشكل عام تمام، بس فيه شغلتين تبغى قرار منك: شغل كثير متجمّع على قائد واحد، وفيه تراكم في طلبات تقنية المعلومات من الفرق التجارية يزيد يوم بعد يوم."
-                : "Things look decent overall today, but two threads need a call from you: too much work piling up on one lead, and IT requests from the business teams keep stacking up day after day."}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              {isAr ? "اقتراحات" : "Suggested prompts"}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {prompts.map((p) => (
-                <Button key={p} variant="outline" size="xs" className="h-auto max-w-full justify-start py-2 text-left whitespace-normal" onClick={() => setDraft(p)}>
-                  {p}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <Message
-              isAr={isAr}
-              role="assistant"
-              text={isAr
-                ? "هلا خالد — أنا متابع لك الموافقات والحوادث وتوزيع الشغل على الفريق. اسألني أي شي، أو اختر من الاقتراحات."
-                : "Hey Khalid — I'm tracking your approvals, incidents, and how work's split across the team. Ask me anything, or pick a suggestion."}
-            />
-            <Message
-              isAr={isAr}
-              role="user"
-              text={isAr ? "وش اللي لازم أركّز عليه الحين؟" : "What should I focus on right now?"}
-            />
-            <Message
-              isAr={isAr}
-              role="assistant"
-              text={isAr
-                ? "ركّز على ثلاث نقاط: قفل موافقات الموردين المعلّقة من الموجة الثانية، فوّض مهمتين من قائمة أحمد عشان تخفّف عنه، وارسل ايميل قبل الساعة 4 العصر."
-                : "Focus on three things: lock down the pending vendor approvals from Wave 2, hand off two tasks from Ahmed's queue to lighten his load, and send an email before 4 PM."}
-            />
           </div>
         </div>
-      </ScrollArea>
-
-      <div className="border-t border-border/60 p-4">
-        <div className="flex gap-2">
-          <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={isAr ? "اسأل أي شيء…" : "Ask anything…"}
-            className="flex-1"
-            dir={isAr ? "rtl" : "ltr"}
-          />
-          <Button type="button" size="icon-sm" variant="default" aria-label="Send" disabled={!draft.trim()}>
-            <SendHorizontal className="size-4" />
-          </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button type="button" onClick={onReset} aria-label={t("New conversation", "محادثة جديدة")} title={t("New conversation", "محادثة جديدة")}
+            className="grid size-10 place-items-center rounded-lg bg-background text-foreground transition-colors hover:text-primary">
+            <RotateCcw className="size-[18px]" strokeWidth={1.6} />
+          </button>
+          <button type="button" onClick={onClose} aria-label={t("Close", "إغلاق")} title={t("Close", "إغلاق")}
+            className="grid size-10 place-items-center rounded-lg bg-background text-foreground transition-colors hover:text-primary">
+            <X className="size-[18px]" strokeWidth={1.6} />
+          </button>
         </div>
       </div>
-    </>
+
+      {/* conversation — anchored to the bottom like the design */}
+      <div className="flex min-h-0 flex-1 flex-col justify-end overflow-hidden py-5">
+        <div className="min-h-0 space-y-4 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-[2px] [&::-webkit-scrollbar-thumb]:bg-secondary">
+          {messages.map((m) => (
+            <Bubble key={m.id} role={m.role} text={m.text} isAr={isAr} />
+          ))}
+          {thinking && (
+            <div className="flex items-center gap-3" aria-live="polite">
+              <AssistantAvatar />
+              <span className="inline-flex gap-1 rounded-xl border border-primary/60 px-4 py-3">
+                {[0, 1, 2].map((i) => (
+                  <motion.span key={i} className="size-1.5 rounded-full bg-primary" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }} />
+                ))}
+              </span>
+            </div>
+          )}
+          <div ref={endRef} />
+        </div>
+      </div>
+
+      {/* suggestions + input */}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTIONS.map(({ id, icon: Icon, en, ar }) => (
+            <button key={id} type="button" onClick={() => submit(isAr ? ar : en)}
+              className="inline-flex h-[38px] items-center gap-2 rounded-lg border border-input bg-background px-4 text-[12.5px] text-foreground transition-colors hover:border-primary/50">
+              <Icon className="size-[13px] text-primary" strokeWidth={1.8} />
+              {isAr ? ar : en}
+            </button>
+          ))}
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); submit(draft) }}
+          className="flex h-[52px] items-center gap-3 rounded-[10px] border border-input bg-background ps-5 pe-[5px] focus-within:border-primary/60">
+          <Sparkles className="size-[17px] shrink-0 text-primary" strokeWidth={1.6} />
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={t("Ask your question…", "اطرح استفسارك...")}
+            aria-label={t("Ask the assistant", "اسأل المساعد")}
+            autoFocus
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-foreground outline-none placeholder:text-foreground"
+          />
+          <kbd className="shrink-0 font-sans text-[11.5px] text-foreground">⌘J</kbd>
+          <button type="submit" aria-label={t("Send", "إرسال")}
+            className="grid size-10 shrink-0 place-items-center rounded-full border border-[#8f743e] bg-[linear-gradient(180deg,rgba(171,128,37,0.24),rgba(171,128,37,0.09))] text-primary transition-colors hover:bg-soft-accent">
+            <Search className="size-4" strokeWidth={1.8} />
+          </button>
+        </form>
+      </div>
+    </div>
   )
 }
 
-function Message({ role, text, isAr = false }: { role: "assistant" | "user"; text: string; isAr?: boolean }) {
+function AssistantAvatar() {
+  return (
+    <span className="grid size-7 shrink-0 place-items-center self-start rounded-full border border-[#8f743e] bg-soft-accent text-primary">
+      <Sparkles className="size-3.5" strokeWidth={1.6} />
+    </span>
+  )
+}
+
+function Bubble({ role, text, isAr }: { role: Msg["role"]; text: string; isAr: boolean }) {
   const isAssistant = role === "assistant"
-  const speaker = isAssistant
-    ? (isAr ? "وصل" : "Reach")
-    : (isAr ? "أنت" : "You")
   return (
     <motion.div
-      initial={{ opacity: 0, x: isAssistant ? 8 : -8 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      className={isAssistant ? "rounded-xl bg-muted/50 p-3 ring-1 ring-border" : "ms-6 rounded-xl border border-primary/35 bg-primary/10 p-3"}
+      className={cn("flex items-start gap-3", !isAssistant && "flex-row-reverse")}
     >
-      <div className="text-[11px] font-medium text-muted-foreground">{speaker}</div>
-      <div className="mt-1 text-foreground">{text}</div>
+      {isAssistant ? (
+        <AssistantAvatar />
+      ) : (
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-[10px] font-semibold text-foreground">
+          {isAr ? "ف" : "FA"}
+        </span>
+      )}
+      <p
+        className={cn(
+          "max-w-[85%] rounded-xl px-4 py-3 text-[14px] leading-[23px] text-foreground",
+          isAssistant ? "border border-primary/70" : "bg-secondary",
+        )}
+      >
+        {text}
+      </p>
     </motion.div>
   )
 }

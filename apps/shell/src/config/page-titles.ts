@@ -2,6 +2,7 @@ import { hubMeta } from "@reach/domain-preview/nav"
 
 const titlesEn: Record<string, string> = {
   "/": "Home",
+  "/notifications": "Notification history",
   "/work": "Work Hub",
   "/employee": "Employee Hub",
   "/services": "Services Hub",
@@ -34,6 +35,7 @@ const titlesEn: Record<string, string> = {
 
 const titlesAr: Record<string, string> = {
   "/": "الرئيسية",
+  "/notifications": "سجل التنبيهات",
   "/work": "مركز العمل",
   "/employee": "مركز الموظف",
   "/services": "مركز الخدمات",

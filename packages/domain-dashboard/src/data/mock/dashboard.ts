@@ -31,9 +31,9 @@ export const kpis = [
 
 export const agenda = [
   { id: "1", time: "09:00", title: "Portfolio review", room: "Atlas · L42" },
-  { id: "2", time: "11:30", title: "Design sync — Reach rollout", room: "Zoom" },
+  { id: "2", time: "11:30", title: "Design sync — WIJHA rollout", room: "Zoom" },
   { id: "3", time: "14:00", title: "Vendor QBR", room: "Summit · S02" },
-  { id: "4", time: "16:30", title: "1:1 — Engineering", room: "Reach · Profile" },
+  { id: "4", time: "16:30", title: "1:1 — Engineering", room: "WIJHA · Profile" },
 ]
 
 export const approvals = [
@@ -79,7 +79,7 @@ export const activityFeed = [
   },
   {
     id: "act2",
-    actor: "Reach",
+    actor: "WIJHA",
     action: "rerouted ticket",
     target: "INC-8891 → Cloud Network",
     time: "26m ago",
@@ -104,7 +104,7 @@ export const activityFeed = [
 ]
 
 export const smartSummary =
-  "Today’s operating picture is stable with two attention items: a concentrated task load on Maya’s queue and elevated IT backlog in EMEA. Reach recommends delegating two tasks and holding a 15-minute cross-team sync on duplicate comms before 4:00 PM."
+  "Today’s operating picture is stable with two attention items: a concentrated task load on Maya’s queue and elevated IT backlog in EMEA. WIJHA recommends delegating two tasks and holding a 15-minute cross-team sync on duplicate comms before 4:00 PM."
 
 export const dashboardChecklist = [
   "Acknowledge anomaly on APAC privileged use",
@@ -172,8 +172,8 @@ export const meetingsToday = [
   },
   {
     id: "m2",
-    title: "Design sync — Reach rollout",
-    titleAr: "مزامنة التصميم — إطلاق ريتش",
+    title: "Design sync — WIJHA rollout",
+    titleAr: "مزامنة التصميم — إطلاق وجهة",
     time: "11:30–12:00",
     joinable: true,
     accent: "soft" as const,

@@ -1,17 +1,14 @@
-import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 
-import {
-  Button,
-  ScrollArea,
-  Separator,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@reach/shared-ui"
-import { useNotifications } from "@reach/shared-mocks"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@reach/shared-ui"
+import { cn } from "@reach/shared-core"
+import { markAllNotificationsRead, markNotificationRead, useNotifications } from "@reach/shared-mocks"
+import { useShell } from "@reach/shell-context"
 
+/**
+ * Small-screen notifications sheet — same content as the Figma dropdown
+ * (2146:4876) for when there is no room for the 509px panel.
+ */
 export function NotificationsDrawer({
   open,
   onOpenChange,
@@ -19,43 +16,48 @@ export function NotificationsDrawer({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const items = useNotifications()
+  const { locale } = useShell()
+  const isAr = locale === "ar"
+  const t = (en: string, ar: string) => (isAr ? ar : en)
+  const navigate = useNavigate()
+  const items = useNotifications().filter((n) => !n.archived)
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-        <SheetHeader className="border-b border-border/60 p-4 text-left">
-          <SheetTitle className="text-base">Notifications</SheetTitle>
-          <SheetDescription>Operational signals and Reach Assistant updates.</SheetDescription>
-        </SheetHeader>
-        <ScrollArea className="min-h-0 flex-1 px-2 py-4">
-          <div className="space-y-2">
-            {items.map((n, idx) => (
-              <motion.div
-                key={n.id}
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1], delay: idx * 0.04 }}
-                className="rounded-xl border border-border bg-card p-4 ring-1 ring-foreground/5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="truncate text-sm font-semibold">{n.title}</div>
-                      {n.unread && <span className="size-2 shrink-0 rounded-full bg-primary" />}
-                    </div>
-                    <div className="text-sm text-muted-foreground">{n.body}</div>
-                  </div>
-                  <div className="shrink-0 text-[11px] text-muted-foreground">{n.time}</div>
-                </div>
-              </motion.div>
-            ))}
+      <SheetContent side={isAr ? "left" : "right"} className="flex w-full flex-col gap-0 bg-popover p-0 sm:max-w-[509px]">
+        <SheetHeader className="flex-row items-start justify-between gap-3 px-[18px] pb-2 pt-5 text-start">
+          <div className="flex flex-col gap-2">
+            <SheetTitle className="text-[17px] font-medium">{t("Notifications", "التنبيهات")}</SheetTitle>
+            <span className="block h-[3px] w-12 rounded-[2px] bg-primary" />
+            <SheetDescription className="sr-only">{t("Your latest notifications", "أحدث التنبيهات")}</SheetDescription>
           </div>
-        </ScrollArea>
-        <Separator />
-        <div className="p-4">
-          <Button type="button" variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
+          <button type="button" onClick={markAllNotificationsRead} className="me-8 text-[12px] font-bold text-primary underline underline-offset-2">
+            {t("Mark all as read", "تحديد الكل كمقروء")}
+          </button>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto px-[18px] pb-6">
+          {items.map((n, i) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => { markNotificationRead(n.id); onOpenChange(false); if (n.to) navigate(n.to) }}
+              className={cn("flex w-full items-start justify-between gap-3 py-3.5 text-start", i < items.length - 1 && "border-b border-input")}
+            >
+              <span className="min-w-0">
+                <span className="flex items-center gap-2">
+                  <span className="truncate text-[14.5px] text-foreground">{isAr ? n.titleAr : n.title}</span>
+                  {n.unread && <span className="size-1.5 shrink-0 rounded-full bg-primary" />}
+                </span>
+                <span className="block text-[12.5px] text-muted-foreground">{isAr ? n.bodyAr : n.body}</span>
+              </span>
+              <span className="shrink-0 text-[12.5px] text-muted-foreground">{isAr ? n.timeAr : n.time}</span>
+            </button>
+          ))}
+        </div>
+        <div className="border-t border-input px-[18px] py-3">
+          <button type="button" onClick={() => { onOpenChange(false); navigate("/notifications") }} className="text-[12px] font-medium text-primary">
+            {t("Notification history", "سجل التنبيهات")}
+          </button>
         </div>
       </SheetContent>
     </Sheet>

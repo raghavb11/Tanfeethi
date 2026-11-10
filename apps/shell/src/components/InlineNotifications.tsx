@@ -1,85 +1,63 @@
 import * as React from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@reach/shared-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
-import { useNotifications } from "@reach/shared-mocks"
-import { Bell, BriefcaseBusiness, CheckCheck, Flame, Shield, Sparkles } from "lucide-react"
+import {
+  markAllNotificationsRead, markNotificationRead, useNotifications,
+  type Notification, type NotificationKind,
+} from "@reach/shared-mocks"
+import { Bell, CalendarDays, GraduationCap, History, Plane, ReceiptText, Sparkles, Wallet } from "lucide-react"
 
-type Category = "security" | "ai" | "operations" | "employee"
-
-const categoryIcon: Record<Category, React.ComponentType<{ className?: string }>> = {
-  security: Shield,
-  ai: Sparkles,
-  operations: Flame,
-  employee: BriefcaseBusiness,
+const notificationIcon: Record<NotificationKind, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  leave: Plane,
+  expense: ReceiptText,
+  meeting: CalendarDays,
+  recognition: Sparkles,
+  shift: CalendarDays,
+  payslip: Wallet,
+  course: GraduationCap,
+  system: Bell,
 }
 
-const categoryTone: Record<Category, string> = {
-  security: "bg-rose-500/12 text-rose-500",
-  ai: "bg-primary/15 text-primary",
-  operations: "bg-amber-500/12 text-amber-500",
-  employee: "bg-emerald-500/12 text-emerald-500",
-}
+/** Shared 4px scroll track from the Figma lists. */
+const thinScroll =
+  "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-[2px] [&::-webkit-scrollbar-track]:bg-secondary [&::-webkit-scrollbar-thumb]:rounded-[2px] [&::-webkit-scrollbar-thumb]:bg-foreground/85"
 
-const PANEL_WIDTH = 380
-const VIEWPORT_MARGIN = 12
-
+/**
+ * Notifications dropdown — Figma "Notification" 2146:4876 (drawn light) and its
+ * dark use on the homepage 2146:3946. 509px card, padding 20/18, radius 12,
+ * theme tokens so it reads correctly in both modes.
+ */
 export function InlineNotifications({ isAr }: { isAr: boolean }) {
-  const items = useNotifications()
+  const all = useNotifications()
+  const navigate = useNavigate()
   const [open, setOpen] = React.useState(false)
-  const [readIds, setReadIds] = React.useState<Set<string>>(new Set())
-  const [alignRight, setAlignRight] = React.useState(true)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const triggerRef = React.useRef<HTMLButtonElement | null>(null)
+  const t = (en: string, ar: string) => (isAr ? ar : en)
 
-  const computed = React.useMemo(
-    () => items.map((n) => ({ ...n, unread: n.unread && !readIds.has(n.id) })),
-    [items, readIds],
-  )
-  const unreadCount = computed.filter((n) => n.unread).length
-
-  // Decide which side has more room (in viewport coords, irrespective of locale)
-  const computeAlignment = React.useCallback(() => {
-    const btn = triggerRef.current
-    if (!btn) return
-    const rect = btn.getBoundingClientRect()
-    const vw = window.innerWidth
-    const spaceLeft = rect.right
-    const spaceRight = vw - rect.left
-    // If anchoring to right edge of button (panel grows to the left) fits, prefer it.
-    // Otherwise anchor to left edge (panel grows right). Whichever has more room wins.
-    const fitsRightAnchored = spaceLeft >= PANEL_WIDTH + VIEWPORT_MARGIN
-    const fitsLeftAnchored = spaceRight >= PANEL_WIDTH + VIEWPORT_MARGIN
-    if (fitsRightAnchored && !fitsLeftAnchored) setAlignRight(true)
-    else if (!fitsRightAnchored && fitsLeftAnchored) setAlignRight(false)
-    else setAlignRight(spaceLeft >= spaceRight)
-  }, [])
+  const items = all.filter((n) => !n.archived)
+  const unreadCount = items.filter((n) => n.unread).length
 
   React.useEffect(() => {
     if (!open) return
-    computeAlignment()
     const onClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
     }
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false)
-    }
-    const onResize = () => computeAlignment()
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false) }
     document.addEventListener("mousedown", onClick)
     document.addEventListener("keydown", onEsc)
-    window.addEventListener("resize", onResize)
     return () => {
       document.removeEventListener("mousedown", onClick)
       document.removeEventListener("keydown", onEsc)
-      window.removeEventListener("resize", onResize)
     }
-  }, [open, computeAlignment])
+  }, [open])
 
-  const markAllRead = () => {
-    setReadIds(new Set(items.map((n) => n.id)))
+  const openItem = (n: Notification) => {
+    markNotificationRead(n.id)
+    setOpen(false)
+    if (n.to) navigate(n.to)
   }
 
   return (
@@ -87,153 +65,122 @@ export function InlineNotifications({ isAr }: { isAr: boolean }) {
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button
-              ref={triggerRef}
-              variant="ghost"
-              size="icon"
-              className={cn("icon-tile relative size-9 overflow-visible", open && "ring-1 ring-primary/40")}
-              onClick={() => setOpen((v) => !v)}
-              aria-label={isAr ? "الإشعارات" : "Notifications"}
-              aria-expanded={open}
-            >
-              <Bell className="size-[18px]" strokeWidth={1.6} />
-              {/* Figma: a small gold dot on the bell, no count */}
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  aria-label={isAr ? `${unreadCount} غير مقروءة` : `${unreadCount} unread`}
-                  className="absolute top-2 end-2 size-2 rounded-full bg-primary ring-2 ring-secondary"
-                />
+            <button
+              type="button"
+              className={cn(
+                "icon-tile relative size-9 shrink-0 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                open && "text-primary ring-1 ring-primary/40",
               )}
-            </Button>
+              onClick={() => setOpen((v) => !v)}
+              aria-label={t("Notifications", "التنبيهات")}
+              aria-expanded={open}
+            />
           }
-        />
-        <TooltipContent>{isAr ? "الإشعارات" : "Notifications"}</TooltipContent>
+        >
+          <Bell className="size-[18px]" strokeWidth={1.6} />
+          {/* Figma: a small gold dot on the bell, no count */}
+          {unreadCount > 0 && (
+            <span
+              aria-label={isAr ? `${unreadCount} غير مقروءة` : `${unreadCount} unread`}
+              className="absolute end-2 top-2 size-2 rounded-full bg-primary ring-2 ring-secondary"
+            />
+          )}
+        </TooltipTrigger>
+        <TooltipContent>{t("Notifications", "التنبيهات")}</TooltipContent>
       </Tooltip>
 
-      <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            style={{ width: PANEL_WIDTH, ...(alignRight ? { right: 0 } : { left: 0 }) }}
-            className={cn(
-              "absolute top-full z-50 mt-2",
-              "rounded-2xl border border-border/70 bg-popover shadow-2xl shadow-black/20 ring-1 ring-black/5 dark:ring-white/5",
-            )}
+            role="dialog"
+            aria-label={t("Notifications", "التنبيهات")}
+            className="absolute end-0 top-full z-50 mt-3 flex w-[min(509px,calc(100vw-24px))] flex-col gap-2 rounded-xl bg-popover px-[18px] py-5 text-popover-foreground shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] ring-1 ring-border"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
-              <div className="min-w-0">
+            {/* header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <Bell className="size-3.5 text-primary" />
-                  <div className="text-[13px] font-semibold">
-                    {isAr ? "الإشعارات" : "Notifications"}
-                  </div>
-                  {unreadCount > 0 && (
-                    <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">
-                      {unreadCount}
-                    </span>
-                  )}
+                  <span className="relative">
+                    <Bell className="size-4 text-primary" strokeWidth={1.8} />
+                    {unreadCount > 0 && <span className="absolute -end-0.5 -top-0.5 size-1.5 rounded-full bg-error" />}
+                  </span>
+                  <span className="text-[17px] font-medium leading-[25.5px]">{t("Notifications", "التنبيهات")}</span>
                 </div>
-                <div className="mt-0.5 truncate text-[11px] text-muted-foreground/70">
-                  {isAr
-                    ? "إشارات تشغيلية وتحديثات من المساعد"
-                    : "Operational signals & assistant updates"}
-                </div>
+                <span className="block h-[3px] w-12 rounded-[2px] bg-primary" />
               </div>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={markAllRead}
-                  className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
-                >
-                  <CheckCheck className="size-3" />
-                  {isAr ? "تعليم الكل كمقروء" : "Mark all read"}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={markAllNotificationsRead}
+                disabled={unreadCount === 0}
+                className="text-[12px] font-bold text-primary underline underline-offset-2 transition-opacity hover:opacity-80 disabled:cursor-default disabled:opacity-50"
+              >
+                {t("Mark all as read", "تحديد الكل كمقروء")}
+              </button>
             </div>
 
-            {/* List */}
-            <div className="max-h-[420px] overflow-y-auto py-1.5">
-              {computed.length === 0 ? (
-                <div className="px-4 py-10 text-center text-[12px] text-muted-foreground/60">
-                  {isAr ? "ما فيه إشعارات" : "You're all caught up"}
+            {/* list */}
+            <div className={cn("max-h-[392px] overflow-y-auto pb-6 pe-4 pt-3", thinScroll)}>
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-12 text-center">
+                  <Bell className="size-5 text-primary" strokeWidth={1.6} />
+                  <span className="text-[13.5px]">{t("You're all caught up", "لا توجد تنبيهات جديدة")}</span>
                 </div>
               ) : (
-                <ul className="space-y-0.5 px-1.5">
-                  {computed.map((n, idx) => {
-                    const Icon = categoryIcon[n.category as Category] ?? Bell
-                    const tone = categoryTone[n.category as Category] ?? "bg-muted text-muted-foreground"
-                    return (
-                      <motion.li
-                        key={n.id}
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.16, delay: idx * 0.04 }}
-                        className={cn(
-                          "group relative flex cursor-pointer gap-3 rounded-xl px-2.5 py-2.5 transition-colors",
-                          n.unread ? "bg-primary/[0.04] hover:bg-primary/[0.08]" : "hover:bg-muted/50",
-                        )}
-                        onClick={() => setReadIds((s) => new Set(s).add(n.id))}
-                      >
-                        {/* Unread indicator */}
-                        {n.unread && (
-                          <motion.span
-                            layoutId={`dot-${n.id}`}
-                            className="absolute start-1 top-3.5 size-1.5 rounded-full bg-primary"
-                          />
-                        )}
-
-                        {/* Category icon */}
-                        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", tone)}>
-                          <Icon className="size-3.5" />
-                        </span>
-
-                        {/* Content */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <span className={cn(
-                              "truncate text-[12px]",
-                              n.unread ? "font-semibold text-foreground" : "font-medium text-foreground/80",
-                            )}>
-                              {isAr ? n.titleAr : n.title}
-                            </span>
-                            <span className="shrink-0 text-[10px] text-muted-foreground/55">
-                              {isAr ? n.timeAr : n.time}
-                            </span>
-                          </div>
-                          <p className={cn(
-                            "mt-0.5 line-clamp-2 text-[11.5px] leading-snug",
-                            n.unread ? "text-muted-foreground" : "text-muted-foreground/70",
-                          )}>
-                            {isAr ? n.bodyAr : n.body}
-                          </p>
-                        </div>
-                      </motion.li>
-                    )
-                  })}
+                <ul>
+                  {items.map((n, i) => (
+                    <li key={n.id}>
+                      <NotificationRow n={n} isAr={isAr} onOpen={openItem} last={i === items.length - 1} />
+                    </li>
+                  ))}
                 </ul>
               )}
             </div>
 
-            {/* Footer */}
-            <div className="border-t border-border/60 bg-muted/20 px-4 py-2">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="w-full rounded-md py-1.5 text-center text-[11.5px] font-medium text-primary transition-colors hover:bg-primary/10"
-              >
-                {isAr ? "عرض كل الإشعارات" : "View all notifications"}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); navigate("/notifications") }}
+              className="inline-flex items-center gap-1.5 self-start text-[12px] font-medium text-primary hover:opacity-80"
+            >
+              <History className="size-3.5" strokeWidth={1.8} />
+              {t("Notification history", "سجل التنبيهات")}
+            </button>
           </motion.div>
         )}
-      </AnimatePresence>
     </div>
+  )
+}
+
+function NotificationRow({
+  n, isAr, onOpen, last,
+}: {
+  n: Notification
+  isAr: boolean
+  onOpen: (n: Notification) => void
+  last?: boolean
+}) {
+  const Icon = notificationIcon[n.category] ?? Bell
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(n)}
+      className={cn(
+        "flex w-full items-center gap-3 py-3.5 text-start transition-colors hover:bg-soft-accent/40",
+        !last && "border-b border-input",
+      )}
+    >
+      <span className="grid size-[30px] shrink-0 place-items-center rounded-lg bg-secondary text-foreground">
+        <Icon className="size-[15px]" strokeWidth={1.6} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="truncate text-[14.5px] leading-[21.75px] text-foreground">{isAr ? n.titleAr : n.title}</span>
+          {n.unread && <span className="size-1.5 shrink-0 rounded-full bg-primary" />}
+        </span>
+        <span className="block truncate text-[12.5px] leading-[18.75px] text-muted-foreground">{isAr ? n.bodyAr : n.body}</span>
+      </span>
+      <span className="shrink-0 text-[12.5px] text-muted-foreground">{isAr ? n.timeAr : n.time}</span>
+    </button>
   )
 }

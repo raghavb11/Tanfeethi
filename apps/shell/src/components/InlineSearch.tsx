@@ -1,70 +1,68 @@
 import * as React from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 
 import { cn } from "@reach/shared-core"
+import { searchEmployees } from "@reach/shared-mocks"
 import { commandNav, previewNav } from "@/config/navigation"
+import { EmployeeCardDialog } from "@/pages/shell-dialogs"
 import {
-  ArrowRight,
-  Briefcase,
-  CalendarDays,
-  ClipboardList,
-  CornerDownLeft,
-  FileText,
-  PanelRightOpen,
-  Search,
-  Sparkles,
-  X,
+  BadgeCheck, Briefcase, Building2, ClipboardList, CornerDownLeft, FileText, Link2, Search, Sparkles,
+  TrendingUp, User, Wallet, X,
 } from "lucide-react"
 
-type ResultGroup = "navigate" | "actions" | "suggestions"
+type ResultGroup = "employees" | "navigate" | "suggestions"
+type IconT = React.ComponentType<{ className?: string; strokeWidth?: number }>
 
 type Result = {
   id: string
   label: string
   labelAr?: string
-  hint?: string
-  hintAr?: string
   group: ResultGroup
-  icon: React.ComponentType<{ className?: string }>
+  icon: IconT
   path?: string
+  employeeId?: string
+  prompt?: { en: string; ar: string }
   keywords?: string
 }
 
-const arGroupLabel: Record<ResultGroup, string> = {
-  navigate: "تنقّل",
-  actions: "إجراءات سريعة",
-  suggestions: "اقتراحات",
+const GROUP_LABEL: Record<ResultGroup, { en: string; ar: string }> = {
+  employees: { en: "Employees", ar: "الموظفين" },
+  navigate: { en: "Navigate", ar: "تنقل" },
+  suggestions: { en: "Suggestions", ar: "اقتراحات" },
 }
 
-const enGroupLabel: Record<ResultGroup, string> = {
-  navigate: "Navigate",
-  actions: "Quick actions",
-  suggestions: "Suggestions",
-}
+/** Figma "Search" 2159:1656 — the empty-query shortcuts, in order. */
+const SHORTCUTS: Result[] = [
+  { id: "sc:approvals", label: "Approvals", labelAr: "الموافقات", icon: BadgeCheck, path: "/manager", group: "navigate", keywords: "approvals موافقات" },
+  { id: "sc:projects", label: "Projects", labelAr: "المشاريع", icon: TrendingUp, path: "/projects", group: "navigate", keywords: "projects مشاريع" },
+  { id: "sc:tasks", label: "Tasks", labelAr: "المهام", icon: Briefcase, path: "/tasks", group: "navigate", keywords: "tasks مهام" },
+  { id: "sc:balance", label: "My balance", labelAr: "رصيدي", icon: Wallet, path: "/leave", group: "navigate", keywords: "balance leave رصيد إجازة" },
+  { id: "sc:org", label: "Org structure", labelAr: "الهيكل التنظيمي", icon: Building2, path: "/org-chart", group: "navigate", keywords: "org chart structure هيكل" },
+  { id: "sc:performance", label: "Performance", labelAr: "الأداء", icon: TrendingUp, path: "/operations", group: "navigate", keywords: "performance kpi أداء" },
+  { id: "sc:links", label: "Links", labelAr: "روابط", icon: Link2, path: "/links", group: "navigate", keywords: "links روابط" },
+]
 
-const navIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  "/": Search,
-  "/work": Briefcase,
-  "/employee": Sparkles,
-  "/services": ClipboardList,
-  "/intelligence": Sparkles,
-}
+const SUGGESTIONS: Result[] = [
+  { id: "ai:salaries", label: "Report on 2026 salaries", labelAr: "تقرير عن الرواتب 2026", icon: Sparkles, group: "suggestions", prompt: { en: "Report on 2026 salaries", ar: "تقرير عن الرواتب 2026" } },
+  { id: "ai:meetings", label: "Summarise today's meetings", labelAr: "تلخيص إجتماعات اليوم", icon: Sparkles, group: "suggestions", prompt: { en: "Summarise today's meetings", ar: "تلخيص إجتماعات اليوم" } },
+]
 
-const navArLabels: Record<string, string> = {
-  Home: "الرئيسية",
-  "Work Hub": "مركز العمل",
-  "Employee Hub": "مركز الموظف",
-  "Services Hub": "مركز الخدمات",
-  "Intelligence Hub": "مركز الذكاء",
-}
+const ACTIONS: Result[] = [
+  { id: "act:request", label: "Submit a service request", labelAr: "تقديم طلب خدمة", group: "navigate", icon: ClipboardList, path: "/services", keywords: "service request submit طلب خدمة" },
+  { id: "act:task", label: "Create a task", labelAr: "إنشاء مهمة", group: "navigate", icon: Briefcase, path: "/tasks/new", keywords: "task create new مهمة جديدة" },
+  { id: "act:payslip", label: "View payslip", labelAr: "عرض كشف الراتب", group: "navigate", icon: FileText, path: "/payslip", keywords: "payslip salary راتب كشف" },
+]
 
-const previewArLabels: Record<string, string> = {
-  Engagement: "مشاركة",
-  Knowledge: "المعرفة",
-  Productivity: "الإنتاجية",
-}
+const thinScroll =
+  "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-[2px] [&::-webkit-scrollbar-track]:bg-secondary [&::-webkit-scrollbar-thumb]:rounded-[2px] [&::-webkit-scrollbar-thumb]:bg-foreground/85"
 
+/**
+ * Global search — Figma top-bar search (447×33) with its dropdown:
+ * empty query = 2159:1656 / 2159:2117 (Navigate + AI suggestions);
+ * typed query = 2423:2562 (Employees · Navigate · Suggestions).
+ * Picking an employee opens the employee card (4263:19954).
+ */
 export function InlineSearch({
   isAr,
   onOpenFullPalette,
@@ -76,320 +74,184 @@ export function InlineSearch({
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
   const [active, setActive] = React.useState(0)
+  const [employeeId, setEmployeeId] = React.useState<string | null>(null)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
+  const t = (en: string, ar: string) => (isAr ? ar : en)
 
-  // Build results from nav + actions
-  const allResults = React.useMemo<Result[]>(() => {
-    const navResults: Result[] = commandNav.map((n) => ({
-      id: `nav:${n.path}`,
-      label: n.label,
-      labelAr: navArLabels[n.label],
-      group: "navigate",
-      icon: navIconMap[n.path] ?? Search,
-      path: n.path,
-      keywords: `${n.label} ${navArLabels[n.label] ?? ""} ${n.path}`,
-    }))
-
-    const previewResults: Result[] = previewNav.map((p) => ({
-      id: `preview:${p.path}`,
-      label: `${p.title} Hub`,
-      labelAr: previewArLabels[p.title] ? `مركز ${previewArLabels[p.title]}` : undefined,
-      hint: "Preview",
-      hintAr: "معاينة",
-      group: "navigate",
-      icon: p.icon,
-      path: p.path,
-      keywords: `${p.title} ${previewArLabels[p.title] ?? ""} preview hub`,
-    }))
-
-    const actionResults: Result[] = [
-      {
-        id: "act:request",
-        label: "Submit service request",
-        labelAr: "تقديم طلب خدمة",
-        group: "actions",
-        icon: ClipboardList,
-        path: "/services",
-        keywords: "service request submit طلب خدمة",
-      },
-      {
-        id: "act:task",
-        label: "Create task",
-        labelAr: "إنشاء مهمة",
-        group: "actions",
-        icon: PanelRightOpen,
-        path: "/work",
-        keywords: "task create work مهمة",
-      },
-      {
-        id: "act:meeting",
-        label: "Today's meetings",
-        labelAr: "اجتماعات اليوم",
-        group: "actions",
-        icon: CalendarDays,
-        path: "/",
-        keywords: "meeting calendar today اجتماعات اليوم",
-      },
-      {
-        id: "act:payslip",
-        label: "View payslip",
-        labelAr: "عرض كشف الراتب",
-        group: "actions",
-        icon: FileText,
-        path: "/payslip",
-        keywords: "payslip salary راتب كشف",
-      },
-    ]
-
-    const suggestions: Result[] = [
-      {
-        id: "sug:approvals",
-        label: "Smart approvals",
-        labelAr: "الموافقات الذكية",
-        hint: "AI-ranked",
-        hintAr: "مرتبة بالذكاء الاصطناعي",
-        group: "suggestions",
-        icon: Sparkles,
-        path: "/work",
-        keywords: "approvals smart ai موافقات ذكية",
-      },
-      {
-        id: "sug:assistant",
-        label: "Ask Reach",
-        labelAr: "اسأل وصل",
-        hint: "Open AI panel",
-        hintAr: "فتح المساعد",
-        group: "suggestions",
-        icon: Sparkles,
-        keywords: "ai assistant reach وصل مساعد",
-      },
-    ]
-
-    return [...navResults, ...previewResults, ...actionResults, ...suggestions]
+  // Everything the typed query can reach: the curated shortcuts plus the full
+  // command navigation, preview hubs and quick actions (kept from v1).
+  const navPool = React.useMemo<Result[]>(() => {
+    const seen = new Set(SHORTCUTS.map((s) => s.path))
+    const extra: Result[] = [
+      ...commandNav.map((n) => ({ id: `nav:${n.path}`, label: n.label, group: "navigate" as const, icon: Search as IconT, path: n.path, keywords: `${n.label} ${n.path}` })),
+      ...previewNav.map((p) => ({ id: `preview:${p.path}`, label: `${p.title} hub`, group: "navigate" as const, icon: p.icon as IconT, path: p.path, keywords: `${p.title} preview hub` })),
+      ...ACTIONS,
+    ].filter((r) => (r.path && !seen.has(r.path) ? (seen.add(r.path), true) : false))
+    return [...SHORTCUTS, ...extra]
   }, [])
 
-  const filtered = React.useMemo(() => {
+  const results = React.useMemo<Result[]>(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return allResults
-    return allResults.filter((r) => {
-      const haystack = `${r.label} ${r.labelAr ?? ""} ${r.hint ?? ""} ${r.hintAr ?? ""} ${r.keywords ?? ""}`.toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [query, allResults])
+    if (!q) return [...SHORTCUTS.slice(0, 6), ...SUGGESTIONS]
+    const people: Result[] = searchEmployees(q).slice(0, 4).map((e) => ({
+      id: `emp:${e.id}`, label: e.name, labelAr: e.nameAr, group: "employees", icon: User, employeeId: e.id,
+    }))
+    const words = (r: Result) => `${r.label} ${r.labelAr ?? ""} ${r.keywords ?? ""}`.toLowerCase()
+    const nav = navPool
+      .filter((r) => (q.length < 3 ? words(r).split(/\s+/).some((w) => w.startsWith(q) || w.startsWith(`ال${q}`)) : words(r).includes(q)))
+      .slice(0, 6)
+    // Figma echoes the raw query four times here — real suggestions instead.
+    const raw = query.trim()
+    const ask: Result[] = [
+      { id: "ai:ask", label: `Ask WIJHA: “${raw}”`, labelAr: `اسأل وجهة: «${raw}»`, icon: Sparkles, group: "suggestions", prompt: { en: raw, ar: raw } },
+      ...SUGGESTIONS.filter((s) => `${s.label} ${s.labelAr}`.toLowerCase().includes(q)),
+    ]
+    return [...people, ...nav, ...ask]
+  }, [query, navPool])
 
-  // Group results
   const grouped = React.useMemo(() => {
-    const order: ResultGroup[] = ["navigate", "actions", "suggestions"]
-    const map: Record<ResultGroup, Result[]> = { navigate: [], actions: [], suggestions: [] }
-    filtered.forEach((r) => map[r.group].push(r))
-    return order.filter((g) => map[g].length > 0).map((g) => ({ group: g, items: map[g] }))
-  }, [filtered])
+    const order: ResultGroup[] = ["employees", "navigate", "suggestions"]
+    return order
+      .map((g) => ({ group: g, items: results.filter((r) => r.group === g) }))
+      .filter((g) => g.items.length > 0)
+  }, [results])
 
-  // Reset highlight to the top whenever the query changes (handled in the
-  // query setter below, not an effect, to avoid a cascading re-render).
-  const updateQuery = React.useCallback((value: string) => {
-    setQuery(value)
-    setActive(0)
-  }, [])
+  const updateQuery = (v: string) => { setQuery(v); setActive(0); setOpen(true) }
 
-  // Click-outside handling
   React.useEffect(() => {
     if (!open) return
     const onClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener("mousedown", onClick)
     return () => document.removeEventListener("mousedown", onClick)
   }, [open])
 
-  // Focus input when opening
+  // ⌘K / Ctrl+K focuses this box wherever it is visible (md+); the command
+  // palette keeps the shortcut on small screens.
   React.useEffect(() => {
-    if (open) {
-      const t = window.setTimeout(() => inputRef.current?.focus(), 30)
-      return () => window.clearTimeout(t)
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && window.matchMedia("(min-width: 768px)").matches) {
+        e.preventDefault()
+        inputRef.current?.focus()
+        setOpen(true)
+      }
     }
-  }, [open])
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
-  const handleSelect = React.useCallback((r: Result) => {
+  const handleSelect = (r: Result) => {
     setOpen(false)
-    updateQuery("")
-    if (r.id === "sug:assistant") {
-      onOpenFullPalette()
+    setQuery("")
+    inputRef.current?.blur()
+    if (r.employeeId) { setEmployeeId(r.employeeId); return }
+    if (r.prompt) {
+      window.dispatchEvent(new CustomEvent("wijha:ask", { detail: { text: isAr ? r.prompt.ar : r.prompt.en } }))
       return
     }
     if (r.path) navigate(r.path)
-  }, [navigate, onOpenFullPalette, updateQuery])
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault()
-      setActive((i) => Math.min(filtered.length - 1, i + 1))
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault()
-      setActive((i) => Math.max(0, i - 1))
-    } else if (e.key === "Enter") {
-      e.preventDefault()
-      const r = filtered[active]
-      if (r) handleSelect(r)
-    } else if (e.key === "Escape") {
-      e.preventDefault()
-      setOpen(false)
-    }
   }
 
-  const placeholder = isAr
-    ? "ابحث عن أشخاص، مهام، مستندات، خدمات…"
-    : "Search for people, tasks, documents, services…"
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((i) => Math.min(results.length - 1, i + 1)) }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(0, i - 1)) }
+    else if (e.key === "Enter") { e.preventDefault(); const r = results[active]; if (r) handleSelect(r) }
+    else if (e.key === "Escape") { e.preventDefault(); setOpen(false); inputRef.current?.blur() }
+  }
 
   return (
-    <div ref={containerRef} className="relative">
-      {/* Trigger / fake input */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Open search"
-        aria-expanded={open}
+    <div ref={containerRef} className="relative hidden md:block">
+      {/* Figma top-bar search: 447×33, Page/Fill, radius 8, padding 7.5/12/7.5/8 */}
+      <label
         className={cn(
-          // Figma top bar search: 447×36, Shape/Fill/Secondary-on-page, radius 8.
-          "hidden md:flex h-9 items-center gap-2.5 rounded-lg border bg-[var(--card-elevated)] px-3 text-start transition-colors w-72 lg:w-[447px]",
-          "hover:border-primary/30",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          open ? "border-primary/40" : "border-border",
+          "flex h-[33px] w-72 items-center gap-2 rounded-lg bg-background pe-2 ps-3 transition-shadow lg:w-[447px]",
+          open && "ring-1 ring-primary/40",
         )}
       >
-        <Search className={cn("size-4 shrink-0 transition-colors", open ? "text-primary" : "text-icon")} />
-        <span className="flex-1 truncate text-[13px] text-muted-foreground">
-          {placeholder}
-        </span>
-        <kbd className="pointer-events-none shrink-0 font-sans text-[11px] text-muted-foreground">
-          ⌘K
-        </kbd>
-      </button>
+        <Search className={cn("size-4 shrink-0", open ? "text-primary" : "text-foreground")} strokeWidth={1.6} />
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={(e) => updateQuery(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={t("Search people, tasks, documents, services…", "أبحث عن أشخاص، مهام، مستندات، خدمات...")}
+          aria-label={t("Search", "بحث")}
+          aria-expanded={open}
+          role="combobox"
+          aria-controls="wijha-search-list"
+          className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] text-foreground outline-none placeholder:text-foreground [&::-webkit-search-cancel-button]:hidden"
+        />
+        {query ? (
+          <button type="button" onClick={() => updateQuery("")} aria-label={t("Clear", "مسح")} className="rounded p-0.5 text-muted-foreground hover:text-foreground">
+            <X className="size-3.5" />
+          </button>
+        ) : (
+          <kbd className="pointer-events-none shrink-0 font-sans text-[11px] text-foreground">⌘K</kbd>
+        )}
+      </label>
 
-      {/* Dropdown panel */}
-      <AnimatePresence>
         {open && (
           <motion.div
+            id="wijha-search-list"
+            role="listbox"
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className={cn(
-              "absolute top-full z-50 mt-2 hidden w-[420px] md:block lg:w-[480px]",
-              "rounded-2xl border border-border/70 bg-popover shadow-2xl shadow-black/20 ring-1 ring-black/5 dark:ring-white/5",
-              isAr ? "end-0" : "start-0",
-            )}
+            className="absolute end-0 top-full z-50 mt-2 w-[min(509px,calc(100vw-24px))] rounded-xl bg-popover px-[18px] py-5 text-popover-foreground shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] ring-1 ring-border"
           >
-            {/* Active input */}
-            <div className="flex items-center gap-2.5 border-b border-border/60 px-3.5 py-2.5">
-              <Search className="size-4 shrink-0 text-primary" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => updateQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={placeholder}
-                className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/50"
-                dir={isAr ? "rtl" : "ltr"}
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => updateQuery("")}
-                  className="rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted/60 hover:text-foreground"
-                  aria-label={isAr ? "مسح" : "Clear"}
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Results */}
-            <div className="max-h-[60vh] overflow-y-auto py-1.5">
-              {grouped.length === 0 ? (
-                <div className="px-3.5 py-6 text-center text-[12px] text-muted-foreground/60">
-                  {isAr ? "ما فيه نتائج مطابقة" : "No matches found"}
-                </div>
-              ) : (
-                grouped.map(({ group, items }) => (
-                  <div key={group} className="px-1.5 py-1">
-                    <div className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/55">
-                      {isAr ? arGroupLabel[group] : enGroupLabel[group]}
-                    </div>
-                    {items.map((r) => {
-                      const flatIndex = filtered.indexOf(r)
-                      const isActive = flatIndex === active
-                      const Icon = r.icon
-                      const label = isAr && r.labelAr ? r.labelAr : r.label
-                      const hint = isAr && r.hintAr ? r.hintAr : r.hint
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onMouseEnter={() => setActive(flatIndex)}
-                          onClick={() => handleSelect(r)}
-                          className={cn(
-                            "group flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-start transition-colors",
-                            isActive
-                              ? "bg-primary/10 text-foreground"
-                              : "hover:bg-muted/60",
-                          )}
-                        >
-                          <span className={cn(
-                            "flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors",
-                            isActive ? "bg-primary/20 text-primary" : "bg-muted/60 text-muted-foreground",
-                          )}>
-                            <Icon className="size-3.5" />
-                          </span>
-                          <span className="flex-1 truncate text-[12.5px] font-medium">{label}</span>
-                          {hint && (
-                            <span className="shrink-0 rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                              {hint}
-                            </span>
-                          )}
-                          {isActive && (
-                            <CornerDownLeft className="size-3 shrink-0 text-primary" />
-                          )}
-                        </button>
-                      )
-                    })}
+            <div className={cn("max-h-[428px] overflow-y-auto pe-4", thinScroll)}>
+              {grouped.map(({ group, items }, gi) => (
+                <div key={group} className={cn(gi > 0 && "pt-4")}>
+                  <div className="flex items-center gap-1 pb-1 text-[12px] text-muted-foreground">
+                    {group === "suggestions" && <Sparkles className="size-3 text-primary" strokeWidth={1.8} />}
+                    {isAr ? GROUP_LABEL[group].ar : GROUP_LABEL[group].en}
                   </div>
-                ))
-              )}
+                  {items.map((r, i) => {
+                    const flat = results.indexOf(r)
+                    const isActive = flat === active
+                    const Icon = r.icon
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        onMouseEnter={() => setActive(flat)}
+                        onClick={() => handleSelect(r)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-md py-3 text-start transition-colors",
+                          i < items.length - 1 && "border-b border-input",
+                          isActive && "bg-soft-accent/40",
+                        )}
+                      >
+                        <span className={cn("grid size-[30px] shrink-0 place-items-center rounded-lg bg-secondary", r.group === "suggestions" ? "text-primary" : "text-foreground")}>
+                          <Icon className="size-[15px]" strokeWidth={1.6} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[14.5px] leading-[21.75px] text-foreground">
+                          {isAr && r.labelAr ? r.labelAr : r.label}
+                        </span>
+                        {isActive && <CornerDownLeft className="size-3 shrink-0 text-primary" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
             </div>
-
-            {/* Footer hint */}
-            <div className="flex items-center justify-between border-t border-border/60 bg-muted/20 px-3.5 py-2 text-[10px] text-muted-foreground/60">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border/60 bg-background px-1 py-0.5 font-mono">↑↓</kbd>
-                  {isAr ? "تنقل" : "navigate"}
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border/60 bg-background px-1 py-0.5 font-mono">↵</kbd>
-                  {isAr ? "اختر" : "select"}
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border/60 bg-background px-1 py-0.5 font-mono">esc</kbd>
-                  {isAr ? "إغلاق" : "close"}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setOpen(false); onOpenFullPalette() }}
-                className="flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary/80"
-              >
-                {isAr ? "البحث الموسّع" : "Advanced search"}
-                <ArrowRight className={cn("size-3", isAr && "rotate-180")} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); onOpenFullPalette() }}
+              className="mt-3 text-[11.5px] font-medium text-primary hover:opacity-80"
+            >
+              {t("Advanced search", "البحث الموسّع")}
+            </button>
           </motion.div>
         )}
-      </AnimatePresence>
+
+      <EmployeeCardDialog employeeId={employeeId} onClose={() => setEmployeeId(null)} isAr={isAr} />
     </div>
   )
 }
