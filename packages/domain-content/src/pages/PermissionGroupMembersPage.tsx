@@ -108,7 +108,7 @@ export default function PermissionGroupMembersPage() {
 
       {/* inline add-users panel (never a popup) */}
       {adding && (
-        <Card className="rounded-xl mb-4 border-primary/40 p-4">
+        <Card className="rounded-[12px] mb-4 border-primary/40 p-4">
           <div className="mb-3 flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2 text-sm font-semibold"><UserPlus className="size-4 text-primary" />{t("Add users to this group", "إضافة مستخدمين إلى المجموعة")}</div>
             <button type="button" onClick={() => { setAdding(false); setPicked([]); setAddQ("") }} aria-label={t("Close", "إغلاق")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"><X className="size-4" /></button>
@@ -122,7 +122,7 @@ export default function PermissionGroupMembersPage() {
               const on = picked.includes(u.id)
               return (
                 <button key={u.id} type="button" onClick={() => setPicked((p) => (on ? p.filter((x) => x !== u.id) : [...p, u.id]))} aria-pressed={on}
-                  className={cn("flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-start transition-colors", on ? "border-primary bg-primary/[0.06]" : "border-border hover:border-primary/50")}>
+                  className={cn("flex w-full items-center gap-3 rounded-[8px] border px-3 py-2 text-start transition-colors", on ? "border-primary bg-primary/[0.06]" : "border-border hover:border-primary/50")}>
                   <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{u.initials}</AvatarFallback></Avatar>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium">{isAr ? u.nameAr : u.name}</span>
@@ -143,7 +143,7 @@ export default function PermissionGroupMembersPage() {
       )}
 
       {/* members table */}
-      <Card className="rounded-xl overflow-hidden py-0">
+      <Card className="rounded-[12px] overflow-hidden py-0">
         {/* toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
           <div className="relative min-w-[14rem] flex-1 sm:max-w-sm">

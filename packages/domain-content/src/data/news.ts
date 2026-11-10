@@ -59,20 +59,20 @@ const P = (...paras: string[]) => paras.map((p) => `<p>${p}</p>`).join("")
 export const NEWS: NewsItem[] = [
   {
     id: "n0",
-    title: "New Jeddah lounge opens in September",
+    title: "New Jeddah Lounge operations begin in September",
     titleAr: "تشغيل صالة جدة الجديدة يبدأ في سبتمبر",
     category: "Operations",
     categoryAr: "عمليات",
     date: "Yesterday",
     dateAr: "أمس",
     readMin: 3,
-    excerpt: "The lounge welcomes its first members early next month, with double the capacity and round-the-clock concierge service.",
+    excerpt: "The lounge welcomes its first member groups early next month with double capacity and 24/7 concierge service.",
     excerptAr: "تستقبل الصالة أول أفواج الأعضاء مطلع الشهر القادم بسعة مضاعفة وخدمة كونسيرج على مدار الساعة.",
     status: "Published",
     tint: "#3d2031",
     img: "images/cms/office.jpg",
     body: P(
-      "The lounge welcomes its first members early next month, with <b>double the capacity</b> and round-the-clock concierge service.",
+      "The lounge welcomes its first member groups early next month with <b>double capacity</b> and 24/7 concierge service.",
       "Fit-out is complete and the operations team is running final service rehearsals ahead of the September opening.",
     ),
     bodyAr: P(

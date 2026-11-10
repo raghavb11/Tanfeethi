@@ -91,7 +91,7 @@ export default function HolidayEditorPage() {
         </p>
       </div>
 
-      <Card className="rounded-xl p-5">
+      <Card className="rounded-[12px] p-5">
         <div className="space-y-5">
           <div>
             {label(t("Holiday name", "اسم الإجازة"))}
@@ -159,7 +159,7 @@ export default function HolidayEditorPage() {
             </p>
           )}
 
-          <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border/70 p-3">
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-[12px] border border-border/70 p-3">
             <input
               type="checkbox" checked={fixedDate} onChange={(e) => setFixedDate(e.target.checked)}
               className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"

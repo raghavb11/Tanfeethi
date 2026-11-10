@@ -16,7 +16,7 @@ export type Announcement = {
 }
 
 const SEED: Announcement[] = [
-  { id: "a0", title: "Fingerprint attendance procedure", titleAr: "آلية البصمة", body: "From next Sunday, attendance is recorded by fingerprint at the main entrance readers. Please register your fingerprint with HR before the end of this week.", bodyAr: "اعتبارًا من الأحد القادم يُسجَّل الحضور والانصراف بالبصمة عبر أجهزة المداخل الرئيسية. يُرجى تسجيل بصمتك لدى الموارد البشرية قبل نهاية هذا الأسبوع.", category: "HR", categoryAr: "الموارد البشرية", date: "Yesterday", dateAr: "أمس", audience: "All employees", audienceAr: "جميع الموظفين", important: true, img: "images/cms/dashboard.jpg", readMin: 3, details: [
+  { id: "a0", title: "Fingerprint Attendance Procedure", titleAr: "آلية البصمة", body: "From next Sunday, attendance is recorded by fingerprint at the main entrance readers. Please register your fingerprint with HR before the end of this week.", bodyAr: "اعتبارًا من الأحد القادم يُسجَّل الحضور والانصراف بالبصمة عبر أجهزة المداخل الرئيسية. يُرجى تسجيل بصمتك لدى الموارد البشرية قبل نهاية هذا الأسبوع.", category: "HR", categoryAr: "الموارد البشرية", date: "Yesterday", dateAr: "أمس", audience: "All employees", audienceAr: "جميع الموظفين", important: true, img: "images/cms/dashboard.jpg", readMin: 3, details: [
     "Fingerprint readers are installed at the main entrance, the operations building and the VIP terminal staff gate.",
     "Registration takes two minutes at the HR service desk (ground floor, HQ) between 08:00 and 15:00. Bring your staff ID.",
     "From the go-live date the fingerprint record is the only reference for working hours, overtime and late arrivals.",
@@ -61,6 +61,10 @@ export const AUDIENCES: { en: string; ar: string }[] = [
 export const AUDIENCE_NAMES = AUDIENCES.map((a) => a.en)
 /** Arabic label for an audience; falls back to the given value when custom. */
 export const audienceArFor = (en: string) => AUDIENCES.find((a) => a.en === en)?.ar ?? en
+
+/** Display label of an announcement category (Figma EN spells HR out). */
+export const annCatLabel = (a: { category: string; categoryAr: string }, isAr: boolean) =>
+  isAr ? a.categoryAr : a.category === "HR" ? "Human Resources" : a.category
 
 export const ANN_CATS = ["All", "HR", "IT", "Facilities", "Culture"]
 export const ANN_CATS_AR: Record<string, string> = { All: "الكل", HR: "الموارد البشرية", IT: "تقنية المعلومات", Facilities: "المرافق", Culture: "الثقافة" }

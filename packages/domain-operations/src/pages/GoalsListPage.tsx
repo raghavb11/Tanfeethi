@@ -45,9 +45,9 @@ export default function GoalsListPage() {
           headers={[
             t("No.", "ترقيم"),
             t("Goal", "الهدف"),
-            t("Indicator", "المؤشر"),
+            t("KPI", "المؤشر"),
             t("Start date", "تاريخ البدء"),
-            t("End date", "تاريخ الانتهاء"),
+            t("End date", "تاريخ الإنتهاء"),
             t("Unit of measure", "وحدة القياس"),
             t("Target", "المستهدف"),
             t("Weight", "الوزن"),

@@ -36,7 +36,7 @@ export type Course = {
 }
 
 export const inProgress: Course[] = [
-  { id: "c1", title: { ar: "الحضور التنفيذي في 60 دقيقة", en: "Executive presence in 60 minutes" }, category: { ar: "قيادة", en: "Leadership" }, unit: 4, units: 6, progress: 72 },
+  { id: "c1", title: { ar: "الحضور التنفيذي في 60 دقيقة", en: "Executive Presence in 60 Minutes" }, category: { ar: "قيادة", en: "Leadership" }, unit: 4, units: 6, progress: 72 },
   { id: "c2", title: { ar: "إدارة الوقت للقادة", en: "Time management for leaders" }, category: { ar: "قيادة", en: "Leadership" }, unit: 2, units: 5, progress: 35 },
 ]
 
@@ -51,7 +51,7 @@ export type LearningPath = {
 }
 
 export const learningPaths: LearningPath[] = [
-  { id: "p1", title: { ar: "مسار المدير الأول", en: "First-time manager path" }, category: { ar: "قيادة", en: "Leadership" }, units: 6, weeks: 12, hours: 18, icon: "users" },
+  { id: "p1", title: { ar: "مسار المدير الأول", en: "Senior Manager Track" }, category: { ar: "عمليات", en: "Operations" }, units: 6, weeks: 12, hours: 18, icon: "users" },
   { id: "p2", title: { ar: "التميز في تجربة الضيوف", en: "Guest experience excellence" }, category: { ar: "عمليات", en: "Operations" }, units: 5, weeks: 8, hours: 12, icon: "concierge" },
   { id: "p3", title: { ar: "الذكاء الاصطناعي في العمل", en: "AI at work" }, category: { ar: "تقنية", en: "Technology" }, units: 4, weeks: 6, hours: 9, icon: "sparkles" },
   { id: "p4", title: { ar: "أساسيات الإدارة المالية", en: "Finance fundamentals" }, category: { ar: "مالية", en: "Finance" }, units: 5, weeks: 10, hours: 14, icon: "wallet" },
@@ -62,22 +62,22 @@ export const learningPaths: LearningPath[] = [
 export type Workshop = { id: string; title: L; instructor: L; initials: string; date: L; time: string }
 
 export const workshops: Workshop[] = [
-  { id: "w1", title: { ar: "إتقان الذكاء الاصطناعي للمديرين", en: "Mastering AI for managers" }, instructor: { ar: "د. لينا حسن", en: "Dr. Lina Hassan" }, initials: "LH", date: { ar: "6 مايو", en: "6 May" }, time: "14:00" },
-  { id: "w2", title: { ar: "التفاوض تحت الضغط", en: "Negotiating under pressure" }, instructor: { ar: "عمر الصالح", en: "Omar Al-Saleh" }, initials: "OS", date: { ar: "9 مايو", en: "9 May" }, time: "10:00" },
+  { id: "w1", title: { ar: "إتقان الذكاء الاصطناعي للمديرين", en: "AI Mastery for Managers" }, instructor: { ar: "د. لينا حسن", en: "Dr. Lina Hassan" }, initials: "LH", date: { ar: "6 مايو", en: "6 May" }, time: "14:00" },
+  { id: "w2", title: { ar: "التفاوض تحت الضغط", en: "Negotiating Under Pressure" }, instructor: { ar: "عمر الصالح", en: "Omar Al-Saleh" }, initials: "OS", date: { ar: "9 مايو", en: "9 May" }, time: "10:00" },
 ]
 
 export type Recommendation = { id: string; title: L; letter: L; duration: L }
 
 export const recommendations: Recommendation[] = [
-  { id: "r1", title: { ar: "أساسيات الإلقاء", en: "Presentation basics" }, letter: { ar: "أ", en: "P" }, duration: { ar: "45 د", en: "45 min" } },
-  { id: "r2", title: { ar: "التفكير الاستراتيجي", en: "Strategic thinking" }, letter: { ar: "ت", en: "S" }, duration: { ar: "1 س 20 د", en: "1 h 20 min" } },
-  { id: "r3", title: { ar: "إدارة الهندسة 101", en: "Engineering management 101" }, letter: { ar: "إ", en: "E" }, duration: { ar: "2 س", en: "2 h" } },
-  { id: "r4", title: { ar: "الكتابة العربية في الأعمال", en: "Arabic business writing" }, letter: { ar: "ك", en: "A" }, duration: { ar: "50 د", en: "50 min" } },
+  { id: "r1", title: { ar: "أساسيات الإلقاء", en: "Presentation Fundamentals" }, letter: { ar: "أ", en: "P" }, duration: { ar: "45 د", en: "45 min" } },
+  { id: "r2", title: { ar: "التفكير الاستراتيجي", en: "Strategic Thinking" }, letter: { ar: "ت", en: "S" }, duration: { ar: "1 س 20 د", en: "1 h 20 min" } },
+  { id: "r3", title: { ar: "إدارة الهندسة 101", en: "Engineering Management 101" }, letter: { ar: "إ", en: "E" }, duration: { ar: "2 س", en: "2 h" } },
+  { id: "r4", title: { ar: "الكتابة العربية في الأعمال", en: "Arabic Business Writing" }, letter: { ar: "ك", en: "A" }, duration: { ar: "50 د", en: "50 min" } },
 ]
 
 export type Certificate = { id: string; title: L; issued: L }
 
 export const certificates: Certificate[] = [
-  { id: "cert1", title: { ar: "أساسيات السحابة", en: "Cloud fundamentals" }, issued: { ar: "يناير 2026", en: "January 2026" } },
+  { id: "cert1", title: { ar: "أساسيات السحابة", en: "Cloud Fundamentals" }, issued: { ar: "يناير 2026", en: "January 2026" } },
   { id: "cert2", title: { ar: "محترف عمليات الصالات التنفيذية", en: "Executive lounge operations professional" }, issued: { ar: "مارس 2026", en: "March 2026" } },
 ]

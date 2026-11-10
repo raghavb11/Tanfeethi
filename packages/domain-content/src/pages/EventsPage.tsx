@@ -65,9 +65,9 @@ export default function EventsPage() {
         </div>
       )}
 
-      <div className="mb-4 inline-flex rounded-xl border border-border p-0.5">
+      <div className="mb-4 inline-flex rounded-[12px] border border-border p-0.5">
         {(["upcoming", "past"] as const).map((k) => (
-          <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className={cn("rounded-lg px-4 py-1.5 text-sm font-medium transition-colors", tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
+          <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className={cn("rounded-[8px] px-4 py-1.5 text-sm font-medium transition-colors", tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
             {k === "upcoming" ? t("Upcoming", "القادمة") : t("Past", "السابقة")}
             <span className={cn("ms-1.5 text-xs", tab === k ? "text-primary-foreground/70" : "text-muted-foreground/50")}>{k === "upcoming" ? upcoming.length : pastEvents.length}</span>
           </button>
@@ -79,7 +79,7 @@ export default function EventsPage() {
           <div className="group relative h-48 w-full shrink-0 overflow-hidden bg-muted sm:h-auto sm:w-72">
             <img src={spotlight.img} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
             <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm"><Sparkles className="size-3" />{t("Next up", "التالي")}</span>
-            <div className="absolute bottom-3 start-3 flex size-14 flex-col items-center justify-center rounded-lg bg-[var(--card-elevated)] shadow-sm ring-1 ring-border/60">
+            <div className="absolute bottom-3 start-3 flex size-14 flex-col items-center justify-center rounded-[8px] bg-[var(--card-elevated)] shadow-sm ring-1 ring-border/60">
               <span className="text-xl font-semibold leading-none tabular-nums text-foreground">{spotlight.day}</span>
               <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">{spotlight.mon}</span>
             </div>
@@ -111,7 +111,7 @@ export default function EventsPage() {
           <Card key={e.id} onClick={() => open(e.id)} className="group flex cursor-pointer flex-row items-stretch gap-0 overflow-hidden py-0 transition-colors hover:border-primary/50">
             <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-muted sm:w-44">
               <img src={e.img} alt="" className={cn("absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105", e.past && "grayscale")} loading="lazy" onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
-              <div className="absolute left-2.5 top-2.5 flex w-11 flex-col items-center rounded-lg bg-[var(--card-elevated)] py-1 shadow-sm ring-1 ring-border/60">
+              <div className="absolute left-2.5 top-2.5 flex w-11 flex-col items-center rounded-[8px] bg-[var(--card-elevated)] py-1 shadow-sm ring-1 ring-border/60">
                 <span className="text-lg font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">{e.mon}</span>
               </div>

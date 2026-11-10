@@ -95,7 +95,7 @@ export function GoalModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[calc(100svh-2rem)] gap-6 overflow-y-auto rounded-xl bg-secondary px-5 py-6 text-foreground ring-0 sm:max-w-[728px] sm:px-8"
+        className="max-h-[calc(100svh-2rem)] gap-6 overflow-y-auto rounded-[12px] bg-secondary px-5 py-6 text-foreground ring-0 sm:max-w-[728px] sm:px-8"
       >
         <div className="flex items-center justify-between gap-3 pb-3">
           <div className="flex flex-col items-start gap-2">
@@ -107,7 +107,7 @@ export function GoalModal({
           </div>
           <DialogClose
             aria-label={t("Close", "إغلاق")}
-            className="inline-flex size-[34px] items-center justify-center rounded-lg text-foreground hover:bg-background/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
+            className="inline-flex size-[34px] items-center justify-center rounded-[8px] text-foreground hover:bg-background/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
           >
             <X className="size-5" />
           </DialogClose>
@@ -126,7 +126,7 @@ export function GoalModal({
               onChange={(e) => set({ title: e.target.value })}
             />
           </Field>
-          <Field label={t("Indicator", "المؤشر")} htmlFor="goal-indicator" error={err("indicator", required)}>
+          <Field label={t("KPI", "المؤشر")} htmlFor="goal-indicator" error={err("indicator", required)}>
             <input
               id="goal-indicator"
               className={cn(inputCls(surface, tried && errors.indicator), roCls)}
@@ -140,7 +140,7 @@ export function GoalModal({
               <DateBox id="goal-start" value={draft.start} onChange={(v) => set({ start: v })} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.start} className={roCls} />
             </Field>
             <Field
-              label={t("End date", "تاريخ الانتهاء")}
+              label={t("End date", "تاريخ الإنتهاء")}
               htmlFor="goal-end"
               error={err("end", draft.end ? t("Must be after the start date", "يجب أن يكون بعد تاريخ البدء") : required)}
             >

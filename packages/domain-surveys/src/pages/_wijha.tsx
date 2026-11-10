@@ -17,7 +17,7 @@ export function WPage({ className, children }: { className?: string; children: R
 
 /** Figma card: Card/Fill/Primary, hairline ring, radius 12, padding 20/24. */
 export function WCard({ className, children, ...rest }: React.HTMLAttributes<HTMLElement>) {
-  return <section {...rest} className={cn("panel rounded-xl px-[18px] py-5 sm:px-6", className)}>{children}</section>
+  return <section {...rest} className={cn("panel rounded-[12px] px-[18px] py-5 sm:px-6", className)}>{children}</section>
 }
 
 /** Card header: icon + 17px title, 48×3 underline beneath, actions at the end. */
@@ -63,7 +63,7 @@ export function WButton({ variant = "primary", size = "md", className, children,
       type={type}
       {...rest}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-[filter,background-color,opacity] disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
+        "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[8px] font-semibold transition-[filter,background-color,opacity] disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
         size === "sm" ? "h-7 px-3 text-[12px] [&_svg]:size-3" : "h-[34px] px-4 text-[13px] [&_svg]:size-4",
         BTN[variant],
         className,
@@ -88,7 +88,7 @@ export function IconTile({ className, children, label, ...rest }: React.ButtonHT
 export function ActionTile({ tone = "neutral", className, children, label, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string; tone?: "neutral" | "error" }) {
   return (
     <button type="button" aria-label={label} title={label} {...rest}
-      className={cn("grid size-[34px] shrink-0 place-items-center rounded-lg border border-secondary transition-colors [&_svg]:size-4",
+      className={cn("grid size-[34px] shrink-0 place-items-center rounded-[8px] border border-secondary transition-colors [&_svg]:size-4",
         tone === "error" ? "text-error hover:bg-error-fill" : "text-foreground hover:bg-secondary/60", className)}>
       {children}
     </button>
@@ -141,7 +141,7 @@ export function toneForCategory(cat: string): TagTone {
 
 /* ── form fields (modal + editor) ─────────────────────────────────────────── */
 
-export const FIELD = "h-9 w-full min-w-0 rounded-lg bg-[var(--card-elevated)] px-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/60"
+export const FIELD = "h-9 w-full min-w-0 rounded-[8px] bg-[var(--card-elevated)] px-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/60"
 
 export function Field({ label, children, className }: { label: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
@@ -205,7 +205,7 @@ export function CountSelect({ options, value, onChange, allLabel, isAr, classNam
         <ChevronDown className="size-4 shrink-0 text-icon" />
       </button>
       {open && (
-        <div className="absolute inset-x-0 z-40 mt-1 max-h-60 overflow-y-auto rounded-lg bg-[var(--card-elevated)] p-1 shadow-lg ring-1 ring-[var(--card-ring)]">
+        <div className="absolute inset-x-0 z-40 mt-1 max-h-60 overflow-y-auto rounded-[8px] bg-[var(--card-elevated)] p-1 shadow-lg ring-1 ring-[var(--card-ring)]">
           <button type="button" onClick={() => onChange([])} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary">
             <span className={cn("grid size-4 place-items-center rounded border", all ? "border-primary bg-primary text-primary-foreground" : "border-border")}>{all && <Check className="size-3" />}</span>
             {allLabel}
@@ -252,11 +252,11 @@ export function WModal({ open, onClose, title, icon, tone = "gold", width = 728,
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-10 backdrop-blur-[2px] sm:items-center"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div role="dialog" aria-modal="true" dir={isAr ? "rtl" : "ltr"}
-        className="flex w-full flex-col gap-6 rounded-xl bg-secondary px-5 py-6 text-foreground shadow-2xl sm:px-8"
+        className="flex w-full flex-col gap-6 rounded-[12px] bg-secondary px-5 py-6 text-foreground shadow-2xl sm:px-8"
         style={{ maxWidth: width }}>
         <div className="flex items-center justify-between gap-4 pb-3">
           <CardHead icon={icon} title={title} tone={tone} />
-          <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="grid size-[34px] shrink-0 place-items-center rounded-lg text-foreground hover:bg-background/40">
+          <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="grid size-[34px] shrink-0 place-items-center rounded-[8px] text-foreground hover:bg-background/40">
             <X className="size-5" />
           </button>
         </div>
@@ -328,7 +328,7 @@ export function RadioDot({ on }: { on: boolean }) {
 
 export function EmptyState({ icon: Icon, title, desc, action, className }: { icon: LucideIcon; title: string; desc?: string; action?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex flex-col items-center gap-2 rounded-lg bg-background px-6 py-10 text-center", className)}>
+    <div className={cn("flex flex-col items-center gap-2 rounded-[8px] bg-background px-6 py-10 text-center", className)}>
       <span className="icon-tile size-10 text-icon"><Icon className="size-5" /></span>
       <p className="mt-1 text-[14px] font-medium">{title}</p>
       {desc && <p className="max-w-sm text-[12px] text-muted-foreground">{desc}</p>}
@@ -338,7 +338,7 @@ export function EmptyState({ icon: Icon, title, desc, action, className }: { ico
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-lg bg-secondary/70", className)} />
+  return <div className={cn("animate-pulse rounded-[8px] bg-secondary/70", className)} />
 }
 
 /** Short simulated load so list/card loading states are visible on first paint. */

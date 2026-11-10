@@ -6,7 +6,7 @@ import { Megaphone } from "lucide-react"
 
 import { EmptyState, toneForCategory, WButton, WPage } from "./_wijha"
 import { StoryDetail } from "./knowledge/StoryDetail"
-import { useAnnouncements } from "../data/announcements"
+import { annCatLabel, useAnnouncements } from "../data/announcements"
 
 export default function AnnouncementDetailPage() {
   const { locale } = useShell()
@@ -33,10 +33,10 @@ export default function AnnouncementDetailPage() {
 
   return (
     <WPage>
-      <StoryDetail isAr={isAr} icon={Megaphone} section={t("Announcements", "التعاميم")}
-        counter={t(`Announcement ${pos + 1} of ${items.length}`, `التعميم ${pos + 1} من ${items.length}`)}
+      <StoryDetail isAr={isAr} icon={Megaphone} section={t("Circulars", "التعاميم")}
+        counter={t(`Circular ${pos + 1} of ${items.length}`, `التعميم ${pos + 1} من ${items.length}`)}
         onPrev={() => go(pos - 1)} onNext={() => go(pos + 1)} prevDisabled={pos <= 0} nextDisabled={pos >= items.length - 1}
-        img={a.img} tag={isAr ? a.categoryAr : a.category} tagTone={toneForCategory(a.category)}
+        img={a.img} tag={annCatLabel(a, isAr)} tagTone={toneForCategory(a.category)}
         meta={isAr ? `${a.dateAr} · قراءة ${a.readMin ?? 2} د · ${a.audienceAr}` : `${a.date} · ${a.readMin ?? 2} min read · ${a.audience}`}
         title={isAr ? a.titleAr : a.title}>
         <p>{isAr ? a.bodyAr : a.body}</p>

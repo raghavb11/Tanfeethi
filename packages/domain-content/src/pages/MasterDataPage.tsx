@@ -78,7 +78,7 @@ export default function MasterDataPage() {
           return (
             <button
               key={l.id} onClick={() => setList(l.id)} aria-pressed={l.id === list}
-              className={cn("inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[13px] font-medium transition-colors",
+              className={cn("inline-flex items-center gap-1.5 rounded-[12px] border px-3 py-1.5 text-[13px] font-medium transition-colors",
                 l.id === list ? "border-primary/40 bg-primary/12 text-primary"
                               : "border-border text-muted-foreground hover:bg-muted/40")}
             >
@@ -90,7 +90,7 @@ export default function MasterDataPage() {
         })}
       </div>
 
-      <Card className="rounded-xl overflow-hidden p-0">
+      <Card className="rounded-[12px] overflow-hidden p-0">
         <div className="border-b border-border/60 px-4 py-3">
           <p className="text-[13px] font-semibold">{isAr ? meta.labelAr : meta.label}</p>
           <p className="text-[11.5px] text-muted-foreground">{isAr ? meta.descAr : meta.desc}</p>
@@ -164,7 +164,7 @@ export default function MasterDataPage() {
                 </div>
 
                 {confirmDelete === row.id && (
-                  <div className="mt-3 rounded-xl border border-error/30 bg-error/[0.05] p-3">
+                  <div className="mt-3 rounded-[12px] border border-error/30 bg-error/[0.05] p-3">
                     <p className="text-[12.5px] font-semibold">
                       {t(`Remove "${row.name}" from ${meta.label.toLowerCase()}?`, `إزالة "${row.nameAr}" من ${meta.labelAr}؟`)}
                     </p>

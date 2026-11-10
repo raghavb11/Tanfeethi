@@ -88,7 +88,7 @@ export default function SurveyRespondPage() {
       </div>
 
       {/* sticky progress */}
-      <div className="sticky top-16 z-10 mb-6 rounded-xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
+      <div className="sticky top-16 z-10 mb-6 rounded-[12px] border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
         <div className="mb-1.5 flex items-center justify-between text-xs">
           <span className="font-medium">{t("Progress", "التقدّم")}</span>
           <span className="tabular-nums text-muted-foreground">{answeredRequired} / {required.length} {t("required", "إلزامي")}</span>
@@ -113,7 +113,7 @@ export default function SurveyRespondPage() {
               {sec.questions.map((q) => {
                 const missing = showErrors && q.required && !isAnswered(q)
                 return (
-                  <div key={q.id} className={cn("rounded-lg", missing && "-mx-2 bg-destructive/5 px-2 py-2 ring-1 ring-destructive/30")}>
+                  <div key={q.id} className={cn("rounded-[8px]", missing && "-mx-2 bg-destructive/5 px-2 py-2 ring-1 ring-destructive/30")}>
                     <p className="mb-2 text-sm font-medium">
                       {isAr ? q.qAr : q.q}{q.required && <span className="ms-1 text-primary">*</span>}
                     </p>
@@ -134,7 +134,7 @@ export default function SurveyRespondPage() {
                           const val = idx + 1
                           const active = answers[q.id] === val
                           return (
-                            <button key={idx} type="button" onClick={() => set(q.id, val)} className={cn("flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-center text-[11px] leading-tight transition-colors", active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>
+                            <button key={idx} type="button" onClick={() => set(q.id, val)} className={cn("flex flex-col items-center gap-1 rounded-[8px] border px-1 py-2 text-center text-[11px] leading-tight transition-colors", active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>
                               <span className={cn("size-2.5 rounded-full", active ? "bg-primary" : "bg-muted-foreground/30")} />
                               {isAr ? o.labelAr : o.label}
                             </button>
@@ -148,7 +148,7 @@ export default function SurveyRespondPage() {
                         {q.options.map((o) => {
                           const active = answers[q.id] === o.label
                           return (
-                            <button key={o.label} type="button" onClick={() => set(q.id, o.label)} className={cn("rounded-lg border px-3 py-2 text-start text-sm transition-colors", active ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/60")}>
+                            <button key={o.label} type="button" onClick={() => set(q.id, o.label)} className={cn("rounded-[8px] border px-3 py-2 text-start text-sm transition-colors", active ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/60")}>
                               <span className="inline-flex items-center gap-2">{active && <CheckCircle2 className="size-4" />}{isAr ? o.labelAr : o.label}</span>
                             </button>
                           )
@@ -182,7 +182,7 @@ export default function SurveyRespondPage() {
       </div>
 
       {/* footer submit */}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-4">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-border bg-muted/40 p-4">
         <p className="text-sm text-muted-foreground">{t("Your answers are anonymous and aggregated.", "إجاباتك مجهولة ومجمّعة.")}</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate("/surveys")}>{t("Cancel", "إلغاء")}</Button>

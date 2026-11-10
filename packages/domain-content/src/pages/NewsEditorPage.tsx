@@ -50,7 +50,7 @@ const LOCATIONS: Opt[] = [
   { id: "jeddah", label: "Jeddah Office", ar: "مكتب جدة" },
 ]
 
-const SELECT_CLS = "h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
+const SELECT_CLS = "h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
 
 export default function NewsEditorPage() {
   const { locale } = useShell()
@@ -143,7 +143,7 @@ export default function NewsEditorPage() {
           <ArrowLeft className={cn("size-4", isAr && "rotate-180")} />{t("Back to news", "العودة إلى الأخبار")}
         </button>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-lg border border-border p-0.5">
+          <div className="inline-flex rounded-[8px] border border-border p-0.5">
             {(["write", "preview"] as const).map((m) => (
               <button key={m} onClick={() => setMode(m)} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors", mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
                 {m === "write" ? <PenLine className="size-3.5" /> : <Eye className="size-3.5" />}
@@ -168,11 +168,11 @@ export default function NewsEditorPage() {
       <div className={cn("grid gap-6 lg:grid-cols-3", mode !== "write" && "hidden")}>
         {/* main column */}
         <div className="space-y-5 lg:col-span-2">
-          <Card className="rounded-xl space-y-4 p-5">
+          <Card className="rounded-[12px] space-y-4 p-5">
             <div>
               {fieldLabel(t("Title", "العنوان"))}
               <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Article title goes here…", "عنوان المقال هنا…")} dir={isAr ? "rtl" : "ltr"} autoFocus
-                className={cn("w-full rounded-lg border bg-[var(--card-elevated)] px-3 py-2.5 text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
+                className={cn("w-full rounded-[8px] border bg-[var(--card-elevated)] px-3 py-2.5 text-xl font-bold outline-none transition-colors", "placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:text-muted-foreground/50", "focus:border-primary/60 focus:ring-2 focus:ring-primary/15", title.trim() ? "border-border" : "border-primary/40")} />
             </div>
 
             <div>
@@ -190,7 +190,7 @@ export default function NewsEditorPage() {
             </div>
 
             {/* dates — issue + visibility window, grouped */}
-            <div className="rounded-xl border border-border/70 bg-muted/20 p-3.5">
+            <div className="rounded-[12px] border border-border/70 bg-muted/20 p-3.5">
               <div className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 <Calendar className="size-3.5 text-primary" />{t("Dates", "التواريخ")}
               </div>
@@ -213,7 +213,7 @@ export default function NewsEditorPage() {
             <div>
               {fieldLabel(t("Summary", "الملخص"))}
               <input value={excerpt} onChange={(e) => setExcerpt(e.target.value)} placeholder={t("One line shown in the news list", "سطر واحد يظهر في قائمة الأخبار")} dir={isAr ? "rtl" : "ltr"}
-                className="w-full rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/60 focus:ring-2 focus:ring-primary/15" />
+                className="w-full rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-primary/60 focus:ring-2 focus:ring-primary/15" />
             </div>
 
             <div>
@@ -223,18 +223,18 @@ export default function NewsEditorPage() {
           </Card>
 
           {/* attachment */}
-          <Card className="rounded-xl p-5">
+          <Card className="rounded-[12px] p-5">
             <div className="mb-3 flex items-center gap-2 text-sm font-medium"><Paperclip className="size-4 text-primary" />{t("Attachment (optional)", "المرفقات (اختياري)")}</div>
 
             {/* cover image */}
             <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={(e) => onCoverFile(e.target.files)} />
             {cover ? (
-              <div className="relative mb-3 aspect-[1200/630] overflow-hidden rounded-xl border border-border">
+              <div className="relative mb-3 aspect-[1200/630] overflow-hidden rounded-[12px] border border-border">
                 <img src={cover} alt="" className="h-full w-full object-cover" />
                 <button onClick={() => setCover(null)} className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-md bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm hover:text-destructive"><X className="size-3" />{t("Remove", "إزالة")}</button>
               </div>
             ) : (
-              <button onClick={() => coverRef.current?.click()} className="mb-3 flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border bg-muted/20 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/[0.03]">
+              <button onClick={() => coverRef.current?.click()} className="mb-3 flex w-full flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-border bg-muted/20 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/[0.03]">
                 <ImageIcon className="size-6 text-muted-foreground/50" />
                 <span className="text-sm text-muted-foreground">{t("Drop cover image · 1200 × 630 recommended", "أسقط صورة الغلاف · يُفضّل 1200 × 630")}</span>
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary"><Upload className="size-3.5" />{t("Browse files", "تصفّح الملفات")}</span>
@@ -253,7 +253,7 @@ export default function NewsEditorPage() {
             {/* file attachments */}
             <div className="space-y-2">
               {attachments.map((a, i) => (
-                <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
+                <div key={i} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
                   <FileText className="size-4 shrink-0 text-primary" />
                   <span className="min-w-0 flex-1 truncate">{a.name}</span>
                   <Badge variant="outline" className="shrink-0 text-[10px]">{a.kind}</Badge>
@@ -261,14 +261,14 @@ export default function NewsEditorPage() {
                 </div>
               ))}
               <input ref={fileRef} type="file" multiple className="hidden" onChange={(e) => onAttachFiles(e.target.files)} />
-              <button onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"><Paperclip className="size-3.5" />{t("Attach files", "إرفاق ملفات")}</button>
+              <button onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-[8px] border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"><Paperclip className="size-3.5" />{t("Attach files", "إرفاق ملفات")}</button>
             </div>
           </Card>
         </div>
 
         {/* general settings */}
         <aside className="space-y-4">
-          <Card className="rounded-xl space-y-4 p-5">
+          <Card className="rounded-[12px] space-y-4 p-5">
             <div className="flex items-center gap-2 text-sm font-semibold"><Users className="size-4 text-primary" />{t("General settings", "الإعدادات العامة")}</div>
 
             <div>
@@ -307,7 +307,7 @@ export default function NewsEditorPage() {
 
       {mode === "preview" && (
         <article className="mx-auto max-w-3xl">
-          <Card className="rounded-xl overflow-hidden py-0 gap-0">
+          <Card className="rounded-[12px] overflow-hidden py-0 gap-0">
             {cover && <div className="aspect-[1200/630]"><img src={cover} alt="" className="h-full w-full object-cover" /></div>}
             <div className="p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -375,7 +375,7 @@ function MultiSelect({ label, icon: Icon, options, value, onChange, isAr, placeh
 
 function CheckRow({ icon: Icon, label, checked, onChange }: { icon: React.ComponentType<{ className?: string }>; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-2 text-sm transition-colors hover:bg-muted/40">
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-[8px] px-1 py-2 text-sm transition-colors hover:bg-muted/40">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[var(--primary)]" />
       <Icon className="size-4 text-muted-foreground" />
       <span className="font-medium">{label}</span>

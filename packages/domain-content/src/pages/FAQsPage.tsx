@@ -116,7 +116,7 @@ export default function FAQsPage() {
           const def = c === "All" ? undefined : findCategory(cats, c)
           const active = cat === c
           return (
-            <button key={c} onClick={() => setCat(c)} aria-pressed={active} className={cn("inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors", active ? "accent-chip ring-1 ring-primary/40" : "bg-secondary text-foreground hover:brightness-110")}>
+            <button key={c} onClick={() => setCat(c)} aria-pressed={active} className={cn("inline-flex h-8 items-center gap-1.5 rounded-[8px] px-3 text-[13px] font-medium transition-colors", active ? "accent-chip ring-1 ring-primary/40" : "bg-secondary text-foreground hover:brightness-110")}>
               {def && <span className="size-2 rounded-full" style={{ backgroundColor: def.color }} />}
               {catLabel(c)}
             </button>
@@ -158,7 +158,7 @@ export default function FAQsPage() {
                       <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/60">{t("Related documents", "مستندات ذات صلة")}</div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {rdocs.map((d) => d && (
-                          <button key={d.id} onClick={() => navigate(`/documents/${d.id}`)} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-start text-sm transition-colors hover:border-primary/50">
+                          <button key={d.id} onClick={() => navigate(`/documents/${d.id}`)} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-start text-sm transition-colors hover:border-primary/50">
                             <span className={cn("flex size-7 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white", TYPE_STYLE[d.type])}>{d.type}</span>
                             <span className="min-w-0 flex-1 truncate">{isAr ? d.nameAr : d.name}</span>
                             <FileText className="size-3.5 shrink-0 text-muted-foreground" />
@@ -196,7 +196,7 @@ export default function FAQsPage() {
                   </div>
 
                   {feedbackFor === f.id && !myPending(f) && (
-                    <div className="rounded-xl border border-destructive/30 bg-destructive/[0.04] p-3">
+                    <div className="rounded-[12px] border border-destructive/30 bg-destructive/[0.04] p-3">
                       <label htmlFor={`fb-${f.id}`} className="mb-1.5 block text-xs font-medium text-foreground">{t("What was missing or wrong? (optional — helps admins improve it)", "ما الذي كان ناقصًا أو خاطئًا؟ (اختياري — يساعد المشرفين على التحسين)")}</label>
                       <Textarea id={`fb-${f.id}`} rows={2} value={fbText} onChange={(e) => setFbText(e.target.value)} placeholder={t("Tell us how to make this answer better…", "أخبرنا كيف نحسّن هذه الإجابة…")} dir={isAr ? "rtl" : "ltr"} />
                       <div className="mt-2 flex justify-end gap-2">
@@ -216,7 +216,7 @@ export default function FAQsPage() {
                   </div>
                   <div className="space-y-2">
                     {f.feedback.map((fb) => (
-                      <div key={fb.id} className={cn("flex gap-2.5 rounded-lg px-3 py-2.5", fb.resolved ? "bg-muted/40 opacity-70" : "bg-[var(--card-elevated)]")}>
+                      <div key={fb.id} className={cn("flex gap-2.5 rounded-[8px] px-3 py-2.5", fb.resolved ? "bg-muted/40 opacity-70" : "bg-[var(--card-elevated)]")}>
                         <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{fb.initials}</AvatarFallback></Avatar>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -252,15 +252,15 @@ export default function FAQsPage() {
           )
         })}
         {list.length === 0 && (
-          <div className="rounded-xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-[12px] border border-dashed border-border py-14 text-center">
             <HelpCircle className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No questions match your search.", "لا توجد أسئلة مطابقة لبحثك.")}</p>
           </div>
         )}
       </div>
 
-      <Card className="rounded-xl mt-8 flex flex-row flex-wrap items-center gap-4 p-5">
-        <div className="accent-chip flex size-11 shrink-0 items-center justify-center rounded-xl"><LifeBuoy className="size-5" /></div>
+      <Card className="rounded-[12px] mt-8 flex flex-row flex-wrap items-center gap-4 p-5">
+        <div className="accent-chip flex size-11 shrink-0 items-center justify-center rounded-[12px]"><LifeBuoy className="size-5" /></div>
         <div className="min-w-0 flex-1">
           <h3 className="text-[17px] font-semibold">{t("Still need help?", "ما زلت بحاجة للمساعدة؟")}</h3>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("Raise a request and the right team will get back to you.", "قدّم طلبًا وسيتواصل معك الفريق المختص.")}</p>

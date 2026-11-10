@@ -177,16 +177,16 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
 
   return (
     <WModal open={open} onClose={onClose} isAr={isAr}
-      title={isNews ? t("News", "الأخبار") : t("Surveys & polls", "الاستبيانات والتصويت")}
+      title={isNews ? t("News", "الأخبار") : t("Surveys & Polls", "الاستبيانات والتصويت")}
       icon={isNews ? Newspaper : BadgeCheck}
       footer={<>
         <WButton className="px-6" disabled={!canPublish} onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
-        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!canDraft} onClick={() => save("Draft")}>{t("Save as draft", "حفظ كمسودة")}</WButton>
+        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!canDraft} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
         <DraftsButton count={drafts} isAr={isAr} onClick={() => setShowDrafts((v) => !v)} />
       </>}>
       {showDrafts && (
-        <div className="rounded-lg bg-[var(--card-elevated)] p-2">
+        <div className="rounded-[8px] bg-[var(--card-elevated)] p-2">
           {(isNews ? newsDrafts.length : pollDrafts.length) === 0 ? (
             <p className="px-2 py-3 text-[12px] text-muted-foreground">{t("No drafts yet.", "لا توجد مسودات بعد.")}</p>
           ) : isNews ? newsDrafts.map((a) => (
@@ -220,7 +220,7 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
             </Field>
             <div className="grid gap-4 pt-2 sm:grid-cols-2">
               {/* 16:9 preview */}
-              <div className="relative grid aspect-video place-items-center overflow-hidden rounded-lg bg-[repeating-linear-gradient(135deg,var(--card-elevated)_0_18px,transparent_18px_36px)] ring-1 ring-[var(--card-ring)]">
+              <div className="relative grid aspect-video place-items-center overflow-hidden rounded-[8px] bg-[repeating-linear-gradient(135deg,var(--card-elevated)_0_18px,transparent_18px_36px)] ring-1 ring-[var(--card-ring)]">
                 {image ? (
                   <img src={image.src} alt="" className="absolute inset-0 size-full object-cover" />
                 ) : (
@@ -230,17 +230,20 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
               <div className="flex flex-col justify-between gap-4">
                 <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => onImage(e.target.files)} />
                 {image ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-background px-4 py-4">
-                    <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-lg bg-error-fill text-[10px] font-bold text-error">
+                  <div className="flex items-center gap-3 rounded-[8px] bg-background px-4 py-4">
+                    <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[8px] bg-error-fill text-[10px] font-bold text-error">
                       {(image.name.split(".").pop() ?? "IMG").slice(0, 4).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-[13px]">{image.name}</span>
                     <button type="button" onClick={() => setImage(null)} aria-label={t("Remove image", "حذف الصورة")} className="grid size-7 place-items-center rounded-md text-error hover:bg-error-fill"><Trash2 className="size-4" /></button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 rounded-lg bg-background px-4 py-4 text-[13px] text-muted-foreground">{t("Image* — PNG or JPG, 16:9", "صورة* — PNG أو JPG بنسبة 16:9")}</div>
+                  <div className="flex items-center gap-3 rounded-[8px] bg-background px-4 py-4">
+                    <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[8px] bg-error-fill text-[10px] font-bold text-error">PNG</span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">{t("*Image*", "*صورة*")}</span>
+                  </div>
                 )}
-                <WButton className="w-full" onClick={() => fileRef.current?.click()}>{t("Upload image", "رفع صورة")}</WButton>
+                <WButton className="w-full" onClick={() => fileRef.current?.click()}>{t("Upload Image", "رفع صورة")}</WButton>
               </div>
             </div>
           </>
@@ -258,7 +261,7 @@ export function CreateContentModal({ open, onClose, isAr, initialKind = "news", 
               </Field>
             ))}
             <div className="flex justify-end">
-              <WButton className="px-6" disabled={options.length >= 10} onClick={() => setOptions([...options, ""])}>{t("Add new option", "إضافة خيار جديد")}</WButton>
+              <WButton className="px-6" disabled={options.length >= 10} onClick={() => setOptions([...options, ""])}>{t("Add New Option", "إضافة خيار جديد")}</WButton>
             </div>
           </>
         )}
@@ -298,7 +301,7 @@ export function CreateFolderModal({ open, onClose, isAr, folders, currentId, onC
     onClose()
   }
   return (
-    <WModal open={open} onClose={onClose} isAr={isAr} icon={FolderOpen} title={t("Create new folder", "إنشاء مجلد جديد")}
+    <WModal open={open} onClose={onClose} isAr={isAr} icon={FolderOpen} title={t("Create New Folder", "إنشاء ملف جديد")}
       footer={<>
         <WButton className="px-6" disabled={!name.trim()} onClick={create}>{t("Create", "إنشاء")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
@@ -370,11 +373,11 @@ export function FaqModal({ open, onClose, isAr, edit }: { open: boolean; onClose
       footer={<>
         <WButton className="px-6" disabled={!q.trim() || !a.trim()} onClick={() => save("Published")}>{t("Publish", "نشر")}</WButton>
         <WButton variant="outline" className={MODAL_OUTLINE} onClick={onClose}>{t("Cancel", "إلغاء")}</WButton>
-        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!q.trim()} onClick={() => save("Draft")}>{t("Save as draft", "حفظ كمسودة")}</WButton>
+        <WButton variant="outline" className={MODAL_OUTLINE} disabled={!q.trim()} onClick={() => save("Draft")}>{t("Save as Draft", "حفظ كمسودة")}</WButton>
         <DraftsButton count={drafts.length} isAr={isAr} onClick={() => setShowDrafts((v) => !v)} />
       </>}>
       {showDrafts && (
-        <div className="rounded-lg bg-[var(--card-elevated)] p-2">
+        <div className="rounded-[8px] bg-[var(--card-elevated)] p-2">
           {drafts.length === 0 ? <p className="px-2 py-3 text-[12px] text-muted-foreground">{t("No drafts yet.", "لا توجد مسودات بعد.")}</p>
             : drafts.map((f) => (
               <button key={f.id} type="button" onClick={() => load(f)} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary">
@@ -410,11 +413,11 @@ export function ImageLightbox({ src, onClose, isAr }: { src: string | null; onCl
   if (!src) return null
   return createPortal(
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4 backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div role="dialog" aria-modal="true" className="relative w-full max-w-[920px] rounded-xl bg-secondary px-4 pb-4 pt-12 shadow-2xl">
-        <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="absolute end-3 top-3 grid size-8 place-items-center rounded-lg text-foreground hover:bg-background/40">
+      <div role="dialog" aria-modal="true" className="relative w-full max-w-[920px] rounded-[12px] bg-secondary px-4 pb-4 pt-12 shadow-2xl">
+        <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"} className="absolute end-3 top-3 grid size-8 place-items-center rounded-[8px] text-foreground hover:bg-background/40">
           <X className="size-5" />
         </button>
-        <img src={src} alt="" className="max-h-[78vh] w-full rounded-lg object-contain" />
+        <img src={src} alt="" className="max-h-[78vh] w-full rounded-[8px] object-contain" />
       </div>
     </div>,
     document.body,

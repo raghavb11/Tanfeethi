@@ -52,7 +52,7 @@ export default function NotificationsAdminPage() {
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
         {CHANNELS.map((c) => (
           <Card key={c.name} className="flex flex-row items-center gap-3 p-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><c.icon className="size-5" /></div>
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[8px] bg-primary/10 text-primary"><c.icon className="size-5" /></div>
             <div className="min-w-0 flex-1">
               <div className="font-medium">{isAr ? c.nameAr : c.name}</div>
               <div className="text-xs text-muted-foreground">{c.sub}</div>
@@ -66,7 +66,7 @@ export default function NotificationsAdminPage() {
 
       {/* recent */}
       <h2 className="mb-3 text-lg font-semibold">{t("Recent notifications", "أحدث الإشعارات")}</h2>
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-[12px] border border-border">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">

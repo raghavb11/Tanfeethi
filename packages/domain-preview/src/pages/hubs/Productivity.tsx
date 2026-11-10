@@ -178,7 +178,7 @@ export default function ProductivityHub() {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col gap-4 rounded-xl border border-border/60 panel px-5 py-4 md:flex-row md:items-center md:justify-between"
+        className="flex flex-col gap-4 rounded-[12px] border border-border/60 panel px-5 py-4 md:flex-row md:items-center md:justify-between"
       >
         <div>
           <div className="text-[15px] font-semibold tracking-tight">
@@ -226,7 +226,7 @@ export default function ProductivityHub() {
       {/* Two-col: Tasks + Agenda */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Tasks */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <CheckCircle2 className="size-3.5 text-success" />
@@ -286,7 +286,7 @@ export default function ProductivityHub() {
         </Card>
 
         {/* Agenda */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <Calendar className="size-3.5 text-info" />
@@ -307,7 +307,7 @@ export default function ProductivityHub() {
                   className="flex items-center gap-3 px-5 py-3"
                 >
                   <span className="font-mono text-[10px] tabular-nums w-9 shrink-0 text-muted-foreground/55">{s.time}</span>
-                  <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg", tone)}>
+                  <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-[8px]", tone)}>
                     <Icon className="size-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -331,7 +331,7 @@ export default function ProductivityHub() {
       {/* Focus timer + sticky notes */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Focus timer — quiet card */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <Focus className="size-3.5 text-warning" />
@@ -383,7 +383,7 @@ export default function ProductivityHub() {
         </Card>
 
         {/* Sticky notes */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <StickyNote className="size-3.5 text-error" />
@@ -414,7 +414,7 @@ export default function ProductivityHub() {
                   transition={{ duration: 0.18, delay: idx * 0.04 }}
                   whileHover={{ y: -2, rotate: idx % 2 === 0 ? -1 : 1 }}
                   className={cn(
-                    "relative rounded-xl border p-4 shadow-sm cursor-pointer transition-shadow hover:shadow-md",
+                    "relative rounded-[12px] border p-4 shadow-sm cursor-pointer transition-shadow hover:shadow-md",
                     noteTone(n.tone),
                   )}
                 >
@@ -431,7 +431,7 @@ export default function ProductivityHub() {
 
       {/* Templates + recent docs */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <Layers className="size-3.5 text-module" />
@@ -449,9 +449,9 @@ export default function ProductivityHub() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.16, delay: idx * 0.04 }}
                   whileHover={{ y: -2 }}
-                  className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-muted/15 p-3 ring-1 ring-foreground/5 transition-all hover:border-module/30 hover:shadow-sm"
+                  className="flex cursor-pointer items-center gap-3 rounded-[12px] border border-border/50 bg-muted/15 p-3 ring-1 ring-foreground/5 transition-all hover:border-module/30 hover:shadow-sm"
                 >
-                  <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", t.tone)}>
+                  <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[8px]", t.tone)}>
                     <Icon className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -464,7 +464,7 @@ export default function ProductivityHub() {
           </div>
         </Card>
 
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <FileText className="size-3.5 text-info" />

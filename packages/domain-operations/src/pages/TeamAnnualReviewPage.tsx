@@ -35,7 +35,7 @@ export default function TeamAnnualReviewPage() {
           minWidth={640}
           headers={[
             t("No.", "ترقيم"),
-            t("Employee name", "اسم الموظف"),
+            t("Employee name", "أسم الموظف"),
             t("Employee self-review", "المراجعة الذاتية للموظف"),
             t("Direct manager review", "مراجعة المدير المباشر"),
           ]}

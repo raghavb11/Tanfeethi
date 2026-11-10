@@ -43,7 +43,7 @@ export default function EmployeeReviewPage() {
   const done = evaluated.includes(member.id)
   const self = teamSelfScores[member.id] ?? {}
   const annual = member.cycle === "annual"
-  const cardTitle = annual ? t("Annual evaluation", "التقييم السنوي") : t("Half-year evaluation", "التقييم النصف سنوي")
+  const cardTitle = annual ? t("Annual evaluation", "التقييم السنوي") : t("Mid-year evaluation", "التقييم النصف سنوي")
   const missing = goals.some((g) => !scores[g.id])
 
   const submit = () => {

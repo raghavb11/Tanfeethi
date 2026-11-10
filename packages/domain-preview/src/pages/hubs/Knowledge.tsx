@@ -223,7 +223,7 @@ export default function KnowledgeHub() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="highlight-card hl-violet relative overflow-hidden rounded-xl"
+        className="highlight-card hl-violet relative overflow-hidden rounded-[12px]"
       >
         <div className="relative z-10 flex flex-col gap-5 p-6 md:flex-row md:items-center md:p-7">
           <div className="flex-1 space-y-4">
@@ -246,7 +246,7 @@ export default function KnowledgeHub() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={isAr ? ar.searchPh : "Search articles, guides, FAQs…"}
                 className={cn(
-                  "h-11 rounded-xl border-border bg-background/60 text-[14px] text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/40",
+                  "h-11 rounded-[12px] border-border bg-background/60 text-[14px] text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/40",
                   isAr ? "pe-12 ps-4" : "ps-12 pe-4",
                 )}
                 dir={isAr ? "rtl" : "ltr"}
@@ -285,7 +285,7 @@ export default function KnowledgeHub() {
               transition={{ duration: 0.22, delay: idx * 0.06 }}
               whileHover={{ y: -3 }}
             >
-              <Card className="rounded-xl h-full gap-0 cursor-pointer overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-blue-500/5 transition-shadow">
+              <Card className="rounded-[12px] h-full gap-0 cursor-pointer overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-blue-500/5 transition-shadow">
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <img src={a.cover} alt="" className="size-full object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
                   <Badge variant="outline" className="absolute top-2 start-2 border-white/30 bg-black/40 text-[10px] text-white backdrop-blur-sm">
@@ -333,9 +333,9 @@ export default function KnowledgeHub() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.16, delay: idx * 0.03 }}
                 whileHover={{ x: isAr ? -3 : 3 }}
-                className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 panel p-3.5 transition-all hover:border-info/30 hover:shadow-sm"
+                className="group flex cursor-pointer items-center gap-3 rounded-[12px] border border-border/60 panel p-3.5 transition-all hover:border-info/30 hover:shadow-sm"
               >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info/8 text-info dark:text-info ring-1 ring-info/15">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-[8px] bg-info/8 text-info dark:text-info ring-1 ring-info/15">
                   <Icon className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -353,7 +353,7 @@ export default function KnowledgeHub() {
 
       {/* Recently updated + sidebar */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <History className="size-3.5 text-slate-500" />
@@ -370,7 +370,7 @@ export default function KnowledgeHub() {
                 transition={{ duration: 0.18, delay: idx * 0.04 }}
                 className="group flex cursor-pointer items-center gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   <FileText className="size-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -395,7 +395,7 @@ export default function KnowledgeHub() {
 
         <div className="space-y-4 lg:col-span-5">
           {/* Top contributors */}
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
               <Star className="size-3.5 text-warning" />
               {isAr ? ar.topContributors : "Top contributors"}
@@ -428,7 +428,7 @@ export default function KnowledgeHub() {
           </Card>
 
           {/* Bookmarks */}
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
               <BookMarked className="size-3.5 text-module" />
               {isAr ? ar.bookmarks : "Your bookmarks"}
@@ -450,7 +450,7 @@ export default function KnowledgeHub() {
       </div>
 
       {/* Verified Q&A */}
-      <Card className="rounded-xl ring-1 ring-foreground/10">
+      <Card className="rounded-[12px] ring-1 ring-foreground/10">
         <div className="border-b border-border/60 px-5 py-4 text-[13px] font-semibold flex items-center gap-2">
           <CheckCircle2 className="size-3.5 text-success" />
           {isAr ? ar.verifiedQa : "Verified answers"}

@@ -124,7 +124,7 @@ export default function CommunityPage() {
       </div>
 
       {/* composer */}
-      <Card className="rounded-xl mb-6 p-4">
+      <Card className="rounded-[12px] mb-6 p-4">
         <div className="flex gap-3">
           <Avatar className="size-9 shrink-0"><AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">{CURRENT_USER.initials}</AvatarFallback></Avatar>
           <div className="flex-1">
@@ -132,7 +132,7 @@ export default function CommunityPage() {
 
             {/* poll builder */}
             {pollMode && (
-              <div className="mt-3 space-y-2 rounded-xl border border-border bg-[var(--card-elevated)] p-3">
+              <div className="mt-3 space-y-2 rounded-[12px] border border-border bg-[var(--card-elevated)] p-3">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary"><BarChart3 className="size-3.5" />{t("Poll", "تصويت")}</span>
                   <button type="button" onClick={() => { setPollMode(false); setPollOptions(["", ""]) }} className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={t("Remove poll", "إزالة التصويت")}><X className="size-4" /></button>
@@ -187,7 +187,7 @@ export default function CommunityPage() {
                 <p className="mt-3 leading-relaxed">{isAr ? p.bodyAr : p.body}</p>
 
                 {p.img && (
-                  <div className="relative mt-3 h-44 overflow-hidden rounded-xl bg-muted">
+                  <div className="relative mt-3 h-44 overflow-hidden rounded-[12px] bg-muted">
                     <img src={p.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }} />
                   </div>
                 )}
@@ -200,13 +200,13 @@ export default function CommunityPage() {
                       const pct = pollTotal ? Math.round((count / pollTotal) * 100) : 0
                       if (!voted) {
                         return (
-                          <button key={o.id} onClick={() => setPollVotes((v) => ({ ...v, [p.id]: o.id }))} className="w-full rounded-lg border border-border bg-card px-3 py-2 text-start text-sm transition-colors hover:border-primary hover:bg-primary/5">
+                          <button key={o.id} onClick={() => setPollVotes((v) => ({ ...v, [p.id]: o.id }))} className="w-full rounded-[8px] border border-border bg-card px-3 py-2 text-start text-sm transition-colors hover:border-primary hover:bg-primary/5">
                             {o.text}
                           </button>
                         )
                       }
                       return (
-                        <div key={o.id} className={cn("relative overflow-hidden rounded-lg border px-3 py-2", voted === o.id ? "border-primary" : "border-border")}>
+                        <div key={o.id} className={cn("relative overflow-hidden rounded-[8px] border px-3 py-2", voted === o.id ? "border-primary" : "border-border")}>
                           <div className="absolute inset-y-0 start-0 bg-primary/10" style={{ width: `${pct}%` }} />
                           <div className="relative flex items-center justify-between text-sm">
                             <span className="inline-flex items-center gap-1.5">{voted === o.id && <CheckCircle2 className="size-3.5 text-primary" />}{o.text}</span>
@@ -236,7 +236,7 @@ export default function CommunityPage() {
                       <div key={c.id} className="flex gap-2.5">
                         <Avatar className="size-7 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{c.initials}</AvatarFallback></Avatar>
                         <div className="min-w-0 flex-1">
-                          <div className="rounded-xl bg-muted/60 px-3 py-2">
+                          <div className="rounded-[12px] bg-muted/60 px-3 py-2">
                             <div className="flex items-baseline gap-2">
                               <span className="text-sm font-medium">{c.who}</span>
                               <span className="text-[11px] text-muted-foreground">{c.time}</span>

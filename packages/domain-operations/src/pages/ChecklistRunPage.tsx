@@ -40,8 +40,8 @@ export default function ChecklistRunPage() {
   const lounge = l(loungeById(run.loungeId).name)
   const readOnly = run.status === "completed"
   const title = t(
-    `Operational checklist for "${tpl.name.en}" — ${lounge} lounge`,
-    `قائمة التحقق التشغيلية لـ"${tpl.name.ar}" لصالة ${lounge}`,
+    `Operational checklist for “${tpl.name.en}” – ${lounge} lounge`,
+    `قائمة التحقق التشغيلية لـ”${tpl.name.ar}” للصالة ${lounge}`,
   )
 
   const invalid = tpl.questions.some((q) => {

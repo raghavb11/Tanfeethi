@@ -71,7 +71,7 @@ export default function PolicyReaderPage() {
 
       {/* superseded / sunset notice */}
       {supersededBy && (
-        <div className={cn("mb-5 flex flex-wrap items-center gap-2 rounded-xl border p-3 text-sm", isSunset ? "border-destructive/30 bg-destructive/[0.05]" : "border-[#99631a]/30 bg-warning-fill")}>
+        <div className={cn("mb-5 flex flex-wrap items-center gap-2 rounded-[12px] border p-3 text-sm", isSunset ? "border-destructive/30 bg-destructive/[0.05]" : "border-[#99631a]/30 bg-warning-fill")}>
           <History className={cn("size-4 shrink-0", isSunset ? "text-destructive" : "text-warning")} />
           <span>{isSunset ? t("This policy is sunset and no longer effective.", "هذه السياسة موقوفة ولم تعد سارية.") : t("This policy has been superseded but remains effective.", "حلّت محلها سياسة أخرى لكنها ما زالت سارية.")}</span>
           <button onClick={() => navigate(`/policies/${supersededBy.id}`)} className="font-medium text-primary hover:underline">{t("View", "عرض")} {supersededBy.number} →</button>
@@ -111,11 +111,11 @@ export default function PolicyReaderPage() {
           {/* acknowledgement banner (user) */}
           {policy.requiresAck && !isAdmin && (
             ackedByMe ? (
-              <div className="mt-5 flex items-center gap-2 rounded-xl border border-[#16833e]/30 bg-success-fill p-3 text-sm">
+              <div className="mt-5 flex items-center gap-2 rounded-[12px] border border-[#16833e]/30 bg-success-fill p-3 text-sm">
                 <Check className="size-4 text-success" />{t("You have acknowledged this policy. Thank you.", "لقد أقررت بهذه السياسة. شكرًا لك.")}
               </div>
             ) : (
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.05] p-4">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-primary/30 bg-primary/[0.05] p-4">
                 <div className="flex items-center gap-2 text-sm">
                   <AlertTriangle className="size-4 text-primary" />{t("Please read this policy and acknowledge that you understand it.", "يرجى قراءة هذه السياسة والإقرار بأنك فهمتها.")}
                 </div>
@@ -132,7 +132,7 @@ export default function PolicyReaderPage() {
               <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold"><FileText className="size-5 text-primary" />{t("Attached documents", "المستندات المرفقة")}</h2>
               <div className="grid gap-2 sm:grid-cols-2">
                 {attachedDocs.map((d) => (
-                  <button key={d.id} onClick={() => navigate(`/documents/${d.id}`)} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2.5 text-start text-sm transition-colors hover:border-primary/50">
+                  <button key={d.id} onClick={() => navigate(`/documents/${d.id}`)} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2.5 text-start text-sm transition-colors hover:border-primary/50">
                     <span className={cn("flex size-8 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white", TYPE_STYLE[d.type])}>{d.type}</span>
                     <span className="min-w-0 flex-1 truncate font-medium">{isAr ? d.nameAr : d.name}</span>
                     <Download className="size-4 shrink-0 text-muted-foreground" />
@@ -149,7 +149,7 @@ export default function PolicyReaderPage() {
             </div>
           )}
 
-          <div className="mt-10 rounded-xl border border-dashed border-border p-4 text-xs text-muted-foreground">
+          <div className="mt-10 rounded-[12px] border border-dashed border-border p-4 text-xs text-muted-foreground">
             {t(`Controlled document ${policy.number} · ${policy.version}. Printed copies are uncontrolled — always refer to the portal for the current approved version.`, `وثيقة مضبوطة ${policy.number} · ${policy.version}. النسخ المطبوعة غير مضبوطة — ارجع دائمًا إلى البوابة للإصدار المعتمد الحالي.`)}
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function PolicyReaderPage() {
         {/* details sidebar */}
         <aside className="@4xl:block hidden">
           <div className="sticky top-20 space-y-4">
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Document details", "تفاصيل الوثيقة")}</div>
               <dl className="space-y-3 text-sm">
                 <div className="flex items-center gap-2.5"><Hash className="size-4 shrink-0 text-primary" /><dt className="w-24 shrink-0 text-muted-foreground">{t("Number", "الرقم")}</dt><dd className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium">{policy.number}</dd></div>
@@ -170,7 +170,7 @@ export default function PolicyReaderPage() {
 
             {/* acknowledgement stats (admin) */}
             {policy.requiresAck && isAdmin && (
-              <Card className="rounded-xl p-5">
+              <Card className="rounded-[12px] p-5">
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Acknowledgement", "الإقرار")}</div>
                 <div className="flex items-end justify-between">
                   <div className="text-foreground text-[1.8rem] font-semibold leading-none tabular-nums">{ackPct}%</div>
@@ -181,7 +181,7 @@ export default function PolicyReaderPage() {
               </Card>
             )}
 
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Actions", "إجراءات")}</div>
               <div className="space-y-2">
                 {isAdmin && <Button variant="outline" className="w-full" onClick={() => navigate(`/policies/edit/${policy.id}`)}>{t("Edit policy", "تحرير السياسة")}</Button>}

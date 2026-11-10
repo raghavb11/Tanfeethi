@@ -114,10 +114,10 @@ export default function ConfigurationPage() {
         {areas.map((a) => {
           const body = (
             <div className={cn(
-              "group flex h-full items-start gap-3 rounded-xl border border-border/60 bg-card/70 p-5 transition-all",
+              "group flex h-full items-start gap-3 rounded-[12px] border border-border/60 bg-card/70 p-5 transition-all",
               a.ready ? "hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg" : "opacity-60",
             )}>
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <a.icon className="size-5" />
               </span>
               <div className="min-w-0">
@@ -143,7 +143,7 @@ export default function ConfigurationPage() {
         })}
       </div>
 
-      <Card className="rounded-xl ring-1 ring-foreground/10">
+      <Card className="rounded-[12px] ring-1 ring-foreground/10">
         <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
           {t("The cafeteria menu and places are seeded with a working list and can be edited here; the client's own list will replace it. The tea-boy fulfilment screen is live under Cafeteria → Service queue.",
              "قائمة الكافتيريا والمواقع محمّلة بقائمة أولية وقابلة للتعديل هنا؛ وستحل محلها قائمة العميل. شاشة خدمة الضيافة متاحة ضمن الكافتيريا ← قائمة الخدمة.")}

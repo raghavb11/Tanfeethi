@@ -31,7 +31,7 @@ export function Panel({
   className?: string
   as?: "section" | "div"
 }) {
-  return <Tag className={cn("panel min-w-0 rounded-xl px-4 py-5 sm:px-6", className)}>{children}</Tag>
+  return <Tag className={cn("panel min-w-0 rounded-[12px] px-4 py-5 sm:px-6", className)}>{children}</Tag>
 }
 
 /** Card title (17px medium) with a 16px gold icon and a 48×3 gold underline; actions at the end. */
@@ -64,7 +64,7 @@ export function CardHeading({
 type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { size?: "md" | "sm" }
 
 const btnBase =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[8px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
 
 /** Button/Fill/Primary 50% — gold @80%, dark label. 34px (md) / 28px (sm). */
 export function GoldButton({ size = "md", className, type = "button", ...props }: BtnProps) {
@@ -550,7 +550,7 @@ export function Notice({ tone, children }: { tone: "success" | "error"; children
     <div
       role={tone === "error" ? "alert" : "status"}
       className={cn(
-        "rounded-lg px-4 py-3 text-[13px]",
+        "rounded-[8px] px-4 py-3 text-[13px]",
         tone === "success" ? "bg-success-fill text-success" : "bg-error-fill text-error",
       )}
     >

@@ -38,7 +38,7 @@ function fmtMinutes(min: number, isAr: boolean) {
   const h = Math.floor(min / 60)
   const m = min % 60
   if (isAr) return h ? `${h} س ${m} د` : `${m} د`
-  return h ? `${h} h ${m} min` : `${m} min`
+  return h ? `${h}h ${m}m` : `${m}m`
 }
 
 /** Shown where the design links to screens that don't exist yet (course player). */
@@ -61,20 +61,20 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
   const left = Math.max(0, learner.dailyGoal - learner.todayMinutes)
 
   return (
-    <section className="highlight-card hl-violet overflow-hidden rounded-xl p-6 lg:pe-10">
+    <section className="highlight-card hl-violet overflow-hidden rounded-[12px] p-6 lg:pe-10">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
         {/* Continue */}
         <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[480px]">
-          <span className="text-xs text-muted-foreground">{t("Learning center", "مركز التعلم")}</span>
-          <h2 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{t("Continue what you started", "واصل ما بدأته")}</h2>
+          <span className="text-xs text-muted-foreground">{t("Learning Center", "مركز التعلم")}</span>
+          <h2 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{t("Continue Where You Left Off", "واصل ما بدأته")}</h2>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
             <GraduationCap className="size-4 text-primary" strokeWidth={1.8} />
             <span className="text-foreground/90">{l(course.title)}</span>
-            <span>{t(`Unit ${course.unit} of ${course.units}`, `الوحدة ${course.unit} من ${course.units}`)}</span>
+            <span>{t(`Module ${course.unit} of ${course.units}`, `الوحدة ${course.unit} من ${course.units}`)}</span>
           </p>
           <div className="mt-2 flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t("Today's goal", "هدف اليوم")}</span>
+              <span className="text-muted-foreground">{t("Today's Goal", "هدف اليوم")}</span>
               <span className="font-semibold text-primary tabular-nums">
                 <span dir="ltr">
                   {learner.todayMinutes} / {learner.dailyGoal}
@@ -94,13 +94,13 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
           <div className="mt-2 grid grid-cols-2 gap-4">
             <GoldButton onClick={onPlayer}>
               <Video className="size-4" />
-              {t("Continue studying", "تابع الدراسة")}
+              {t("Continue Learning", "تابع الدراسة")}
             </GoldButton>
             <OutlineButton
               onClick={() => document.getElementById("learning-certificates")?.scrollIntoView({ behavior: "smooth", block: "center" })}
             >
               <FileText className="size-4" />
-              {t("Your certificates", "شهاداتك")}
+              {t("Your Certificates", "شهاداتك")}
             </OutlineButton>
           </div>
         </div>
@@ -110,7 +110,7 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
         {/* Weekly chart */}
         <div className="flex min-w-0 flex-1 flex-col gap-3 lg:max-w-[460px]">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold">{t("Your progress this week", "تقدمك هذا الأسبوع")}</span>
+            <span className="font-semibold">{t("Your Progress This Week", "تقدّمك هذا الأسبوع")}</span>
             <span className="font-semibold text-primary tabular-nums">{fmtMinutes(total, isAr)}</span>
           </div>
           <div className="flex items-end gap-2.5" role="img" aria-label={t("Minutes learned per day this week", "دقائق التعلم يومياً هذا الأسبوع")}>
@@ -157,7 +157,7 @@ function Hero({ onPlayer }: { onPlayer: () => void }) {
             <span className="text-[56px] font-bold leading-none text-primary tabular-nums">{learner.streakDays}</span>
             <span className="text-sm">{t("days", "يوماً")}</span>
           </div>
-          <span className="mt-2 text-sm font-medium">{t("Continuous learning streak", "تتابع متواصل من التعلم")}</span>
+          <span className="mt-2 text-sm font-medium">{t("Learning streak", "تتابع متواصل من التعلم")}</span>
           <span className="text-[11px] text-muted-foreground">
             {t(`Your longest streak: ${learner.longestStreak} days`, `أطول تتابع لك: ${learner.longestStreak} يوماً`)}
           </span>
@@ -181,7 +181,7 @@ const pathIcon: Record<LearningPath["icon"], typeof Users> = {
 function Thumb({ icon: Icon, className }: { icon: typeof Users; className?: string }) {
   return (
     <div
-      className={cn("flex items-center justify-center rounded-xl", className)}
+      className={cn("flex items-center justify-center rounded-[12px]", className)}
       style={{
         backgroundImage:
           "repeating-linear-gradient(135deg, color-mix(in oklab, var(--foreground) 4%, transparent) 0 14px, transparent 14px 28px)",
@@ -202,15 +202,15 @@ function PathCard({ p, started, onStart }: { p: LearningPath; started: boolean; 
         <div className="flex flex-wrap items-center gap-2">
           <Chip tone="purple">{l(p.category)}</Chip>
           <span className="text-[11px] text-muted-foreground">
-            {t(`${p.units} units over ${p.weeks} weeks`, `${p.units} وحدات خلال ${p.weeks} أسبوعاً`)}
+            {t(`${p.units} modules over ${p.weeks} weeks`, `${p.units} وحدات خلال ${p.weeks} أسبوعًا`)}
           </span>
         </div>
         <h3 className="text-base font-medium leading-6">{l(p.title)}</h3>
         <div className="flex items-center gap-4 text-[13px] text-muted-foreground">
-          <span>{t(`${p.units} units`, `${p.units} وحدات`)}</span>
+          <span>{t(`${p.units} modules`, `${p.units} وحدات`)}</span>
           <span className="inline-flex items-center gap-1.5">
             <Clock className="size-3.5" />
-            {t(`${p.hours} hours`, `${p.hours} ساعة`)}
+            {t(`${p.hours} h`, `${p.hours} ساعة`)}
           </span>
         </div>
       </div>
@@ -218,10 +218,10 @@ function PathCard({ p, started, onStart }: { p: LearningPath; started: boolean; 
         {started ? (
           <OutlineButton size="md" onClick={onStart} aria-pressed className="px-4">
             <Check className="size-4 text-success" />
-            {t("Path started", "بدأت المسار")}
+            {t("Track started", "بدأت المسار")}
           </OutlineButton>
         ) : (
-          <GoldButton onClick={onStart}>{t("Start path", "ابدأ المسار")}</GoldButton>
+          <GoldButton onClick={onStart}>{t("Start Track", "ابدأ المسار")}</GoldButton>
         )}
       </div>
     </article>
@@ -230,7 +230,7 @@ function PathCard({ p, started, onStart }: { p: LearningPath; started: boolean; 
 
 // ── side cards ───────────────────────────────────────────────────────────────
 function SideCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={cn("panel flex flex-col gap-5 rounded-xl p-4 sm:px-6 sm:py-5", className)}>{children}</section>
+  return <section className={cn("panel flex flex-col gap-5 rounded-[12px] p-4 sm:px-6 sm:py-5", className)}>{children}</section>
 }
 
 function ContinueLearning({ onPlayer }: { onPlayer: () => void }) {
@@ -238,10 +238,10 @@ function ContinueLearning({ onPlayer }: { onPlayer: () => void }) {
   const Chevron = isAr ? ChevronLeft : ChevronRight
   return (
     <SideCard>
-      <CardHeading icon={GraduationCap} title={t("Continue learning", "أكمل التعلم")} />
+      <CardHeading icon={GraduationCap} title={t("Continue Learning", "أكمل التعلم")} />
       <div className="flex flex-col gap-4">
         {inProgress.map((c) => (
-          <article key={c.id} className="flex min-h-[130px] overflow-hidden rounded-xl bg-background">
+          <article key={c.id} className="flex min-h-[130px] overflow-hidden rounded-[12px] bg-background">
             <div className="relative w-[150px] shrink-0">
               <Thumb icon={GraduationCap} className="h-full rounded-none" />
               <span className="btn-primary-grad absolute bottom-3 end-3 inline-flex size-7 items-center justify-center rounded-full">
@@ -278,12 +278,12 @@ function LiveWorkshops() {
   const [registered, setRegistered] = React.useState<string[]>([])
   return (
     <SideCard>
-      <CardHeading icon={Presentation} title={t("Upcoming live workshops", "ورش مباشرة قادمة")} />
+      <CardHeading icon={Presentation} title={t("Upcoming Live Workshops", "ورش مباشرة قادمة")} />
       <div className="flex flex-col gap-4">
         {workshops.map((w) => {
           const on = registered.includes(w.id)
           return (
-            <article key={w.id} className="flex flex-col gap-3 rounded-xl bg-background p-4">
+            <article key={w.id} className="flex flex-col gap-3 rounded-[12px] bg-background p-4">
               <h3 className="text-[13.5px] font-medium">{l(w.title)}</h3>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="inline-flex size-6 items-center justify-center rounded-full border border-primary text-[10px] font-semibold text-primary" dir="ltr">
@@ -325,7 +325,7 @@ function Recommended() {
   const { t, l } = useT()
   return (
     <SideCard>
-      <CardHeading icon={Presentation} title={t("Recommended for you", "موصى به لك")} />
+      <CardHeading icon={Presentation} title={t("Recommended for You", "موصى به لك")} />
       <ul className="flex flex-col">
         {recommendations.map((r, i) => (
           <li
@@ -362,7 +362,7 @@ function Certificates() {
   const Chevron = isAr ? ChevronLeft : ChevronRight
   return (
     <SideCard>
-      <CardHeading id="learning-certificates" icon={FileText} title={t("Your certificates", "شهاداتك")} />
+      <CardHeading id="learning-certificates" icon={FileText} title={t("Your Certificates", "شهاداتك")} />
       {certificates.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">
           {t("Finish a course to earn your first certificate.", "أكمل دورة لتحصل على شهادتك الأولى.")}
@@ -374,7 +374,7 @@ function Certificates() {
               key={c.id}
               type="button"
               onClick={() => downloadCertificate(c, isAr)}
-              className="flex min-h-20 items-center gap-4 rounded-xl bg-background px-4 text-start outline-none transition-colors hover:bg-secondary/40 focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex min-h-20 items-center gap-4 rounded-[12px] bg-background px-4 text-start outline-none transition-colors hover:bg-secondary/40 focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t(`Download ${c.title.en}`, `تنزيل ${c.title.ar}`)}
             >
               <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary">
@@ -406,13 +406,13 @@ export default function LearningPage() {
     <div className="flex flex-col gap-10 px-4 pb-6 pt-8 md:px-10">
       <Hero onPlayer={openPlayer} />
       {notice && (
-        <div role="status" className="-mt-6 rounded-lg bg-info-fill px-4 py-3 text-[13px] text-info">
+        <div role="status" className="-mt-6 rounded-[8px] bg-info-fill px-4 py-3 text-[13px] text-info">
           {notice}
         </div>
       )}
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-        <section className="panel min-w-0 flex-1 rounded-xl p-4 sm:px-6 sm:py-5">
-          <CardHeading icon={Presentation} title={t("Learning paths", "مسارات تعلم")} />
+        <section className="panel min-w-0 flex-1 rounded-[12px] p-4 sm:px-6 sm:py-5">
+          <CardHeading icon={Presentation} title={t("Learning Paths", "مسارات تعلم")} />
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {learningPaths.map((p) => (
               <PathCard

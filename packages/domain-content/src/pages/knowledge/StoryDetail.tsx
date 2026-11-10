@@ -37,7 +37,7 @@ export function StoryDetail({ isAr, icon, section, counter, onPrev, onNext, prev
         <div className="flex flex-col gap-6 pt-3.5">
           {img && (
             <button type="button" onClick={() => setZoom(img)} aria-label={isAr ? "عرض الصورة" : "View image"}
-              className="mx-auto block w-full max-w-[900px] overflow-hidden rounded-xl">
+              className="mx-auto block w-full max-w-[900px] overflow-hidden rounded-[12px]">
               <img src={img} alt="" className="aspect-video w-full object-cover" />
             </button>
           )}

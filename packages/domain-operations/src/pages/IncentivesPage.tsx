@@ -25,7 +25,7 @@ export default function IncentivesPage() {
             t("Incentive amount", "مبلغ الحافز"),
             t("Deductions from incentive", "خصومات من مبلغ الحافز"),
             t("Violations", "عدد المخالفات"),
-            t("Total incentive", "إجمالي مبلغ الحافز"),
+            t("Total incentive amount", "إجمالي مبلغ الحافز"),
             t("Deduction reason", "سبب الخصم"),
           ]}
         >

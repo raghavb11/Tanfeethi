@@ -194,7 +194,7 @@ export default function EngagementHub() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="highlight-card hl-violet relative overflow-hidden rounded-xl"
+        className="highlight-card hl-violet relative overflow-hidden rounded-[12px]"
       >
         <div className="relative z-10 p-5 md:p-6 space-y-4">
           {/* Greeting line */}
@@ -219,7 +219,7 @@ export default function EngagementHub() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={isAr ? "اكتب منشورًا أو شارك تقديرًا أو ابدأ استطلاعًا…" : "Write a post, share kudos, or start a poll…"}
-            className="h-11 w-full rounded-xl border-0 !bg-white text-[14px] !text-slate-900 placeholder:!text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-violet-600 dark:!bg-white dark:!text-slate-900 dark:placeholder:!text-slate-500"
+            className="h-11 w-full rounded-[12px] border-0 !bg-white text-[14px] !text-slate-900 placeholder:!text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-violet-600 dark:!bg-white dark:!text-slate-900 dark:placeholder:!text-slate-500"
             dir={isAr ? "rtl" : "ltr"}
           />
 
@@ -274,7 +274,7 @@ export default function EngagementHub() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className="rounded-xl border border-primary/30 bg-soft-accent p-4"
+                  className="rounded-[12px] border border-primary/30 bg-soft-accent p-4"
                 >
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
@@ -327,7 +327,7 @@ export default function EngagementHub() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: idx * 0.05 }}
               >
-                <Card className="rounded-xl ring-1 ring-foreground/10">
+                <Card className="rounded-[12px] ring-1 ring-foreground/10">
                   <div className="px-5 pt-4 pb-3 space-y-2.5">
                     <div className="flex items-center gap-3">
                       <div className="relative">
@@ -354,14 +354,14 @@ export default function EngagementHub() {
                       type="button"
                       onClick={() => toggleLike(item.id)}
                       className={cn(
-                        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors",
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-medium transition-colors",
                         liked ? "text-error hover:bg-error/10" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                       )}
                     >
                       <Heart className={cn("size-3.5", liked && "fill-current")} />
                       <span className="tabular-nums">{likeCount}</span>
                     </button>
-                    <button type="button" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground">
+                    <button type="button" className="flex flex-1 items-center justify-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground">
                       <MessageCircle className="size-3.5" />
                       <span className="tabular-nums">{item.comments ?? 0}</span>
                     </button>
@@ -375,7 +375,7 @@ export default function EngagementHub() {
         {/* Sidebar */}
         <aside className="space-y-4 lg:col-span-4">
           {/* Active poll */}
-          <Card className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10 overflow-hidden">
             <div className="border-b border-border/60 px-4 py-3">
               <div className="flex items-center gap-2 text-[13px] font-semibold">
                 <Vote className="size-3.5 text-fuchsia-500" />
@@ -402,7 +402,7 @@ export default function EngagementHub() {
                       type="button"
                       onClick={() => setPollVote(o.id)}
                       className={cn(
-                        "relative w-full overflow-hidden rounded-lg border px-3 py-2 text-start transition-all",
+                        "relative w-full overflow-hidden rounded-[8px] border px-3 py-2 text-start transition-all",
                         own ? "border-fuchsia-500/60 bg-fuchsia-500/[0.05]" : "border-border/60 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/[0.03]",
                       )}
                     >
@@ -432,7 +432,7 @@ export default function EngagementHub() {
           </Card>
 
           {/* Online now */}
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-success animate-pulse" />
               {isAr ? ar.online : "Online now"}
@@ -455,7 +455,7 @@ export default function EngagementHub() {
           </Card>
 
           {/* Upcoming event */}
-          <Card className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10 overflow-hidden">
             <div className="relative h-20">
               <img src={upcomingEvent.cover} alt="" className="size-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-br from-error/55 to-pink-600/65" />
@@ -478,7 +478,7 @@ export default function EngagementHub() {
           </Card>
 
           {/* Birthdays */}
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
               <Cake className="size-3.5 text-warning" />
               {isAr ? ar.birthdays : "Birthdays"}
@@ -504,7 +504,7 @@ export default function EngagementHub() {
           </Card>
 
           {/* Rooms */}
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="border-b border-border/60 px-4 py-3 text-[13px] font-semibold flex items-center gap-2">
               <Hash className="size-3.5 text-error" />
               {isAr ? ar.rooms : "Team rooms"}

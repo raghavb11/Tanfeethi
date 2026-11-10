@@ -55,7 +55,7 @@ export default function CircularsPage() {
 
   const Row = (c: Circular, authored?: boolean) => (
     <Card key={c.id} className="flex flex-row flex-wrap items-center gap-4 p-4">
-      <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-lg", c.important ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
+      <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-[8px]", c.important ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
         {c.file.startsWith("DOCX") ? <FileText className="size-5" /> : <Megaphone className="size-5" />}
       </div>
       <div className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ export default function CircularsPage() {
       <div className="space-y-3">{rest.map((c) => Row(c))}</div>
 
       {list.length === 0 && created.length === 0 && (
-        <Card className="rounded-xl p-10 text-center text-muted-foreground">{t("No circulars match your filters.", "لا توجد تعاميم مطابقة.")}</Card>
+        <Card className="rounded-[12px] p-10 text-center text-muted-foreground">{t("No circulars match your filters.", "لا توجد تعاميم مطابقة.")}</Card>
       )}
     </main>
   )

@@ -59,7 +59,7 @@ export default function EventEditorPage() {
   const field = (id: string, label: string, node: React.ReactNode) => (
     <div><label htmlFor={id} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</label>{node}</div>
   )
-  const selectCls = "h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
+  const selectCls = "h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60"
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6 lg:px-10 lg:pt-8">
@@ -79,7 +79,7 @@ export default function EventEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit event", "تحرير الفعالية") : t("New event", "فعالية جديدة")}</span>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
+      <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
         {field("ev-title", t("Title", "العنوان"), <Input id="ev-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Event name", "اسم الفعالية")} autoFocus className="h-11 text-base" />)}
         {field("ev-desc", t("Description", "الوصف"), <Textarea id="ev-desc" rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} className="text-[15px] leading-relaxed" />)}
         <div className="grid gap-4 sm:grid-cols-3">
@@ -109,7 +109,7 @@ export default function EventEditorPage() {
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Cover image", "صورة الغلاف")}</label>
           <div className="flex flex-wrap gap-2">
             {EVENT_IMAGES.map((src, i) => (
-              <button key={src} type="button" aria-label={`${t("Cover", "غلاف")} ${i + 1}`} onClick={() => setImg(src)} className={cn("size-14 overflow-hidden rounded-lg ring-2", img === src ? "ring-primary" : "ring-transparent hover:ring-border")}>
+              <button key={src} type="button" aria-label={`${t("Cover", "غلاف")} ${i + 1}`} onClick={() => setImg(src)} className={cn("size-14 overflow-hidden rounded-[8px] ring-2", img === src ? "ring-primary" : "ring-transparent hover:ring-border")}>
                 <img src={src} alt="" className="h-full w-full object-cover" />
               </button>
             ))}

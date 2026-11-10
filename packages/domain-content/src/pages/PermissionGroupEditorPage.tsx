@@ -60,7 +60,7 @@ export default function PermissionGroupEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit group", "تحرير المجموعة") : t("New permission group", "مجموعة صلاحيات جديدة")}</span>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
+      <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
         <div>{label(t("Group name", "اسم المجموعة"))}<Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("e.g. Content Team", "مثال: فريق المحتوى")} autoFocus className="h-11 text-base" /></div>
         <div>{label(t("Description", "الوصف"))}<Textarea rows={2} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("What is this group responsible for?", "ما مسؤولية هذه المجموعة؟")} /></div>
 
@@ -72,7 +72,7 @@ export default function PermissionGroupEditorPage() {
               const on = roles.includes(r.id)
               return (
                 <button key={r.id} type="button" onClick={() => toggleRole(r.id)} aria-pressed={on}
-                  className={cn("flex items-start gap-2.5 rounded-xl border p-3 text-start transition-colors", on ? "ring-1" : "border-border hover:border-primary/50")}
+                  className={cn("flex items-start gap-2.5 rounded-[12px] border p-3 text-start transition-colors", on ? "ring-1" : "border-border hover:border-primary/50")}
                   style={on ? { backgroundColor: `${r.color}14`, borderColor: `${r.color}66` } : undefined}>
                   <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border" style={on ? { backgroundColor: r.color, borderColor: r.color, color: "#fff" } : { borderColor: "var(--border)" }}>
                     {on && <Check className="size-3.5" />}

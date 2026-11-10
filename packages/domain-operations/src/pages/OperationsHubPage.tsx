@@ -1,7 +1,7 @@
 /** Operations & Performance hub — Figma 3907:9016 (empty table), 4124:11249
  *  (create-checklist filters) and 4124:11545 (populated table). */
 import * as React from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import { BadgeCheck, ChevronLeft, ChevronRight, CircleDollarSign, Plus, UserRound } from "lucide-react"
 
@@ -23,7 +23,7 @@ const TEMPLATE = "30px minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1.1fr)
 
 function ProfileTile({ value, label }: { value: string; label: string }) {
   return (
-    <div className="panel flex min-h-[81px] min-w-0 flex-col justify-center gap-0.5 rounded-xl px-[18px] py-4">
+    <div className="panel flex min-h-[81px] min-w-0 flex-col justify-center gap-0.5 rounded-[12px] px-[18px] py-4">
       <span className="truncate text-base font-semibold leading-8 text-foreground" dir="auto">
         {value}
       </span>
@@ -52,8 +52,8 @@ function Hero() {
           </h2>
           <p className="text-[12.5px] text-foreground">
             {t(
-              "Evaluate and follow up the quality and performance of Altanfeethi's staff",
-              "قيّم وتابع جودة وأداء موظفي التنفيذي",
+              "Evaluate and track the quality and performance of Al Tanfeethi employees",
+              "قيم و تابع جودة و أداء موظفين التنفيذي",
             )}
           </p>
         </div>
@@ -70,9 +70,13 @@ function Hero() {
 function ChecklistsCard() {
   const { t, l } = useT()
   const navigate = useNavigate()
-  const runs = useOps((s) => s.runs)
+  // Capture helper: "?state=empty" draws 3907:9016 (empty table), "?state=create"
+  // 4124:11249 (create filters open, empty table); default is 4124:11545.
+  const capture = new URLSearchParams(useLocation().search).get("state")
+  const allRuns = useOps((s) => s.runs)
+  const runs = capture === "empty" || capture === "create" ? [] : allRuns
   const loading = useSimulatedLoad()
-  const [creating, setCreating] = React.useState(false)
+  const [creating, setCreating] = React.useState(capture === "create")
   const [lounge, setLounge] = React.useState("")
   const [template, setTemplate] = React.useState("")
   const [date, setDate] = React.useState("")
@@ -93,7 +97,7 @@ function ChecklistsCard() {
         actions={
           !creating && (
             <GoldButton size="sm" onClick={() => setCreating(true)}>
-              {t("Create new audit checklist", "إنشاء قائمة تدقيق جديدة")}
+              {t("Create a new audit checklist", "إنشاء قائمة تدقيق جديدة")}
             </GoldButton>
           )
         }
@@ -127,7 +131,7 @@ function ChecklistsCard() {
             </Field>
           </div>
           <div className="flex flex-wrap gap-3">
-            <GoldButton onClick={submit}>{t("Create new audit checklist", "إنشاء قائمة تدقيق جديدة")}</GoldButton>
+            <GoldButton onClick={submit}>{t("Create a new audit checklist", "إنشاء قائمة تدقيق جديدة")}</GoldButton>
             <OutlineButton
               onClick={() => {
                 setCreating(false)
@@ -147,7 +151,7 @@ function ChecklistsCard() {
         headers={[
           t("No.", "ترقيم"),
           t("Audit checklist", "قائمة التدقيق"),
-          t("Reviewer name", "اسم المراجع"),
+          t("Reviewer name", "أسم المراجع"),
           t("Review date", "تاريخ المراجعة"),
           t("Lounge", "الصالة"),
           t("Violations", "عدد المخالفات"),
@@ -203,7 +207,7 @@ function LinkRow({
   return (
     <Link
       to={to}
-      className="panel flex h-16 items-center gap-3 rounded-xl px-[18px] py-4 transition-colors hover:bg-secondary/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
+      className="panel flex h-16 items-center gap-3 rounded-[12px] px-[18px] py-4 transition-colors hover:bg-secondary/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
     >
       <Icon className={cn("size-[19px] shrink-0", iconClass)} strokeWidth={1.7} />
       <span className="min-w-0 flex-1 truncate text-base font-semibold leading-8">{label}</span>
@@ -225,7 +229,7 @@ function EmployeeCard({ m }: { m: TeamMember }) {
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-[14.5px] leading-[21.75px]">{l(m.name)}</span>
             <span className="shrink-0 text-[12.5px] text-muted-foreground">
-              {t("Employee no.", "الرقم الوظيفي")}: {m.employeeNo}
+              {t("Employee ID", "رقم الوظيفي")}: {m.employeeNo}
             </span>
           </div>
           <span className="text-[12.5px] text-muted-foreground">
@@ -234,9 +238,9 @@ function EmployeeCard({ m }: { m: TeamMember }) {
         </div>
       </div>
       <div className="flex flex-col gap-2 text-[14.5px] leading-[21.75px]">
-        <span>{m.cycle === "annual" ? t("Annual evaluation", "تقييم سنوي") : t("Half-year evaluation", "تقييم نصف سنوي")}</span>
+        <span>{m.cycle === "annual" ? t("Annual evaluation", "تقييم سنوي") : t("Mid-year evaluation", "تقييم نصف سنة")}</span>
         <span>
-          {t("Direct manager", "المدير المباشر")}: {l(m.manager)}
+          {t("Line manager", "مدير المباشر")}: {l(m.manager)}
         </span>
       </div>
       <div className="flex items-center gap-6 pt-2">
@@ -278,11 +282,11 @@ function EmployeeEvaluationCard() {
           <div className="flex flex-col items-center gap-2 pb-2 pt-6 text-center">
             <BadgeCheck className="size-5 text-primary" strokeWidth={1.7} />
             <div className="flex flex-col items-center gap-0.5">
-            <p className="text-[13.5px] leading-[20.25px]">{t("All employees have been evaluated", "تم تقييم جميع الموظفين")}</p>
+            <p className="text-[13.5px] leading-[20.25px]">{t("All employees evaluated", "تمّت تقييم جميع الموظفين")}</p>
             <p className="text-[12.5px] leading-[18.75px] text-muted-foreground">
               {t(
-                "You've evaluated your whole team for this cycle. We'll let you know when a new evaluation is due.",
-                "قيّمت جميع موظفيك لهذه الدورة. سنُشعرك عند استحقاق تقييم جديد.",
+                "You've reviewed all your approvals. We'll notify you when a new request arrives.",
+                "راجعت كل الموافقات لديك. سنُشعرك عند وصول طلب جديد.",
               )}
             </p>
             </div>
@@ -303,7 +307,7 @@ export default function OperationsHubPage() {
           <ChecklistsCard />
         </div>
         <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-[400px]">
-          <LinkRow to="/operations/delegation/new" icon={Plus} label={t("Raise a new delegation request", "رفع طلب إنابة جديد")} />
+          <LinkRow to="/operations/delegation/new" icon={Plus} label={t("Submit a new delegation request", "رفع طلب إنابه جديد")} />
           <LinkRow to="/operations/incentives" icon={CircleDollarSign} iconClass="text-primary" label={t("Incentives", "الحوافز")} />
           <LinkRow to="/operations/personal" icon={BadgeCheck} iconClass="text-primary" label={t("Personal evaluation", "التقييم الشخصي")} />
           <EmployeeEvaluationCard />

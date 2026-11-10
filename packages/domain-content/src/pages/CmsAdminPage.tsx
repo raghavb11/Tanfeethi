@@ -69,7 +69,7 @@ export default function CmsAdminPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             {MODULES.map((m) => (
               <Card key={m.name} className="flex flex-row items-center gap-3 p-4">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><m.icon className="size-5" /></div>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-[8px] bg-primary/10 text-primary"><m.icon className="size-5" /></div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{isAr ? m.nameAr : m.name}</div>
                   <div className="text-xs text-muted-foreground">{m.count.toLocaleString()} {t("items", "عنصر")}</div>
@@ -102,7 +102,7 @@ export default function CmsAdminPage() {
 
           <div>
             <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><ScrollText className="size-5 text-primary" />{t("Audit log", "سجل التدقيق")}</h2>
-            <Card className="rounded-xl divide-y divide-border">
+            <Card className="rounded-[12px] divide-y divide-border">
               {AUDIT.map((a, i) => (
                 <div key={i} className="p-3 text-sm">
                   <span className="font-medium">{a.who}</span>{" "}

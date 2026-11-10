@@ -6,11 +6,11 @@ export type L = { en: string; ar: string }
 // ── Current user (hub hero profile, 3907:9016) ────────────────────────────────
 export const currentUser = {
   id: "e1",
-  name: { en: "Mohammed Khalid Ali", ar: "محمد خالد علي" },
+  name: { en: "Mohammed Khaled Ali", ar: "محمد خالد علي" },
   jobTitle: { en: "UX Designer", ar: "مصمم تجربة المستخدم" },
   employeeNo: "1729",
   department: { en: "Administration", ar: "الإدارة" },
-  manager: { en: "Nada Khalid Mahmoud", ar: "ندى خالد محمود" },
+  manager: { en: "Nada Khaled Mahmoud", ar: "ندى خالد محمود" },
   email: "MAli@altanfeethi.com.sa",
 }
 
@@ -34,13 +34,13 @@ export const templates: ChecklistTemplate[] = [
         id: "h1",
         text: {
           ar: "يلتزم طاقم التموين بالبروتوكول المعتمد للضيافة في التنفيذي أثناء تقديم خدمة الضيافة مباشرة بعد جلوس الضيف",
-          en: "Catering staff follow Altanfeethi's approved hospitality protocol when serving, right after the guest is seated",
+          en: "Catering staff follow Al Tanfeethi's approved hospitality protocol, serving immediately after the guest is seated",
         },
       },
       {
         id: "h2",
         text: {
-          ar: "الوقت المستغرق لتقديم الخدمة مناسب ومطابق لقائمة الطعام باستثناء أوقات الذروة",
+          ar: "الوقت المستغرق لتقديم الخدمة مناسبة و مطابقة لقائمة الطعام بإستثناء أوقات الذروة",
           en: "Service time is appropriate and matches the menu, except at peak times",
         },
       },
@@ -125,7 +125,7 @@ export const initialRuns: ChecklistRun[] = [
     templateId: "cleanliness",
     loungeId: "jed",
     date: "2026-10-14",
-    reviewer: { ar: "ريم خالد الجهني", en: "Reem Khalid Al-Juhani" },
+    reviewer: { ar: "ريم خالد الجهني", en: "Reem Khaled Al-Juhani" },
     status: "completed",
     answers: {
       ...allYes("cleanliness"),
@@ -172,21 +172,21 @@ export type EvaluatedPerson = { id: string; name: L; jobTitle: L }
 
 /** Lounge staff whose checklist evaluations the manager can browse. */
 export const evaluatedStaff: EvaluatedPerson[] = [
-  { id: "e1", name: { ar: "محمد خالد علي", en: "Mohammed Khalid Ali" }, jobTitle: { en: "Terminal Traffic Supervisor", ar: "مشرف حركة الصالة" } },
+  { id: "e1", name: { ar: "محمد خالد علي", en: "Mohammed Khaled Ali" }, jobTitle: { en: "Terminal Traffic Supervisor", ar: "مشرف حركة الصالة" } },
   { id: "e2", name: { ar: "سارة أحمد الحسن", en: "Sara Ahmed Al-Hassan" }, jobTitle: { en: "Senior Traffic Analyst", ar: "محللة حركة أولى" } },
   { id: "e3", name: { ar: "علي مصطفى سالم", en: "Ali Mustafa Salem" }, jobTitle: { en: "Traffic Coordinator", ar: "منسق حركة" } },
   { id: "e4", name: { ar: "ندى خالد محمود", en: "Nada Khalid Mahmoud" }, jobTitle: { en: "Logistics Manager", ar: "مديرة الخدمات اللوجستية" } },
-  { id: "e5", name: { ar: "يوسف علي الحربي", en: "Yousef Ali Al-Harbi" }, jobTitle: { en: "Operations Supervisor", ar: "مشرف عمليات" } },
+  { id: "e5", name: { ar: "يوسف علي الحربي", en: "Youssef Ali Al-Harbi" }, jobTitle: { en: "Operations Supervisor", ar: "مشرف عمليات" } },
   { id: "e6", name: { ar: "ريم سامي عبدالله", en: "Reem Sami Abdullah" }, jobTitle: { en: "Fleet Manager", ar: "مديرة الأسطول" } },
   { id: "e7", name: { ar: "خالد ناصر الغامدي", en: "Khalid Nasser Al-Ghamdi" }, jobTitle: { en: "Safety Officer", ar: "مسؤول السلامة" } },
-  { id: "e8", name: { ar: "ليلى حسن إبراهيم", en: "Layla Hassan Ibrahim" }, jobTitle: { en: "Traffic Analyst", ar: "محللة حركة" } },
+  { id: "e8", name: { ar: "ليلى حسن إبراهيم", en: "Laila Hassan Ibrahim" }, jobTitle: { en: "Traffic Analyst", ar: "محللة حركة" } },
   { id: "e9", name: { ar: "طارق محمود عبد الله", en: "Tariq Mahmoud Abdullah" }, jobTitle: { en: "Dispatch Coordinator", ar: "منسق إرسال" } },
 ]
 
 /** People who carry out evaluations (shift supervisors / direct managers). */
 const evaluators: EvaluatedPerson[] = [
   { id: "v1", name: { ar: "عبدالله محمد السعدي", en: "Abdullah Mohammed Al-Saadi" }, jobTitle: { en: "Fleet Manager", ar: "مدير الأسطول" } },
-  { id: "v2", name: { ar: "ياسين أحمد الحربي", en: "Yaseen Ahmed Al-Harbi" }, jobTitle: { en: "Safety Officer", ar: "مسؤول السلامة" } },
+  { id: "v2", name: { ar: "ياسين أحمد الحربي", en: "Yassin Ahmed Al-Harbi" }, jobTitle: { en: "Safety Officer", ar: "مسؤول السلامة" } },
   { id: "v3", name: { ar: "سعاد علي الكعبي", en: "Suad Ali Al-Kaabi" }, jobTitle: { en: "Operations Supervisor", ar: "مشرفة عمليات" } },
   { id: "v4", name: { ar: "خالد سعيد الدوسري", en: "Khalid Saeed Al-Dosari" }, jobTitle: { en: "Logistics Coordinator", ar: "منسق لوجستي" } },
   { id: "v5", name: { ar: "فاطمة ناصر الهاشمي", en: "Fatima Nasser Al-Hashemi" }, jobTitle: { en: "Maintenance Lead", ar: "قائدة فريق الصيانة" } },
@@ -344,7 +344,7 @@ export type ScheduleEntry = {
 }
 
 export const schedule: ScheduleEntry[] = [
-  { id: "s1", employee: { ar: "أحمد خالد", en: "Ahmad Khalid" }, kind: "leave", from: "2026-06-04", to: "2026-09-01", substitute: { ar: "خالد محمد", en: "Khalid Mohammed" }, email: "K.Mohammed@altanfeethi.com.sa" },
+  { id: "s1", employee: { ar: "أحمد خالد", en: "Ahmed Khaled" }, kind: "leave", from: "2026-06-04", to: "2026-09-01", substitute: { ar: "خالد محمد", en: "Khaled Mohammed" }, email: "K.Mohammed@altanfeethi.com.sa" },
   { id: "s2", employee: { ar: "سارة ناصر", en: "Sara Nasser" }, kind: "remote", from: "2026-06-10", to: "2026-06-14" },
   { id: "s3", employee: { ar: "منى العتيبي", en: "Muna Al-Otaibi" }, kind: "leave", from: "2026-07-01", to: "2026-07-20", substitute: { ar: "فهد السالم", en: "Fahad Al-Salem" }, email: "F.Alsalem@altanfeethi.com.sa" },
 ]
@@ -359,7 +359,7 @@ export const delegates: { id: string; name: L; email: string }[] = [
 // ── Goals & ratings (4124:13741, 4124:13923, 4124:13384, 4124:13576, 4126:14074) ─
 export type MeasureUnit = "percent" | "number" | "minutes" | "sar"
 export const measureUnits: { id: MeasureUnit; label: L }[] = [
-  { id: "percent", label: { ar: "النسبة - %", en: "Percentage - %" } },
+  { id: "percent", label: { ar: "% - النسبة", en: "% – Percentage" } },
   { id: "number", label: { ar: "عدد", en: "Count" } },
   { id: "minutes", label: { ar: "دقائق", en: "Minutes" } },
   { id: "sar", label: { ar: "ريال سعودي", en: "SAR" } },
@@ -380,10 +380,10 @@ export type Goal = {
 export const initialGoals: Goal[] = [
   {
     id: "g1",
-    title: { ar: "إدارة خارطة الطريق والتواصل مع المساهمين", en: "Managing roadmaps and stakeholder communication" },
+    title: { ar: "إدارة والتواصل مع المساهمين", en: "Stakeholder management & communication" },
     indicator: {
       ar: "نسبة المتطلبات والميزات الموجودة في خارطة الطريق من إجمالي المتطلبات",
-      en: "Percentage of requirements and features captured in the roadmap out of all requirements",
+      en: "Share of requirements and features on the roadmap out of total requirements",
     },
     start: "2026-01-01",
     end: "2026-12-31",
@@ -445,7 +445,7 @@ export type GoalReviewPeriod = { id: string; label: L; self: Record<string, Rati
 export const pastGoalReviews: GoalReviewPeriod[] = [
   {
     id: "h1-2026",
-    label: { ar: "التقييم النصف سنوي 2026", en: "Half-year evaluation 2026" },
+    label: { ar: "التقييم النصف سنوي 2026", en: "Mid-year evaluation 2026" },
     self: { g1: 4, g2: 4, g3: 3, g4: 5 },
     manager: { g1: 3, g2: 4, g3: 3, g4: 4 },
   },

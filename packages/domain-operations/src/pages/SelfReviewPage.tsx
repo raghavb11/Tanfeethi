@@ -23,7 +23,7 @@ function SelfReview({ cycle }: { cycle: "half-year" | "annual" }) {
   const [status, setStatus] = React.useState<"" | "draft" | "submitted" | "invalid">("")
 
   const missing = goals.filter((g) => !scores[g.id])
-  const title = cycle === "annual" ? t("Annual evaluation", "التقييم السنوي") : t("Half-year evaluation", "التقييم النصف سنوي")
+  const title = cycle === "annual" ? t("Annual evaluation", "التقييم السنوي") : t("Mid-year evaluation", "التقييم النصف سنوي")
 
   const saveDraft = () => {
     saveSelfReview(cycle, scores, false)

@@ -25,7 +25,7 @@ export function CardHeading({
 }
 
 const btnBase =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[8px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
 
 type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { size?: "md" | "sm" }
 

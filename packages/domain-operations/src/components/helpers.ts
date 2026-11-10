@@ -38,7 +38,7 @@ export function useSimulatedLoad(ms = 350): boolean {
 /** 36px input box. `surface="card"` for controls that sit on the secondary (modal) fill. */
 export function inputCls(surface: "page" | "card" = "page", invalid = false) {
   return cn(
-    "h-9 w-full min-w-0 rounded-lg px-3 text-[12.5px] font-medium text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-70",
+    "h-9 w-full min-w-0 rounded-[8px] px-3 text-[12.5px] font-medium text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-70",
     surface === "page" ? "bg-background" : "bg-card",
     invalid && "ring-1 ring-error",
   )

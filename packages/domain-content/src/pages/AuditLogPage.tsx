@@ -81,14 +81,14 @@ export default function AuditLogPage() {
       </div>
 
       {module !== "All" && (
-        <div className="mb-3 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-[8px] border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm">
           <span className="text-muted-foreground">{t("Filtered to", "مُصفّى حسب")}</span>
           <span className="font-medium text-primary">{isAr ? AUDIT_MODULES_AR[module] : module}</span>
           <button onClick={() => setModule("All")} aria-label={t("Clear filter", "مسح التصفية")} className="text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
         </div>
       )}
 
-      <Card className="rounded-xl divide-y divide-border p-0">
+      <Card className="rounded-[12px] divide-y divide-border p-0">
         {list.map((e) => {
           const m = META[e.action]
           return (

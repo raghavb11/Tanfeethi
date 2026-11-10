@@ -76,7 +76,7 @@ export default function RuleEngineListPage() {
                 className="flex w-full flex-wrap items-start justify-between gap-4 px-5 py-4 text-start"
               >
                 <div className="flex min-w-0 gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-primary/12 text-primary">
                     <GitBranch className="size-4" />
                   </span>
                   <div className="min-w-0">
@@ -126,7 +126,7 @@ export default function RuleEngineListPage() {
           ))}
 
           {rules.length === 0 && (
-            <Card className="rounded-xl ring-1 ring-foreground/10">
+            <Card className="rounded-[12px] ring-1 ring-foreground/10">
               <div className="px-5 py-12 text-center">
                 <Layers className="mx-auto size-8 text-muted-foreground/40" />
                 <p className="mt-3 text-[13px] text-muted-foreground">{t("No rules match that.", "لا توجد قواعد مطابقة.")}</p>
@@ -136,9 +136,9 @@ export default function RuleEngineListPage() {
         </div>
 
         <div className="lg:col-span-4">
-          <Card className="rounded-xl ring-1 ring-foreground/10">
+          <Card className="rounded-[12px] ring-1 ring-foreground/10">
             <div className="flex items-center gap-2.5 border-b border-border/60 px-5 py-4">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary"><History className="size-4" /></span>
+              <span className="flex size-8 items-center justify-center rounded-[8px] bg-primary/12 text-primary"><History className="size-4" /></span>
               <div>
                 <div className="text-[13px] font-semibold">{t("Rule activity", "نشاط القواعد")}</div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground/65">{t("Every change is recorded", "يتم تسجيل كل تغيير")}</div>

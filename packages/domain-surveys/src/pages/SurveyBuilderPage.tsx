@@ -94,7 +94,7 @@ export default function SurveyBuilderPage() {
 
       <div className="space-y-6">
         {/* details */}
-        <Card className="rounded-xl space-y-5 p-5">
+        <Card className="rounded-[12px] space-y-5 p-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">{t("Survey title", "عنوان الاستبيان")}</label>
             <Input
@@ -228,7 +228,7 @@ export default function SurveyBuilderPage() {
         </div>
 
         {/* actions */}
-        <div className="sticky bottom-0 -mx-4 flex items-center justify-end gap-2 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:px-4">
+        <div className="sticky bottom-0 -mx-4 flex items-center justify-end gap-2 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-[12px] sm:border sm:px-4">
           <Button variant="outline" onClick={() => navigate("/surveys")}>
             {t("Cancel", "إلغاء")}
           </Button>

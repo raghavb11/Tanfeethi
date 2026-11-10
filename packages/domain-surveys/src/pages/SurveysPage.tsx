@@ -111,9 +111,9 @@ function ListRow({ icon: Icon, title, tags, meta, onOpen, openLabel, action, isA
   onOpen?: () => void; openLabel?: string; action?: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg bg-background p-4">
+    <div className="flex flex-col gap-3 rounded-[8px] bg-background p-4">
       <div className="flex items-start gap-3">
-        <span className="accent-chip grid size-[34px] shrink-0 place-items-center rounded-lg"><Icon className="size-4" /></span>
+        <span className="accent-chip grid size-[34px] shrink-0 place-items-center rounded-[8px]"><Icon className="size-4" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">{tags}</div>
           <h3 className="mt-2 text-[14px] font-medium leading-5">{title}</h3>
@@ -141,7 +141,7 @@ function ResultCard({ c, isAr, isAdmin, t, onDelete }: { c: ClosedSurvey; isAr: 
     [t("Responses", "الردود"), c.responses],
   ])
   return (
-    <div className="flex flex-col gap-4 rounded-lg bg-background p-4">
+    <div className="flex flex-col gap-4 rounded-[8px] bg-background p-4">
       <div className="flex items-center gap-3">
         <Tag>{t("Surveys", "الاستبيانات")}</Tag>
         <span className="text-[11px] text-muted-foreground">{isAr ? c.closedAr : c.closed}</span>
@@ -175,7 +175,7 @@ function PulseCard({ isAr, t }: { isAr: boolean; t: (en: string, ar: string) => 
   return (
     <WCard className="px-4 sm:px-4">
       <CardHead icon={BadgeCheck} title={vote ? t("Poll results", "نتائج التصويت") : t("Voting", "التصويت")} />
-      <div className="mt-4 flex flex-col gap-4 rounded-lg bg-background p-4">
+      <div className="mt-4 flex flex-col gap-4 rounded-[8px] bg-background p-4">
         <div className="flex flex-wrap items-center gap-3">
           <Tag>{isAr ? pulsePoll.deptAr : pulsePoll.dept}</Tag>
           <span className="text-[11px] text-muted-foreground">{isAr ? pulsePoll.whenAr : pulsePoll.when}</span>
@@ -208,7 +208,7 @@ function PulseCard({ isAr, t }: { isAr: boolean; t: (en: string, ar: string) => 
 
 function Stat({ icon: Icon, value, label }: { icon: typeof Users; value: string; label: string }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-background p-3">
+    <div className="flex flex-col gap-2 rounded-[8px] bg-background p-3">
       <span className="accent-chip grid size-7 place-items-center rounded-md"><Icon className="size-3.5" /></span>
       <span className="text-[20px] font-bold leading-none tabular-nums">{value}</span>
       <span className="text-[11px] text-muted-foreground">{label}</span>

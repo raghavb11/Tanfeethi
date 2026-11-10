@@ -55,7 +55,7 @@ export default function DocumentPreviewPage() {
 
       {/* title row */}
       <div className="mb-6 flex items-start gap-4">
-        <div className={cn("flex size-12 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white", TYPE_STYLE[doc.type])}>{doc.type}</div>
+        <div className={cn("flex size-12 shrink-0 items-center justify-center rounded-[12px] text-[11px] font-bold text-white", TYPE_STYLE[doc.type])}>{doc.type}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{isAr ? doc.deptAr : doc.dept}</Badge>
@@ -69,9 +69,9 @@ export default function DocumentPreviewPage() {
       <div className="grid gap-8 @4xl:grid-cols-[minmax(0,1fr)_290px] @4xl:gap-10">
         {/* preview page */}
         <div className="min-w-0">
-          <div className="rounded-xl border border-border bg-muted/30 p-4 sm:p-8">
+          <div className="rounded-[12px] border border-border bg-muted/30 p-4 sm:p-8">
             <div
-              className={cn("mx-auto max-w-[70ch] rounded-lg bg-[var(--card-elevated)] p-6 shadow-sm ring-1 ring-border/60 sm:p-10", PAGE)}
+              className={cn("mx-auto max-w-[70ch] rounded-[8px] bg-[var(--card-elevated)] p-6 shadow-sm ring-1 ring-border/60 sm:p-10", PAGE)}
               dir={isAr ? "rtl" : "ltr"}
               dangerouslySetInnerHTML={{ __html: documentPreview(doc, isAr) }}
             />
@@ -81,7 +81,7 @@ export default function DocumentPreviewPage() {
         {/* details sidebar */}
         <aside className="@4xl:block hidden">
           <div className="sticky top-20 space-y-4">
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("File details", "تفاصيل الملف")}</div>
               <dl className="space-y-3 text-sm">
                 {detail.map(([Icon, label, value], i) => (
@@ -94,12 +94,12 @@ export default function DocumentPreviewPage() {
               </dl>
             </Card>
             {doc.restricted && (
-              <Card className="rounded-xl p-5">
+              <Card className="rounded-[12px] p-5">
                 <div className="flex items-center gap-2 text-sm font-medium text-primary"><Lock className="size-4" />{t("Restricted access", "وصول مقيّد")}</div>
                 <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t("Access to this document is limited by department. Downloads are logged.", "الوصول إلى هذا المستند محدود حسب الإدارة. تُسجَّل عمليات التحميل.")}</p>
               </Card>
             )}
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Actions", "إجراءات")}</div>
               <div className="space-y-2">
                 <Button className="w-full"><Download className="size-4" />{t("Download", "تحميل")}</Button>

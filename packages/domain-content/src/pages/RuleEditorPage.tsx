@@ -28,7 +28,7 @@ function Select<T extends string>({
       value={value}
       onChange={(e) => onChange(e.target.value as T)}
       className={cn(
-        "h-9 w-full rounded-lg border border-border/60 bg-card px-3 text-[13px] outline-none",
+        "h-9 w-full rounded-[8px] border border-border/60 bg-card px-3 text-[13px] outline-none",
         "transition-colors focus:border-primary/40 focus:ring-2 focus:ring-primary/10",
         className,
       )}
@@ -243,7 +243,7 @@ export default function RuleEditorPage() {
       </div>
 
       {tab !== "builder" ? (
-        <Card className="rounded-xl mt-6 ring-1 ring-foreground/10">
+        <Card className="rounded-[12px] mt-6 ring-1 ring-foreground/10">
           <div className="px-5 py-16 text-center text-[13px] text-muted-foreground">
             {t(`${TABS.find((x) => x.id === tab)!.en} is not part of this prototype yet.`,
                `${TABS.find((x) => x.id === tab)!.ar} غير متاح في هذا النموذج بعد.`)}
@@ -254,7 +254,7 @@ export default function RuleEditorPage() {
           {/* ── main column ── */}
           <div className="space-y-6 xl:col-span-8">
             {/* 1 · conditions */}
-            <Card className="rounded-xl ring-1 ring-foreground/10">
+            <Card className="rounded-[12px] ring-1 ring-foreground/10">
               <SectionHead
                 n={1}
                 title={t("When to apply this rule", "متى تُطبَّق هذه القاعدة")}
@@ -283,7 +283,7 @@ export default function RuleEditorPage() {
 
                       {/* value chips + picker */}
                       <div className="min-w-[200px] flex-[1.4]">
-                        <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-lg border border-border/60 bg-card px-2 py-1.5">
+                        <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-[8px] border border-border/60 bg-card px-2 py-1.5">
                           {c.values.map((v) => (
                             <span key={v} className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 text-[12px]">
                               {optionLabel(c.field, v, isAr)}
@@ -309,12 +309,12 @@ export default function RuleEditorPage() {
                         </div>
                       </div>
 
-                      <span className="flex h-9 items-center rounded-lg border border-border/60 px-3 text-[11.5px] font-semibold text-muted-foreground">
+                      <span className="flex h-9 items-center rounded-[8px] border border-border/60 px-3 text-[11.5px] font-semibold text-muted-foreground">
                         {i === draft.conditions.length - 1 ? t("—", "—") : t("AND", "و")}
                       </span>
                       <button
                         onClick={() => removeCondition(c.id)}
-                        className="flex size-9 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
+                        className="flex size-9 items-center justify-center rounded-[8px] border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
                         aria-label={t("Delete condition", "حذف الشرط")}
                       >
                         <Trash2 className="size-4" />
@@ -336,7 +336,7 @@ export default function RuleEditorPage() {
             </Card>
 
             {/* 2 · approval workflow */}
-            <Card className="rounded-xl ring-1 ring-foreground/10">
+            <Card className="rounded-[12px] ring-1 ring-foreground/10">
               <SectionHead
                 n={2}
                 title={t("Approval workflow", "مسار الاعتماد")}
@@ -348,7 +348,7 @@ export default function RuleEditorPage() {
                   <div
                     key={l.id}
                     className={cn(
-                      "rounded-xl border p-4 transition-colors",
+                      "rounded-[12px] border p-4 transition-colors",
                       openLevel === l.id ? "border-primary/40 bg-primary/[0.04]" : "border-border/60",
                     )}
                   >
@@ -380,7 +380,7 @@ export default function RuleEditorPage() {
                         <button
                           type="button"
                           onClick={() => { setOpenLevel(openLevel === l.id ? null : l.id); setApproverQuery("") }}
-                          className="flex w-full items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-start transition-colors hover:border-primary/30"
+                          className="flex w-full items-center gap-2 rounded-[8px] border border-border/60 bg-card px-3 py-2 text-start transition-colors hover:border-primary/30"
                         >
                           <Users className="size-4 shrink-0 text-muted-foreground" />
                           <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">
@@ -404,7 +404,7 @@ export default function RuleEditorPage() {
 
                       <button
                         onClick={() => removeLevel(l.id)}
-                        className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
+                        className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-border/60 text-muted-foreground transition-colors hover:border-error/40 hover:text-error"
                         aria-label={t("Remove level", "حذف المستوى")}
                       >
                         <Trash2 className="size-3.5" />
@@ -436,7 +436,7 @@ export default function RuleEditorPage() {
 
                 <button
                   onClick={addLevel}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-dashed border-border py-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                 >
                   <Plus className="size-4" />{t("Add Level", "إضافة مستوى")}
                 </button>
@@ -444,7 +444,7 @@ export default function RuleEditorPage() {
             </Card>
 
             {/* 3 · rule settings */}
-            <Card className="rounded-xl ring-1 ring-foreground/10">
+            <Card className="rounded-[12px] ring-1 ring-foreground/10">
               <SectionHead
                 n={3}
                 title={t("Rule settings", "إعدادات القاعدة")}
@@ -497,7 +497,7 @@ export default function RuleEditorPage() {
           {/* ── right rail: summary, or the open level's approvers ── */}
           <div className="space-y-6 xl:col-span-4">
             {level ? (
-              <Card className="rounded-xl ring-1 ring-foreground/10">
+              <Card className="rounded-[12px] ring-1 ring-foreground/10">
                 <div className="flex items-start justify-between gap-2 border-b border-border/60 px-5 py-4">
                   <div className="min-w-0">
                     <div className="text-[14px] font-semibold">
@@ -517,7 +517,7 @@ export default function RuleEditorPage() {
 
                 <div className="space-y-4 p-4">
                   {level.type === "serial" && (
-                    <div className="flex gap-2.5 rounded-xl border border-primary/25 bg-primary/[0.06] p-3 text-[12px] text-muted-foreground">
+                    <div className="flex gap-2.5 rounded-[12px] border border-primary/25 bg-primary/[0.06] p-3 text-[12px] text-muted-foreground">
                       <Info className="mt-0.5 size-4 shrink-0 text-primary" />
                       <p>{t(
                         "For serial approval, the order of approval follows the order approvers are added. Drag to change the order.",
@@ -535,11 +535,11 @@ export default function RuleEditorPage() {
                   </div>
 
                   {approverQuery.trim() !== "" && (
-                    <div className="max-h-44 space-y-1 overflow-y-auto rounded-xl border border-border/60 p-1">
+                    <div className="max-h-44 space-y-1 overflow-y-auto rounded-[12px] border border-border/60 p-1">
                       {candidates.map((p) => (
                         <button
                           key={p.id} onClick={() => addApprover(p.id)}
-                          className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-start transition-colors hover:bg-muted/50"
+                          className="flex w-full items-center gap-2.5 rounded-[8px] px-2 py-2 text-start transition-colors hover:bg-muted/50"
                         >
                           <Avatar className="size-7"><AvatarFallback className="bg-primary/12 text-[10px] font-bold text-primary">{p.initials}</AvatarFallback></Avatar>
                           <div className="min-w-0">
@@ -559,7 +559,7 @@ export default function RuleEditorPage() {
                     <span>{t("Order", "الترتيب")}</span><span>{t("Approver", "المعتمد")}</span>
                   </div>
 
-                  <div className="divide-y divide-border/50 rounded-xl border border-border/60">
+                  <div className="divide-y divide-border/50 rounded-[12px] border border-border/60">
                     {level.approvers.map((a, i) => (
                       <div
                         key={a.id}
@@ -573,7 +573,7 @@ export default function RuleEditorPage() {
                         )}
                       >
                         <GripVertical className="size-4 shrink-0 cursor-grab text-muted-foreground/40" />
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border/60 text-[12px] font-bold tabular-nums">{i + 1}</span>
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-border/60 text-[12px] font-bold tabular-nums">{i + 1}</span>
                         <Avatar className="size-8 shrink-0">
                           <AvatarFallback className="bg-primary/12 text-[11px] font-bold text-primary">
                             {a.initials ?? (a.kind === "group" ? "GR" : "MG")}
@@ -611,7 +611,7 @@ export default function RuleEditorPage() {
             ) : (
               <>
                 {/* rule summary */}
-                <Card className="rounded-xl ring-1 ring-foreground/10">
+                <Card className="rounded-[12px] ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">{t("Rule Summary", "ملخّص القاعدة")}</div>
                   <div className="space-y-3.5 p-5 text-[12.5px]">
                     {[
@@ -631,12 +631,12 @@ export default function RuleEditorPage() {
                 </Card>
 
                 {/* workflow diagram */}
-                <Card className="rounded-xl ring-1 ring-foreground/10">
+                <Card className="rounded-[12px] ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">{t("Workflow Diagram", "مخطّط المسار")}</div>
                   <div className="space-y-2 p-5">
                     {draft.levels.map((l, i) => (
                       <React.Fragment key={l.id}>
-                        <div className="rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-center">
+                        <div className="rounded-[12px] border border-primary/25 bg-primary/[0.06] px-4 py-3 text-center">
                           <div className="text-[12.5px] font-semibold">{isAr ? l.nameAr : l.name}</div>
                           <div className="mt-0.5 text-[11px] text-muted-foreground">
                             {l.criteria === "any" ? t("Any one approver", "يكفي معتمد واحد") : t("All approvers", "جميع المعتمدين")}
@@ -657,7 +657,7 @@ export default function RuleEditorPage() {
                 </Card>
 
                 {/* notes */}
-                <Card className="rounded-xl ring-1 ring-foreground/10">
+                <Card className="rounded-[12px] ring-1 ring-foreground/10">
                   <div className="border-b border-border/60 px-5 py-4 text-[14px] font-semibold">
                     {t("Notes", "ملاحظات")} <span className="text-[11.5px] font-normal text-muted-foreground">({t("Optional", "اختياري")})</span>
                   </div>

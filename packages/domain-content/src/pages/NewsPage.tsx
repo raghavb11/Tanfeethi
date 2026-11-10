@@ -67,7 +67,7 @@ export default function NewsPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Chips items={cats.map(catLabel)} active={catLabel(cat)} onSelect={(label) => setCat(cats.find((c) => catLabel(c) === label) ?? "All")} />
-          <label className="flex h-9 w-full items-center gap-2 rounded-lg bg-background px-3 sm:w-[260px]">
+          <label className="flex h-9 w-full items-center gap-2 rounded-[8px] bg-background px-3 sm:w-[260px]">
             <Search className="size-4 shrink-0 text-icon" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search news…", "ابحث في الأخبار…")} className="h-full w-full bg-transparent text-[12px] outline-none placeholder:text-muted-foreground" />
           </label>
@@ -80,12 +80,12 @@ export default function NewsPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {filtered.map(({ n, s }) => (
-              <article key={n.id} className="flex flex-col gap-3.5 rounded-lg bg-background p-4">
+              <article key={n.id} className="flex flex-col gap-3.5 rounded-[8px] bg-background p-4">
                 {n.img ? (
-                  <button type="button" onClick={() => setZoom(n.img)} aria-label={t("View image", "عرض الصورة")} className="overflow-hidden rounded-lg">
+                  <button type="button" onClick={() => setZoom(n.img)} aria-label={t("View image", "عرض الصورة")} className="overflow-hidden rounded-[8px]">
                     <img src={n.img} alt="" loading="lazy" className="aspect-[358/201] w-full object-cover transition-transform duration-300 hover:scale-[1.02]" />
                   </button>
-                ) : <div className="grid aspect-[358/201] place-items-center rounded-lg bg-secondary text-icon"><Newspaper className="size-8" /></div>}
+                ) : <div className="grid aspect-[358/201] place-items-center rounded-[8px] bg-secondary text-icon"><Newspaper className="size-8" /></div>}
                 <div className="flex flex-wrap items-center gap-2.5">
                   <Tag tone={toneForCategory(n.category)}>{newsCatLabel(n.category, isAr)}</Tag>
                   <span className="text-[11px] text-muted-foreground">{isAr ? `${n.dateAr ?? n.date} · قراءة ${n.readMin ?? 2} د` : `${n.date} · ${n.readMin ?? 2} min read`}</span>

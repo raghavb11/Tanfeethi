@@ -188,10 +188,10 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                 transition={{ duration: 0.22, delay: idx * 0.06 }}
                 whileHover={{ y: -3 }}
               >
-                <Card className="rounded-xl h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
+                <Card className="rounded-[12px] h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10 hover:shadow-lg hover:shadow-primary/5 transition-shadow">
                   <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-2">
                     <div className="flex items-center gap-2">
-                      <span className={cn("flex size-9 items-center justify-center rounded-xl", tone.bg, tone.text)}>
+                      <span className={cn("flex size-9 items-center justify-center rounded-[12px]", tone.bg, tone.text)}>
                         <Icon className="size-4" />
                       </span>
                       <span className="rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -225,7 +225,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
       {/* ── Two-column: Insights feed + Useful notes ── */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Smart insights feed */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <span className="flex size-6 items-center justify-center rounded-md bg-primary/15 text-primary">
@@ -253,9 +253,9 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.18, delay: idx * 0.05 }}
                       whileHover={{ x: isAr ? -2 : 2 }}
-                      className="group flex cursor-pointer gap-3 rounded-xl border border-border/50 bg-muted/20 p-3.5 transition-all hover:border-primary/30 hover:bg-primary/[0.03]"
+                      className="group flex cursor-pointer gap-3 rounded-[12px] border border-border/50 bg-muted/20 p-3.5 transition-all hover:border-primary/30 hover:bg-primary/[0.03]"
                     >
-                      <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", tone.bg, tone.text)}>
+                      <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-[8px]", tone.bg, tone.text)}>
                         <Icon className="size-3.5" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -289,9 +289,9 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.18, delay: 0.15 + idx * 0.05 }}
                       whileHover={{ x: isAr ? -2 : 2 }}
-                      className="group flex cursor-pointer gap-3 rounded-xl border border-border/40 bg-card p-3.5 transition-all hover:border-primary/30 hover:bg-muted/30"
+                      className="group flex cursor-pointer gap-3 rounded-[12px] border border-border/40 bg-card p-3.5 transition-all hover:border-primary/30 hover:bg-muted/30"
                     >
-                      <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", tone.bg, tone.text)}>
+                      <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-[8px]", tone.bg, tone.text)}>
                         <Icon className="size-3.5" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -311,7 +311,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
         </Card>
 
         {/* Useful notes */}
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <span className="flex size-6 items-center justify-center rounded-md bg-warning/15 text-warning">
@@ -400,9 +400,9 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                 transition={{ duration: 0.2, delay: idx * 0.06 }}
                 whileHover={{ y: -2 }}
               >
-                <Card className="rounded-xl h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
+                <Card className="rounded-[12px] h-full gap-0 overflow-hidden py-0 ring-1 ring-foreground/10">
                   <div className="space-y-2 px-5 pt-4 pb-3">
-                    <span className={cn("inline-flex size-8 items-center justify-center rounded-lg", t.bg, t.text)}>
+                    <span className={cn("inline-flex size-8 items-center justify-center rounded-[8px]", t.bg, t.text)}>
                       <Sparkles className="size-3.5" />
                     </span>
                     <div className="text-[13px] font-semibold leading-snug">{isAr ? r.titleAr : r.title}</div>
@@ -427,7 +427,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
 
       {/* ── Auto-summaries + Knowledge recs ── */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-7">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-7">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <span className="flex size-6 items-center justify-center rounded-md bg-module/15 text-module">
@@ -446,7 +446,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className="rounded-xl border border-border/50 bg-muted/20 p-4 ring-1 ring-foreground/5"
+                  className="rounded-[12px] border border-border/50 bg-muted/20 p-4 ring-1 ring-foreground/5"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -477,7 +477,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
           </div>
         </Card>
 
-        <Card className="rounded-xl ring-1 ring-foreground/10 lg:col-span-5">
+        <Card className="rounded-[12px] ring-1 ring-foreground/10 lg:col-span-5">
           <div className="border-b border-border/60 px-5 py-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <span className="flex size-6 items-center justify-center rounded-md bg-info/15 text-info">
@@ -497,7 +497,7 @@ function InsightsSection({ isAr }: { isAr: boolean }) {
                 whileHover={{ backgroundColor: "rgba(59,130,246,0.04)" }}
                 className="group flex cursor-pointer items-start gap-3 px-5 py-3.5 transition-colors"
               >
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info">
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-info/10 text-info">
                   <FileText className="size-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">

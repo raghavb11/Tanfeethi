@@ -66,7 +66,7 @@ export default function AnnouncementEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit announcement", "تحرير الإعلان") : t("New announcement", "إعلان جديد")}</span>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
+      <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
         <div>
           <label htmlFor="ann-title" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Title", "العنوان")}</label>
           <Input id="ann-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Announcement title", "عنوان الإعلان")} autoFocus className="h-11 text-base" />
@@ -78,7 +78,7 @@ export default function AnnouncementEditorPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="ann-cat" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Category", "الفئة")}</label>
-            <select id="ann-cat" value={category} onChange={(e) => setCategory(e.target.value)} className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
+            <select id="ann-cat" value={category} onChange={(e) => setCategory(e.target.value)} className="h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
               {EDIT_CATS.map((c) => <option key={c} value={c}>{isAr ? ANN_CATS_AR[c] : c}</option>)}
             </select>
           </div>

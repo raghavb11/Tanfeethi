@@ -46,14 +46,14 @@ export function ChecklistAnswers({
                 checked={a.complied === true}
                 disabled={readOnly}
                 onChange={() => set({ complied: true })}
-                label={t("Yes, complied", "نعم، تم الالتزام")}
+                label={t("Yes, compliant", "نعم، تم الالتزام")}
               />
               <Radio
                 name={`q-${q.id}`}
                 checked={a.complied === false}
                 disabled={readOnly}
                 onChange={() => set({ complied: false })}
-                label={t("No, not complied", "لا، لم يتم الالتزام")}
+                label={t("No, not compliant", "لا، لم يتم الالتزام")}
               />
             </div>
             {missing && <p className="text-xs text-error">{t("Choose an answer.", "اختر إجابة.")}</p>}
@@ -130,7 +130,7 @@ export function ChecklistAnswers({
                       }}
                     />
                     <GoldButton className="w-[208px]" onClick={() => fileRef.current[q.id]?.click()}>
-                      {t("Upload attachments", "رفع مرفقات")}
+                      {t("Upload Attachments", "رفع مرفقات")}
                     </GoldButton>
                   </div>
                 )}

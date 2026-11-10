@@ -18,11 +18,11 @@ export type FolderDef = {
  *  Figma (2028:3744); the departmental folders live under "Work folders", so
  *  the library still scales to deep trees (breadcrumb + folder tiles). */
 export const FOLDERS: FolderDef[] = [
-  { id: "work", name: "Work folders", nameAr: "مجلدات العمل", count: 0, parent: null },
-  { id: "proj-policies", name: "Project policies", nameAr: "سياسات المشاريع", count: 0, parent: null },
-  { id: "contracts", name: "Contracts & agreements", nameAr: "العقود والاتفاقيات", count: 0, parent: null },
-  { id: "fin-reports", name: "Financial reports", nameAr: "التقارير المالية", count: 0, parent: null },
-  { id: "op-manuals", name: "Operating manuals", nameAr: "دلائل التشغيل", count: 0, parent: null },
+  { id: "work", name: "Work Folders", nameAr: "مجلدات العمل", count: 0, parent: null },
+  { id: "proj-policies", name: "Project Policies", nameAr: "سياسات المشاريع", count: 0, parent: null },
+  { id: "contracts", name: "Contracts & Agreements", nameAr: "العقود والاتفاقيات", count: 0, parent: null },
+  { id: "fin-reports", name: "Financial Reports", nameAr: "التقارير المالية", count: 0, parent: null },
+  { id: "op-manuals", name: "Operating Manuals", nameAr: "دلائل التشغيل", count: 0, parent: null },
   { id: "archive-2025", name: "Archive 2025", nameAr: "أرشيف 2025", count: 0, parent: null, readOnly: true },
   { id: "pp-delivery", name: "Delivery policies", nameAr: "سياسات التنفيذ", count: 0, parent: "proj-policies" },
   { id: "pp-quality", name: "Quality policies", nameAr: "سياسات الجودة", count: 0, parent: "proj-policies" },
@@ -76,7 +76,7 @@ export const isArchiveScheduled = (d: Doc, today: string = DOC_TODAY_ISO) => !!d
 
 const HAND_DOCS: Doc[] = [
   // Library root + the Figma folders (2028:3744)
-  { id: "d0", name: "Approved org structure", nameAr: "الهيكل التنظيمي المعتمد", folder: ROOT_FOLDER, type: "PDF", size: "820 KB", dept: "HR", deptAr: "الموارد البشرية", updated: "Yesterday", updatedAr: "أمس", ver: "v1", downloads: 64, owner: "People & Culture", ownerAr: "الموظفون والثقافة", ownerPerson: "Fawaz Al-Ghailan", ownerPersonAr: "فواز الغيلان" },
+  { id: "d0", name: "Approved Org Structure", nameAr: "الهيكل التنظيمي المعتمد", folder: ROOT_FOLDER, type: "PDF", size: "820 KB", dept: "HR", deptAr: "الموارد البشرية", updated: "Yesterday", updatedAr: "أمس", ver: "v1", downloads: 64, owner: "People & Culture", ownerAr: "الموظفون والثقافة", ownerPerson: "Fawaz Al-Ghailan", ownerPersonAr: "فواز الغيلان" },
   { id: "dw1", name: "Work folders index", nameAr: "فهرس مجلدات العمل", folder: "work", type: "XLSX", size: "64 KB", dept: "Corporate", deptAr: "المؤسسية", updated: "Aug 6, 2026", updatedAr: "٦ أغسطس ٢٠٢٦", ver: "v2", downloads: 41, owner: "Digital Workplace", ownerAr: "بيئة العمل الرقمية", ownerPerson: "Fawaz Al-Ghailan", ownerPersonAr: "فواز الغيلان" },
   { id: "dp1", name: "Project governance policy", nameAr: "سياسة حوكمة المشاريع", folder: "proj-policies", type: "PDF", size: "1.1 MB", dept: "PMO", deptAr: "مكتب المشاريع", updated: "Aug 4, 2026", updatedAr: "٤ أغسطس ٢٠٢٦", ver: "v3", downloads: 118, owner: "PMO", ownerAr: "مكتب المشاريع", ownerPerson: "Sara Al-Mutairi", ownerPersonAr: "سارة المطيري" },
   { id: "dp2", name: "Change request procedure", nameAr: "إجراء طلبات التغيير", folder: "proj-policies", type: "DOCX", size: "210 KB", dept: "PMO", deptAr: "مكتب المشاريع", updated: "Jul 22, 2026", updatedAr: "٢٢ يوليو ٢٠٢٦", ver: "v2", downloads: 73, owner: "PMO", ownerAr: "مكتب المشاريع", ownerPerson: "Sara Al-Mutairi", ownerPersonAr: "سارة المطيري" },

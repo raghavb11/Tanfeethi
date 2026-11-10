@@ -102,9 +102,9 @@ export default function RolesPage() {
       </div>
 
       {/* tabs */}
-      <div className="mb-5 inline-flex flex-wrap rounded-xl border border-border p-0.5">
+      <div className="mb-5 inline-flex flex-wrap rounded-[12px] border border-border p-0.5">
         {TABS.map((tb) => (
-          <button key={tb.id} onClick={() => setTab(tb.id)} aria-pressed={tab === tb.id} className={cn("inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors", tab === tb.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
+          <button key={tb.id} onClick={() => setTab(tb.id)} aria-pressed={tab === tb.id} className={cn("inline-flex items-center gap-1.5 rounded-[8px] px-3.5 py-1.5 text-sm font-medium transition-colors", tab === tb.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
             <tb.icon className="size-4" />{isAr ? tb.ar : tb.label}
             {tb.id === "groups" && <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", tab === tb.id ? "bg-primary-foreground/20" : "bg-muted")}>{groups.length}</span>}
           </button>
@@ -122,7 +122,7 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <Card className="rounded-xl overflow-hidden py-0">
+          <Card className="rounded-[12px] overflow-hidden py-0">
             {filteredUsers.map((u, i) => {
               const isOpen = expanded === u.id
               const viaGroup = rolesViaGroups(groups, u.id, isAr)
@@ -203,7 +203,7 @@ export default function RolesPage() {
             </div>
           </div>
 
-          <Card className="rounded-xl overflow-hidden py-0">
+          <Card className="rounded-[12px] overflow-hidden py-0">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
@@ -280,12 +280,12 @@ export default function RolesPage() {
       {/* ── BETA ── */}
       {tab === "beta" && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Card className="rounded-xl self-start p-5">
+          <Card className="rounded-[12px] self-start p-5">
             <div className="mb-1 flex items-center gap-2"><FlaskConical className="size-4" style={{ color: "#7c5cd6" }} /><h2 className="text-[15px] font-semibold">{t("Features in beta", "الميزات التجريبية")}</h2></div>
             <p className="mb-4 text-[12px] text-muted-foreground">{t("Separate beta pages visible only to Beta Testers — production pages are untouched.", "صفحات تجريبية منفصلة يراها المختبرون فقط — دون تأثير على الصفحات الحالية.")}</p>
             <div className="space-y-2.5">
               {BETA_FEATURES.map((f) => (
-                <div key={f.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--card-elevated)] px-3.5 py-3">
+                <div key={f.id} className="flex items-center justify-between gap-3 rounded-[12px] border border-border bg-[var(--card-elevated)] px-3.5 py-3">
                   <div className="min-w-0">
                     <div className="text-[13px] font-semibold">{isAr ? f.nameAr : f.name}</div>
                     <div className="text-[11px] text-muted-foreground/70">{isAr ? f.areaAr : f.area} · {t("in beta since", "تجريبية منذ")} {isAr ? f.sinceAr : f.since}</div>
@@ -296,7 +296,7 @@ export default function RolesPage() {
             </div>
           </Card>
 
-          <Card className="rounded-xl self-start p-5">
+          <Card className="rounded-[12px] self-start p-5">
             <div className="mb-1 flex items-center gap-2"><Users className="size-4 text-primary" /><h2 className="text-[15px] font-semibold">{t("Beta testers", "المختبرون التجريبيون")} <span className="text-muted-foreground">({betaCount})</span></h2></div>
             <p className="mb-4 text-[12px] text-muted-foreground">{t("Grant or remove the individual Beta Tester role. Members of a beta group are locked here.", "امنح دور المختبر الفردي أو أزله. أعضاء المجموعات التجريبية مقفلون هنا.")}</p>
             <div className="space-y-1.5">
@@ -305,7 +305,7 @@ export default function RolesPage() {
                 const direct = u.roles.includes("beta")
                 const inBeta = direct || !!viaGroup
                 return (
-                  <div key={u.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/40">
+                  <div key={u.id} className="flex items-center gap-3 rounded-[8px] px-2 py-1.5 transition-colors hover:bg-muted/40">
                     <Avatar className="size-8 shrink-0"><AvatarFallback className="bg-muted text-[10px] font-semibold">{u.initials}</AvatarFallback></Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[13px] font-medium">{isAr ? u.nameAr : u.name}</div>

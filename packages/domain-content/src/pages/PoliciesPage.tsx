@@ -52,7 +52,7 @@ export default function PoliciesPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-[52ch]">
           <div className="flex items-center gap-2">
-            <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary"><Scale className="size-4" /></span>
+            <span className="grid size-7 place-items-center rounded-[8px] bg-primary/12 text-primary"><Scale className="size-4" /></span>
             <span className="text-[13px] font-semibold text-primary">{t("Policy Library", "مكتبة السياسات")}</span>
           </div>
           <h1 className="mt-3 text-[18px] font-bold leading-7">
@@ -109,7 +109,7 @@ export default function PoliciesPage() {
 
       {/* category filter — revealed by the Filters button */}
       {showCats && (
-        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-muted/20 p-3">
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-[12px] border border-border bg-muted/20 p-3">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
             <ListFilter className="size-3.5" />{t("Category", "الفئة")}
           </span>
@@ -126,7 +126,7 @@ export default function PoliciesPage() {
       <div className="space-y-2.5">
         {list.map((p) => (
           <Card key={p.id} onClick={() => open(p.id)} className="flex cursor-pointer flex-row items-center gap-4 p-4 transition-colors hover:border-primary/50">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookText className="size-5" /></div>
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[8px] bg-primary/10 text-primary"><BookText className="size-5" /></div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="me-1 font-mono text-[11px] font-medium text-primary">{p.number}</span>
@@ -171,7 +171,7 @@ export default function PoliciesPage() {
           </Card>
         ))}
         {list.length === 0 && (
-          <div className="rounded-xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-[12px] border border-dashed border-border py-14 text-center">
             <BookText className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No policies match your search.", "لا توجد سياسات مطابقة لبحثك.")}</p>
           </div>
@@ -198,10 +198,10 @@ function Stat({ value, label, sub, icon: Icon }: {
   value: number; label: string; sub: string; icon: React.ComponentType<{ className?: string }>
 }) {
   return (
-    <Card className="rounded-xl p-5">
+    <Card className="rounded-[12px] p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="text-[30px] font-bold leading-none tabular-nums text-primary">{value}</div>
-        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" /></span>
+        <span className="grid size-9 shrink-0 place-items-center rounded-[12px] bg-primary/10 text-primary"><Icon className="size-4" /></span>
       </div>
       <div className="mt-3 text-[14px] font-semibold">{label}</div>
       <div className="text-[12px] text-muted-foreground">{sub}</div>

@@ -35,7 +35,7 @@ export default function EvaluationDetailPage() {
       <Panel>
         <CardHeading
           icon={SquareStar}
-          title={t(`Previous evaluations of “${person.name.en}”`, `سجل التقييمات السابقة للموظف ”${person.name.ar}“`)}
+          title={t(`Previous evaluations log for “${person.name.en}”`, `سجل التقييمات السابقة للموظف “${person.name.ar}”`)}
         />
         <ChecklistAnswers questions={tpl.questions} answers={answersFor(record)} readOnly />
       </Panel>

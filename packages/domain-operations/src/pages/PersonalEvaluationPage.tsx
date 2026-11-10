@@ -10,7 +10,7 @@ export default function PersonalEvaluationPage() {
   const Arrow = isAr ? ArrowDownLeft : ArrowDownRight
   const tiles = [
     { to: "/operations/personal/history", icon: SquareStar, label: t("View my previous evaluations", "عرض تقييماتي السابقة") },
-    { to: "/operations/personal/half-year", icon: SquareStar, label: t("Half-year evaluation", "التقييم النصف سنوي") },
+    { to: "/operations/personal/half-year", icon: SquareStar, label: t("Mid-year evaluation", "التقييم النصف سنوي") },
     { to: "/operations/personal/goals", icon: BadgeCheck, label: t("Goals list", "قائمة الأهداف") },
     // Not on the frame — the annual self-review (4126:14074) and the employee's
     // operational log (4215:13599) had no entry point in the design.

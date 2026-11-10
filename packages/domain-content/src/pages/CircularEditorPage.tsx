@@ -53,8 +53,8 @@ export default function CircularEditorPage() {
         <h1 className="mt-2 text-[18px] font-bold leading-7">{t("New circular", "تعميم جديد")}</h1>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-5">
-        <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2">
+      <Card className="rounded-[12px] space-y-5 p-5">
+        <div className="flex items-center justify-between rounded-[8px] bg-muted/60 px-3 py-2">
           <span className="text-sm text-muted-foreground">{t("Reference number", "الرقم المرجعي")}</span>
           <span className="font-mono text-sm font-medium">{ref}</span>
         </div>
@@ -80,19 +80,19 @@ export default function CircularEditorPage() {
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium">{t("Attachment", "المرفق")}</label>
-          <button onClick={() => setAttached((a) => !a)} className={cn("flex w-full items-center gap-2 rounded-lg border border-dashed px-3 py-3 text-sm transition-colors", attached ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>
+          <button onClick={() => setAttached((a) => !a)} className={cn("flex w-full items-center gap-2 rounded-[8px] border border-dashed px-3 py-3 text-sm transition-colors", attached ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>
             <Paperclip className="size-4" />
             {attached ? t("circular.pdf attached — click to remove", "تم إرفاق circular.pdf — انقر للإزالة") : t("Attach PDF / Word document", "إرفاق ملف PDF أو Word")}
           </button>
         </div>
 
-        <button onClick={() => setImportant((i) => !i)} className={cn("inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors", important ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/60")}>
+        <button onClick={() => setImportant((i) => !i)} className={cn("inline-flex items-center gap-2 rounded-[8px] border px-3 py-1.5 text-sm transition-colors", important ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/60")}>
           <AlertTriangle className={cn("size-4", important && "fill-primary/20")} />
           {important ? t("Marked important — pinned on home", "مهم — مثبّت على الرئيسية") : t("Mark as important", "وضع علامة مهم")}
         </button>
       </Card>
 
-      <div className="sticky bottom-0 mt-6 -mx-4 flex items-center justify-between gap-2 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border">
+      <div className="sticky bottom-0 mt-6 -mx-4 flex items-center justify-between gap-2 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-[12px] sm:border">
         <Badge variant="outline">{t("Audit trail recorded on publish", "يُسجّل في سجل التدقيق عند النشر")}</Badge>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/circulars")}>{t("Cancel", "إلغاء")}</Button>

@@ -38,7 +38,7 @@ export default function AnnouncementsPage() {
     const Icon = CAT_ICON[a.category] ?? Megaphone
     return (
       <Card key={a.id} onClick={() => navigate(`/announcements/${a.id}`)} className={cn("group flex cursor-pointer flex-row flex-wrap items-start gap-4 p-4 transition-colors hover:border-primary/50", a.important && "ring-1 ring-primary/25")}>
-        <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl", a.important ? "accent-chip" : "bg-muted text-muted-foreground")}>
+        <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-[12px]", a.important ? "accent-chip" : "bg-muted text-muted-foreground")}>
           <Icon className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -113,7 +113,7 @@ export default function AnnouncementsPage() {
       <div className="space-y-3">
         {rest.map((a) => Row(a))}
         {rest.length === 0 && (
-          <div className="rounded-xl border border-dashed border-border py-14 text-center">
+          <div className="rounded-[12px] border border-dashed border-border py-14 text-center">
             <Megaphone className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No announcements match this view.", "لا توجد إعلانات مطابقة لهذا العرض.")}</p>
           </div>

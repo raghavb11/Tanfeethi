@@ -72,7 +72,7 @@ export default function FaqCategoriesPage() {
       <p className="mb-6 text-sm text-muted-foreground">{t("Topics are the coloured tags you can attach to FAQs. Add, rename, recolour or remove them here.", "المواضيع هي الوسوم الملوّنة التي تُرفق بالأسئلة. أضِفها أو أعِد تسميتها أو غيّر لونها أو احذفها هنا.")}</p>
 
       {/* add new */}
-      <Card className="rounded-xl mb-6 p-5">
+      <Card className="rounded-[12px] mb-6 p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Add a topic", "إضافة موضوع")}</div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
@@ -127,7 +127,7 @@ export default function FaqCategoriesPage() {
           </Card>
         ))}
         {cats.length === 0 && (
-          <div className="rounded-xl border border-dashed border-border py-12 text-center">
+          <div className="rounded-[12px] border border-dashed border-border py-12 text-center">
             <Tags className="mx-auto size-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">{t("No topics yet — add your first one above.", "لا توجد مواضيع بعد — أضف أول موضوع أعلاه.")}</p>
           </div>

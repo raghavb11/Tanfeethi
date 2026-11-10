@@ -28,7 +28,7 @@ export default function MyChecklistEvaluationsPage() {
     <Page>
       <Panel>
         <CardHeading icon={SquareStar} title={t("View my previous evaluations", "عرض تقييماتي السابقة")} />
-        <EvaluationLog rows={rows} nameHeader={t("Direct manager name", "اسم المدير المباشر")} />
+        <EvaluationLog rows={rows} nameHeader={t("Name", "الأسم المدير المباشر")} />
       </Panel>
     </Page>
   )

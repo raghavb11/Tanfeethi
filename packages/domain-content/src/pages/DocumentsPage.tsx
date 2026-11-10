@@ -6,13 +6,13 @@ import { useNavigate } from "react-router-dom"
 import { useShell } from "@reach/shell-context"
 import { cn } from "@reach/shared-core"
 import {
-  BadgeCheck, BookMarked, ChevronDown, ChevronUp, Download, Eye, FolderOpen, History,
-  Lock, Megaphone, Newspaper, Plus, RotateCcw, Search, Trash2, Upload,
+  BadgeCheck, BookMarked, ChevronDown, ChevronUp, Download, Eye, FolderOpen, FolderUp,
+  Lock, Megaphone, Newspaper, Plus, RotateCcw, Search, Trash2,
 } from "lucide-react"
 
 import {
   ActionTile, CardHead, DeletePopup, DirChevron, downloadCsv, EmptyState, Pager, RadioDot, ResultBar, Skeleton, Tag, toneForCategory,
-  useFakeLoading, WButton, WCard, WPage, arNum,
+  useAsAdmin, useFakeLoading, WButton, WCard, WPage, arNum,
 } from "./_wijha"
 import { CreateContentModal, CreateFolderModal, FaqModal, ImageLightbox, type ContentKind } from "./knowledge/KnowledgeModals"
 import {
@@ -20,7 +20,7 @@ import {
 } from "../data/documents"
 import { castVote, deletePoll, type KPoll, pollPct, pollTotal, usePolls } from "../data/polls"
 import { deleteFaq, type Faq, useFaqs } from "../data/faqs"
-import { useAnnouncements } from "../data/announcements"
+import { annCatLabel, useAnnouncements } from "../data/announcements"
 import { newsCatLabel, type NewsItem } from "../data/news"
 import { hideSeedNews, usePublishedNews } from "../data/newsFeed"
 import { deleteArticle, getArticleById } from "../store"
@@ -42,7 +42,7 @@ type T = (en: string, ar: string) => string
 export default function DocumentsPage() {
   const { locale, role } = useShell()
   const isAr = locale === "ar"
-  const isAdmin = role === "admin"
+  const isAdmin = useAsAdmin(role)
   const t: T = (en, ar) => (isAr ? ar : en)
 
   const [createKind, setCreateKind] = React.useState<ContentKind | null>(null)
@@ -59,9 +59,9 @@ export default function DocumentsPage() {
         <aside className="flex min-w-0 flex-col gap-6">
           {isAdmin && (
             <button type="button" onClick={() => { setEditNews(null); setCreateKind("news") }}
-              className="panel flex h-16 w-full items-center gap-3 rounded-xl px-[18px] text-start transition-[filter] hover:brightness-110">
+              className="panel flex h-16 w-full items-center gap-3 rounded-[12px] px-[18px] text-start transition-[filter] hover:brightness-110">
               <Plus className="size-5 shrink-0" />
-              <span className="flex-1 text-[17px] font-medium">{t("Create a news item or survey", "إنشاء خبر أو استبيان جديد")}</span>
+              <span className="flex-1 text-[16px] font-medium">{t("Create a new news post or survey", "إنشاء خبر أو استبيان جديد")}</span>
               <DirChevron dir="forward" isAr={isAr} className="size-4 shrink-0 text-icon" />
             </button>
           )}
@@ -148,24 +148,23 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
 
   return (
     <WCard aria-label={t("Document management", "إدارة المستندات")}>
-      <CardHead icon={FolderOpen} title={t("Document management", "إدارة المستندات")}
+      <CardHead icon={FolderOpen} title={t("Document Management", "إدارة المستندات")}
         actions={isAdmin ? <>
-          <ActionTile label={t("Audit log", "سجل التدقيق")} className="size-7" onClick={() => navigate("/admin/audit?module=Documents")}><History className="!size-3.5" /></ActionTile>
           <WButton variant="outline" size="sm" className="min-w-[108px]" disabled={!!active?.readOnly}
             onClick={() => navigate(`/documents/new${folder && !active?.readOnly ? `?folder=${folder}` : ""}`)}>
-            <Upload />{t("Upload document", "رفع مستند")}
+            <FolderUp />{t("Upload Document", "رفع مستند")}
           </WButton>
           <WButton size="sm" className="min-w-[108px]" disabled={!!active?.readOnly} onClick={() => setNewFolder(true)}>
-            <Plus />{t("New folder", "مجلد جديد")}
+            <Plus />{t("New Folder", "مجلد جديد")}
           </WButton>
         </> : undefined} />
 
       {/* filters */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <label className="flex h-9 min-w-[12rem] flex-1 items-center gap-2 rounded-lg bg-background pe-2 ps-3">
+        <label className="flex h-9 min-w-[12rem] flex-1 items-center gap-2 rounded-[8px] bg-background pe-2 ps-3">
           <Search className="size-4 shrink-0 text-icon" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search", "البحث")} aria-label={t("Search documents", "البحث في المستندات")}
-            className="h-full w-full bg-transparent text-[12px] outline-none placeholder:text-foreground" />
+            className="h-full w-full bg-transparent text-[12px] outline-none placeholder:text-muted-foreground" />
         </label>
         <FilterSelect label={t("Type", "النوع")} value={typeFilter} onChange={(v) => setTypeFilter(v as Doc["type"] | "all")}
           options={[{ v: "all", l: t("Type", "النوع") }, ...TYPES.map((ty) => ({ v: ty, l: ty }))]} />
@@ -193,41 +192,41 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
 
       {/* folder tiles */}
       {loading ? (
-        <div className="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[62px]" />)}</div>
+        <div className="grid gap-4 pt-[27px] sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[62px]" />)}</div>
       ) : subfolders.length > 0 && (
-        <div className="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 pt-[27px] sm:grid-cols-2 lg:grid-cols-3">
           {subfolders.map((f) => (
             <button key={f.id} type="button" onClick={() => { setFolder(f.id); setQ("") }}
-              className="group flex h-[62px] items-center gap-3 rounded-lg bg-background p-[14px] text-start transition-shadow hover:ring-1 hover:ring-primary/30">
-              <span className={cn("grid size-[34px] shrink-0 place-items-center rounded-lg", f.readOnly ? "bg-secondary text-icon" : "accent-chip")}>
+              className="group flex h-[62px] items-center gap-3 rounded-[8px] bg-background p-[14px] text-start transition-shadow hover:ring-1 hover:ring-primary/30">
+              <span className={cn("grid size-[34px] shrink-0 place-items-center rounded-[8px]", f.readOnly ? "bg-secondary text-icon" : "accent-chip")}>
                 <FolderOpen className="size-4" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
-                <span className="truncate text-[13px] font-medium leading-4">{name(f)}</span>
+                <span className="truncate text-[13px] leading-4">{name(f)}</span>
                 <span className="flex items-center gap-1 truncate text-[11px] leading-[13px] text-muted-foreground">
                   {f.readOnly ? <><Lock className="size-3" />{t("Read-only", "للقراءة فقط")}</> : folderMeta(childrenOf(f.id).length, filesIn(f.id).length, isAr)}
                 </span>
               </span>
-              <DirChevron dir="forward" isAr={isAr} className="size-3 shrink-0 text-icon" />
+              <DirChevron dir="forward" isAr={isAr} className="size-4 shrink-0 text-foreground/80" />
             </button>
           ))}
         </div>
       )}
 
       {/* documents in this folder */}
-      <div className="flex flex-col gap-3 pt-6">
-        <h3 className="text-[14px] font-medium">
+      <div className="flex flex-col gap-3 pt-[34px]">
+        <h3 className="text-[14px]">
           {needle ? t("Search results", "نتائج البحث") : inArchive ? t("Archived documents", "المستندات المؤرشفة") : t("Documents in this folder", "مستندات هذا المجلد")}
-          {!loading && <span className="ms-2 text-[12px] font-normal text-muted-foreground">({arNum(rows.length, isAr)})</span>}
         </h3>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] border-t border-secondary text-[13px]">
+          <table className="w-full min-w-[640px] table-fixed border-t border-secondary text-[13px]">
+            <colgroup><col className="w-[45%]" /><col className="w-[15%]" /><col className="w-[10.3%]" /><col /><col className="w-[140px]" /></colgroup>
             <thead>
               <tr className="h-9 border-b border-secondary text-[12px] text-muted-foreground">
-                <th className="px-1 text-start font-normal">{t("File name", "اسم الملف")}</th>
+                <th className="pe-1 ps-[70px] text-start font-normal">{t("File Name", "أسم الملف")}</th>
                 <th className="px-1 text-start font-normal">{t("Owner", "المالك")}</th>
-                <th className="px-1 text-start font-normal">{t("File size", "حجم الملف")}</th>
-                <th className="px-1 text-start font-normal">{t("Upload date", "تاريخ الرفع")}</th>
+                <th className="px-1 text-start font-normal">{t("File Size", "حجم الملف")}</th>
+                <th className="px-1 text-start font-normal">{t("Upload Date", "تاريخ الرفع")}</th>
                 <th className="w-[140px] px-1"><span className="sr-only">{t("Actions", "الإجراءات")}</span></th>
               </tr>
             </thead>
@@ -237,8 +236,8 @@ function DocumentsCard({ isAr, isAdmin, t }: CardProps) {
               )) : shown.map((d) => (
                 <tr key={d.id} className="h-[58px] border-b border-secondary/60 last:border-0">
                   <td className="px-1 py-3">
-                    <button type="button" onClick={() => navigate(`/documents/${d.id}`)} className="flex min-w-0 items-center gap-3 text-start hover:text-primary">
-                      <span className={cn("grid h-[34px] w-[34px] shrink-0 place-items-center rounded-lg text-[10px] font-bold", TYPE_STYLE[d.type])}>{d.type}</span>
+                    <button type="button" onClick={() => navigate(`/documents/${d.id}`)} className="flex min-w-0 items-center gap-8 text-start hover:text-primary">
+                      <span className={cn("grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[8px] text-[10px] font-bold", TYPE_STYLE[d.type])}>{d.type}</span>
                       <span className="truncate">{isAr ? d.nameAr : d.name}</span>
                       {d.restricted && <Lock className="size-3.5 shrink-0 text-icon" aria-label={t("Restricted", "مقيّد")} />}
                     </button>
@@ -285,7 +284,7 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
   return (
     <span className="relative block w-[120px] shrink-0">
       <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full appearance-none truncate rounded-lg bg-card-elevated pe-8 ps-3 text-[13px] font-medium outline-none focus-visible:ring-1 focus-visible:ring-primary/60">
+        className="h-9 w-full appearance-none truncate rounded-[8px] bg-card-elevated pe-8 ps-3 text-[13px] outline-none focus-visible:ring-1 focus-visible:ring-primary/60">
         {options.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
       <ChevronDown className="pointer-events-none absolute end-2 top-1/2 size-4 -translate-y-1/2 text-icon" />
@@ -296,7 +295,6 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
 /* ── FAQ ──────────────────────────────────────────────────────────────────── */
 
 function FaqCard({ isAr, isAdmin, t }: CardProps) {
-  const navigate = useNavigate()
   const faqs = useFaqs().filter((f) => isAdmin || f.status !== "Draft")
   const loading = useFakeLoading()
   const [openId, setOpenId] = React.useState<string | null>("fk1")
@@ -307,18 +305,18 @@ function FaqCard({ isAr, isAdmin, t }: CardProps) {
   return (
     <WCard className="flex flex-col gap-[18px]">
       <CardHead icon={BookMarked} title={t("FAQs", "الأسئلة الشائعة")}
-        actions={isAdmin ? <WButton size="sm" className="min-w-[108px]" onClick={() => setModal({ edit: null })}><Plus />{t("Add question", "إضافة سؤال")}</WButton> : undefined} />
+        actions={isAdmin ? <WButton size="sm" className="min-w-[108px]" onClick={() => setModal({ edit: null })}><Plus />{t("Add Question", "إضافة سؤال")}</WButton> : undefined} />
       {loading ? (
         <div className="flex flex-col gap-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10" />)}</div>
       ) : list.length === 0 ? (
         <EmptyState icon={BookMarked} title={t("No questions yet", "لا توجد أسئلة بعد")} />
       ) : (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           {list.map((f) => {
             const isOpen = openId === f.id
             const link = f.relatedLinks[0]
             return isOpen ? (
-              <div key={f.id} className="flex flex-col gap-2.5 rounded-lg border border-primary/45 bg-background px-4 py-3.5">
+              <div key={f.id} className="flex flex-col gap-2.5 rounded-[8px] border border-primary/45 bg-background px-4 pb-3.5 pt-3">
                 <button type="button" onClick={() => setOpenId(null)} aria-expanded="true" className="flex items-center gap-3 text-start">
                   <span className="flex-1 text-[12px] font-medium leading-[14px]">{isAr ? f.qAr : f.q}</span>
                   <ChevronUp className="size-4 shrink-0 text-icon" />
@@ -329,7 +327,7 @@ function FaqCard({ isAr, isAdmin, t }: CardProps) {
                   {link && <>{" "}<a href={link.url.startsWith("/") ? `#${link.url}` : link.url} className="font-bold text-primary underline underline-offset-2">{t("Link", "رابط")}</a></>}
                 </p>
                 {isAdmin && (
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-start gap-2">
                     <WButton variant="outline" className="w-[84px]" onClick={() => setModal({ edit: f })}>{t("Edit", "تعديل")}</WButton>
                     <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(f)}><Trash2 />{t("Delete", "حذف")}</WButton>
                   </div>
@@ -337,18 +335,13 @@ function FaqCard({ isAr, isAdmin, t }: CardProps) {
               </div>
             ) : (
               <button key={f.id} type="button" onClick={() => setOpenId(f.id)} aria-expanded="false"
-                className="flex items-center gap-3 border-b border-secondary px-4 pb-[18px] pt-3.5 text-start last:border-0 hover:text-primary">
+                className="flex items-center gap-3 border-b border-secondary px-4 pb-4 pt-[17px] text-start last:border-0 last:pb-0 hover:text-primary">
                 <span className="flex-1 text-[12px] leading-[14px]">{isAr ? f.qAr : f.q}</span>
                 <ChevronDown className="size-4 shrink-0 text-icon" />
               </button>
             )
           })}
         </div>
-      )}
-      {faqs.length > list.length && (
-        <button type="button" onClick={() => navigate("/faqs")} className="self-start text-[12px] font-semibold text-primary hover:underline">
-          {t(`View all ${faqs.length} questions`, `عرض جميع الأسئلة (${arNum(faqs.length, isAr)})`)}
-        </button>
       )}
       <FaqModal open={!!modal} onClose={() => setModal(null)} isAr={isAr} edit={modal?.edit} />
       <DeletePopup open={!!confirm} onClose={() => setConfirm(null)} isAr={isAr}
@@ -374,10 +367,10 @@ function PollsCard({ isAr, isAdmin, t }: CardProps) {
   React.useEffect(() => { setPick(null) }, [pid])
 
   return (
-    <WCard className="px-4 sm:px-4">
-      <CardHead icon={BadgeCheck} title={t("Surveys & polls", "الاستبيانات والتصويت")}
+    <WCard className="px-4 pb-6 sm:px-4">
+      <CardHead icon={BadgeCheck} title={t("Surveys & Polls", "الاستبيانات والتصويت")}
         actions={polls.length > 1 ? <Pager isAr={isAr} onPrev={() => setI(Math.max(0, idx - 1))} onNext={() => setI(Math.min(polls.length - 1, idx + 1))} prevDisabled={idx === 0} nextDisabled={idx >= polls.length - 1} /> : undefined} />
-      <div className="mt-4">
+      <div className="mt-[18px]">
         {loading ? <Skeleton className="h-[250px]" /> : !p ? (
           <EmptyState icon={BadgeCheck} title={t("No open surveys or polls", "لا توجد استبيانات أو تصويتات حالية")} />
         ) : (
@@ -407,23 +400,23 @@ function PollBody({ p, isAr, isAdmin, t, pick, setPick, onDelete }: {
     [t("Total", "الإجمالي"), total, 100],
   ])
   return (
-    <div className="flex flex-col gap-4 rounded-lg bg-background p-4">
+    <div className="flex flex-col gap-3 rounded-[8px] bg-background p-4">
       <div className="flex items-center gap-3">
-        <Tag>{p.kind === "survey" ? t("Surveys", "الاستبيانات") : t("Poll", "تصويت")}</Tag>
+        <Tag>{p.kind === "survey" ? t("Surveys", "الاستبيانات") : t("Vote", "تصويت")}</Tag>
         {p.kind === "poll" && <span className="text-[11px] text-muted-foreground">{isAr ? p.whenAr : p.when}</span>}
       </div>
-      <h3 className="text-[15px] font-medium leading-6">{isAr ? p.questionAr : p.question}</h3>
+      <h3 className="text-[14px] font-medium leading-[22px]">{isAr ? p.questionAr : p.question}</h3>
       {voting ? (
         <>
           <div role="radiogroup" aria-label={isAr ? p.questionAr : p.question} className="flex flex-col gap-3">
             {p.options.map((o) => (
               <button key={o.id} type="button" role="radio" aria-checked={pick === o.id} onClick={() => setPick(o.id)}
-                className="flex items-center gap-2 text-start text-[13px]">
+                className="flex items-center gap-2 text-start text-[13px] leading-4">
                 <RadioDot on={pick === o.id} />{isAr ? o.labelAr : o.label}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground">{t("Choose an answer, then press “Vote” to see the results", "اختر إجابة ثم اضغط «تصويت» لعرض النتائج")}</p>
+          <p className="-mb-0.5 text-[11px] leading-[14px] text-muted-foreground">{t("Choose an answer, then tap “Vote” to see results", "اختر إجابة ثم اضغط «تصويت» لعرض النتائج")}</p>
         </>
       ) : (
         <div className="flex flex-col gap-4">
@@ -432,11 +425,11 @@ function PollBody({ p, isAr, isAdmin, t, pick, setPick, onDelete }: {
           ))}
         </div>
       )}
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <span className="text-[11px] text-muted-foreground">{arNum(total, isAr)} {t("participations", "مشاركة")}</span>
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-[11px] text-muted-foreground">{arNum(total, isAr)} {t("responses", "مشاركة")}</span>
+        <div className="flex items-center gap-2">
           {voting ? (
-            <WButton className="w-[130px]" disabled={!pick} onClick={() => { if (pick) { castVote(p.id, pick); setPick(null) } }}>{t("Vote", "تصويت")}</WButton>
+            <WButton className="w-[86px]" disabled={!pick} onClick={() => { if (pick) { castVote(p.id, pick); setPick(null) } }}>{t("Vote", "تصويت")}</WButton>
           ) : isAdmin ? (
             <WButton className="px-6" onClick={exportXlsx}><Download />{t("Export to Excel", "تصدير إلى إكسل")}</WButton>
           ) : null}
@@ -455,18 +448,18 @@ function StoryBody({ img, tag, tagTone, meta, title, excerpt, onImage, isAr }: {
   return (
     <div className="flex flex-col gap-3.5 pt-3.5">
       {img ? (
-        <button type="button" onClick={() => onImage(img)} aria-label={isAr ? "عرض الصورة" : "View image"} className="block overflow-hidden rounded-lg">
+        <button type="button" onClick={() => onImage(img)} aria-label={isAr ? "عرض الصورة" : "View image"} className="block overflow-hidden rounded-[8px]">
           <img src={img} alt="" loading="lazy" className="aspect-[358/201] w-full object-cover transition-transform duration-300 hover:scale-[1.02]" />
         </button>
       ) : (
-        <div className="grid aspect-[358/201] w-full place-items-center rounded-lg bg-secondary text-icon"><Newspaper className="size-8" /></div>
+        <div className="grid aspect-[358/201] w-full place-items-center rounded-[8px] bg-secondary text-icon"><Newspaper className="size-8" /></div>
       )}
       <div className="flex items-center gap-2.5">
         <Tag tone={tagTone}>{tag}</Tag>
         <span className="text-[11px] text-muted-foreground">{meta}</span>
       </div>
       <h3 className="text-[13px] font-medium leading-[22px]">{title}</h3>
-      <p className="line-clamp-3 min-h-[60px] text-[11.3px] leading-5">{excerpt}</p>
+      <p className="line-clamp-3 min-h-[60px] text-[11.3px] leading-5 text-muted-foreground">{excerpt}</p>
     </div>
   )
 }
@@ -483,16 +476,16 @@ function AnnouncementsCard({ isAr, t, onImage }: { isAr: boolean; t: T; onImage:
   const a = items[idx]
   return (
     <WCard className="px-[18px] sm:px-[18px]">
-      <CardHead icon={Megaphone} title={t("Announcements", "التعاميم")}
+      <CardHead icon={Megaphone} title={t("Circulars", "التعاميم")}
         actions={items.length > 1 ? <Pager isAr={isAr} onPrev={() => setI(Math.max(0, idx - 1))} onNext={() => setI(Math.min(items.length - 1, idx + 1))} prevDisabled={idx === 0} nextDisabled={idx >= items.length - 1} /> : undefined} />
       {loading ? <Skeleton className="mt-3.5 h-[360px]" /> : !a ? (
         <EmptyState className="mt-4" icon={Megaphone} title={t("No announcements", "لا توجد تعاميم")} />
       ) : (
         <>
-          <StoryBody img={a.img} tag={isAr ? a.categoryAr : a.category} tagTone={toneForCategory(a.category)}
+          <StoryBody img={a.img} tag={annCatLabel(a, isAr)} tagTone={toneForCategory(a.category)}
             meta={readMeta(isAr ? a.dateAr : a.date, a.readMin, isAr)} title={isAr ? a.titleAr : a.title} excerpt={isAr ? a.bodyAr : a.body} onImage={onImage} isAr={isAr} />
-          <div className="mt-4 flex gap-2">
-            <WButton className="w-32" onClick={() => navigate(`/announcements/${a.id}`)}>{t("View details", "عرض التفاصيل")}</WButton>
+          <div className="mt-4 flex justify-end gap-2">
+            <WButton className="w-32" onClick={() => navigate(`/announcements/${a.id}`)}>{t("View Details", "عرض التفاصيل")}</WButton>
           </div>
         </>
       )}
@@ -524,8 +517,8 @@ function NewsCard({ isAr, isAdmin, t, onImage, onEdit }: CardProps & { onImage: 
           <StoryBody img={n.img || undefined} tag={newsCatLabel(n.category, isAr)} tagTone={toneForCategory(n.category)}
             meta={readMeta(isAr ? n.dateAr ?? n.date : n.date, n.readMin, isAr)} title={isAr ? n.titleAr : n.title}
             excerpt={isAr ? n.excerptAr ?? n.excerpt : n.excerpt} onImage={onImage} isAr={isAr} />
-          <div className="mt-4 flex flex-wrap gap-2">
-            <WButton className="w-32" onClick={() => navigate(`/news/${n.id}`)}>{t("View details", "عرض التفاصيل")}</WButton>
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <WButton className="w-32" onClick={() => navigate(`/news/${n.id}`)}>{t("View Details", "عرض التفاصيل")}</WButton>
             {isAdmin && <>
               <WButton variant="outline" className="w-[84px]" onClick={() => onEdit(n)}>{t("Edit", "تعديل")}</WButton>
               <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(n)}><Trash2 />{t("Delete", "حذف")}</WButton>

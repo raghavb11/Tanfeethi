@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@reach/shared-ui"
 import { useShell } from "@reach/shell-context"
 import { MessageSquare, Newspaper, Trash2 } from "lucide-react"
 
-import { CardHead, DeletePopup, EmptyState, toneForCategory, WButton, WCard, WPage, WTextarea, arNum } from "./_wijha"
+import { CardHead, DeletePopup, EmptyState, toneForCategory, useAsAdmin, WButton, WCard, WPage, WTextarea, arNum } from "./_wijha"
 import { StoryDetail } from "./knowledge/StoryDetail"
 import { CreateContentModal } from "./knowledge/KnowledgeModals"
 import { newsCatLabel } from "../data/news"
@@ -19,7 +19,7 @@ import { CURRENT_USER } from "../data/currentUser"
 export default function ArticleReaderPage() {
   const { locale, role } = useShell()
   const isAr = locale === "ar"
-  const isAdmin = role === "admin"
+  const isAdmin = useAsAdmin(role)
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
   const { id = "" } = useParams()

@@ -207,11 +207,11 @@ export default function HolidayCalendarPage() {
       {/* year switcher — the year either side, and a jump for anything further */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center rounded-xl border border-border p-0.5">
+          <div className="inline-flex items-center rounded-[12px] border border-border p-0.5">
             <button
               onClick={() => setYear(year - 1)}
               aria-label={t("Earlier year", "سنة أسبق")}
-              className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              className="grid size-8 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
             >
               <ChevronLeft className={cn("size-4", isAr && "rotate-180")} />
             </button>
@@ -220,7 +220,7 @@ export default function HolidayCalendarPage() {
               <button
                 key={y} onClick={() => setYear(y)} aria-pressed={y === year}
                 title={defined(y) ? undefined : t("Not defined yet", "غير معرّفة بعد")}
-                className={cn("rounded-lg px-3.5 py-1.5 text-sm font-medium tabular-nums transition-colors",
+                className={cn("rounded-[8px] px-3.5 py-1.5 text-sm font-medium tabular-nums transition-colors",
                   y === year ? "bg-primary text-primary-foreground"
                              : defined(y) ? "text-muted-foreground hover:text-foreground"
                                           : "text-muted-foreground/45 hover:text-muted-foreground")}
@@ -232,14 +232,14 @@ export default function HolidayCalendarPage() {
             <button
               onClick={() => setYear(year + 1)}
               aria-label={t("Later year", "سنة لاحقة")}
-              className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              className="grid size-8 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
             >
               <ChevronRight className={cn("size-4", isAr && "rotate-180")} />
             </button>
           </div>
 
           {/* jump straight to a year that already has holidays */}
-          <label className="inline-flex items-center gap-1.5 rounded-xl border border-border px-2.5 py-1.5">
+          <label className="inline-flex items-center gap-1.5 rounded-[12px] border border-border px-2.5 py-1.5">
             <CalendarSearch className="size-4 shrink-0 text-muted-foreground" />
             <span className="sr-only">{t("Go to year", "الانتقال إلى سنة")}</span>
             <select
@@ -270,7 +270,7 @@ export default function HolidayCalendarPage() {
       </div>
 
       {note && (
-        <Card className="rounded-xl flex items-start gap-2.5 border-primary/30 bg-primary/[0.04] p-3.5">
+        <Card className="rounded-[12px] flex items-start gap-2.5 border-primary/30 bg-primary/[0.04] p-3.5">
           <Info className="mt-0.5 size-4 shrink-0 text-primary" />
           <p className="flex-1 text-[12.5px]">{note}</p>
           <button onClick={() => setNote(null)} className="text-[12px] text-muted-foreground hover:text-foreground">
@@ -281,7 +281,7 @@ export default function HolidayCalendarPage() {
 
       {/* ── bulk upload ── */}
       {showImport && (
-        <Card className="rounded-xl p-4">
+        <Card className="rounded-[12px] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[13.5px] font-semibold">{t("Bulk upload holidays", "رفع الإجازات جماعيًا")}</p>
@@ -329,7 +329,7 @@ export default function HolidayCalendarPage() {
                 )}
               </div>
 
-              <div className="max-h-64 overflow-y-auto rounded-xl border border-border/60">
+              <div className="max-h-64 overflow-y-auto rounded-[12px] border border-border/60">
                 <div className="divide-y divide-border/40">
                   {parsed.map((r) => (
                     <div key={r.line} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-[12px]">
@@ -373,7 +373,7 @@ export default function HolidayCalendarPage() {
       )}
 
       {/* the year */}
-      <Card className="rounded-xl overflow-hidden p-0">
+      <Card className="rounded-[12px] overflow-hidden p-0">
         <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
           <CalendarDays className="size-4 text-primary" />
           <span className="text-[13px] font-semibold tabular-nums">{year}</span>
@@ -434,7 +434,7 @@ export default function HolidayCalendarPage() {
                 </div>
 
                 {confirmDelete === h.id && (
-                  <div className="mt-3 rounded-xl border border-error/30 bg-error/[0.05] p-3">
+                  <div className="mt-3 rounded-[12px] border border-error/30 bg-error/[0.05] p-3">
                     <p className="text-[12.5px] font-semibold">
                       {t(`Remove ${h.name} from ${year}?`, `إزالة ${h.nameAr} من ${year}؟`)}
                     </p>

@@ -44,7 +44,7 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
   return (
     <div ref={ref} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="flex h-11 w-full items-center gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
+        className="flex h-11 w-full items-center gap-2 rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
         {selected ? (
           <>
             <Avatar className="size-6 shrink-0"><AvatarFallback className="bg-primary/12 text-[9px] font-bold text-primary">{selected.initials}</AvatarFallback></Avatar>
@@ -63,7 +63,7 @@ export function PersonPicker({ value, onChange, people, isAr, placeholder, searc
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
@@ -121,13 +121,13 @@ export function SearchSelect({ value, onChange, options, placeholder, searchPlac
   return (
     <div ref={ref} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
         <span className={cn("truncate", !value && "text-muted-foreground")}>{value || placeholder}</span>
         <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
@@ -191,7 +191,7 @@ export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, 
   return (
     <div ref={ref} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none transition-colors focus:border-primary/60">
         <span className={cn("truncate", value.length === 0 && "text-muted-foreground")}>
           {value.length === 0 ? placeholder : `${value.length} ${isAr ? "محدّد" : "selected"}`}
         </span>
@@ -199,7 +199,7 @@ export function PeopleMultiPicker({ value, onChange, people, isAr, placeholder, 
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder}
@@ -347,14 +347,14 @@ export function StatCard({
   sub?: string
 }) {
   return (
-    <Card className="rounded-xl gap-0  px-5 py-4">
+    <Card className="rounded-[12px] gap-0  px-5 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[24px] font-bold leading-none tabular-nums">{value}</div>
           <div className="mt-2 text-[13px] font-medium">{label}</div>
           {sub && <div className="mt-0.5 text-[11px] text-muted-foreground">{sub}</div>}
         </div>
-        <div className="accent-chip grid size-[34px] shrink-0 place-items-center rounded-lg">
+        <div className="accent-chip grid size-[34px] shrink-0 place-items-center rounded-[8px]">
           <Icon className="size-4" />
         </div>
       </div>
@@ -380,7 +380,7 @@ export function Chips({
           onClick={() => onSelect(it)}
           aria-pressed={active === it}
           className={cn(
-            "h-8 rounded-lg px-3 text-[13px] font-medium transition-colors",
+            "h-8 rounded-[8px] px-3 text-[13px] font-medium transition-colors",
             active === it ? "accent-chip ring-1 ring-primary/40" : "bg-secondary text-foreground hover:brightness-110",
           )}
         >

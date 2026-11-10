@@ -80,9 +80,9 @@ export default function EventDetailPage() {
       </div>
 
       {/* hero */}
-      <div className="relative mb-6 h-56 overflow-hidden rounded-xl border border-border bg-muted sm:h-72">
+      <div className="relative mb-6 h-56 overflow-hidden rounded-[12px] border border-border bg-muted sm:h-72">
         <img src={e.img} alt="" className={cn("h-full w-full object-cover", e.past && "grayscale")} onError={(ev) => { (ev.currentTarget as HTMLImageElement).style.display = "none" }} />
-        <div className="absolute bottom-4 start-4 flex size-16 flex-col items-center justify-center rounded-xl bg-[var(--card-elevated)] shadow-md ring-1 ring-border/60">
+        <div className="absolute bottom-4 start-4 flex size-16 flex-col items-center justify-center rounded-[12px] bg-[var(--card-elevated)] shadow-md ring-1 ring-border/60">
           <span className="text-2xl font-semibold leading-none tabular-nums text-foreground">{e.day}</span>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">{e.mon}</span>
         </div>
@@ -126,7 +126,7 @@ export default function EventDetailPage() {
         {/* sidebar */}
         <aside>
           <div className="@4xl:sticky @4xl:top-20 space-y-4">
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Details", "التفاصيل")}</div>
               <dl className="space-y-3 text-sm">
                 {detail.map(([Icon, l, v], i) => (
@@ -139,7 +139,7 @@ export default function EventDetailPage() {
               </dl>
             </Card>
 
-            <Card className="rounded-xl p-5">
+            <Card className="rounded-[12px] p-5">
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="inline-flex items-center gap-1.5 font-medium"><Ticket className="size-4 text-primary" />{t("Registration", "التسجيل")}</span>
                 <span className="text-muted-foreground">{e.attendees} / {e.capacity}</span>

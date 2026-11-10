@@ -47,7 +47,7 @@ export default function EmployeeEvaluationsPage() {
       <Panel>
         <CardHeading
           icon={SquareStar}
-          title={t(`Previous evaluations of “${person.name.en}”`, `سجل التقييمات السابقة للموظف ”${person.name.ar}“`)}
+          title={t(`Previous evaluations log for “${person.name.en}”`, `سجل التقييمات السابقة للموظف “${person.name.ar}”`)}
         />
         <EvaluationLog rows={rows} nameHeader={t("Evaluated by", "تقييم بواسطة")} showPeopleFilters />
       </Panel>

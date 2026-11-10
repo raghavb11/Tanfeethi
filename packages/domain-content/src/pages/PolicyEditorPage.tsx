@@ -50,12 +50,12 @@ function SearchSelect({ value, onChange, options, placeholder, searchPlaceholder
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none focus:border-primary/60">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex h-11 w-full items-center justify-between gap-2 rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-start text-sm outline-none focus:border-primary/60">
         <span className={cn("truncate", !selected && "text-muted-foreground")}>{selected ? selected.label : placeholder}</span>
         <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-[8px] border border-border bg-card shadow-lg">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder} className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
@@ -175,7 +175,7 @@ export default function PolicyEditorPage() {
       </div>
 
       <div className="space-y-5">
-        <Card className="rounded-xl space-y-5 p-6 sm:p-8">
+        <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
           <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
             <div>{label(t("Title", "العنوان"))}<Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Policy title", "عنوان السياسة")} autoFocus className="h-11 text-base" /></div>
             <div>{label(<span className="inline-flex items-center gap-1.5"><Hash className="size-3.5 text-primary" />{t("Policy number", "رقم السياسة")}</span>)}<Input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="TF-POL-###" className="h-11 font-mono text-sm" /></div>
@@ -237,7 +237,7 @@ export default function PolicyEditorPage() {
               <div>
                 <span className="mb-1 block text-xs text-muted-foreground">{t("Applicable till", "ساري حتى")}</span>
                 {indefinite ? (
-                  <div className="flex h-11 items-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/30 px-3 text-sm text-muted-foreground"><InfinityIcon className="size-4 text-primary" />{t("Indefinitely — no end date", "بلا نهاية — دون تاريخ انتهاء")}</div>
+                  <div className="flex h-11 items-center gap-1.5 rounded-[8px] border border-dashed border-border bg-muted/30 px-3 text-sm text-muted-foreground"><InfinityIcon className="size-4 text-primary" />{t("Indefinitely — no end date", "بلا نهاية — دون تاريخ انتهاء")}</div>
                 ) : (
                   <Input type="date" value={applicableTill} min={applicableFrom} onChange={(e) => setApplicableTill(e.target.value)} className="h-11" />
                 )}
@@ -267,11 +267,11 @@ export default function PolicyEditorPage() {
               emptyLabel={t("No matching policies", "لا توجد سياسات مطابقة")}
             />
             {supersedeTarget && (
-              <div className="mt-3 rounded-xl border border-border bg-muted/30 p-3 text-sm">
+              <div className="mt-3 rounded-[12px] border border-border bg-muted/30 p-3 text-sm">
                 <p className="mb-2 text-muted-foreground">{t("What happens to", "ماذا يحدث لـ")} <span className="font-medium text-foreground">{supersedeTarget.number} {isAr ? supersedeTarget.titleAr : supersedeTarget.title}</span>?</p>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setSunsetOld(false)} className={cn("rounded-lg border px-3 py-1.5 text-sm transition-colors", !sunsetOld ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>{t("Remains effective", "يبقى ساريًا")}</button>
-                  <button type="button" onClick={() => setSunsetOld(true)} className={cn("rounded-lg border px-3 py-1.5 text-sm transition-colors", sunsetOld ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>{t("Sunset (no longer effective)", "إيقاف (لم يعد ساريًا)")}</button>
+                  <button type="button" onClick={() => setSunsetOld(false)} className={cn("rounded-[8px] border px-3 py-1.5 text-sm transition-colors", !sunsetOld ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>{t("Remains effective", "يبقى ساريًا")}</button>
+                  <button type="button" onClick={() => setSunsetOld(true)} className={cn("rounded-[8px] border px-3 py-1.5 text-sm transition-colors", sunsetOld ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/60")}>{t("Sunset (no longer effective)", "إيقاف (لم يعد ساريًا)")}</button>
                 </div>
               </div>
             )}
@@ -285,7 +285,7 @@ export default function PolicyEditorPage() {
         </div>
 
         {/* attached documents (visible to users) */}
-        <Card className="rounded-xl p-6 sm:p-8">
+        <Card className="rounded-[12px] p-6 sm:p-8">
           {label(t("Attached documents (visible to employees)", "المستندات المرفقة (مرئية للموظفين)"))}
           <p className="-mt-1 mb-3 text-xs text-muted-foreground">{t("Add supporting files — employees will see and can open these on the policy page. Upload a new file, or attach one from the document library.", "أضف ملفات داعمة — سيراها الموظفون ويمكنهم فتحها في صفحة السياسة. ارفع ملفًا جديدًا أو أرفق ملفًا من مكتبة المستندات.")}</p>
 
@@ -293,7 +293,7 @@ export default function PolicyEditorPage() {
             {relatedDocs.map((did) => {
               const d = docs.find((x) => x.id === did)
               return (
-                <div key={did} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
+                <div key={did} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
                   <span className={cn("flex size-7 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white", d ? TYPE_STYLE[d.type] : "bg-muted-foreground")}>{d?.type ?? "?"}</span>
                   <span className="min-w-0 flex-1 truncate">{d ? (isAr ? d.nameAr : d.name) : t("(document removed)", "(مستند محذوف)")}</span>
                   {d && <span className="shrink-0 text-xs text-muted-foreground">{d.size}</span>}
@@ -306,18 +306,18 @@ export default function PolicyEditorPage() {
           <input ref={fileRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" className="hidden" onChange={(e) => onUpload(e.target.files)} />
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {/* option 1 — upload */}
-            <button type="button" onClick={() => fileRef.current?.click()} className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-[var(--card-elevated)] px-4 py-5 text-center transition-colors hover:border-primary/60 hover:bg-primary/[0.03]">
+            <button type="button" onClick={() => fileRef.current?.click()} className="flex flex-col items-center justify-center gap-1.5 rounded-[12px] border border-dashed border-border bg-[var(--card-elevated)] px-4 py-5 text-center transition-colors hover:border-primary/60 hover:bg-primary/[0.03]">
               <Upload className="size-5 text-primary" />
               <span className="text-sm font-medium">{t("Upload a file", "رفع ملف")}</span>
               <span className="text-xs text-muted-foreground">{t("PDF, Word or Excel", "PDF أو Word أو Excel")}</span>
             </button>
 
             {/* option 2 — attach from library */}
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-[var(--card-elevated)] px-4 py-5 text-center">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-[12px] border border-dashed border-border bg-[var(--card-elevated)] px-4 py-5 text-center">
               <Library className="size-5 text-primary" />
               <span className="text-sm font-medium">{t("Attach from library", "إرفاق من المكتبة")}</span>
               {availableDocs.length > 0 ? (
-                <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="mt-1 h-9 w-full max-w-[16rem] rounded-lg border border-border bg-card px-2 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
+                <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="mt-1 h-9 w-full max-w-[16rem] rounded-[8px] border border-border bg-card px-2 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
                   <option value="">{t("Choose a document…", "اختر مستندًا…")}</option>
                   {availableDocs.map((d) => <option key={d.id} value={d.id}>{isAr ? d.nameAr : d.name} · {d.type}</option>)}
                 </select>

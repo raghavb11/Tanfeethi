@@ -82,7 +82,7 @@ export default function FAQEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{editing ? t("Edit FAQ", "تحرير السؤال") : t("New FAQ", "سؤال جديد")}</span>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
+      <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
         <div>{label(t("Question", "السؤال"))}<Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("What do employees ask?", "ما الذي يسأل عنه الموظفون؟")} autoFocus dir={isAr ? "rtl" : "ltr"} className="h-11 text-base" /></div>
         <div>{label(t("Answer", "الإجابة"))}<RichTextEditor initialHTML={a} onChange={setA} dir={isAr ? "rtl" : "ltr"} placeholder={t("Write a clear, complete answer — headings, lists, links…", "اكتب إجابة واضحة وكاملة — عناوين، قوائم، روابط…")} /></div>
 
@@ -129,7 +129,7 @@ export default function FAQEditorPage() {
             {relatedDocs.map((did) => {
               const d = docs.find((x) => x.id === did)
               return (
-                <div key={did} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
+                <div key={did} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
                   <span className={cn("flex size-7 shrink-0 items-center justify-center rounded text-[9px] font-bold text-white", d ? TYPE_STYLE[d.type] : "bg-muted-foreground")}>{d?.type ?? "?"}</span>
                   <span className="min-w-0 flex-1 truncate">{d ? (isAr ? d.nameAr : d.name) : t("(document removed)", "(مستند محذوف)")}</span>
                   <button type="button" aria-label={t("Remove", "إزالة")} onClick={() => setRelatedDocs(relatedDocs.filter((x) => x !== did))} className="grid size-5 shrink-0 place-items-center rounded hover:bg-muted"><X className="size-3.5" /></button>
@@ -137,7 +137,7 @@ export default function FAQEditorPage() {
               )
             })}
             {availableDocs.length > 0 && (
-              <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="h-10 w-full rounded-lg border border-dashed border-border bg-transparent px-3 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
+              <select value="" onChange={(e) => { if (e.target.value) setRelatedDocs([...relatedDocs, e.target.value]) }} className="h-10 w-full rounded-[8px] border border-dashed border-border bg-transparent px-3 text-sm text-muted-foreground outline-none hover:border-primary/60 focus:border-primary/60">
                 <option value="">{t("+ Attach a document from the library", "+ إرفاق مستند من المكتبة")}</option>
                 {availableDocs.map((d) => <option key={d.id} value={d.id}>{isAr ? d.nameAr : d.name} · {d.type}</option>)}
               </select>
@@ -150,7 +150,7 @@ export default function FAQEditorPage() {
           {label(t("Related links", "روابط ذات صلة"))}
           <div className="space-y-2">
             {links.map((l, i) => (
-              <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
+              <div key={i} className="flex items-center gap-2.5 rounded-[8px] border border-border bg-[var(--card-elevated)] px-3 py-2 text-sm">
                 <Link2 className="size-4 shrink-0 text-primary" />
                 <span className="min-w-0 flex-1 truncate"><span className="font-medium">{l.label}</span> <span className="text-muted-foreground">· {l.url}</span></span>
                 <button type="button" aria-label={t("Remove", "إزالة")} onClick={() => setLinks(links.filter((_, x) => x !== i))} className="grid size-5 shrink-0 place-items-center rounded hover:bg-muted"><X className="size-3.5" /></button>
@@ -169,7 +169,7 @@ export default function FAQEditorPage() {
       {(q.trim() || a.trim()) && (
         <div className="mt-6">
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{t("Preview", "معاينة")}</div>
-          <Card className="rounded-xl p-5">
+          <Card className="rounded-[12px] p-5">
             <div className="flex flex-wrap items-center gap-1.5">{categories.map((c) => <CategoryBadge key={c} label={catLabel(c)} color={findCategory(cats, c)?.color} />)}</div>
             <h3 className="mt-2 font-medium leading-snug">{q.trim() || t("Your question…", "سؤالك…")}</h3>
             {a.trim()

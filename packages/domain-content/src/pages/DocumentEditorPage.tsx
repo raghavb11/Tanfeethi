@@ -65,8 +65,8 @@ export default function DocumentEditorPage() {
         <span className="text-xs font-semibold uppercase tracking-[0.14em]">{t("Upload document", "رفع مستند")}</span>
       </div>
 
-      <Card className="rounded-xl space-y-5 p-6 sm:p-8">
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/[0.03]">
+      <Card className="rounded-[12px] space-y-5 p-6 sm:p-8">
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] border-2 border-dashed border-border bg-muted/30 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/[0.03]">
           <Upload className="size-6 text-primary" />
           <span className="font-medium text-foreground">{t("Drag a file here or click to browse", "اسحب ملفًا هنا أو انقر للتصفح")}</span>
           <span className="text-xs">{t("PDF, XLSX or DOCX — metadata below", "PDF أو XLSX أو DOCX — البيانات أدناه")}</span>
@@ -79,13 +79,13 @@ export default function DocumentEditorPage() {
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="doc-type" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Type", "النوع")}</label>
-            <select id="doc-type" value={type} onChange={(e) => setType(e.target.value as (typeof TYPES)[number])} className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
+            <select id="doc-type" value={type} onChange={(e) => setType(e.target.value as (typeof TYPES)[number])} className="h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
               {TYPES.map((ty) => <option key={ty} value={ty}>{ty}</option>)}
             </select>
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="doc-folder" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Folder", "المجلد")}</label>
-            <select id="doc-folder" value={folder} onChange={(e) => setFolder(e.target.value)} className="h-11 w-full rounded-lg border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
+            <select id="doc-folder" value={folder} onChange={(e) => setFolder(e.target.value)} className="h-11 w-full rounded-[8px] border border-input bg-[var(--card-elevated)] px-3 text-sm outline-none focus:border-primary/60">
               <option value={ROOT_FOLDER}>{t("Documents (top level)", "المستندات (المستوى الأعلى)")}</option>
               {folders.filter((f) => !f.readOnly).map((f) => <option key={f.id} value={f.id}>{f.parent ? "— " : ""}{isAr ? f.nameAr : f.name}</option>)}
             </select>
@@ -105,7 +105,7 @@ export default function DocumentEditorPage() {
         <label className="inline-flex items-center gap-2 pt-1 text-sm"><input type="checkbox" checked={restricted} onChange={(e) => setRestricted(e.target.checked)} className="size-4 accent-[var(--primary)]" />{t("Restrict access by department", "تقييد الوصول حسب الإدارة")}</label>
 
         {/* auto-archive */}
-        <div className="rounded-xl border border-border bg-[var(--card-elevated)] p-4">
+        <div className="rounded-[12px] border border-border bg-[var(--card-elevated)] p-4">
           <label className="inline-flex items-center gap-2 text-sm font-medium">
             <input type="checkbox" checked={autoArchive} onChange={(e) => setAutoArchive(e.target.checked)} className="size-4 accent-[var(--primary)]" />
             <Archive className="size-4 text-primary" />{t("Auto-archive this file after a date", "أرشفة هذا الملف تلقائيًا بعد تاريخ")}

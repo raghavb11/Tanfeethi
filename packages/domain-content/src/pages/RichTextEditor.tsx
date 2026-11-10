@@ -80,7 +80,7 @@ export function RichTextEditor({
   const Divider = () => <span aria-hidden className="mx-1 h-5 w-px bg-border" />
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
+    <div className="overflow-hidden rounded-[12px] border border-border bg-card shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 p-1.5">
         <Btn cmd="bold" active={state("bold")} icon={Bold} label="Bold" />
         <Btn cmd="italic" active={state("italic")} icon={Italic} label="Italic" />

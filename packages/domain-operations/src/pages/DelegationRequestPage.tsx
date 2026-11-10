@@ -30,7 +30,7 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
       <div className="flex items-center gap-3">
         <span
           className={cn(
-            "inline-flex size-[30px] shrink-0 items-center justify-center rounded-lg",
+            "inline-flex size-[30px] shrink-0 items-center justify-center rounded-[8px]",
             leave ? "bg-success text-foreground" : "bg-[#a997c7] text-foreground",
           )}
         >
@@ -46,7 +46,7 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
             )}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-muted-foreground">
-            <span>{leave ? t("Leave", "إجازة") : t("Remote work", "دوام عن بُعد")}</span>
+            <span>{leave ? t("Leave", "إجازة") : t("Remote work", "دوام عن بعد")}</span>
             <span>
               {dayMonth(e.from, isAr)} {t("to", "إلى")} {dayMonth(e.to, isAr)}
             </span>
@@ -62,7 +62,7 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
             </span>
             {e.email && (
               <span className="text-[12.5px] text-muted-foreground">
-                {t("Email", "البريد الإلكتروني")}: <span dir="ltr">{e.email}</span>
+                {t("Email", "أيميل")}: <span dir="ltr">{e.email}</span>
               </span>
             )}
           </div>
@@ -110,7 +110,7 @@ export default function DelegationRequestPage() {
     <Page>
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
         <Panel className="flex-1">
-          <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابة جديد")} />
+          <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابه جديد")} />
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
             <Field label={t("Delegation start date", "تاريخ بداية الإنابة")} htmlFor="dl-start" error={tried && !start ? t("Required", "مطلوب") : undefined}>
               <DateBox id="dl-start" value={start} onChange={setStart} placeholder={t("Date", "تاريخ")} invalid={tried && !start} />
@@ -140,7 +140,7 @@ export default function DelegationRequestPage() {
             </Field>
           </div>
           <div className="mt-4 flex flex-col items-start gap-3">
-            <GoldButton onClick={submit}>{t("Send delegation request", "إرسال طلب الإنابة")}</GoldButton>
+            <GoldButton onClick={submit}>{t("Submit delegation request", "إرسال طلب الإنابه")}</GoldButton>
             {sent && (
               <Notice tone="success">
                 {t("Your delegation request was sent for approval.", "تم إرسال طلب الإنابة للاعتماد.")}
@@ -150,7 +150,7 @@ export default function DelegationRequestPage() {
         </Panel>
 
         <Panel className="w-full shrink-0 sm:px-4 lg:w-[480px]">
-          <CardHeading icon={CalendarDays} title={t("Current duty schedule", "جدول المناوبات الحالي")} />
+          <CardHeading icon={CalendarDays} title={t("Current shift schedule", "جدول المناوبات الحالي")} />
           <div className="mt-[18px] flex flex-col gap-4">
             {schedule.length === 0 ? (
               <EmptyState icon={CalendarX2} title={t("No absences scheduled", "لا توجد غيابات مجدولة")} />

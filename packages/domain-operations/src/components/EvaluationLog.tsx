@@ -104,7 +104,7 @@ export function EvaluationLog({
           nameHeader,
           t("Job title", "المسمى الوظيفي"),
           t("Evaluation date", "تاريخ التقييم"),
-          t("Evaluated day", "تقييم خاص بيوم"),
+          t("Single-day evaluation", "تقييم خاص بيوم"),
           t("Negative evaluations", "التقييمات السلبية"),
           t("View evaluations", "عرض التقييمات"),
         ]}

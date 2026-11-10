@@ -52,7 +52,7 @@ export function SurveyCreateModal({ open, onClose, isAr }: { open: boolean; onCl
         <DraftsButton count={drafts.length} isAr={isAr} onClick={() => setShowDrafts((v) => !v)} />
       </>}>
       {showDrafts && (
-        <div className="rounded-lg bg-card-elevated p-2">
+        <div className="rounded-[8px] bg-card-elevated p-2">
           {drafts.length === 0 ? <p className="px-2 py-3 text-[12px] text-muted-foreground">{t("No drafts yet.", "لا توجد مسودات بعد.")}</p>
             : drafts.map((d) => (
               <button key={d.id} type="button" className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-start text-[13px] hover:bg-secondary"

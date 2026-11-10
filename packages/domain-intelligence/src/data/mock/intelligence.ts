@@ -268,7 +268,7 @@ export type Conversation = { id: string; title: string; titleAr: string; message
 
 export const conversations: Conversation[] = [
   {
-    id: "c-mail", title: "Summarize my mail", titleAr: "تلخيص البريد",
+    id: "c-mail", title: "Mail summary", titleAr: "تلخيص البريد",
     messages: [
       { id: "m1", role: "user", text: "Summarize my mail, review pending approvals and reorganize my schedule.", textAr: "لخص بريدي، راجع الموافقات المعلقة، و إعد تنظيم جدولي." },
       { id: "m2", role: "assistant", text: "Hi Fawaz — I'm summarizing your mail, reviewing your approvals and reorganizing your schedule now.", textAr: "أهلاً فواز، يتم الآن تلخيص بريدك، مراجعة الموافقات و إعادة تنظيم جدولك" },
@@ -291,7 +291,7 @@ export const conversations: Conversation[] = [
 export const chatChips: { id: string; en: string; ar: string; icon: "report" | "calendar" | "approvals" }[] = [
   { id: "q1", en: "Q1 report", ar: "تقرير الربع الأول", icon: "report" },
   { id: "tomorrow", en: "Tomorrow's meetings", ar: "اجتماعات الغد", icon: "calendar" },
-  { id: "awaiting", en: "Show transactions awaiting reply", ar: "عرض المعاملات بانتظار الرد", icon: "approvals" },
+  { id: "awaiting", en: "View transactions awaiting response", ar: "عرض المعاملات بانتظار الرد", icon: "approvals" },
 ]
 
 /** Canned assistant reply for the prototype (no model call). */

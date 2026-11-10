@@ -64,7 +64,7 @@ export default function QuickLinksPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {LINKS.map((l) => (
           <Card key={l.id} className="group flex flex-row items-center gap-4 p-4 transition-colors hover:border-primary/60">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><l.icon className="size-5" /></div>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-primary/10 text-primary"><l.icon className="size-5" /></div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="truncate font-medium">{isAr ? l.nameAr : l.name}</span>
