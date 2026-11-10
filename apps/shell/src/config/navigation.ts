@@ -325,3 +325,33 @@ export function railItemForPath(pathname: string): RailItem | undefined {
 export function moduleForPath(pathname: string): ModuleKey {
   return railItemForPath(pathname)?.module ?? "home"
 }
+
+/** Which "First Card shadow generator" colour washes the top bar (html[data-topbar]).
+ *  Read from the exported Figma frames — it does not follow the rail module:
+ *  Services, Assistant and Learning are purple; Work (tasks, projects), Employee
+ *  and Operations green; Documents/News royal purple; Home, Calendar, Profile and
+ *  Notifications gold. */
+export type TopBarGlow = "gold" | "green" | "purple" | "royal"
+
+const TOPBAR_GLOW_BY_PREFIX: [string, TopBarGlow][] = [
+  ["/calendar", "gold"],
+  ["/profile", "gold"],
+  ["/notifications", "gold"],
+]
+
+const TOPBAR_GLOW_BY_MODULE: Record<ModuleKey, TopBarGlow> = {
+  home: "gold",
+  work: "green",
+  employee: "green",
+  services: "purple",
+  ai: "purple",
+  knowledge: "royal",
+  learning: "purple",
+  operations: "green",
+  admin: "gold",
+}
+
+export function topBarGlowForPath(pathname: string): TopBarGlow {
+  const hit = TOPBAR_GLOW_BY_PREFIX.find(([p]) => matchesPrefix(p, pathname))
+  return hit ? hit[1] : TOPBAR_GLOW_BY_MODULE[moduleForPath(pathname)]
+}

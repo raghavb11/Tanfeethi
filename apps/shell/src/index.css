@@ -9,9 +9,16 @@
    Astoria — English headings only (Latin-only typeface).
      Arabic headings fall through the stack to Aktiv Grotesk automatically. */
 
+/* aktiv-grotesk-var-figma.woff2 = aktiv-grotesk-var.woff2 with the wght axis
+   re-mapped (apps/shell/scripts/remap-font-weight.py, "100:100,400:300,500:400,
+   700:600,900:900") so CSS 400/500/700 draw the outlines of 300/400/600. Figma's
+   rasteriser draws Aktiv Grotesk Regular/Medium/Bold ~30% lighter than Chrome;
+   this was the lightest setting that lowered mismatch on every sample frame
+   (2013:5689, 4777:25710, 4124:10928 and their English twins). Advance widths
+   follow the re-mapped weight. */
 @font-face {
   font-family: "Aktiv Grotesk";
-  src: url("/fonts/aktiv-grotesk-var.woff2") format("woff2");
+  src: url("/fonts/aktiv-grotesk-var-figma.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -323,6 +330,16 @@ html.dark[data-module="learning"] { --module-glow: rgba(206, 122, 91, 0.3); }
 html[data-module="operations"] { --module-accent: #652a4c; --module-glow: rgba(221, 192, 207, 0.5); }
 html.dark[data-module="operations"] { --module-glow: rgba(61, 32, 49, 0.8); }
 
+/* Top-bar wash colour per route (see topBarGlowForPath). */
+html { --topbar-glow: rgba(234, 226, 203, 0.9); }
+html.dark { --topbar-glow: rgba(188, 153, 81, 0.2); }
+html[data-topbar="green"] { --topbar-glow: rgba(189, 241, 193, 0.12); }
+html.dark[data-topbar="green"] { --topbar-glow: rgba(28, 51, 28, 0.8); }
+html[data-topbar="purple"] { --topbar-glow: rgba(224, 216, 233, 0.9); }
+html.dark[data-topbar="purple"] { --topbar-glow: rgba(147, 125, 186, 0.25); }
+html[data-topbar="royal"] { --topbar-glow: rgba(221, 192, 207, 0.5); }
+html.dark[data-topbar="royal"] { --topbar-glow: rgba(61, 32, 49, 0.8); }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -543,32 +560,52 @@ body {
      sets its own soft hue via `--hl`; the hue only appears as a gentle glow +
      tinted border, never as a sharp fill. Text inside must be light. */
   /* Figma "Hero Section": Card/Special Card gradient — the module glow
-     (First Card shadow generator) in the top inline-start corner fading through
-     Special Card/Middle to the page fill. Radius 12, hairline stroke. */
+     (First Card shadow generator) in the top inline-end corner (top-left in
+     Arabic, top-right in English) fading to the page fill. Radius via markup. */
   .highlight-card {
     position: relative;
     color: var(--foreground);
-    background-color: var(--background);
-    background-image: linear-gradient(
-      var(--hero-angle, 200deg),
-      var(--hl-glow, var(--module-glow)) 0%,
-      color-mix(in oklab, var(--background) 30%, transparent) 45%,
-      var(--background) 100%
-    );
-    border: 1px solid var(--card-ring);
+    /* Measured from the exported hero frames (2013:5689 gold, 2028:5236 purple,
+       3907:9016 green): the module glow peaks at ~80% of its token just inside
+       the inline-end top corner and is gone ~190px along a line tilted 10deg off
+       vertical. The 1px stroke is brightest in that corner (~8% Text/Primary)
+       and fades out toward the opposite corner. Layers, top to bottom: glow
+       (over fill and stroke), page fill inside the stroke, stroke ring, fill. */
+    border: 1px solid transparent;
+    background:
+      linear-gradient(
+        var(--hero-angle, 190deg),
+        color-mix(in srgb, var(--hl-glow, var(--module-glow)) 80%, transparent) 25px,
+        transparent 190px
+      ) border-box,
+      linear-gradient(var(--background), var(--background)) padding-box,
+      linear-gradient(var(--hero-stroke-dir, to bottom left), var(--hero-stroke-hi), var(--hero-stroke-lo)) border-box,
+      var(--background);
+    --hero-stroke-hi: rgba(30, 18, 24, 0.12);
+    --hero-stroke-lo: rgba(30, 18, 24, 0.03);
   }
-  [dir="rtl"] .highlight-card { --hero-angle: 160deg; }
+  .dark .highlight-card {
+    --hero-stroke-hi: rgba(243, 238, 241, 0.08);
+    --hero-stroke-lo: rgba(243, 238, 241, 0.005);
+  }
+  [dir="rtl"] .highlight-card { --hero-angle: 170deg; --hero-stroke-dir: to bottom right; }
   .highlight-card::after { content: none; }
-  /* per-page soft hue for the highlight card (paired with .highlight-card) */
-  .hl-green   { --hl: #007006; --hl-glow: color-mix(in oklab, #007006 22%, transparent); }
+  /* Per-hue hero glow = Figma "First Card shadow generator" (Dark) tokens. */
+  .hl-green   { --hl: #007006; --hl-glow: rgba(189, 241, 193, 0.5); }
   .hl-teal    { --hl: #14b8a6; --hl-glow: color-mix(in oklab, #14b8a6 18%, transparent); }
   .hl-sky     { --hl: #5b8def; --hl-glow: color-mix(in oklab, #5b8def 18%, transparent); }
   .hl-blue    { --hl: #5b8def; --hl-glow: color-mix(in oklab, #5b8def 18%, transparent); }
-  .hl-indigo  { --hl: #a997c7; --hl-glow: color-mix(in oklab, #a997c7 22%, transparent); }
-  .hl-violet  { --hl: #a997c7; --hl-glow: color-mix(in oklab, #a997c7 22%, transparent); }
-  .hl-fuchsia { --hl: #652a4c; --hl-glow: color-mix(in oklab, #652a4c 45%, transparent); }
-  .hl-amber   { --hl: #bc9951; --hl-glow: color-mix(in oklab, #bc9951 22%, transparent); }
-  .hl-rose    { --hl: #ce7a5b; --hl-glow: color-mix(in oklab, #ce7a5b 26%, transparent); }
+  .hl-indigo,
+  .hl-violet  { --hl: #a997c7; --hl-glow: rgba(224, 216, 233, 0.9); }
+  .hl-fuchsia { --hl: #652a4c; --hl-glow: rgba(221, 192, 207, 0.5); }
+  .hl-amber   { --hl: #bc9951; --hl-glow: rgba(234, 226, 203, 0.9); }
+  .hl-rose    { --hl: #ce7a5b; --hl-glow: rgba(239, 217, 205, 0.9); }
+  .dark .hl-green   { --hl-glow: rgba(28, 51, 28, 0.8); }
+  .dark .hl-indigo,
+  .dark .hl-violet  { --hl-glow: rgba(147, 125, 186, 0.25); }
+  .dark .hl-fuchsia { --hl-glow: rgba(61, 32, 49, 0.8); }
+  .dark .hl-amber   { --hl-glow: rgba(188, 153, 81, 0.2); }
+  .dark .hl-rose    { --hl-glow: rgba(206, 122, 91, 0.3); }
 
   /* Sidebar active tab — ONE soft copper highlight + copper text, IDENTICAL
      in light & dark (single rule, no white sheen → no light/dark asymmetry). */
@@ -626,15 +663,16 @@ body {
   .ambient-page {
     background-image: none;
   }
-  /* Module-tinted wash behind the top bar, measured from the Figma frames: the
-     module accent at 18% in the top bar's inline-end corner, fading out ~600px
-     in along a slightly tilted line, confined to the 80px bar. */
+  /* Wash behind the top bar, measured from the Figma frames: the route's
+     "First Card shadow generator" colour (--topbar-glow, html[data-topbar]) at
+     90% in the bar's inline-end corner, fading out ~500px in along a slightly
+     tilted line, confined to the 80px bar. */
   .topbar-wash {
     --wash-angle: 238deg;
     background-image: linear-gradient(
       var(--wash-angle),
-      color-mix(in srgb, var(--module-accent) 18%, transparent) 67px,
-      color-mix(in srgb, var(--module-accent) 9%, transparent) 236px,
+      color-mix(in srgb, var(--topbar-glow) 90%, transparent) 67px,
+      color-mix(in srgb, var(--topbar-glow) 45%, transparent) 236px,
       transparent 506px
     );
     background-repeat: no-repeat;
@@ -655,4 +693,21 @@ body {
     background-color: var(--secondary);
     color: var(--foreground);
   }
+}
+/* Text rasterisation to match the Figma exports. Figma renders text with
+   greyscale, unhinted anti-aliasing; Chrome on Windows uses ClearType (colour
+   fringes) and hinting, which adds ~30% ink and moves glyph edges. Text drawn
+   into a non-opaque composited layer loses LCD AA (greyscale), and a
+   non-axis-aligned transform switches glyphs to unhinted outlines. 0.001deg is
+   invisible (< 0.02px at the far corner). #root is viewport-sized and never
+   scrolls, so it is a harmless containing block for fixed overlays inside it.
+   The scrollers get their own layers, so each needs the hint again. */
+body > *,
+main,
+header,
+[data-slot="scroll-area-viewport"] > * {
+  will-change: opacity;
+}
+#root {
+  transform: rotate(0.001deg);
 }

@@ -105,7 +105,8 @@ export function EvaluationLog({
           t("Job title", "المسمى الوظيفي"),
           t("Evaluation date", "تاريخ التقييم"),
           t("Single-day evaluation", "تقييم خاص بيوم"),
-          t("Negative evaluations", "التقييمات السلبية"),
+          // Figma wraps this header onto two lines (5233:28184); keep it wrapped.
+          <span key="neg" className="block max-w-[96px]">{t("Negative evaluations", "التقييمات السلبية")}</span>,
           t("View evaluations", "عرض التقييمات"),
         ]}
       >

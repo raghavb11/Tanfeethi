@@ -7,6 +7,13 @@ import { cn } from "@reach/shared-core"
 import { Button } from "./button"
 import { XIcon } from "lucide-react"
 
+/** Open focus: keyboard opens keep the default (first tabbable element, ring
+ *  visible); pointer / programmatic opens focus the popup itself so no control
+ *  shows a focus ring until the user starts using the keyboard. */
+function popupInitialFocus(popup: React.RefObject<HTMLDivElement | null>) {
+  return (openType: string) => (openType === "keyboard" ? true : popup.current)
+}
+
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
@@ -47,10 +54,13 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
 }) {
+  const popupRef = React.useRef<HTMLDivElement>(null)
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
+        ref={popupRef}
+        initialFocus={popupInitialFocus(popupRef)}
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",

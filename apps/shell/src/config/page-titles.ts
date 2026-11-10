@@ -206,13 +206,20 @@ export function intermediateCrumbs(pathname: string, locale: "en" | "ar" = "en")
     return [{ label: ar ? "تقنية المعلومات والصلاحيات" : "IT & Permissions", to: "/services/catalog/it" }]
   if (pathname === "/cafeteria" || pathname === "/services/hospitality/waiter")
     return [{ label: ar ? "الضيافة" : "Hospitality", to: "/services/catalog/hospitality" }]
+  // Violations (4946:15932, 4999:18052, 4999:19203, 4999:18721, 5005:19655):
+  // the hub's service group, or the follow-up list for a single report.
+  const report = pathname.match(/^\/services\/violations\/(reports|queue)\/[^/]+$/)
+  if (report)
+    return [{ label: ar ? "متابعة طلبات الإبلاغ" : "Follow up on reports", to: `/services/violations/${report[1]}` }]
+  if (pathname === "/services/violations/queue")
+    return [{ label: ar ? "خدمات التحقيق" : "Investigation Services", to: "/services/violations?group=investigation" }]
   if (pathname.startsWith("/services/violations/"))
-    return [{ label: ar ? "نظام الإبلاغ عن المخالفات" : "Violation reporting system", to: "/services/violations" }]
-  if (pathname.startsWith("/operations/personal/"))
+    return [{ label: ar ? "خدمات الإبلاغ" : "Reporting Services", to: "/services/violations" }]
+  // The operational log sits directly under the section in Figma (4215:13599).
+  if (pathname.startsWith("/operations/personal/") && pathname !== "/operations/personal/operational-log")
     return [{ label: ar ? "التقييم الشخصي" : "Personal evaluation", to: "/operations/personal" }]
   if (pathname.startsWith("/operations/evaluations/"))
     return [{ label: ar ? "سجل التقييمات السابقة" : "Previous evaluations log", to: "/operations/evaluations" }]
-  if (pathname.startsWith("/operations/evaluate/"))
-    return [{ label: ar ? "التقييم السنوي للفريق" : "Team annual evaluation", to: "/operations/evaluate" }]
+  // Team evaluation pages are section › page in Figma (4126:14560, 4126:14408).
   return []
 }

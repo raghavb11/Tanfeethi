@@ -7,9 +7,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { AIAssistantPanel } from "@/components/layout/AIAssistantPanel"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
-import { railItemForPath } from "@/config/navigation"
+import { railItemForPath, topBarGlowForPath } from "@/config/navigation"
 import { intermediateCrumbs, titleForPath } from "@/config/page-titles"
 import { useShell } from "@reach/shell-context"
+
+/** Routes whose Figma top bar shows only the page title (no trail). */
+const TITLE_ONLY_PATHS = new Set(["/profile"])
 
 /** Lightweight placeholder shown while a lazily-loaded domain chunk resolves. */
 function PageFallback() {
@@ -44,15 +47,27 @@ export function AppShell() {
   React.useEffect(() => {
     document.documentElement.setAttribute("data-module", module)
   }, [module])
+  const topBarGlow = topBarGlowForPath(location.pathname)
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-topbar", topBarGlow)
+  }, [topBarGlow])
 
-  // Breadcrumb (Figma always shows the row): الرئيسية › section › … › page.
-  // The current page is appended by the TopBar; Home shows just "الرئيسية".
+  // Breadcrumb, as the Figma frames render it: section › parent(s) › page.
+  // Home is never an ancestor (only Home's own pages, e.g. notifications, show
+  // "الرئيسية ›"); the section is named by its landing page title (Work's is
+  // "المهام"). Section landing pages and the profile show the title alone —
+  // Figma draws them with "الصفحة الأولى › الصفحة الثانية" placeholders only.
   const isAr = locale === "ar"
   const crumbs: { label: string; to: string }[] = []
-  if (location.pathname !== "/") {
-    crumbs.push({ label: isAr ? "الرئيسية" : "Home", to: "/" })
-    if (railItem && railItem.path !== "/" && railItem.path !== location.pathname)
-      crumbs.push({ label: isAr ? railItem.titleAr : railItem.title, to: railItem.path })
+  if (location.pathname !== "/" && !TITLE_ONLY_PATHS.has(location.pathname)) {
+    if (railItem && railItem.path !== location.pathname) {
+      const sectionTitle = titleForPath(railItem.path, locale)
+      const fallback = titleForPath("/__none__", locale)
+      crumbs.push({
+        label: sectionTitle !== fallback ? sectionTitle : isAr ? railItem.titleAr : railItem.title,
+        to: railItem.path,
+      })
+    }
     crumbs.push(...intermediateCrumbs(location.pathname, locale))
   }
 

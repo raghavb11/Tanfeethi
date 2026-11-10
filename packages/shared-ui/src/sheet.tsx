@@ -34,6 +34,13 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   )
 }
 
+/** Open focus: keyboard opens keep the default (first tabbable element, ring
+ *  visible); pointer / programmatic opens focus the popup itself so no control
+ *  shows a focus ring until the user starts using the keyboard. */
+function popupInitialFocus(popup: React.RefObject<HTMLDivElement | null>) {
+  return (openType: string) => (openType === "keyboard" ? true : popup.current)
+}
+
 function SheetContent({
   className,
   children,
@@ -44,10 +51,13 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  const popupRef = React.useRef<HTMLDivElement>(null)
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Popup
+        ref={popupRef}
+        initialFocus={popupInitialFocus(popupRef)}
         data-slot="sheet-content"
         data-side={side}
         className={cn(
