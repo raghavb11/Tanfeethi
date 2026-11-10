@@ -320,6 +320,18 @@ const DETAIL_EVENTS: TaskEvent[] = [
 
 let events: TaskEvent[] = [...DETAIL_EVENTS, ...SEED_EVENTS]
 
+/** "Created the task and assigned it to …" — the first entry of a new task's trail. */
+export function addCreatedEvent(taskId: string, assignee?: { en: string; ar: string }) {
+  events = [...events, {
+    id: `e-${Date.now().toString(36)}-created`, taskId, kind: "created",
+    author: ME.name, authorAr: ME.nameAr, initials: ME.initials,
+    text: assignee ? `created the task and assigned it to ${assignee.en}.` : "created the task and assigned it to himself.",
+    textAr: assignee ? `أنشأ المهمة وأسندها إلى ${assignee.ar}.` : "أنشأ المهمة وأسندها إلى نفسه.",
+    at: "Just now", atAr: "الآن",
+  }]
+  emit()
+}
+
 /** Record that the assistant's suggestion was taken up or turned down. */
 export function addAiEvent(subjectId: string, text: string, textAr: string) {
   events = [...events, {

@@ -17,7 +17,7 @@ import {
   STATUS_META, STATUS_ORDER, type CategoryId, type TaskPriority, type TaskStatus,
 } from "../data/meta"
 import {
-  addAiEvent, addTask, addTaskComment, ME, newTaskId, prettyDate, prettyDateAr, relativeDue,
+  addAiEvent, addCreatedEvent, addTask, addTaskComment, ME, newTaskId, prettyDate, prettyDateAr, relativeDue,
   removeTask, shortDate, TASK_TODAY_ISO, type Task, type TaskEvent, toggleComplete, unlinkProject,
   updateTask, useTaskEvents, useTasks,
 } from "../data/tasks"
@@ -92,6 +92,9 @@ function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
   if (params.get("resume") === "1") {
     const saved = readDraft()
     if (saved) Object.assign(d, saved, p ? { projectId: pid, category: p.category } : {})
+    // back from adding a milestone: keep the draft's project, select the new milestone
+    const mid = params.get("milestone")
+    if (mid) d.milestoneId = mid
   }
   if (d.milestoneId && getMilestone(d.milestoneId)?.projectId !== d.projectId) d.milestoneId = ""
   return d
@@ -273,6 +276,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
         assignedBy: m ? MANAGER.name : "Self", assignedByAr: m ? MANAGER.nameAr : "شخصي",
         description, descriptionAr: description, releaseNote,
       })
+      addCreatedEvent(newId, m ? { en: m.name, ar: m.nameAr } : undefined)
       clearDraft()
       navigate(`/tasks/${newId}${from === "project" && p ? "?from=project" : m ? "?from=manager" : ""}`)
     } else {
@@ -305,6 +309,14 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   }
 
   /** "Create a new project" from the task's project picker keeps this draft for the way back. */
+  const createMilestoneFromTask = () => {
+    if (!draft?.projectId) return
+    stashDraft(draft)
+    const ret = new URLSearchParams(params)
+    ret.set("resume", "1"); ret.delete("project"); ret.delete("milestone")
+    navigate(`/projects/${draft.projectId}/milestones/new?back=${encodeURIComponent(`/tasks/new?${ret}`)}`)
+  }
+
   const createProjectFromTask = () => {
     if (draft) stashDraft(draft)
     const ret = new URLSearchParams(params)
@@ -578,7 +590,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     <div className="w-full max-w-[265px]">
                       <MilestonePicker projectId={draft.projectId ?? ""} value={draft.milestoneId ?? ""} isAr={isAr} t={t}
                         onChange={(mid) => patch({ milestoneId: mid })}
-                        onCreate={draft.projectId ? () => navigate(`/projects/${draft.projectId}/milestones/new`) : undefined} />
+                        onCreate={draft.projectId ? createMilestoneFromTask : undefined} />
                     </div>
                   } />
               )}

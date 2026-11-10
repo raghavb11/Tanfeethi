@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Button, Input, Textarea } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
@@ -26,7 +26,10 @@ export default function MilestoneEditorPage() {
   const project = getProjectById(projectId)
   const milestone = mid ? getMilestone(mid) : undefined
   const editing = !!milestone
-  const back = `/projects/${projectId}`
+  // Opened from a task being created: return there (draft restored) with the new milestone.
+  const [params] = useSearchParams()
+  const returnTo = params.get("back")
+  const back = returnTo ?? `/projects/${projectId}`
   const tasks = useTasks()
   const log = useMilestoneLog().filter((e) => e.milestoneId === mid)
 
@@ -58,9 +61,10 @@ export default function MilestoneEditorPage() {
       ragOverride: mode === "auto" ? undefined : mode,
       ragReason: mode === "auto" ? undefined : reason.trim(),
     }
-    if (milestone) updateMilestone(milestone.id, fields)
-    else addMilestone({ id: newMilestoneId(), projectId, code, ...fields })
-    navigate(back)
+    if (milestone) { updateMilestone(milestone.id, fields); navigate(back); return }
+    const newId = newMilestoneId()
+    addMilestone({ id: newId, projectId, code, ...fields })
+    navigate(returnTo ? `${returnTo}${returnTo.includes("?") ? "&" : "?"}milestone=${newId}` : back)
   }
 
   const remove = () => {
