@@ -8,10 +8,10 @@ import * as React from "react"
 export type MenuGroupId = "hot" | "cold" | "snacks" | "meals" | "catering"
 
 export const menuGroups: { id: MenuGroupId; label: string; labelAr: string }[] = [
-  { id: "hot", label: "Hot drinks", labelAr: "مشروبات ساخنة" },
-  { id: "cold", label: "Cold drinks", labelAr: "مشروبات باردة" },
-  { id: "snacks", label: "Snacks", labelAr: "وجبات خفيفة" },
-  { id: "meals", label: "Meals", labelAr: "وجبات" },
+  { id: "hot", label: "Hot drinks", labelAr: "المشروبات الساخنة" },
+  { id: "cold", label: "Cold drinks", labelAr: "المشروبات الباردة" },
+  { id: "snacks", label: "Snacks", labelAr: "الوجبات الخفيفة" },
+  { id: "meals", label: "Meals", labelAr: "الوجبات" },
   { id: "catering", label: "Catering", labelAr: "ضيافة" },
 ]
 
@@ -51,6 +51,9 @@ export const sugarLabel = (id: SugarLevel, isAr: boolean) => {
 
 export let menu: MenuItem[] = [
   // hot drinks
+  // Figma 4915:17913 order-menu items
+  { id: "m-mint-saffron", group: "hot", name: "Mint with saffron", nameAr: "نعناع مع الزعفران", popular: true, available: true, takesSugar: true },
+  { id: "m-macchiato", group: "hot", name: "Macchiato", nameAr: "ماكياتو", available: true, takesSugar: true },
   { id: "m-arabic-coffee", group: "hot", name: "Arabic coffee (Gahwa)", nameAr: "قهوة عربية", note: "Served with dates", noteAr: "تُقدَّم مع التمر", popular: true, available: true },
   { id: "m-tea", group: "hot", name: "Tea", nameAr: "شاي", popular: true, available: true, takesSugar: true },
   { id: "m-tea-mint", group: "hot", name: "Mint tea", nameAr: "شاي بالنعناع", available: true, takesSugar: true },
@@ -66,12 +69,12 @@ export let menu: MenuItem[] = [
   // cold drinks
   { id: "m-water", group: "cold", name: "Water", nameAr: "ماء", note: "Still or sparkling", noteAr: "عادي أو فوار", popular: true, available: true },
   { id: "m-iced-coffee", group: "cold", name: "Iced coffee", nameAr: "قهوة مثلجة", popular: true, available: true, takesSugar: true },
-  { id: "m-iced-latte", group: "cold", name: "Iced latte", nameAr: "لاتيه مثلج", available: true, takesSugar: true },
+  { id: "m-iced-latte", group: "cold", name: "Iced latte", nameAr: "ايس لاتيه", popular: true, available: true, takesSugar: true },
   { id: "m-fresh-juice", group: "cold", name: "Fresh juice", nameAr: "عصير طازج", note: "Orange, mango or mixed", noteAr: "برتقال، مانجو أو مشكّل", available: true },
   { id: "m-lemon-mint", group: "cold", name: "Lemon & mint", nameAr: "ليمون بالنعناع", popular: true, available: true },
   { id: "m-laban", group: "cold", name: "Laban", nameAr: "لبن", available: true },
   { id: "m-soft-drink", group: "cold", name: "Soft drink", nameAr: "مشروب غازي", available: true },
-  { id: "m-iced-tea", group: "cold", name: "Iced tea", nameAr: "شاي مثلج", available: false, takesSugar: true },
+  { id: "m-iced-tea", group: "cold", name: "Iced tea", nameAr: "شاي مثلج", available: true, takesSugar: true },
 
   // snacks
   { id: "m-dates", group: "snacks", name: "Dates", nameAr: "تمر", note: "Ajwa or Sukkari", noteAr: "عجوة أو سكري", popular: true, available: true },
@@ -81,6 +84,8 @@ export let menu: MenuItem[] = [
   { id: "m-nuts", group: "snacks", name: "Mixed nuts", nameAr: "مكسرات مشكّلة", available: true },
   { id: "m-biscuits", group: "snacks", name: "Biscuits", nameAr: "بسكويت", available: true },
   { id: "m-cake", group: "snacks", name: "Cake slice", nameAr: "قطعة كيك", available: true },
+  { id: "m-kitco-chips", group: "snacks", name: "Kitco Nice – ketchup crisps", nameAr: "كيتكو نايس - بطاطس بنكهة الكاتشب", available: true },
+  { id: "m-memories-wafer", group: "snacks", name: "Memories Joy – cocoa cream wafers", nameAr: "ميموريز جوي - بسكويت الويفر بكريمة الكاكاو", available: true },
 
   // meals
   { id: "m-sandwich", group: "meals", servedScope: "sites", servedSites: ["Headquarters", "Terminal 1", "Terminal 2"], name: "Sandwich", nameAr: "ساندويتش", note: "Chicken, cheese or vegetable", noteAr: "دجاج، جبن أو خضار", popular: true, available: true },
@@ -176,6 +181,8 @@ export type CafeteriaOrder = {
   /** Promised minutes from acceptance; the requester sees this as an ETA. */
   etaMinutes?: number
   deliveredAtMin?: number
+  /** "waiter" = a call for an attendant to a place (Figma 4915:18193), no items. */
+  kind?: "order" | "waiter"
 }
 
 const SEED_ORDERS: CafeteriaOrder[] = [
@@ -444,6 +451,8 @@ export type Prefs = {
   locationId: string
   /** Saved orders — reorder one in a tap. Up to MAX_USUALS of them. */
   usuals: SavedUsual[]
+  /** Hearted menu items — "Browse favourites" on the order menu (Figma 4915:17913). */
+  favorites: string[]
 }
 
 /** A basket someone kept, under a name they chose. */
@@ -459,8 +468,9 @@ export type SavedUsual = {
 export const MAX_USUALS = 4
 
 let prefs: Prefs = {
-  sugar: "light",
+  sugar: "medium",
   locationId: "loc-hq-14",
+  favorites: ["m-mint-saffron", "m-iced-latte"],
   usuals: [
     { id: "u1", name: "Morning karak",
       lines: [{ itemId: "m-karak", qty: 1, sugar: "light" }, { itemId: "m-dates", qty: 1 }] },
@@ -472,6 +482,23 @@ let prefs: Prefs = {
 
 export const usePrefs = () => React.useSyncExternalStore(subscribe, () => prefs)
 export const getPrefs = () => prefs
+
+export function toggleFavorite(itemId: string) {
+  const on = prefs.favorites.includes(itemId)
+  prefs = { ...prefs, favorites: on ? prefs.favorites.filter((x) => x !== itemId) : [...prefs.favorites, itemId] }
+  emit()
+  logCafeteria(on ? "favourite removed" : "favourite added", itemById(itemId)?.name ?? itemId)
+}
+
+/** Floor of a delivery place, for the "Request a waiter" form (Figma 4915:18193):
+ *  "(L12)" / "Level 12" → Level 12, "Ground" → Ground, otherwise the site. */
+export function floorOf(loc: DeliveryLocation): { id: string; label: string; labelAr: string } {
+  const m = loc.name.match(/\(L(\d+)\)|Level (\d+)/)
+  const n = m ? m[1] ?? m[2] : null
+  if (n) return { id: `${loc.site}-L${n}`, label: `${loc.site} · Level ${n}`, labelAr: `${loc.siteAr} · الطابق ${n}` }
+  if (/Ground/.test(loc.name)) return { id: `${loc.site}-G`, label: `${loc.site} · Ground`, labelAr: `${loc.siteAr} · الأرضي` }
+  return { id: loc.site, label: loc.site, labelAr: loc.siteAr }
+}
 
 export function setPrefs(patch: Partial<Prefs>) {
   prefs = { ...prefs, ...patch }

@@ -17,7 +17,7 @@ const titlesEn: Record<string, string> = {
   "/notifications": "Notification history",
   "/work": "Work Hub",
   "/employee": "Employees",
-  "/services": "Services Hub",
+  "/services": "Services",
   "/surveys": "Surveys",
   "/surveys/new": "Create survey",
   "/intelligence": "Intelligence Hub",
@@ -65,6 +65,16 @@ const titlesEn: Record<string, string> = {
   "/calendar/new": "New appointment",
   "/tasks": "Tasks",
   "/tasks/new": "New task",
+  "/services/catalog/it/technical": "Request a technical service",
+  "/services/catalog/it/report-fault": "Report a fault",
+  "/services/history": "Submitted services log",
+  "/services/health": "My health",
+  "/services/hospitality/waiter": "Request a waiter",
+  "/services/violations": "Violation reporting system",
+  "/services/violations/new": "Violation reporting service",
+  "/services/violations/reports": "Follow up on reports",
+  "/services/violations/queue": "Follow up on reports",
+  "/cafeteria": "Order menu",
 }
 
 const titlesAr: Record<string, string> = {
@@ -84,7 +94,7 @@ const titlesAr: Record<string, string> = {
   "/notifications": "سجل التنبيهات",
   "/work": "مركز العمل",
   "/employee": "الموظفين",
-  "/services": "مركز الخدمات",
+  "/services": "الخدمات",
   "/surveys": "الاستبيانات",
   "/surveys/new": "إنشاء استبيان",
   "/intelligence": "مركز الذكاء",
@@ -132,6 +142,25 @@ const titlesAr: Record<string, string> = {
   "/calendar/new": "موعد جديد",
   "/tasks": "المهام",
   "/tasks/new": "مهمة جديدة",
+  "/services/catalog/it/technical": "طلب خدمة تقنية",
+  "/services/catalog/it/report-fault": "الإبلاغ عن عطل",
+  "/services/history": "سجل الخدمات المرفوعة",
+  "/services/health": "صحتي",
+  "/services/hospitality/waiter": "طلب النادل",
+  "/services/violations": "نظام الإبلاغ عن المخالفات",
+  "/services/violations/new": "خدمة الإبلاغ عن المخالفات",
+  "/services/violations/reports": "متابعة طلبات الإبلاغ",
+  "/services/violations/queue": "متابعة طلبات الإبلاغ",
+  "/cafeteria": "قائمة الطلبات",
+}
+
+/** Service catalog names — mirror of domain-services data/mock/services.ts. */
+const serviceCatalogs: Record<string, [string, string]> = {
+  it: ["IT & Permissions", "تقنية المعلومات والصلاحيات"],
+  hr: ["HR & Payroll", "الموارد البشرية والرواتب"],
+  finance: ["Finance", "المالية"],
+  facilities: ["Facilities", "المرافق"],
+  hospitality: ["Hospitality", "الضيافة"],
 }
 
 export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): string {
@@ -146,6 +175,10 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (pathname.startsWith("/hubs/")) return locale === "ar" ? "مركز المعاينة" : "Preview hub"
   // Operations & Performance detail routes
   const ar = locale === "ar"
+  const catalog = pathname.match(/^\/services\/catalog\/([^/]+)$/)
+  if (catalog?.[1] && serviceCatalogs[catalog[1]]) return serviceCatalogs[catalog[1]][ar ? 1 : 0]
+  if (pathname.startsWith("/services/request/")) return ar ? "طلب خدمة" : "Service request"
+  if (/^\/services\/violations\/(reports|queue)\/[^/]+$/.test(pathname)) return ar ? "بلاغ مخالفة" : "Violation report"
   if (/^\/calendar\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل الموعد" : "Edit appointment"
   if (pathname.startsWith("/tasks/")) return ar ? "تفاصيل المهمة" : "Task details"
   if (/^\/projects\/[^/]+\/milestones\//.test(pathname)) return ar ? "المعلم" : "Milestone"
@@ -162,6 +195,12 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
  *  deeper Figma trails (e.g. العمليات والأداء › التقييم الشخصي › قائمة الأهداف). */
 export function intermediateCrumbs(pathname: string, locale: "en" | "ar" = "en"): { label: string; to: string }[] {
   const ar = locale === "ar"
+  if (pathname === "/services/catalog/it/technical" || pathname === "/services/catalog/it/report-fault")
+    return [{ label: ar ? "تقنية المعلومات والصلاحيات" : "IT & Permissions", to: "/services/catalog/it" }]
+  if (pathname === "/cafeteria" || pathname === "/services/hospitality/waiter")
+    return [{ label: ar ? "الضيافة" : "Hospitality", to: "/services/catalog/hospitality" }]
+  if (pathname.startsWith("/services/violations/"))
+    return [{ label: ar ? "نظام الإبلاغ عن المخالفات" : "Violation reporting system", to: "/services/violations" }]
   if (pathname.startsWith("/operations/personal/"))
     return [{ label: ar ? "التقييم الشخصي" : "Personal evaluation", to: "/operations/personal" }]
   if (pathname.startsWith("/operations/evaluations/"))

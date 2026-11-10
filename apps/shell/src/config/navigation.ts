@@ -223,7 +223,10 @@ export const railGroups: RailItem[][] = [
       match: ["/services", "/cafeteria"],
       children: [
         { title: "Services", titleAr: "الخدمات", path: "/services" },
-        { title: "Cafeteria", titleAr: "الكافتيريا", path: "/cafeteria" },
+        { title: "Submitted services log", titleAr: "سجل الخدمات المرفوعة", path: "/services/history" },
+        { title: "Hospitality", titleAr: "الضيافة", path: "/services/catalog/hospitality" },
+        { title: "Violation reporting", titleAr: "الإبلاغ عن المخالفات", path: "/services/violations" },
+        { title: "My health", titleAr: "صحتي", path: "/services/health" },
         { title: "My orders", titleAr: "طلباتي", path: "/cafeteria/orders" },
       ],
     },

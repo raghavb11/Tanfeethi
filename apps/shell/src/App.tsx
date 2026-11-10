@@ -97,6 +97,17 @@ const ApprovalDetailPage = lazy(() =>
 )
 const HomeV2 = lazy(() => import("@/pages/HomeV2"))
 const NotificationHistoryPage = lazy(() => import("@/pages/NotificationHistory"))
+const ServiceCatalogPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ServiceCatalogPage })))
+const TechnicalServicesPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.TechnicalServicesPage })))
+const ServiceRequestPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ServiceRequestPage })))
+const ReportFaultPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ReportFaultPage })))
+const ServicesHistoryPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ServicesHistoryPage })))
+const StepsLeaderboardPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.StepsLeaderboardPage })))
+const WaiterRequestPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.WaiterRequestPage })))
+const ViolationsHubPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ViolationsHubPage })))
+const ViolationReportFormPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ViolationReportFormPage })))
+const ViolationFollowUpPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ViolationFollowUpPage })))
+const ViolationReportDetailPage = lazy(() => import("@reach/domain-services").then((m) => ({ default: m.ViolationReportDetailPage })))
 const CalendarPage = lazy(() => import("@reach/domain-work").then((m) => ({ default: m.CalendarPage })))
 const CalendarEventEditorPage = lazy(() => import("@reach/domain-work").then((m) => ({ default: m.CalendarEventEditorPage })))
 const ProfilePage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ProfilePage })))
@@ -261,6 +272,20 @@ export default function App() {
         <Route path="partner/vouchers" element={<PartnerVouchersPage />} />
         <Route path="payslip" element={<PayslipPage />} />
         <Route path="services" element={<ServicesPage />} />
+        {/* specific catalog routes before :catalogId */}
+        <Route path="services/catalog/it/technical" element={<TechnicalServicesPage />} />
+        <Route path="services/catalog/it/report-fault" element={<ReportFaultPage />} />
+        <Route path="services/catalog/:catalogId" element={<ServiceCatalogPage />} />
+        <Route path="services/request/:serviceId" element={<ServiceRequestPage />} />
+        <Route path="services/history" element={<ServicesHistoryPage />} />
+        <Route path="services/health" element={<StepsLeaderboardPage />} />
+        <Route path="services/hospitality/waiter" element={<WaiterRequestPage />} />
+        <Route path="services/violations" element={<ViolationsHubPage />} />
+        <Route path="services/violations/new" element={<ViolationReportFormPage />} />
+        <Route path="services/violations/reports" element={<ViolationFollowUpPage mode="reporter" />} />
+        <Route path="services/violations/reports/:reportId" element={<ViolationReportDetailPage mode="reporter" />} />
+        <Route path="services/violations/queue" element={<ViolationFollowUpPage mode="investigator" />} />
+        <Route path="services/violations/queue/:reportId" element={<ViolationReportDetailPage mode="investigator" />} />
         <Route path="cafeteria" element={<CafeteriaPage />} />
         <Route path="cafeteria/orders" element={<CafeteriaOrdersPage />} />
         <Route path="cafeteria/admin" element={<CafeteriaAdminPage />} />
