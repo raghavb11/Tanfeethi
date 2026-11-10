@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
@@ -17,9 +17,9 @@ import {
 import { executiveVisits, performance, ROTATIONS, SERVICES, TODAY, WEEK, WEEK_TARGET_H } from "../data/mock/hub"
 import { HOLIDAYS, type LeaveType, useLiveLeaveTypes } from "../data/mock/leave"
 import { LeaveDistribution, PendingLeaveList } from "../components/LeaveWidgets"
-import { childrenOf, ME_ID, personById } from "../data/mock/org"
+import { childrenOf, ME_ID, personById, teamSize } from "../data/mock/org"
 import {
-  Bar, Chip, GoldButton, hmShort, IconBadge, Initials, OutlineButton, Page, Ring, SectionCard, Separator, ServiceButton, Tile, to12h,
+  Bar, Chip, GoldButton, hmShort, IconBadge, Initials, OutlineButton, Page, Ring, SectionCard, ServiceButton, Tile, to12h,
 } from "../components/wijha"
 import { HoursGlyph, WeeklyHoursDialog } from "../components/WeeklyHoursDialog"
 import { initialsOf, OrgStructureDialog } from "../components/OrgStructureDialog"
@@ -43,8 +43,10 @@ export default function EmployeeCenter() {
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
-  const [weekOpen, setWeekOpen] = React.useState(false)
-  const [orgOpen, setOrgOpen] = React.useState(false)
+  // ?popup=hours | org opens a popup directly (deep links and pixel captures)
+  const [params] = useSearchParams()
+  const [weekOpen, setWeekOpen] = React.useState(params.get("popup") === "hours")
+  const [orgOpen, setOrgOpen] = React.useState(params.get("popup") === "org")
 
   // minute tick so the live worked time keeps moving
   const [, tick] = React.useReducer((n: number) => n + 1, 0)
@@ -60,10 +62,10 @@ export default function EmployeeCenter() {
       {/* ── main grid: wide column (start) · narrow column (end) — 729 / 480 at 1440 ── */}
       <div className="mt-10 grid items-start gap-5 xl:grid-cols-[minmax(0,729fr)_minmax(0,480fr)]">
         <div className="min-w-0 space-y-6">
-          {/* three small cards */}
-          <div className="grid gap-6 sm:grid-cols-3">
+          {/* three small cards — 231 · 231 · 219 wide, 81 tall */}
+          <div className="grid gap-6 sm:grid-cols-[231fr_231fr_219fr]">
             <button type="button" onClick={() => navigate("/benefits/partners")}
-              className="flex h-[81px] items-center justify-center gap-3 rounded-xl bg-[#1aad70] px-5 text-white transition-[filter] hover:brightness-110"
+              className="flex h-[81px] items-center justify-center gap-3 rounded-xl bg-[#009e69] px-5 text-white transition-[filter] hover:brightness-110"
               aria-label={t("WalaPlus loyalty programme", "برنامج ولاء بلس")}>
               <HeartHandshake className="size-9" strokeWidth={1.6} />
               <span className="flex flex-col items-start leading-none">
@@ -72,22 +74,22 @@ export default function EmployeeCenter() {
               </span>
             </button>
 
-            <button type="button" onClick={() => navigate("/services")} className="panel flex h-[81px] items-center gap-3 rounded-xl px-5 text-start transition-colors hover:bg-secondary/40">
+            <button type="button" onClick={() => navigate("/services")} className="panel flex h-[81px] items-center gap-3 rounded-xl px-[18px] text-start transition-colors hover:bg-secondary/40">
               <Car className="size-6 shrink-0 text-primary" strokeWidth={1.6} />
-              <span className="min-w-0">
-                <span className="block text-[22px] font-semibold leading-tight">{executiveVisits.count} {t("visits", "زيارات")}</span>
-                <span className="block text-[12.5px] text-muted-foreground">{t("Executive services", "خدمات التنفيذي")}</span>
+              <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="block text-[24px] font-semibold leading-[31px]">{executiveVisits.count} {t("visits", "زيارات")}</span>
+                <span className="block text-[11.5px] leading-[15px] text-muted-foreground">{t("Al Tanfeethi Services", "خدمات التنفيذي")}</span>
               </span>
             </button>
 
-            <button type="button" onClick={() => setWeekOpen(true)} className="panel flex h-[81px] items-center gap-3 rounded-xl px-5 text-start transition-colors hover:bg-secondary/40"
+            <button type="button" onClick={() => setWeekOpen(true)} className="panel flex h-[81px] items-center gap-3 rounded-xl px-[18px] text-start transition-colors hover:bg-secondary/40"
               aria-haspopup="dialog">
-              <HoursGlyph className="size-7" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[16px] font-semibold leading-tight">
-                  {Math.floor(weekMin / 60)} {t("h", "ساعة")} <span className="text-[13px] font-medium text-muted-foreground">/ {WEEK_TARGET_H} {t("h", "ساعة")}</span>
+              <HoursGlyph className="size-6" />
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="block truncate text-[14px] font-semibold leading-8">
+                  {Math.floor(weekMin / 60)} {t("h", "ساعة")} <span className="font-normal">/ {WEEK_TARGET_H} {t("h", "ساعة")}</span>
                 </span>
-                <span className="block truncate text-[12.5px] text-muted-foreground">{t("Your hours this week", "دوامك لهذا الأسبوع")}</span>
+                <span className="block truncate text-[11.5px] leading-[15px] text-muted-foreground">{t("Your hours this week", "دوامك لهذا الأسبوع")}</span>
               </span>
               {isAr ? <ChevronLeft className="size-4 shrink-0 text-icon" /> : <ChevronRight className="size-4 shrink-0 text-icon" />}
             </button>
@@ -103,8 +105,8 @@ export default function EmployeeCenter() {
 
         <div className="min-w-0 space-y-6">
           <ShiftsCard />
-          <SectionCard icon={Link2} title={t("Services", "خدمات")}>
-            <div className="grid grid-cols-4 gap-x-2 gap-y-6 pt-2">
+          <SectionCard icon={Link2} title={t("Services", "خدمات")} bodyClassName="mt-[22px]">
+            <div className="grid grid-cols-4 gap-y-6 pb-2 sm:grid-cols-[repeat(4,62px)] sm:justify-start sm:gap-x-[43px] sm:ps-[19px]">
               {SERVICES.map((s) => (
                 <ServiceButton key={s.id} icon={SERVICE_ICON[s.icon]} label={isAr ? s.labelAr : s.label} onClick={() => navigate(s.to)} />
               ))}
@@ -152,19 +154,20 @@ function AttendanceHero() {
   const rows = [
     { label: t("Check-in", "حضور"), value: to12h(clock.checkIn) },
     { label: t("Check-out", "إنصراف"), value: clock.checkOut ? to12h(clock.checkOut) : "—" },
-    { label: t("Hours remaining", "الساعات المتبقية"), value: status === "not-started" ? "—" : `${Math.floor(remaining / 60)}h : ${String(remaining % 60).padStart(2, "0")}m` },
+    { label: t("Total hours", "أجمالي الساعات"), value: status === "not-started" ? "—" : `${Math.floor(worked / 60)}h : ${String(worked % 60).padStart(2, "0")}m` },
   ]
 
+  // Figma 2101:2030 — 220 tall: 40 top/bottom, 24 start / 56 end padding, radius 16.
   return (
-    <section className="highlight-card hl-green rounded-2xl px-5 py-6 sm:py-10 sm:ps-6 sm:pe-14">
+    <section className="highlight-card hl-green rounded-2xl px-5 py-6 sm:py-[39px] sm:ps-[23px] sm:pe-[55px]">
       <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-        {/* start: date + actions */}
-        <div className="flex min-w-0 flex-col gap-6 md:w-[390px] md:justify-between md:self-stretch">
+        {/* start: date + actions (390 wide, title block and buttons pushed apart) */}
+        <div className="flex min-w-0 flex-col gap-6 md:min-h-[140px] md:w-[390px] md:justify-between md:gap-4 md:self-stretch">
           <div className="space-y-2">
             <h2 className="text-[24px] font-normal leading-[38px] tracking-[-0.01em] sm:text-[27px]">
               {isAr ? `${TODAY.weekdayAr} -- ${TODAY.dateAr}` : `${TODAY.weekday} — ${TODAY.date}`}
             </h2>
-            <p className="text-[12.5px] text-foreground/90">{t("Manage your attendance, leave and expenses smoothly", "أدر حضورك و إجازاتك ومصاريفك بسلاسة")}</p>
+            <p className="text-[12.5px] leading-4 text-muted-foreground">{t("Manage your attendance, leave and expenses with ease", "أدر حضورك و إجازاتك ومصاريفك بسلاسة")}</p>
           </div>
 
           {/* geofence strip — drawn on the phone frame only */}
@@ -176,7 +179,7 @@ function AttendanceHero() {
           <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:gap-6">
             {action === "out" ? (
               <button type="button" onClick={() => setConfirm({ action: "out", at: nowTime() })}
-                className="inline-flex h-[34px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--error)] text-[13px] font-bold text-white transition-[filter] hover:brightness-110">
+                className="inline-flex h-[34px] flex-1 items-center justify-center gap-2 rounded-lg bg-[rgba(180,35,24,0.5)] md:w-[181.5px] md:flex-none text-[13px] font-bold text-foreground transition-[filter] hover:brightness-125">
                 <LogOut className="size-4 md:hidden" />{t("Check out", "تسجيل خروج")}
               </button>
             ) : (
@@ -185,7 +188,7 @@ function AttendanceHero() {
               </GoldButton>
             )}
             {status === "working" && (
-              <OutlineButton className={cn("h-[34px] flex-1 text-[13px] font-bold", onBreak && "border-warning/60 text-warning")} onClick={toggleBreak} aria-pressed={onBreak}>
+              <OutlineButton className={cn("h-[34px] flex-1 border-[1.5px] md:w-[184.5px] md:flex-none border-secondary text-[13px] font-bold", onBreak && "border-warning/60 text-warning")} onClick={toggleBreak} aria-pressed={onBreak}>
                 <Coffee className="size-4 md:hidden" />{onBreak ? t("End break", "إنهاء الإستراحة") : t("Break", "إستراحة")}
               </OutlineButton>
             )}
@@ -218,20 +221,20 @@ function AttendanceHero() {
           )}
         </div>
 
-        {/* end: ring + times */}
+        {/* end: ring + times (ring 140, 32 gap, 135-wide list) */}
         <div className="flex items-center gap-8 self-center md:self-auto">
-          <dl className="w-[150px] space-y-2.5 text-[12px]">
+          <dl className="flex w-[135px] flex-col gap-2.5">
             {rows.map((r) => (
-              <div key={r.label} className="flex items-center justify-between gap-3">
-                <dt className="text-foreground/90">{r.label}</dt>
-                <dd className="font-medium tabular-nums" dir="ltr">{r.value}</dd>
+              <div key={r.label} className="flex h-[15px] items-center justify-between gap-2">
+                <dt className="text-[11px] leading-[14px]">{r.label}</dt>
+                <dd className="text-[11.5px] font-semibold leading-[15px] tabular-nums" dir="ltr">{r.value}</dd>
               </div>
             ))}
           </dl>
-          <Ring value={worked / (clock.targetHours * 60)} size={140} stroke={14}>
-            <span>
-              <span className="block text-[10.5px] text-foreground/80">{onBreak ? t("On break", "في إستراحة") : t("Your attendance", "سجل حضورك")}</span>
-              <span className="mt-1 block text-[18px] font-bold">{hmShort(worked, isAr)}</span>
+          <Ring value={worked / (clock.targetHours * 60)} size={140} stroke={18} track="var(--background)">
+            <span className="flex flex-col items-center gap-[4.5px]">
+              <span className="block text-[10.3px] leading-[13px] text-muted-foreground">{onBreak ? t("On break", "في إستراحة") : t("Your attendance", "سجل حضورك")}</span>
+              <span className="block text-[17.2px] font-bold leading-[27px]">{hmShort(worked, isAr)}</span>
             </span>
           </Ring>
         </div>
@@ -241,6 +244,7 @@ function AttendanceHero() {
 }
 
 // ─── my balance ──────────────────────────────────────────────────────────────
+/** Figma 2101:2180 — 729 × 503: tiles 96 tall, pending tiles 65, distribution rows 81. */
 function BalanceCard() {
   const { locale } = useShell()
   const isAr = locale === "ar"
@@ -252,38 +256,44 @@ function BalanceCard() {
   const left = (x: LeaveType) => x.entitled - x.used
 
   return (
-    <SectionCard icon={Umbrella} title={t("My balance", "رصيدي")}
-      action={<GoldButton size="sm" onClick={() => navigate("/leave/request")}><Plus className="size-4" />{t("Request leave", "طلب إجازة")}</GoldButton>}>
+    <SectionCard icon={Umbrella} title={t("My balance", "رصيدي")} bodyClassName="mt-2"
+      action={<GoldButton size="sm" className="gap-2 px-[17px] text-[12px]" onClick={() => navigate("/leave/request")}><Plus className="size-3" />{t("Request leave", "طلب إجازة")}</GoldButton>}>
       <div className="grid gap-6 sm:grid-cols-2">
-        <Tile className="flex items-start gap-3">
-          <IconBadge icon={Umbrella} tone="violet" />
-          <div className="min-w-0">
-            <div className="text-[12.5px] text-muted-foreground">{t("Your leave balance", "رصيد إجازتك")}</div>
-            <div className="mt-1 text-[14.5px]"><b className="text-[17px] font-semibold">{left(annual)}</b> {t("days", "يوم")}</div>
-            <div className="mt-2 text-[12px] text-muted-foreground">{annual.used}/{annual.entitled} {t("used", "مستخدم")}</div>
-          </div>
-        </Tile>
-        <Tile className="flex items-start gap-3">
-          <IconBadge icon={Umbrella} tone="violet" />
-          <div className="min-w-0">
-            <div className="text-[12.5px] text-muted-foreground">{t("Upcoming holiday", "إجازة قادمة")}</div>
-            <div className="mt-1 text-[17px] font-semibold">{isAr ? holiday.nameAr : holiday.name}</div>
-            <div className="mt-2 text-[12px] text-muted-foreground">{isAr ? holiday.startAr : holiday.start} · {holiday.days} {t("days", "أيام")}</div>
-          </div>
-        </Tile>
+        <BalanceTile label={t("Your leave balance", "رصيد إجازتك")}
+          value={<><b className="text-[15.5px] font-semibold leading-5">{left(annual)}</b> <span className="text-[10px] leading-[13px]">{t("days", "يوم")}</span></>}
+          sub={`${annual.used}/${annual.entitled} ${t("used", "مستخدم")}`} />
+        <BalanceTile label={t("Upcoming leave", "إجازة قادمة")}
+          value={<span className="text-[14px] font-semibold leading-[18px]">{isAr ? holiday.nameAr : holiday.name}</span>}
+          sub={isAr ? holiday.startAr : holiday.start} subClass="text-[10px] leading-[13px]" />
       </div>
 
-      <div className="mb-3 mt-4 text-[12.5px] text-muted-foreground">{t("Requests under review", "طلبات قيد المراجعة")}</div>
+      <div className="mb-3 mt-4 text-[12.5px] leading-4 text-muted-foreground">{t("Requests under review", "طلبات قيد المراجعة")}</div>
       <PendingLeaveList limit={2} />
 
-      <Separator className="mt-6 h-0.5" />
-      <div className="mt-4 text-[12.5px] text-muted-foreground">{t("Leave distribution", "توزيع الإجازات")}</div>
-      <div className="mt-1"><LeaveDistribution /></div>
+      <div aria-hidden className="mt-4 h-0.5 bg-gradient-to-r from-transparent via-secondary/75 to-transparent" />
+      <div className="mt-4 text-[12.5px] leading-4 text-muted-foreground">{t("Leave breakdown", "توزيع الإجازات")}</div>
+      <LeaveDistribution />
     </SectionCard>
   )
 }
 
+function BalanceTile({ label, value, sub, subClass = "text-[11px] leading-[14px]" }: { label: string; value: React.ReactNode; sub: string; subClass?: string }) {
+  return (
+    <div className="flex min-h-[96px] items-start gap-3 rounded-[10px] bg-background p-4 ring-1 ring-border ring-inset">
+      <span className="grid size-[26px] shrink-0 place-items-center rounded-md bg-secondary">
+        <Umbrella className="size-3.5 text-[#a997c7]" strokeWidth={1.75} />
+      </span>
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="text-[11px] leading-[14px] text-muted-foreground">{label}</div>
+        <div className="flex items-baseline gap-1">{value}</div>
+        <div className={cn("text-muted-foreground", subClass)}>{sub}</div>
+      </div>
+    </div>
+  )
+}
+
 // ─── org structure ───────────────────────────────────────────────────────────
+/** Figma 2101:2277 — 352.5 × 424: manager 70, you 91, reports 58, 12px connectors. */
 function OrgCard({ onOpen }: { onOpen: () => void }) {
   const { locale } = useShell()
   const isAr = locale === "ar"
@@ -294,105 +304,114 @@ function OrgCard({ onOpen }: { onOpen: () => void }) {
   const ini = (p: { nameAr: string; initials: string }) => (isAr ? initialsOf(p.nameAr) : p.initials)
 
   return (
-    <SectionCard icon={Building2} title={t("Org structure", "الهيكل التنظيمي")} className="flex flex-col sm:px-4" bodyClassName="flex flex-1 flex-col">
-      <div className="relative space-y-3">
-        <span aria-hidden className="absolute inset-y-6 left-1/2 w-0.5 -translate-x-1/2 bg-secondary" />
+    <SectionCard icon={Building2} title={t("Org chart", "الهيكل التنظيمي")} className="flex flex-col sm:px-[18px]" bodyClassName="mt-3 flex flex-1 flex-col">
+      <div>
         {mgr && (
-          <div className="relative flex items-center gap-3 rounded-xl bg-background px-5 py-4">
-            <Initials text={ini(mgr)} tone="violet" className="size-10" />
-            <div className="min-w-0">
-              <div className="text-[12px] text-muted-foreground">{t("Manager", "المدير")}</div>
-              <div className="truncate text-[15px] font-semibold">{isAr ? mgr.nameAr : mgr.name}</div>
+          <>
+            <div className="flex h-[70px] items-center gap-3 rounded-xl bg-background px-4">
+              <Initials text={ini(mgr)} tone="violet" className="size-[38px] text-[12px]" />
+              <div className="min-w-0">
+                <div className="text-[11px] leading-[14px] text-muted-foreground">{t("Manager", "المدير")}</div>
+                <div className="mt-1 truncate text-[13px] font-semibold leading-[17px]">{isAr ? mgr.nameAr : mgr.name}</div>
+              </div>
             </div>
-          </div>
+            <OrgConnector />
+          </>
         )}
-        <div className="relative flex items-center gap-3 rounded-xl px-5 py-6 [background-color:color-mix(in_oklab,var(--primary)_22%,var(--background))]">
-          <Initials text={ini(me)} tone="accent" className="size-[46px]" />
+        <div className="flex h-[91px] items-center gap-3 rounded-xl px-4 [background-color:color-mix(in_srgb,var(--primary)_18%,var(--background))]">
+          <Initials text={ini(me)} tone="accent" className="size-11" />
           <div className="min-w-0">
-            <div className="truncate text-[15px] font-semibold">{isAr ? me.nameAr : me.name}</div>
-            <div className="truncate text-[12px] text-muted-foreground">{isAr ? me.titleAr : me.title}</div>
+            <div className="truncate text-[13px] font-semibold leading-[17px]">{isAr ? me.nameAr : me.name}</div>
+            <div className="mt-1 truncate text-[11px] leading-[14px] text-muted-foreground">{isAr ? me.titleAr : me.title}</div>
           </div>
         </div>
-        <div className="relative flex items-center justify-between gap-3 rounded-xl bg-background px-5 py-3.5">
+        <OrgConnector />
+        <div className="flex h-[58px] items-center justify-between gap-3 rounded-xl bg-background px-4">
           <div className="min-w-0">
-            <div className="text-[12px] text-muted-foreground">{t("Your direct reports", "تقاريرك المباشرة")}</div>
-            <div className="text-[14px]"><b className="font-semibold">{reports.length}</b> {t(reports.length === 1 ? "employee" : "employees", reports.length >= 3 && reports.length <= 10 ? "موظفين" : "موظف")}</div>
+            <div className="text-[11px] leading-[14px] text-muted-foreground">{t("Your direct reports", "تقاريرك المباشرة")}</div>
+            <div className="mt-1 text-[12.5px] leading-4"><b className="font-semibold">{reports.length}</b> {t("Employee", reports.length >= 3 && reports.length <= 10 ? "موظفين" : "موظف")} <span className="text-[11.5px] text-muted-foreground">{t(`· ${teamSize(ME_ID)} extended`, `· ${teamSize(ME_ID)} ممتد`)}</span></div>
           </div>
           {reports.length > 0 ? (
-            <div className="flex -space-x-1.5 rtl:space-x-reverse">
-              {reports.slice(0, 3).map((r) => (
-                <span key={r.id} className="grid size-6 place-items-center rounded-full bg-secondary text-[9px] font-medium ring-2 ring-background" dir="ltr">{r.initials}</span>
+            <div className="flex">
+              {reports.slice(0, 3).map((r, i) => (
+                <span key={r.id} className={cn("grid size-[26px] place-items-center rounded-full bg-secondary text-[9.5px] font-medium ring-2 ring-background", i > 0 && "-ms-[5px]")} dir="ltr">{r.initials}</span>
               ))}
-              {reports.length > 3 && <span className="grid size-6 place-items-center rounded-full bg-soft-accent text-[9px] text-primary ring-2 ring-background">+{reports.length - 3}</span>}
+              {reports.length > 3 && <span className="-ms-[5px] grid size-[26px] place-items-center rounded-full bg-soft-accent text-[9.5px] text-primary ring-2 ring-background" dir="ltr">{reports.length - 3}+</span>}
             </div>
           ) : <span className="text-[12px] text-muted-foreground">{t("None", "لا يوجد")}</span>}
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 text-[12.5px] text-muted-foreground">
-        <span className="inline-flex min-w-0 items-center gap-1.5"><Mail className="size-4 shrink-0 text-primary" /><span className="truncate" dir="ltr">{emp.email}</span></span>
-        <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-primary" />{isAr ? `${emp.cityAr} · ${emp.workModeAr}` : `${emp.city} · ${emp.workMode}`}</span>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-y-2 text-[11.5px] leading-[15px] text-muted-foreground">
+        <span className="inline-flex h-7 min-w-0 items-center gap-1.5 px-2.5"><Mail className="size-[13px] shrink-0 text-primary" /><span className="truncate" dir="ltr">{emp.email}</span></span>
+        <span className="inline-flex h-7 items-center gap-1.5 px-2.5"><MapPin className="size-[13px] text-primary" />{isAr ? `${emp.cityAr} · ${emp.workModeAr}` : `${emp.city} · ${emp.workMode}`}</span>
       </div>
 
       <button type="button" onClick={onOpen} aria-haspopup="dialog"
-        className="mt-auto inline-flex items-center gap-1.5 self-end pt-6 text-[13.5px] font-medium text-primary hover:underline">
-        {t("View org structure", "عرض الهيكل التنظيمي")}
+        className="mt-2 inline-flex h-10 w-full items-center justify-start gap-1.5 rounded-lg px-3 text-[12.5px] font-medium text-primary hover:bg-soft-accent">
+        {t("View org chart", "عرض الهيكل التنظيمي")}
         {isAr ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
       </button>
     </SectionCard>
   )
 }
 
+/** 3 × 12 connector between the org tiles. */
+function OrgConnector() {
+  return <span aria-hidden className="mx-auto block h-3 w-[3px] rounded-full bg-secondary" />
+}
+
 // ─── performance ─────────────────────────────────────────────────────────────
+/** Figma 2101:2340 — goal rows 61 tall (label 12.5, 34px % column, 6px bar), footer 36. */
 function PerformanceCard() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   return (
-    <SectionCard icon={LineChart} title={t("Performance", "الأداء")} className="flex flex-col" bodyClassName="flex flex-1 flex-col">
+    <SectionCard icon={LineChart} title={t("Performance", "الأداء")} className="flex flex-col sm:px-[18px]" bodyClassName="mt-3 flex flex-1 flex-col">
       <div>
         {performance.goals.map((g) => (
-          <div key={g.id} className="border-b border-secondary py-3.5 first:pt-1">
-            <div className="text-[14.5px]">{isAr ? g.titleAr : g.title}</div>
-            <div className="mt-2 flex items-center gap-4">
+          <div key={g.id} className="border-b border-secondary py-3">
+            <div className="truncate text-[12.5px] leading-4">{isAr ? g.titleAr : g.title}</div>
+            <div className="mt-1.5 flex h-[15px] items-center gap-2.5">
               <Bar className="flex-1" value={g.pct} tone={g.pct >= 75 ? "success" : "warning"} />
-              <span className="w-9 shrink-0 text-end text-[12.5px] text-muted-foreground tabular-nums" dir="ltr">{g.pct}%</span>
+              <span className="w-[34px] shrink-0 text-center text-[11.5px] leading-[15px] text-muted-foreground tabular-nums" dir="ltr">{g.pct}%</span>
             </div>
           </div>
         ))}
       </div>
-      <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-8">
-        <div className="max-w-[110px] text-[12.5px] text-muted-foreground">{t("Next review", "المراجعة القادمة")} · {isAr ? performance.nextReviewAr : performance.nextReview}</div>
-        <div className="flex items-baseline gap-1.5" dir="ltr">
-          <span className="text-[34px] font-bold leading-none">{performance.rating}</span>
-          <span className="text-[13px] text-muted-foreground">/ {performance.outOf}</span>
+      <div className="mt-auto flex items-center justify-between gap-2.5 pt-8">
+        <div className="max-w-[114px] text-[11.5px] leading-[15px] text-muted-foreground">{t("Next review", "المراجعة القادمة")} · {isAr ? performance.nextReviewAr : performance.nextReview}</div>
+        <div className="flex items-baseline gap-2" dir="ltr">
+          <span className="text-[28px] font-bold leading-9">{performance.rating}</span>
+          <span className="text-[13px] leading-[17px] text-muted-foreground">/ {performance.outOf}</span>
         </div>
-        <Chip tone="success" icon={TrendingUp}>{isAr ? performance.verdictAr : performance.verdict}</Chip>
+        <Chip tone="success" icon={TrendingUp} className="px-2.5 text-[11.5px] [&_svg]:size-3">{isAr ? performance.verdictAr : performance.verdict}</Chip>
       </div>
     </SectionCard>
   )
 }
 
 // ─── shift roster ────────────────────────────────────────────────────────────
+/** Figma 2101:2051 — 480 × 519.5, three rotation cards 157 / 78.5 / 157, 16 apart. */
 function ShiftsCard() {
   const { locale } = useShell()
   const isAr = locale === "ar"
   const t = (en: string, ar: string) => (isAr ? ar : en)
   const navigate = useNavigate()
   return (
-    <SectionCard icon={CalendarDays} title={t("Shift roster", "جدول المناوبات")} className="sm:px-4"
-      action={<span className="text-[12px] text-muted-foreground">{ROTATIONS.length} {t("rotations", "مناوبات")}</span>}>
+    <SectionCard icon={CalendarDays} title={t("Shift schedule", "جدول المناوبات")} className="sm:px-4"
+      action={ROTATIONS.length > 3 ? (
+        <button type="button" onClick={() => navigate("/employee/shifts")} className="inline-flex h-[18px] items-center gap-0.5 text-[11.5px] text-muted-foreground hover:text-primary">
+          {t("View all", "عرض الكل")}{isAr ? <ChevronLeft className="size-3" /> : <ChevronRight className="size-3" />}
+        </button>
+      ) : undefined}>
       {ROTATIONS.length === 0 ? (
         <p className="py-8 text-center text-[13px] text-muted-foreground">{t("No rotations scheduled.", "لا توجد مناوبات مجدولة.")}</p>
       ) : (
         <div className="space-y-4">
           {ROTATIONS.slice(0, 3).map((r) => <RotationCard key={r.id} r={r} />)}
         </div>
-      )}
-      {ROTATIONS.length > 3 && (
-        <button type="button" onClick={() => navigate("/employee/shifts")} className="mx-auto mt-4 flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
-          {t("View all", "عرض جميع المواعيد")}{isAr ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
-        </button>
       )}
     </SectionCard>
   )

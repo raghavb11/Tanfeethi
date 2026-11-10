@@ -10,7 +10,7 @@ export type Suggestion = {
 }
 
 const SEED: Suggestion[] = [
-  { id: "sg1", subjectId: "p2", text: "Pull the numbers from the finance dashboard", textAr: "اسحب الأرقام من لوحة المالية" },
+  { id: "sg1", subjectId: "p2", text: "Pull the figures from the finance dashboard", textAr: "اسحب الأرقام من لوحة المالية" },
   { id: "sg2", subjectId: "p2", text: "Compare the hospitality contracts with the Jeddah contract", textAr: "قارن عقود الضيافة بعقد جدة" },
   { id: "sg3", subjectId: "p1", text: "Book a 20-minute walkthrough with the IT manager", textAr: "احجز 20 دقيقة مع مدير التقنية لاستعراض التجربة" },
   { id: "sg4", subjectId: "p6", text: "Attach the contractor's revised scope before sign-off", textAr: "أرفق النطاق المعدّل من المقاول قبل الاعتماد" },

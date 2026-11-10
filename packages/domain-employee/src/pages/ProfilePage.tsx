@@ -37,10 +37,10 @@ export default function ProfilePage() {
             </div>
             <div className="overflow-hidden rounded-[10px] bg-background">
               <InfoRow label={t("Email", "البريد")} value={emp.email} ltr />
-              <InfoRow label={t("Mobile number", "رقم الجوال")} value={businessCard.mobile} ltr />
-              <InfoRow label={t("Department", "الإدارة")} value={isAr ? emp.departmentAr : emp.department} />
-              <InfoRow label={t("Direct manager", "المدير المباشر")} value={isAr ? emp.managerAr : emp.manager} />
-              <InfoRow label={t("Work location", "موقع العمل")} value={isAr ? emp.locationAr : emp.location} />
+              <InfoRow label={t("Mobile Number", "رقم الجوال")} value={businessCard.mobile} ltr />
+              <InfoRow label={t("Department", "الإدارة")} value={isAr ? emp.sectorAr : emp.sector} />
+              <InfoRow label={t("Direct Manager", "المدير المباشر")} value={isAr ? emp.managerAr : emp.manager} />
+              <InfoRow label={t("Work Location", "موقع العمل")} value={isAr ? emp.locationAr : emp.location} />
             </div>
           </SectionCard>
 

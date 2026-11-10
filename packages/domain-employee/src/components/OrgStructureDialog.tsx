@@ -57,8 +57,8 @@ export function OrgStructureDialog({ open, onOpenChange }: { open: boolean; onOp
       >
         {/* header */}
         <div className="relative z-10 flex items-start justify-between gap-3 bg-gradient-to-b from-popover via-popover to-popover/80 px-6 pb-3 pt-6 shadow-[0_8px_16px_-12px_rgba(0,0,0,0.6)]">
-          <DialogTitle className="sr-only">{t("Org structure", "الهيكل التنظيمي")}</DialogTitle>
-          <CardTitle icon={Building2} title={t("Org structure", "الهيكل التنظيمي")} />
+          <DialogTitle className="sr-only">{t("Org chart", "الهيكل التنظيمي")}</DialogTitle>
+          <CardTitle icon={Building2} title={t("Org chart", "الهيكل التنظيمي")} />
           <DialogClose className="grid size-9 place-items-center rounded-lg text-foreground transition-colors hover:bg-secondary" aria-label={t("Close", "إغلاق")}>
             <X className="size-6" />
           </DialogClose>

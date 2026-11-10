@@ -55,9 +55,9 @@ const SEED_REQUESTS: LeaveRequest[] = [
 ]
 
 export const HOLIDAYS = [
-  { id: "h1", name: "Eid Al-Adha", nameAr: "عيد الأضحى", date: "May 26 – 29, 2026", dateAr: "26 – 29 مايو", start: "May 26", startAr: "26 مايو", days: 4 },
-  { id: "h2", name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: "Sep 23, 2026", dateAr: "23 سبتمبر", start: "Sep 23", startAr: "23 سبتمبر", days: 1 },
-  { id: "h3", name: "Founding Day", nameAr: "يوم التأسيس", date: "Feb 22, 2027", dateAr: "22 فبراير", start: "Feb 22", startAr: "22 فبراير", days: 1 },
+  { id: "h1", name: "Eid al-Adha", nameAr: "عيد الأضحى", date: "26 – 29 May 2026", dateAr: "26 – 29 مايو", start: "26 May", startAr: "26 مايو", days: 4 },
+  { id: "h2", name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: "Sep 23, 2026", dateAr: "23 سبتمبر", start: "23 September", startAr: "23 سبتمبر", days: 1 },
+  { id: "h3", name: "Founding Day", nameAr: "يوم التأسيس", date: "Feb 22, 2027", dateAr: "22 فبراير", start: "22 February", startAr: "22 فبراير", days: 1 },
 ]
 
 /** Colleagues away in the next fortnight — shown as a team-cover check. */

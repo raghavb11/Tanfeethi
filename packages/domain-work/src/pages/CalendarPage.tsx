@@ -33,9 +33,10 @@ function rangeLabel(view: View, date: string, isAr: boolean) {
       ? `${toDate(from).getDate()} — ${toDate(to).getDate()} ${fmt(to, true, { month: "long" })} ${year}`
       : `${toDate(from).getDate()} ${fmt(from, true, { month: "long" })} — ${toDate(to).getDate()} ${fmt(to, true, { month: "long" })} ${year}`
   }
+  // Figma EN: "6 — 10 September 2026"
   return sameMonth
-    ? `${fmt(from, false, { month: "short" })} ${toDate(from).getDate()} – ${toDate(to).getDate()}, ${year}`
-    : `${fmt(from, false, { month: "short", day: "numeric" })} – ${fmt(to, false, { month: "short", day: "numeric" })}, ${year}`
+    ? `${toDate(from).getDate()} — ${toDate(to).getDate()} ${fmt(to, false, { month: "long" })} ${year}`
+    : `${toDate(from).getDate()} ${fmt(from, false, { month: "long" })} — ${toDate(to).getDate()} ${fmt(to, false, { month: "long" })} ${year}`
 }
 
 /** "09:00 – 10:00", isolated left-to-right so RTL text keeps the start first. */
@@ -293,7 +294,7 @@ function MonthGrid({ date, onDay, isAr, t, onOpen, onPickDay }: {
                 <button onClick={() => onPickDay(d)}
                   className="rounded-md border-e-2 px-2 py-1 text-start text-[10.5px] underline underline-offset-2 hover:brightness-125"
                   style={{ backgroundColor: `color-mix(in oklab, ${calendarById(items[1].calendar).color} 18%, var(--background))`, borderInlineEndColor: calendarById(items[1].calendar).color }}>
-                  {t(`+${items.length - 1} more events`, `+${items.length - 1} فعاليات إضافية`)}
+                  {t(`${items.length - 1}+ more events`, `${items.length - 1}+ فعاليات إضافية`)}
                 </button>
               )}
             </div>
@@ -408,8 +409,8 @@ function MyCalendars({ hidden, all, isAr, t, booked }: {
       </ul>
       <div className="card-separator mt-10" />
       <div className="mt-5 flex items-center justify-between gap-3 text-[14px]">
-        <span className="text-muted-foreground">{t("Booked time this week", "الوقت المحجوز هذا الأسبوع")}</span>
-        <span className="font-medium tabular-nums text-primary">{isAr ? `${h} س ${m} د` : `${h}h ${m}m`}</span>
+        <span className="text-muted-foreground">{t("Time booked this week", "الوقت المحجوز هذا الأسبوع")}</span>
+        <span className="font-medium tabular-nums text-primary">{isAr ? `${h} س ${m} د` : `${h} h ${m} m`}</span>
       </div>
     </div>
   )

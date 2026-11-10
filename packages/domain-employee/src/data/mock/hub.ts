@@ -65,7 +65,7 @@ export const SERVICES: ServiceTile[] = [
   { id: "travel", label: "Travel", labelAr: "سفر", icon: "plane", to: "/services" },
   { id: "stay", label: "Accommodation", labelAr: "إقامة", icon: "bed", to: "/services" },
   { id: "meals", label: "Meals", labelAr: "وجبات", icon: "utensils", to: "/cafeteria" },
-  { id: "transport", label: "Transport", labelAr: "تنقلات", icon: "car", to: "/services" },
+  { id: "transport", label: "Transport", labelAr: "تنقّلات", icon: "car", to: "/services" },
   { id: "devices", label: "Devices", labelAr: "أجهزة", icon: "laptop", to: "/employee/assets" },
   { id: "training", label: "Training", labelAr: "تدريب", icon: "graduation", to: "/learning" },
   { id: "card", label: "Business card", labelAr: "بطاقة العمل", icon: "idcard", to: "/employee/card" },
@@ -74,14 +74,14 @@ export const SERVICES: ServiceTile[] = [
 // ─── performance ─────────────────────────────────────────────────────────────
 export const performance = {
   goals: [
-    { id: "g1", title: "Lead the wave-2 launch", titleAr: "قيادة إطلاق الموجة 2", pct: 90 },
-    { id: "g2", title: "Mentor engineers", titleAr: "إرشاد مهندسين", pct: 60 },
-    { id: "g3", title: "Cut incident handling time by 20%", titleAr: "خفض زمن معالجة الحوادث 20٪", pct: 45 },
+    { id: "g1", title: "Lead the Wave 2 launch", titleAr: "قيادة إطلاق الموجة 2", pct: 90 },
+    { id: "g2", title: "Mentoring Engineers", titleAr: "إرشاد مهندسين", pct: 60 },
+    { id: "g3", title: "Reduce incident resolution time by 20%", titleAr: "خفض زمن معالجة الحوادث 20٪", pct: 45 },
   ],
   rating: 4.6,
   outOf: 5,
-  verdict: "Exceeds expectations", verdictAr: "يفوق التوقعات",
-  nextReview: "15 July", nextReviewAr: "15 يوليو",
+  verdict: "Exceeds Expectations", verdictAr: "يفوق التوقعات",
+  nextReview: "July 15", nextReviewAr: "15 يوليو",
 }
 
 // ─── assets / custody (phone 3610:8106) ──────────────────────────────────────
@@ -114,11 +114,11 @@ export function setAssetStatus(id: string, status: AssetStatus) {
 // ─── business-card sharing + profile settings ────────────────────────────────
 export type ShareField = "title" | "department" | "email" | "mobile" | "location"
 export const SHARE_FIELDS: { id: ShareField; label: string; labelAr: string }[] = [
-  { id: "title", label: "Job title", labelAr: "المسمى الوظيفي" },
+  { id: "title", label: "Job Title", labelAr: "المسمى الوظيفي" },
   { id: "department", label: "Department", labelAr: "الإدارة" },
   { id: "email", label: "Email", labelAr: "البريد الإلكتروني" },
-  { id: "mobile", label: "Mobile number", labelAr: "رقم الجوال" },
-  { id: "location", label: "Work location", labelAr: "موقع العمل" },
+  { id: "mobile", label: "Mobile Number", labelAr: "رقم الجوال" },
+  { id: "location", label: "Work Location", labelAr: "موقع العمل" },
 ]
 
 type Prefs = { share: Record<ShareField, boolean>; notifications: boolean }

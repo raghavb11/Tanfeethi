@@ -20,9 +20,9 @@ export const STATUS_META: Record<TaskStatus, {
   hint: string; hintAr: string
 }> = {
   open:          { en: "Backlog",     ar: "قائمة الانتظار", dot: "bg-foreground/70",  color: "color-mix(in oklab, var(--foreground) 75%, transparent)", hint: "Waiting to start",         hintAr: "بإنتظار البدء" },
-  "on-hold":     { en: "On hold",     ar: "معلّقة",          dot: "bg-warning",        color: "var(--warning)", hint: "Waiting on another party", hintAr: "بانتظار طرف آخر" },
-  "in-progress": { en: "In progress", ar: "قيد التنفيذ",     dot: "bg-success",        color: "var(--success)", hint: "Working on it now",        hintAr: "تعمل عليها الآن" },
-  "in-review":   { en: "In review",   ar: "قيد المراجعة",    dot: "bg-info",           color: "var(--info)",    hint: "Waiting for sign-off",     hintAr: "بانتظار الاعتماد" },
+  "on-hold":     { en: "On hold",     ar: "معلّقة",          dot: "bg-warning",        color: "var(--warning)", hint: "Waiting on someone else", hintAr: "بانتظار طرف آخر" },
+  "in-progress": { en: "In progress", ar: "قيد التنفيذ",     dot: "bg-success",        color: "var(--success)", hint: "You're working on these now",        hintAr: "تعمل عليها الآن" },
+  "in-review":   { en: "Under Review",   ar: "قيد المراجعة",    dot: "bg-info",           color: "var(--info)",    hint: "Waiting for sign-off",     hintAr: "بانتظار الاعتماد" },
   completed:     { en: "Completed",   ar: "مكتمل",           dot: "bg-success",        color: "var(--success)", hint: "Done",                     hintAr: "منجزة" },
 }
 
@@ -32,8 +32,8 @@ export const isStatus = (v: string | null | undefined): v is TaskStatus =>
 export const CATEGORIES: { id: CategoryId; en: string; ar: string; chip: string; dot: string }[] = [
   { id: "operations", en: "Operations",      ar: "العمليات",          chip: "bg-soft-accent text-primary",                  dot: "bg-primary" },
   { id: "design",     en: "Design",          ar: "التصميم",           chip: "bg-soft-accent text-primary",                  dot: "bg-primary" },
-  { id: "hr",         en: "Human resources", ar: "الموارد البشرية",   chip: "bg-error-fill text-error",                     dot: "bg-error" },
-  { id: "it",         en: "IT",              ar: "تقنية المعلومات",   chip: "bg-[#a997c7]/15 text-[#a997c7]",               dot: "bg-[#a997c7]" },
+  { id: "hr",         en: "Human Resources", ar: "الموارد البشرية",   chip: "bg-error-fill text-error",                     dot: "bg-error" },
+  { id: "it",         en: "Information Technology",              ar: "تقنية المعلومات",   chip: "bg-[#a997c7]/15 text-[#a997c7]",               dot: "bg-[#a997c7]" },
   { id: "strategy",   en: "Strategy",        ar: "الاستراتيجية",      chip: "bg-foreground/10 text-foreground",             dot: "bg-foreground" },
   { id: "finance",    en: "Finance",         ar: "المالية",           chip: "bg-success-fill text-success",                 dot: "bg-success" },
 ]

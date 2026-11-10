@@ -43,9 +43,14 @@ const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.
 export const useClock = () => React.useSyncExternalStore(subscribe, () => state)
 export const getClock = () => state
 
+/** Pixel-comparison runs ("?static") freeze the clock at the Figma moment
+ *  (checked in 8:00, 3h 56m worked) so the render is deterministic. */
+const FROZEN_NOW =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("static") ? "11:56" : null
+
 /** Wall-clock time, as the record stores it. */
 export const nowTime = () =>
-  new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+  FROZEN_NOW ?? new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
 
 const toMinutes = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number)

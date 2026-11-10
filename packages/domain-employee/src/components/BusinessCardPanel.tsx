@@ -82,15 +82,15 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
   }
 
   const ACTIONS: Record<Action, { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; label: string }> = {
-    email: { icon: MailPlus, label: t("Send by email", "إرسال بالبريد") },
-    contact: { icon: BookUser, label: t("Add to contacts", "إضافة إلى جهات الاتصال") },
-    image: { icon: Download, label: t("Save code as image", "حفظ الرمز كصورة") },
+    email: { icon: MailPlus, label: t("Send by Email", "إرسال بالبريد") },
+    contact: { icon: BookUser, label: t("Add to Contacts", "إضافة إلى جهات الاتصال") },
+    image: { icon: Download, label: t("Save Code as Image", "حفظ الرمز كصورة") },
   }
 
   const subtitle = [share.title ? (isAr ? emp.titleAr : emp.title) : "", share.department ? (isAr ? emp.departmentAr : emp.department) : ""].filter(Boolean).join(" · ")
 
   return (
-    <SectionCard icon={IdCard} title={t("Business card", "بطاقة العمل")} className={className}>
+    <SectionCard icon={IdCard} title={t("Business Card", "بطاقة العمل")} className={className}>
       {/* identity */}
       <div className="flex items-center justify-between gap-4 px-0 pb-5 sm:px-4">
         <div className="min-w-0">
@@ -107,7 +107,7 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
           <QrMatrix payload={vcard} size={29} />
         </div>
         <p className="mt-9 max-w-[250px] text-[12.5px] leading-5 text-muted-foreground">
-          {t("Scan the code to add me to your contacts directly — no app needed.", "امسح الرمز لإضافتي إلى جهات الاتصال مباشرة دون الحاجة إلى التطبيق.")}
+          {t("Scan the code to add me to your contacts directly, no app needed.", "امسح الرمز لإضافتي إلى جهات الاتصال مباشرة دون الحاجة إلى التطبيق.")}
         </p>
         <div className="mt-4 flex items-center gap-1.5">
           <WijhaMark className="size-9" />
@@ -135,7 +135,7 @@ export function BusinessCardPanel({ actions = ["email", "image"], className }: {
       </div>
 
       {/* what is shared */}
-      <div className="mt-8 px-0 pb-4 sm:px-4 text-[17px] font-medium">{t("What is being shared", "ما الذي تتم مشاركته")}</div>
+      <div className="mt-8 px-0 pb-4 sm:px-4 text-[17px] font-medium">{t("What's Being Shared", "ما الذي تتم مشاركته")}</div>
       <div aria-hidden className="h-0.5 bg-secondary" />
       <ul>
         {SHARE_FIELDS.map((f) => (

@@ -227,15 +227,15 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
           <div className="flex min-w-0 flex-col gap-4">
             <h1 className={cn("text-[28px] font-medium leading-[38px] tracking-tight", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
             <div className="flex flex-wrap items-center gap-2.5 text-[14px]">
-              {task && <><CategoryChip id={task.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">•</span></>}
+              {task && <><CategoryChip id={task.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">·</span></>}
               <Initials text={ownerInitials(fields.ownerId)} className="size-6 text-[9px]" />
               <span className="text-muted-foreground">{ownerName(fields.ownerId, isAr)}</span>
             </div>
           </div>
           {project && (
             <div className="flex items-center gap-8 self-center lg:self-auto">
-              <Legend rows={STATUS_ORDER.map((s) => ({ label: isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: statusCount(s), dot: STATUS_META[s].dot }))} />
-              <Donut total={projectTasks.length} label={t("tasks", "مهام")}
+              <Legend rows={STATUS_ORDER.map((s) => ({ label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: statusCount(s), dot: STATUS_META[s].dot }))} />
+              <Donut total={projectTasks.length} label={t("Tasks", "مهام")}
                 slices={STATUS_ORDER.map((s) => ({ value: statusCount(s), color: s === "completed" ? "color-mix(in oklab, var(--success) 70%, var(--background))" : STATUS_META[s].color }))} />
             </div>
           )}
@@ -303,7 +303,7 @@ export function WorkItemDetail({ kind, id }: { kind: "task" | "project"; id: str
                     onChange={(v) => setDraft({ ...draft, sprint: v })}
                     options={SPRINTS.map((s) => ({ value: s.id, label: isAr ? s.ar : s.en }))} />
                 )} />
-              <Row label={kind === "task" ? t("Assignee", "المسؤول") : t("Owner", "المسؤول")} edit={editing}
+              <Row label={t("Assignee", "المسؤول")} edit={editing}
                 view={firstName(ownerName(fields.ownerId, isAr))}
                 control={draft && (
                   <FilterSelect className="w-full max-w-[265px]" lead={<UserRoundCog className="size-4 shrink-0 text-icon" />}
@@ -418,7 +418,7 @@ function ReleaseNote({ value, onSave, isAr, t }: { value: string; onSave: (v: st
         <textarea
           value={text} onChange={(e) => setText(e.target.value)} rows={5}
           aria-label={t("Release note", "ملاحظة النشر")}
-          placeholder={t("Write release notes: what changed, verification steps, and the rollback plan…", "اكتب ملاحظات النشر: ما الذي تغيّر، خطوات التحقق، وخطة التراجع…")}
+          placeholder={t("Write release notes: what changed, verification steps and rollback plan…", "اكتب ملاحظات النشر: ما الذي تغيّر، خطوات التحقق، وخطة التراجع…")}
           className={cn("min-h-[135px] w-full resize-y rounded-lg border bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground",
             dirty ? "border-primary" : "border-input focus:border-primary/60")}
         />
@@ -442,7 +442,7 @@ function SubTasks({ project, tasks, isAr, t }: { project: Project; tasks: Task[]
   const rows = [...tasks].sort((a, b) => (a.status === "completed" ? 1 : 0) - (b.status === "completed" ? 1 : 0) || a.dueISO.localeCompare(b.dueISO))
   return (
     <Panel>
-      <CardHeader icon={ListChecks} title={t("Sub-tasks", "المهام الفرعية")}
+      <CardHeader icon={ListChecks} title={t("Subtasks", "المهام الفرعية")}
         actions={
           <button onClick={() => navigate(`/tasks/new?project=${project.id}&from=project`)}
             className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
@@ -554,7 +554,7 @@ function Suggestions({ project, isAr, t }: { project: Project; isAr: boolean; t:
           <div key={s.id} className="flex flex-col gap-5 rounded-xl bg-background/60 p-6 ring-1 ring-inset ring-input">
             <p className="text-[14px]">{isAr ? s.textAr : s.text}</p>
             <div className="grid grid-cols-2 gap-5">
-              <Btn variant="primary" onClick={() => accept(s.id, s.text, s.textAr)}>{t("Add as a sub-task", "أضفه كمهمة فرعية")}</Btn>
+              <Btn variant="primary" onClick={() => accept(s.id, s.text, s.textAr)}>{t("Add as subtask", "أضفه كمهمة فرعية")}</Btn>
               <Btn onClick={() => { addAiEvent(project.id, `Suggestion turned down: ${s.text}`, `رُفض الاقتراح: ${s.textAr}`); dismissSuggestion(s.id) }}>{t("Reject", "رفض")}</Btn>
             </div>
           </div>
@@ -599,7 +599,7 @@ function Activity({ subjectId, isAr, t, asManager, task }: { subjectId: string; 
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); post() } }}
             placeholder={asManager && task?.assignee
               ? t(`Leave a comment for ${task.assignee}…`, `اترك تعليقًا لـ ${task.assigneeAr}…`)
-              : t("Add a comment…", "أضف تعليقًا...")}
+              : t("Add a comment…", "أضف تعليقًا…")}
             aria-label={t("Add a comment", "أضف تعليقًا")}
             className="h-full min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-muted-foreground"
           />

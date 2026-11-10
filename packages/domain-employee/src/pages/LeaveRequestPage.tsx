@@ -89,7 +89,7 @@ export default function LeaveRequestPage() {
     <Page>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,729fr)_minmax(0,480fr)]">
         {/* ── form ── */}
-        <SectionCard icon={Umbrella} title={t("Leave request", "طلب إجازة")}>
+        <SectionCard icon={Umbrella} title={t("Request leave", "طلب إجازة")}>
           <form onSubmit={submit} noValidate>
             <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
               <div>
@@ -129,7 +129,7 @@ export default function LeaveRequestPage() {
               <FieldLabel required={needsFiles || !type}>{needsFiles || !type ? t("Attachments required", "المرفقات مطلوبة") : t("Attachments (optional)", "المرفقات (اختياري)")}</FieldLabel>
               <input ref={fileRef} type="file" multiple className="hidden" onChange={(e) => { setFiles((f) => [...f, ...Array.from(e.target.files ?? [])]); e.target.value = "" }} />
               <GoldButton className="w-full sm:w-[calc(50%-8px)]" onClick={() => fileRef.current?.click()}>
-                {t("Upload attachments", "رفع مرفقات")}
+                {t("Upload Attachments", "رفع مرفقات")}
               </GoldButton>
               {files.length > 0 && (
                 <ul className="mt-3 space-y-2">
@@ -199,7 +199,7 @@ export default function LeaveRequestPage() {
             )}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <GoldButton type="submit" disabled={!canSubmit} className="w-full sm:w-auto sm:min-w-[89px]">{t("Submit request", "إرسال الطلب")}</GoldButton>
+              <GoldButton type="submit" disabled={!canSubmit} className="w-full sm:w-auto sm:min-w-[89px]">{t("Submit Request", "إرسال الطلب")}</GoldButton>
               <OutlineButton className="w-full sm:w-auto sm:min-w-[63px]" onClick={() => navigate(-1)}>{t("Cancel", "إلغاء")}</OutlineButton>
             </div>
           </form>
@@ -212,7 +212,7 @@ export default function LeaveRequestPage() {
             <PendingLeaveList columns={1} />
           </SectionCard>
           <SectionCard icon={Umbrella} title={t("My balance", "رصيدي")}>
-            <div className="text-[12.5px] text-muted-foreground">{t("Leave distribution", "توزيع الإجازات")}</div>
+            <div className="text-[12.5px] text-muted-foreground">{t("Leave breakdown", "توزيع الإجازات")}</div>
             <LeaveDistribution />
           </SectionCard>
         </div>

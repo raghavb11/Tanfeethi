@@ -44,7 +44,7 @@ export const prettyDateAr = (iso: string) =>
   iso ? local(iso).toLocaleDateString("ar-EG-u-nu-latn", { month: "long", day: "numeric" }) : ""
 /** Short form for cards: "Aug 17" / "17 أغسطس". */
 export const shortDate = (iso: string, isAr: boolean) =>
-  iso ? local(iso).toLocaleDateString(isAr ? "ar-EG-u-nu-latn" : "en-US", { month: isAr ? "long" : "short", day: "numeric" }) : ""
+  iso ? local(iso).toLocaleDateString(isAr ? "ar-EG-u-nu-latn" : "en-GB", { month: "long", day: "numeric" }) : ""
 export function shiftISO(iso: string, days: number) {
   const d = local(iso); d.setDate(d.getDate() + days)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
@@ -121,23 +121,23 @@ const BOARD_SEED: Seed[] = [
     descriptionAr: "مراجعة عقود موردي الضيافة في الصالات من حيث الأسعار ومستويات الخدمة وشروط التجديد قبل اعتمادها." },
   { id: "w2", title: "Update the service guide", titleAr: "تحديث دليل الخدمة", ...DW, category: "design", dueISO: "2026-08-22", createdISO: "2026-08-06", priority: "medium", status: "open", ...KH_SELF,
     aiHint: "Start from the new brand template", aiHintAr: "ابدأ من قالب الهوية الجديد" },
-  { id: "w3", title: "Unify supplier data", titleAr: "توحيد بيانات الموردين", ...OPS, category: "operations", dueISO: "2026-08-16", createdISO: "2026-08-05", priority: "medium", status: "open", ...R("r6", "Saud Al-Dosari", "سعود الدوسري"),
+  { id: "w3", title: "Consolidate vendor data", titleAr: "توحيد بيانات الموردين", ...OPS, category: "operations", dueISO: "2026-08-16", createdISO: "2026-08-05", priority: "medium", status: "open", ...R("r6", "Saud Al-Dosari", "سعود الدوسري"),
     aiHint: "Combine it with the supplier-meeting prep", aiHintAr: "ادمجها مع تجهيزات اجتماع الموردين" },
-  { id: "w4", title: "Draft communication — Policy release 3", titleAr: "صياغة تواصل — السياسة الإصدار 3", project: "People Ops", projectAr: "عمليات الموارد البشرية", category: "hr", dueISO: "2026-08-20", createdISO: "2026-08-07", priority: "medium", status: "open", ...R("r2", "Mohammad Iqbal", "محمد إقبال"),
+  { id: "w4", title: "Draft communication — Policy Version 3", titleAr: "صياغة تواصل — السياسة الإصدار 3", project: "People Ops", projectAr: "عمليات الموارد البشرية", category: "hr", dueISO: "2026-08-20", createdISO: "2026-08-07", priority: "medium", status: "open", ...R("r2", "Mohammad Iqbal", "محمد إقبال"),
     aiHint: "Use the HR template", aiHintAr: "استخدم قالب الموارد البشرية" },
   // معلّقة — on hold
-  { id: "w5", title: "Upgrade the supplier portal", titleAr: "ترقية بوابة الموردين", ...DW, category: "it", dueISO: "2026-08-18", createdISO: "2026-08-02", priority: "high", status: "on-hold", ...KH_SELF,
+  { id: "w5", title: "Upgrade the vendor portal", titleAr: "ترقية بوابة الموردين", ...DW, category: "it", dueISO: "2026-08-18", createdISO: "2026-08-02", priority: "high", status: "on-hold", ...KH_SELF,
     aiHint: "Awaiting cybersecurity approval", aiHintAr: "بانتظار موافقة الأمن السيبراني" },
-  { id: "w6", title: "Renew the fleet licence", titleAr: "تجديد ترخيص الأسطول", ...OPS, category: "operations", dueISO: "2026-08-24", createdISO: "2026-08-03", priority: "medium", status: "on-hold", ...KH_SELF,
+  { id: "w6", title: "Renew fleet license", titleAr: "تجديد ترخيص الأسطول", ...OPS, category: "operations", dueISO: "2026-08-24", createdISO: "2026-08-03", priority: "medium", status: "on-hold", ...KH_SELF,
     aiHint: "Remind the issuing body in 3 days", aiHintAr: "ذكّر الجهة المانحة بعد 3 أيام" },
   // قيد التنفيذ — in progress
   { id: "w7", title: "Prepare the Q1 report", titleAr: "إعداد تقرير الربع الأول", ...OPS, category: "strategy", dueISO: "2026-08-13", createdISO: "2026-08-01", priority: "high", status: "in-progress", ...KH_SELF,
-    aiHint: "Pull the numbers from the finance dashboard", aiHintAr: "اسحب الأرقام من لوحة المالية",
-    description: "Prepare the Q1 performance report for executive management, including the key indicators and recommendations.",
+    aiHint: "Pull the figures from the finance dashboard", aiHintAr: "اسحب الأرقام من لوحة المالية",
+    description: "Prepare the Q1 performance report for executive management, including key indicators and recommendations.",
     descriptionAr: "إعداد تقرير أداء الربع الأول للإدارة التنفيذية متضمنًا المؤشرات الرئيسية والتوصيات." },
-  { id: "w8", title: "Tune the limousine request flow", titleAr: "ضبط تدفق طلبات الليموزين", ...OPS, category: "operations", dueISO: "2026-08-15", createdISO: "2026-08-04", priority: "medium", status: "in-progress", ...KH_SELF,
+  { id: "w8", title: "Fine-tune the limousine request flow", titleAr: "ضبط تدفق طلبات الليموزين", ...OPS, category: "operations", dueISO: "2026-08-15", createdISO: "2026-08-04", priority: "medium", status: "in-progress", ...KH_SELF,
     aiHint: "Merge steps 3 and 4", aiHintAr: "وحّد الخطوتين 3 و 4" },
-  { id: "w9", title: "Update the service-level agreement", titleAr: "تحديث اتفاقية مستوى الخدمة", ...OPS, category: "strategy", dueISO: "2026-08-14", createdISO: "2026-08-04", priority: "medium", status: "in-progress", ...KH_SELF,
+  { id: "w9", title: "Update the service level agreement", titleAr: "تحديث اتفاقية مستوى الخدمة", ...OPS, category: "strategy", dueISO: "2026-08-14", createdISO: "2026-08-04", priority: "medium", status: "in-progress", ...KH_SELF,
     aiHint: "Review the response clauses with customers", aiHintAr: "راجع بنود الاستجابة مع العملاء" },
   { id: "w10", title: "Reach pilot — IT team", titleAr: "تجربة ريتش — فريق تقنية المعلومات", ...DW, category: "it", dueISO: "2026-08-13", createdISO: "2026-08-01", priority: "medium", status: "in-progress", ...R("r3", "Layan Al Marwani", "ليان المرواني"),
     aiHint: "Book 20 minutes with the IT manager", aiHintAr: "احجز 20 دقيقة مع مدير التقنية" },
@@ -147,7 +147,7 @@ const BOARD_SEED: Seed[] = [
   { id: "w12", title: "Post-incident analysis pack", titleAr: "حزمة تحليل ما بعد الحادث", ...DW, category: "it", dueISO: "2026-08-14", createdISO: "2026-08-03", priority: "high", status: "in-review", ...R("r1", "Sara Al-Mutairi", "سارة المطيري"),
     aiHint: "Attach the DNS timeline", aiHintAr: "أرفق الجدول الزمني لـ DNS" },
   // مكتمل — completed
-  { id: "w13", title: "Quarter goals cascade", titleAr: "تتالي أهداف الربع", ...OPS, category: "strategy", dueISO: "2026-08-10", createdISO: "2026-07-28", priority: "medium", status: "completed", ...R("r5", "Faisal Al-Harbi", "فيصل الحربي"),
+  { id: "w13", title: "Quarterly goals cascade", titleAr: "تتالي أهداف الربع", ...OPS, category: "strategy", dueISO: "2026-08-10", createdISO: "2026-07-28", priority: "medium", status: "completed", ...R("r5", "Faisal Al-Harbi", "فيصل الحربي"),
     aiHint: "Archive it in the knowledge centre", aiHintAr: "أرشف في مركز المعرفة" },
 ]
 
@@ -309,12 +309,12 @@ const DETAIL_EVENTS: TaskEvent[] = [
   { id: "ew1", taskId: "w1", kind: "created", ...NOURA, text: "Created the task and assigned it to Khalid.", textAr: "أنشأت المهمة وأسندتها إلى خالد.", at: "Yesterday", atAr: "أمس" },
   { id: "ew2", taskId: "w1", kind: "ai", ...AI, text: "Suggested: Compare it with the Jeddah contract before approval", textAr: "اقترح: قارنها بعقد جدة قبل الاعتماد", at: "08:10", atAr: "08:10" },
   { id: "ew3", taskId: "w1", kind: "comment", ...MI, text: "Any update on the tasks?", textAr: "أي تحديث بخصوص المهام؟", at: "08:42", atAr: "08:42" },
-  { id: "ew4", taskId: "w7", kind: "created", author: ME.name, authorAr: ME.nameAr, initials: ME.initials, text: "Created the task and assigned it to himself.", textAr: "أنشأ المهمة وأسندها إلى نفسه.", at: "Yesterday", atAr: "أمس" },
-  { id: "ew5", taskId: "w7", kind: "ai", ...AI, text: "Suggested: Pull the numbers from the finance dashboard", textAr: "اقترح: اسحب الأرقام من لوحة المالية", at: "08:10", atAr: "08:10" },
+  { id: "ew4", taskId: "w7", kind: "created", author: ME.name, authorAr: ME.nameAr, initials: ME.initials, text: "created the task and assigned it to himself.", textAr: "أنشأ المهمة وأسندها إلى نفسه.", at: "Yesterday", atAr: "أمس" },
+  { id: "ew5", taskId: "w7", kind: "ai", ...AI, text: "Suggested: Pull the figures from the finance dashboard", textAr: "اقترح: اسحب الأرقام من لوحة المالية", at: "08:10", atAr: "08:10" },
   { id: "ew6", taskId: "w7", kind: "comment", ...MI, text: "Any update on the tasks?", textAr: "أي تحديث بخصوص المهام؟", at: "08:42", atAr: "08:42" },
   // the Operations · Q3 project's own trail
   { id: "ep1", taskId: "p2", kind: "created", ...MI, text: "Created the project and assigned it to himself.", textAr: "أنشأ المشروع وأسنده إلى نفسه.", at: "Yesterday", atAr: "أمس" },
-  { id: "ep2", taskId: "p2", kind: "ai", ...AI, text: "Suggested: Pull the numbers from the finance dashboard", textAr: "اقترح: اسحب الأرقام من لوحة المالية", at: "08:10", atAr: "08:10" },
+  { id: "ep2", taskId: "p2", kind: "ai", ...AI, text: "Suggested: Pull the figures from the finance dashboard", textAr: "اقترح: اسحب الأرقام من لوحة المالية", at: "08:10", atAr: "08:10" },
   { id: "ep3", taskId: "p2", kind: "comment", author: "Reem Al-Otaibi", authorAr: "ريم العتيبي", initials: "RO", text: "Any update on the tasks?", textAr: "أي تحديث بخصوص المهام؟", at: "08:42", atAr: "08:42" },
 ]
 

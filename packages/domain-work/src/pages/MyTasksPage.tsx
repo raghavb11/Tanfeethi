@@ -118,7 +118,7 @@ export default function MyTasksPage() {
           <div className="flex flex-col gap-2">
             <h1 className="text-[28px] font-medium leading-[38px] tracking-tight">{t("Projects & Tasks", "المشاريع و المهام")}</h1>
             <p className="text-[14px] text-muted-foreground">
-              {t("All your tasks and projects in one board, sorted by priority.", "كل مهامك ومشاريعك في لوحة واحدة، مرتبة حسب الأولوية.")}
+              {t("All your tasks and projects on one board, sorted by priority.", "كل مهامك ومشاريعك في لوحة واحدة، مرتبة حسب الأولوية.")}
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-3 lg:flex lg:gap-6">
@@ -131,10 +131,10 @@ export default function MyTasksPage() {
         <span aria-hidden className="hidden w-[2.5px] self-stretch bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
         <div className="flex items-center justify-center gap-8 lg:w-[300px] lg:justify-between">
           <Legend rows={(["open", "on-hold", "in-progress"] as const).map((s) => ({
-            label: isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: count(s), dot: STATUS_META[s].dot,
+            label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: count(s), dot: STATUS_META[s].dot,
           }))} />
           <Donut
-            total={active} label={t("tasks", "مهام")}
+            total={active} label={t("Tasks", "مهام")}
             slices={(["open", "on-hold", "in-progress"] as const).map((s) => ({ value: count(s), color: STATUS_META[s].color }))}
           />
         </div>
@@ -339,7 +339,7 @@ function StatusCard({ status, value, isAr, onClick }: { status: "open" | "on-hol
     >
       <Icon className={cn("size-8 shrink-0 stroke-[1.6]", tone)} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[16px] font-semibold leading-8">{value} {isAr ? (status === "open" ? "قيد الإنتظار" : m.ar) : (status === "open" ? "Pending" : m.en)}</span>
+        <span className="text-[16px] font-semibold leading-8">{value} {isAr ? (status === "open" ? "قيد الانتظار" : m.ar) : (status === "open" ? "pending" : m.en.toLowerCase())}</span>
         <span className="text-[11.5px] text-muted-foreground">{isAr ? m.hintAr : m.hint}</span>
       </span>
       <ChevronRight className={cn("size-4 shrink-0 text-icon transition-transform", isAr && "rotate-180")} />

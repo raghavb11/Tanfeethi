@@ -110,15 +110,15 @@ export function Bar({ value, tone = "success", className }: { value: number; ton
 }
 
 /** Donut ring (attendance). `value` 0–1. */
-export function Ring({ value, size = 140, stroke = 14, children, className }: { value: number; size?: number; stroke?: number; children?: React.ReactNode; className?: string }) {
+export function Ring({ value, size = 140, stroke = 14, track = "var(--secondary)", children, className }: { value: number; size?: number; stroke?: number; track?: string; children?: React.ReactNode; className?: string }) {
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
   const v = Math.max(0, Math.min(1, value))
   return (
     <div className={cn("relative grid shrink-0 place-items-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--secondary)" strokeWidth={stroke} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1aad70" strokeWidth={stroke}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1aad70" strokeOpacity={0.9} strokeWidth={stroke}
           strokeDasharray={c} strokeDashoffset={c * (1 - v)} style={{ transition: "stroke-dashoffset .8s cubic-bezier(.22,1,.36,1)" }} />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">{children}</div>
@@ -194,7 +194,7 @@ export function ServiceButton({ icon: Icon, label, onClick }: { icon: IconType; 
       <span className="grid size-[62px] place-items-center rounded-full bg-secondary transition-colors group-hover:bg-soft-accent">
         <Icon className="size-6 text-primary" strokeWidth={1.5} />
       </span>
-      <span className="text-[14px] text-foreground">{label}</span>
+      <span className="whitespace-nowrap text-[14px] leading-[18px] text-foreground">{label}</span>
     </button>
   )
 }
@@ -265,7 +265,7 @@ export function hmShort(min: number, isAr: boolean) {
 /** "7 ساعات و 30 دقيقة" / "7 h 30 min". */
 export function hmWords(min: number, isAr: boolean) {
   const h = Math.floor(min / 60), m = min % 60
-  if (!isAr) return m ? `${h} h ${m} min` : `${h} hours`
+  if (!isAr) return m ? `${h} h ${m} min` : `${h} h`
   const hw = h === 1 ? "ساعة" : h === 2 ? "ساعتان" : h >= 3 && h <= 10 ? `${h} ساعات` : `${h} ساعة`
   if (!m) return h === 0 ? "0 دقيقة" : hw
   const mw = m >= 3 && m <= 10 ? `${m} دقائق` : `${m} دقيقة`
