@@ -9,7 +9,8 @@ import { GoalTitleCell } from "../components/GoalTitleCell"
 import { CardHeading, Cell, DataGrid, EmptyState, FilterSelect, GridRow, Page, Panel, RatingLegend, RatingText, SkeletonRows } from "../components/ui"
 import { useSimulatedLoad, useT } from "../components/helpers"
 
-const TEMPLATE = "30px minmax(0,3fr) minmax(0,0.7fr) minmax(0,1.6fr) minmax(0,1.6fr)"
+// Figma columns: 40 · 565 · 85 · 226 · 226.
+const TEMPLATE = "40px minmax(0,565fr) minmax(0,85fr) minmax(0,226fr) minmax(0,226fr)"
 
 export default function MyGoalResultsPage() {
   const { t, l } = useT()
@@ -32,7 +33,7 @@ export default function MyGoalResultsPage() {
           />
         </div>
         <DataGrid
-          className="mt-3"
+          className="mt-2"
           template={TEMPLATE}
           minWidth={720}
           headers={[

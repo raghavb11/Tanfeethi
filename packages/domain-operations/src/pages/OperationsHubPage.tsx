@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { cn } from "@reach/shared-core"
-import { BadgeCheck, ChevronLeft, ChevronRight, CircleDollarSign, ClipboardList, Plus, UserRound } from "lucide-react"
+import { BadgeCheck, ChevronLeft, ChevronRight, CircleDollarSign, Plus, UserRound } from "lucide-react"
 
 import {
   currentUser,
@@ -16,7 +16,7 @@ import {
   type TeamMember,
 } from "../data/operations"
 import { createRun, useOps } from "../store"
-import { CardHeading, Cell, DataGrid, DateBox, EmptyState, Field, GoldButton, GridRow, NegativeCount, OutlineButton, Page, Panel, SelectBox, SkeletonRows } from "../components/ui"
+import { CardHeading, Cell, DataGrid, DateBox, Field, GoldButton, GridRow, NegativeCount, OutlineButton, Page, Panel, SelectBox, SkeletonRows } from "../components/ui"
 import { fmtDate, useSimulatedLoad, useT } from "../components/helpers"
 
 const TEMPLATE = "30px minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) 117px"
@@ -100,7 +100,7 @@ function ChecklistsCard() {
       />
 
       {creating && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-2 flex flex-col gap-4 pb-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label={t("Choose lounge", "اختر الصالة")} htmlFor="ops-lounge" error={tried && !lounge ? t("Required", "مطلوب") : undefined}>
               <SelectBox
@@ -141,7 +141,7 @@ function ChecklistsCard() {
       )}
 
       <DataGrid
-        className="mt-2"
+        className={creating ? undefined : "mt-2"}
         template={TEMPLATE}
         minWidth={720}
         headers={[
@@ -157,11 +157,8 @@ function ChecklistsCard() {
         {loading ? (
           <SkeletonRows template={TEMPLATE} cols={7} />
         ) : runs.length === 0 ? (
-          <EmptyState
-            icon={ClipboardList}
-            title={t("No audit checklists yet", "لا توجد قوائم تدقيق بعد")}
-            body={t("Create an audit checklist to start reviewing a lounge.", "أنشئ قائمة تدقيق لبدء مراجعة إحدى الصالات.")}
-          />
+          // 3907:9016 draws the empty state as the header row alone.
+          <p className="sr-only">{t("No audit checklists yet", "لا توجد قوائم تدقيق بعد")}</p>
         ) : (
           runs.map((r, i) => {
             const pending = r.status === "pending"
@@ -280,13 +277,15 @@ function EmployeeEvaluationCard() {
         {pending.length === 0 && (
           <div className="flex flex-col items-center gap-2 pb-2 pt-6 text-center">
             <BadgeCheck className="size-5 text-primary" strokeWidth={1.7} />
-            <p className="text-sm font-medium">{t("All employees have been evaluated", "تم تقييم جميع الموظفين")}</p>
-            <p className="text-xs text-muted-foreground">
+            <div className="flex flex-col items-center gap-0.5">
+            <p className="text-[13.5px] leading-[20.25px]">{t("All employees have been evaluated", "تم تقييم جميع الموظفين")}</p>
+            <p className="text-[12.5px] leading-[18.75px] text-muted-foreground">
               {t(
                 "You've evaluated your whole team for this cycle. We'll let you know when a new evaluation is due.",
                 "قيّمت جميع موظفيك لهذه الدورة. سنُشعرك عند استحقاق تقييم جديد.",
               )}
             </p>
+            </div>
           </div>
         )}
       </div>

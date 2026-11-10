@@ -11,7 +11,8 @@ import { GoalTitleCell } from "../components/GoalTitleCell"
 import { CardHeading, Cell, DataGrid, EmptyState, GoldButton, GridRow, Notice, OutlineButton, Page, Panel, RatingLegend, RatingSelect, RatingText, SkeletonRows } from "../components/ui"
 import { useSimulatedLoad, useT } from "../components/helpers"
 
-const TEMPLATE = "30px minmax(0,2.6fr) minmax(0,0.6fr) minmax(0,1.3fr) minmax(220px,1.4fr)"
+// Figma columns: 40 · 595 · 89 · 208 · 208 (4126:14408).
+const TEMPLATE = "40px minmax(0,595fr) minmax(0,89fr) minmax(0,208fr) minmax(208px,208fr)"
 
 export default function EmployeeReviewPage() {
   const { employeeId } = useParams()
@@ -91,7 +92,7 @@ export default function EmployeeReviewPage() {
             <SkeletonRows template={TEMPLATE} cols={5} rows={3} />
           ) : (
             goals.map((g, i) => (
-              <GridRow key={g.id} template={TEMPLATE} className="min-h-[50px] py-3">
+              <GridRow key={g.id} template={TEMPLATE} className="min-h-[65px] py-3.5">
                 <Cell>{i + 1}</Cell>
                 <GoalTitleCell goal={g} />
                 <Cell className="tabular-nums">{g.weight}%</Cell>

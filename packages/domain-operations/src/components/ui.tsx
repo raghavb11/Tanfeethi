@@ -74,7 +74,7 @@ export function GoldButton({ size = "md", className, type = "button", ...props }
       className={cn(
         btnBase,
         "btn-primary-grad",
-        size === "md" ? "h-[34px] px-6 text-[13px] font-semibold" : "h-7 px-3 text-xs font-medium",
+        size === "md" ? "h-[34px] px-6 text-[13px] font-semibold" : "h-7 px-3 text-xs font-semibold",
         className,
       )}
       {...props}
@@ -214,7 +214,7 @@ export function EmptyState({
 export function NegativeCount({ n }: { n: number }) {
   const { t } = useT()
   if (n === 0) return <span>{t("None", "لا يوجد")}</span>
-  return <span className="font-medium text-error">{n}</span>
+  return <span className="font-bold text-error">{n}</span>
 }
 
 export function InfoButton({ label, onClick }: { label: string; onClick: () => void }) {
@@ -224,9 +224,9 @@ export function InfoButton({ label, onClick }: { label: string; onClick: () => v
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-icon hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring outline-none"
+      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring outline-none"
     >
-      <Info className="size-3.5" strokeWidth={1.8} />
+      <Info className="size-4" strokeWidth={1.6} />
     </button>
   )
 }
@@ -267,6 +267,7 @@ export function SelectBox({
   disabled,
   invalid,
   className,
+  controlClassName,
   ariaLabel,
 }: {
   id?: string
@@ -278,6 +279,8 @@ export function SelectBox({
   disabled?: boolean
   invalid?: boolean
   className?: string
+  /** Extra classes for the <select> itself (e.g. the read-only fill). */
+  controlClassName?: string
   ariaLabel?: string
 }) {
   return (
@@ -288,7 +291,7 @@ export function SelectBox({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(inputCls(surface, invalid), "appearance-none pe-8", !value && "text-muted-foreground")}
+        className={cn(inputCls(surface, invalid), "appearance-none pe-8", !value && "text-muted-foreground", controlClassName)}
       >
         {placeholder !== undefined && (
           <option value="" disabled>
@@ -318,6 +321,7 @@ export function DateBox({
   invalid,
   ariaLabel,
   min,
+  className,
 }: {
   id?: string
   value: string
@@ -328,11 +332,12 @@ export function DateBox({
   invalid?: boolean
   ariaLabel?: string
   min?: string
+  className?: string
 }) {
   const ref = React.useRef<HTMLInputElement>(null)
   return (
     <div
-      className={cn(inputCls(surface, invalid), "relative flex items-center justify-between gap-2", !disabled && "cursor-pointer")}
+      className={cn(inputCls(surface, invalid), "relative flex items-center justify-between gap-2", !disabled && "cursor-pointer", className)}
       onClick={() => {
         if (disabled) return
         try {

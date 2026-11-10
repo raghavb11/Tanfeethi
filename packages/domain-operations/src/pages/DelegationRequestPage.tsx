@@ -23,20 +23,20 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
   return (
     <article
       className={cn(
-        "flex flex-col rounded-xl border p-4",
-        leave ? "border-success/60 bg-success-fill" : "border-[#a997c7]/50 bg-[#a997c7]/15",
+        "flex flex-col gap-4 rounded-[10px] border p-4",
+        leave ? "border-success bg-success-fill" : "border-[#a997c7] bg-[#a997c7]/15",
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         <span
           className={cn(
             "inline-flex size-[30px] shrink-0 items-center justify-center rounded-lg",
-            leave ? "bg-success/80 text-background" : "bg-[#a997c7]/70 text-background",
+            leave ? "bg-success text-foreground" : "bg-[#a997c7] text-foreground",
           )}
         >
           {leave ? <UserRound className="size-[15px]" strokeWidth={2} /> : <Wifi className="size-[15px]" strokeWidth={2} />}
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-[14.5px] leading-[21.75px]">{l(e.employee)}</span>
             {e.pending && (
@@ -55,8 +55,8 @@ function ScheduleCard({ e }: { e: ScheduleEntry }) {
       </div>
       {e.substitute && (
         <>
-          <div className="card-separator my-4" />
-          <div className="flex flex-col gap-1">
+          <div aria-hidden className="h-0.5 bg-gradient-to-r from-success/40 via-success to-success/40" />
+          <div className="flex flex-col gap-0.5">
             <span className="text-[14.5px] leading-[21.75px]">
               {t("Substitute employee", "الموظف البديل")}: {l(e.substitute)}
             </span>
@@ -111,7 +111,7 @@ export default function DelegationRequestPage() {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
         <Panel className="flex-1">
           <CardHeading icon={UserRoundPlus} title={t("New delegation request", "طلب إنابة جديد")} />
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
             <Field label={t("Delegation start date", "تاريخ بداية الإنابة")} htmlFor="dl-start" error={tried && !start ? t("Required", "مطلوب") : undefined}>
               <DateBox id="dl-start" value={start} onChange={setStart} placeholder={t("Date", "تاريخ")} invalid={tried && !start} />
             </Field>

@@ -10,7 +10,8 @@ import { saveTeamOverall, useOps } from "../store"
 import { CardHeading, Cell, DataGrid, EmptyState, GoldButton, GridRow, Notice, Page, Panel, RatingLegend, RatingSelect, RatingText, SkeletonRows } from "../components/ui"
 import { useSimulatedLoad, useT } from "../components/helpers"
 
-const TEMPLATE = "30px minmax(0,2.4fr) minmax(0,1.3fr) minmax(220px,1.4fr)"
+// Figma columns: 40 · 654 · 229 · 229 (4126:14560); the select is 208 wide.
+const TEMPLATE = "40px minmax(0,654fr) minmax(0,229fr) minmax(220px,229fr)"
 const annualTeam = team.filter((m) => m.cycle === "annual")
 
 export default function TeamAnnualReviewPage() {
@@ -47,7 +48,7 @@ export default function TeamAnnualReviewPage() {
             annualTeam.map((m, i) => {
               const done = evaluated.includes(m.id)
               return (
-                <GridRow key={m.id} template={TEMPLATE} className="min-h-[50px] py-3">
+                <GridRow key={m.id} template={TEMPLATE} className="min-h-[65px] py-3.5">
                   <Cell>{i + 1}</Cell>
                   <Cell>
                     <Link to={`/operations/evaluate/${m.id}`} className="hover:text-primary hover:underline">
@@ -61,14 +62,16 @@ export default function TeamAnnualReviewPage() {
                     {done ? (
                       <RatingText value={overall[m.id]} />
                     ) : (
-                      <RatingSelect
-                        ariaLabel={t("Direct manager review", "مراجعة المدير المباشر")}
-                        value={draft[m.id] ?? overall[m.id]}
-                        onChange={(v) => {
-                          setDraft((d) => ({ ...d, [m.id]: v }))
-                          setSaved(false)
-                        }}
-                      />
+                      <div className="max-w-[208px]">
+                        <RatingSelect
+                          ariaLabel={t("Direct manager review", "مراجعة المدير المباشر")}
+                          value={draft[m.id] ?? overall[m.id]}
+                          onChange={(v) => {
+                            setDraft((d) => ({ ...d, [m.id]: v }))
+                            setSaved(false)
+                          }}
+                        />
+                      </div>
                     )}
                   </Cell>
                 </GridRow>

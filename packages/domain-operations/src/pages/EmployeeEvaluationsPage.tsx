@@ -10,7 +10,7 @@ import { useT } from "../components/helpers"
 
 export default function EmployeeEvaluationsPage() {
   const { employeeId } = useParams()
-  const { t, l } = useT()
+  const { t } = useT()
   const navigate = useNavigate()
   const person = evaluatedPerson(employeeId)
 
@@ -49,8 +49,7 @@ export default function EmployeeEvaluationsPage() {
           icon={SquareStar}
           title={t(`Previous evaluations of “${person.name.en}”`, `سجل التقييمات السابقة للموظف ”${person.name.ar}“`)}
         />
-        <p className="mt-2 text-[12.5px] text-muted-foreground">{l(person.jobTitle)}</p>
-        <EvaluationLog rows={rows} nameHeader={t("Evaluated by", "تقييم بواسطة")} />
+        <EvaluationLog rows={rows} nameHeader={t("Evaluated by", "تقييم بواسطة")} showPeopleFilters />
       </Panel>
     </Page>
   )

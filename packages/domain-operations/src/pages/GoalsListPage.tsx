@@ -9,8 +9,9 @@ import { GoalModal } from "../components/GoalModal"
 import { CardHeading, Cell, DataGrid, EmptyState, GoldButton, GridRow, InfoButton, Page, Panel, SkeletonRows } from "../components/ui"
 import { fmtDate, useSimulatedLoad, useT } from "../components/helpers"
 
+// Figma columns: 40 · 338 · 338 · 113 · 113 · 68 · 68 · 34 (10px gaps).
 const TEMPLATE =
-  "30px minmax(0,2.2fr) minmax(0,3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.9fr) minmax(0,0.6fr) minmax(0,0.5fr)"
+  "40px minmax(0,3fr) minmax(0,3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.6fr) minmax(0,0.6fr) minmax(0,0.3fr)"
 
 export default function GoalsListPage() {
   const { t, l } = useT()
@@ -27,7 +28,12 @@ export default function GoalsListPage() {
           icon={BadgeCheck}
           title={t("Goals list", "قائمة الأهداف")}
           actions={
-            <GoldButton size="sm" onClick={() => setAdding(true)} disabled={totalWeight >= 100}>
+            <GoldButton
+              size="sm"
+              onClick={() => setAdding(true)}
+              disabled={totalWeight >= 100}
+              title={totalWeight >= 100 ? t("Goal weights already total 100%", "مجموع أوزان الأهداف 100% بالفعل") : undefined}
+            >
               {t("Add new goal", "إضافة هدف جديد")}
             </GoldButton>
           }
@@ -75,11 +81,6 @@ export default function GoalsListPage() {
             ))
           )}
         </DataGrid>
-        {!loading && goals.length > 0 && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            {t(`Total weight: ${totalWeight}% of 100%`, `مجموع الأوزان: ${totalWeight}% من 100%`)}
-          </p>
-        )}
       </Panel>
 
       <GoalModal open={!!viewing} onOpenChange={(o) => !o && setViewing(undefined)} goal={viewing} readOnly />

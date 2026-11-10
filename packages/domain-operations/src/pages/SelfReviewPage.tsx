@@ -10,7 +10,8 @@ import { GoalTitleCell } from "../components/GoalTitleCell"
 import { CardHeading, Cell, DataGrid, EmptyState, GoldButton, GridRow, Notice, OutlineButton, Page, Panel, RatingLegend, RatingSelect, RatingText, SkeletonRows } from "../components/ui"
 import { useSimulatedLoad, useT } from "../components/helpers"
 
-const TEMPLATE = "30px minmax(0,3fr) minmax(0,0.8fr) minmax(220px,1.4fr)"
+// Figma columns: 40 · 741 · 111 · 259 (4126:14074 / 4124:13576).
+const TEMPLATE = "40px minmax(0,741fr) minmax(0,111fr) minmax(220px,259fr)"
 
 function SelfReview({ cycle }: { cycle: "half-year" | "annual" }) {
   const { t } = useT()
@@ -57,7 +58,7 @@ function SelfReview({ cycle }: { cycle: "half-year" | "annual" }) {
             />
           ) : (
             goals.map((g, i) => (
-              <GridRow key={g.id} template={TEMPLATE} className="min-h-[50px] py-3">
+              <GridRow key={g.id} template={TEMPLATE} className="min-h-[65px] py-3.5">
                 <Cell>{i + 1}</Cell>
                 <GoalTitleCell goal={g} />
                 <Cell className="tabular-nums">{g.weight}%</Cell>

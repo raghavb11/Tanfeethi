@@ -1,4 +1,5 @@
 import { StrictMode } from "react"
+import { MotionGlobalConfig } from "framer-motion"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
@@ -8,6 +9,12 @@ import { ThemeProvider } from "./providers/theme-provider"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import App from "./App.tsx"
 import "./index.css"
+
+// Pixel-comparison runs (scripts/pixel) load "/?static#/route": skip entrance
+// animations so headless captures show the settled layout.
+if (new URLSearchParams(window.location.search).has("static")) {
+  MotionGlobalConfig.skipAnimations = true
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

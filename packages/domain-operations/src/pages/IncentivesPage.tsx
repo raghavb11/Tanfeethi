@@ -6,7 +6,7 @@ import { incentives } from "../data/operations"
 import { CardHeading, Cell, DataGrid, EmptyState, GridRow, Page, Panel, SkeletonRows } from "../components/ui"
 import { fmtDate, fmtSAR, useSimulatedLoad, useT } from "../components/helpers"
 
-const TEMPLATE = "30px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr)"
+const TEMPLATE = "40px repeat(5,minmax(0,1fr)) minmax(0,3fr)"
 
 export default function IncentivesPage() {
   const { t, l } = useT()
@@ -40,7 +40,7 @@ export default function IncentivesPage() {
                 <Cell>{fmtDate(r.date)}</Cell>
                 <Cell className="tabular-nums">{fmtSAR(r.amount)}</Cell>
                 <Cell className="tabular-nums">{fmtSAR(r.deduction)}</Cell>
-                <Cell className={r.violations > 0 ? "font-medium text-error" : undefined}>{r.violations}</Cell>
+                <Cell className={r.violations > 0 ? "font-bold text-error" : undefined}>{r.violations}</Cell>
                 <Cell className="tabular-nums">{fmtSAR(r.amount - r.deduction)}</Cell>
                 <Cell>{l(r.reason)}</Cell>
               </GridRow>

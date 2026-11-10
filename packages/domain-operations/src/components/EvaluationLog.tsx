@@ -4,7 +4,7 @@ import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { SearchX, X } from "lucide-react"
 
-import { evaluatedStaff, type L } from "../data/operations"
+import type { L } from "../data/operations"
 import { Cell, DataGrid, DateBox, EmptyState, FilterSelect, GoldButton, GridRow, MultiSelect, NegativeCount, SkeletonRows } from "./ui"
 import { fmtDate, useSimulatedLoad, useT } from "./helpers"
 
@@ -19,7 +19,8 @@ export type LogRow = {
   to: string
 }
 
-const TEMPLATE = "30px minmax(0,1.6fr) minmax(0,1.6fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) 117px"
+// Figma columns: 40 · 214 · 214 · 214 · 214 · 118 · 107 (10px gaps).
+const TEMPLATE = "40px repeat(4,minmax(0,1fr)) 118px 107px"
 
 export function EvaluationLog({
   rows,
@@ -28,7 +29,7 @@ export function EvaluationLog({
 }: {
   rows: LogRow[]
   nameHeader: string
-  /** Job-title + employee filters (manager all-staff view only). */
+  /** Job-title + people filters (manager views 4124:10533 and 4124:12781). */
   showPeopleFilters?: boolean
 }) {
   const { t, l } = useT()
@@ -44,6 +45,13 @@ export function EvaluationLog({
     return [...seen.values()]
   }, [rows])
 
+  /** People in the first column (employees, or evaluators on the per-employee log). */
+  const peopleOptions = React.useMemo(() => {
+    const seen = new Map<string, L>()
+    rows.forEach((r) => seen.set(r.personId, r.name))
+    return [...seen.entries()]
+  }, [rows])
+
   const filtered = rows.filter(
     (r) =>
       (title === "all" || r.jobTitle.en === title) &&
@@ -54,7 +62,7 @@ export function EvaluationLog({
 
   return (
     <>
-      <div className="mt-4 grid max-w-[700px] grid-cols-1 gap-2.5 sm:grid-cols-3">
+      <div className="flex flex-wrap gap-2 pt-4 [&>*]:w-full sm:[&>*]:w-[225px]">
         {showPeopleFilters && (
           <>
             <FilterSelect
@@ -66,9 +74,7 @@ export function EvaluationLog({
             <MultiSelect
               label={t("Employees", "الموظفون")}
               allLabel={t("All", "الكل")}
-              options={evaluatedStaff
-                .filter((p) => rows.some((r) => r.personId === p.id))
-                .map((p) => ({ value: p.id, label: l(p.name) }))}
+              options={peopleOptions.map(([id, name]) => ({ value: id, label: l(name) }))}
               value={people}
               onChange={setPeople}
             />
@@ -90,7 +96,7 @@ export function EvaluationLog({
       </div>
 
       <DataGrid
-        className="mt-3"
+        className="mt-2"
         template={TEMPLATE}
         minWidth={840}
         headers={[
@@ -136,7 +142,7 @@ export function EvaluationLog({
                 <NegativeCount n={r.negatives} />
               </Cell>
               <Cell>
-                <GoldButton className="w-[117px] px-2 font-medium" onClick={() => navigate(r.to)}>
+                <GoldButton className="w-[107px] px-0 font-medium" onClick={() => navigate(r.to)}>
                   {t("View evaluations", "عرض التقييمات")}
                 </GoldButton>
               </Cell>

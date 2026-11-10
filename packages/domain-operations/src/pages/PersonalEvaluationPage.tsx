@@ -19,24 +19,26 @@ export default function PersonalEvaluationPage() {
   ]
   return (
     <Page>
-      <Panel>
+      <Panel className="sm:px-4">
         <CardHeading icon={LayoutGrid} title={t("Personal evaluation", "التقييم الشخصي")} />
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Tile: page fill, hairline, radius 10, 24 top padding, 30px icon tile,
+            14.5px label, 38px "Open" footer (10px gold) — 4124:10928. */}
+        <div className="mt-[18px] grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {tiles.map(({ to, icon: Icon, label }) => (
             <Link
               key={to}
               to={to}
-              className="group flex min-h-[132px] flex-col overflow-hidden rounded-xl border border-border bg-background transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
+              className="group flex min-h-[145px] flex-col gap-4 overflow-hidden rounded-[10px] border border-border bg-background pt-6 transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring outline-none"
             >
-              <div className="flex flex-1 flex-col items-start gap-3 p-4">
-                <span className="icon-tile size-7">
-                  <Icon className="size-3.5" strokeWidth={1.8} />
+              <div className="flex flex-1 flex-col items-start gap-3 px-4">
+                <span className="icon-tile size-[30px] border border-secondary bg-gradient-to-b from-secondary/75 to-secondary/10">
+                  <Icon className="size-[15px]" strokeWidth={1.8} />
                 </span>
-                <span className="text-base leading-6">{label}</span>
+                <span className="text-[14.5px] leading-[21.75px]">{label}</span>
               </div>
-              <div className="flex h-[35px] items-center justify-between border-t border-border px-4 text-[11px] text-primary">
+              <div className="flex h-[38px] items-center justify-between gap-3 border-t border-secondary px-4 text-[10px] font-medium text-primary">
                 <span>{t("Open", "فتح")}</span>
-                <Arrow className="size-3.5 transition-transform group-hover:translate-y-0.5" />
+                <Arrow className="size-2.5 transition-transform group-hover:translate-y-0.5" strokeWidth={2.2} />
               </div>
             </Link>
           ))}

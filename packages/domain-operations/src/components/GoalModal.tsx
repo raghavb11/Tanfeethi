@@ -137,18 +137,14 @@ export function GoalModal({
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={t("Start date", "تاريخ البدء")} htmlFor="goal-start" error={err("start", required)}>
-              <div className={cn("rounded-lg", roCls)}>
-                <DateBox id="goal-start" value={draft.start} onChange={(v) => set({ start: v })} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.start} />
-              </div>
+              <DateBox id="goal-start" value={draft.start} onChange={(v) => set({ start: v })} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.start} className={roCls} />
             </Field>
             <Field
               label={t("End date", "تاريخ الانتهاء")}
               htmlFor="goal-end"
               error={err("end", draft.end ? t("Must be after the start date", "يجب أن يكون بعد تاريخ البدء") : required)}
             >
-              <div className={cn("rounded-lg", roCls)}>
-                <DateBox id="goal-end" value={draft.end} onChange={(v) => set({ end: v })} min={draft.start || undefined} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.end} />
-              </div>
+              <DateBox id="goal-end" value={draft.end} onChange={(v) => set({ end: v })} min={draft.start || undefined} placeholder={t("Date", "تاريخ")} surface={surface} disabled={readOnly} invalid={tried && errors.end} className={roCls} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -161,7 +157,7 @@ export function GoalModal({
                 surface={surface}
                 disabled={readOnly}
                 invalid={tried && errors.unit}
-                className={cn("rounded-lg", roCls)}
+                controlClassName={roCls}
                 options={measureUnits.map((u) => ({ value: u.id, label: l(u.label) }))}
               />
             </Field>
