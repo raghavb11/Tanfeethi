@@ -3,7 +3,7 @@
 Usage:
   python scripts/pixel/compare.py --figma <frame.png> --route services --name services
   (route = the hash path without "/" or "#/"; use --route "" for the home page)
-         [--base http://localhost:5180] [--out scripts/pixel/out] [--theme dark] [--locale ar]
+         [--base http://localhost:5180] [--out scripts/pixel/out] [--locale ar|en]
          [--wait 6000]
 
 The Figma PNG must be the frame exported at 1x (e.g. 1440 x H). The page is rendered by
@@ -78,7 +78,7 @@ def main() -> None:
     for attempt, budget in enumerate((a.wait, a.wait * 2, a.wait * 4)):
         if app_path.exists():
             app_path.unlink()
-        render(a.base.rstrip("/") + "/?static" + route, w, h, app_path, budget, a.theme, a.locale)
+        render(a.base.rstrip("/") + f"/?static&lang={a.locale}" + route, w, h, app_path, budget, a.theme, a.locale)
         gray = np.asarray(Image.open(app_path).convert("L"))
         if (gray > 120).mean() > 0.002:  # any real text/content painted
             break

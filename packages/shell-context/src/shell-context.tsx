@@ -39,6 +39,9 @@ function readStoredSidebar(): boolean {
 
 function readStoredLocale(): Locale {
   try {
+    // "?lang=en|ar" (used by the scripts/pixel checks) wins for this load only.
+    const fromUrl = new URLSearchParams(window.location.search).get("lang")
+    if (fromUrl === "en" || fromUrl === "ar") return fromUrl
     // Arabic-first: the WIJHA designs are RTL; English only when chosen.
     return localStorage.getItem(LOCALE_KEY) === "en" ? "en" : "ar"
   } catch {
