@@ -25,7 +25,7 @@ export default function ServicesHub() {
   const visible = activeRequests.filter((r) => !hidden.includes(r.id))
 
   const countLabel = (n: number) =>
-    isAr ? (n === 1 ? "1 طلب" : n === 2 ? "طلبين" : `${n} طلبات`) : `${n} request${n === 1 ? "" : "s"}`
+    isAr ? (n === 1 ? "طلب 1" : n === 2 ? "طلبين" : `${n} طلبات`) : `${n} request${n === 1 ? "" : "s"}`
 
   return (
     <PageBody>
@@ -42,10 +42,10 @@ export default function ServicesHub() {
             <Card>
               <CardHeader
                 icon={HeartPulse}
-                title={t("My health", "صحتي")}
+                title={t("My Health", "صحتي")}
                 actions={<GoldButton size="sm" onClick={() => navigate("/services/health")}>{t("View leaderboard", "عرض لوحة المتصدرين")}</GoldButton>}
               />
-              <div className="mt-4 grid grid-cols-2 gap-6 xl:grid-cols-[1fr_1fr_1.15fr_1fr]">
+              <div className="mt-4 grid grid-cols-2 gap-6 xl:grid-cols-[1fr_1fr_192.25px_1fr]">
                 {homeTiles.map((tile, i) => <HealthTileView key={i} tile={tile} />)}
               </div>
             </Card>
@@ -54,10 +54,10 @@ export default function ServicesHub() {
             <Card>
               <CardHeader
                 icon={Wrench}
-                title={t("Status of my active requests", "حالة طلباتي النشطة")}
-                actions={<GoldButton size="sm" onClick={() => navigate("/services/history")}>{t("View request history", "عرض سجل الطلبات")}</GoldButton>}
+                title={t("My Active Requests", "حالة طلباتي النشطة")}
+                actions={<GoldButton size="sm" onClick={() => navigate("/services/history")}>{t("View Request History", "عرض سجل الطلبات")}</GoldButton>}
               />
-              <div className="mt-2 max-h-[989px] overflow-y-auto [scrollbar-color:var(--secondary)_transparent] [scrollbar-width:thin]">
+              <ScrollTrackList className="mt-2" maxHeight={989}>
                 {visible.length === 0 ? (
                   <div className="py-6">
                     <EmptyState icon={Inbox} title={t("No active requests", "لا توجد طلبات نشطة")}
@@ -66,7 +66,7 @@ export default function ServicesHub() {
                 ) : visible.map((r, i) => (
                   <RequestRow key={r.id} r={r} last={i === visible.length - 1} onHide={() => setHidden((h) => [...h, r.id])} />
                 ))}
-              </div>
+              </ScrollTrackList>
               {hidden.length > 0 && (
                 <button type="button" onClick={() => setHidden([])} className="mt-2 text-[12px] text-primary hover:underline">
                   {t(`Show hidden (${hidden.length})`, `إظهار المخفية (${hidden.length})`)}
@@ -98,17 +98,19 @@ export default function ServicesHub() {
             {/* الأصول */}
             <Card>
               <CardHeader icon={Laptop} title={t("Assets", "الأصول")} />
-              <ul className="mt-[18px] flex flex-col gap-3">
+              <ul className="mt-8 flex flex-col gap-4">
                 {assets.map((a) => (
-                  <li key={a.id} className="flex items-center gap-3 rounded-[10px] border border-[var(--card-ring)] bg-background px-3 py-3">
-                    <span className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-soft-accent text-primary">
-                      <FolderOpen className="size-[15px]" strokeWidth={1.7} />
+                  <li key={a.id} className="flex h-[62px] items-center gap-3 rounded-[10px] border border-[var(--card-ring)] bg-background px-[13px]">
+                    <span className="inline-flex size-[34px] shrink-0 items-center justify-center rounded-lg bg-soft-accent text-primary">
+                      <FolderOpen className="size-4" strokeWidth={1.7} />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[12.5px] font-medium text-foreground">{isAr ? a.nameAr : a.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{isAr ? a.dateAr : a.date}</div>
+                    <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[12.5px] font-medium leading-[13px] text-foreground">{isAr ? a.nameAr : a.name}</span>
+                        <span className="shrink-0 text-[11px] leading-[12px] text-muted-foreground" dir="ltr">{a.id}</span>
+                      </div>
+                      <div className="text-[11px] leading-[12px] text-muted-foreground">{isAr ? a.dateAr : a.date}</div>
                     </div>
-                    <span className="shrink-0 text-[11px] text-muted-foreground" dir="ltr">{a.id}</span>
                   </li>
                 ))}
               </ul>
@@ -129,12 +131,12 @@ function RequestRow({ r, last, onHide }: { r: ServiceRequest; last: boolean; onH
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[12.5px] text-foreground" dir="ltr">#{r.id}</span>
-            <span className="text-[12.5px] text-foreground">·</span>
+            <span className="text-[12.5px] leading-[19px] text-muted-foreground" dir="ltr">#{r.id}</span>
+            <span className="text-[12.5px] leading-[19px] text-muted-foreground">·</span>
             {cat && <CategoryChip tone={cat.tone}>{isAr ? cat.nameAr : cat.name}</CategoryChip>}
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10.8px] text-foreground">{isAr ? r.dateAr : r.date}</span>
+            <span className="text-[10.8px] leading-[12px] text-muted-foreground">{isAr ? r.dateAr : r.date}</span>
             {done && (
               <button type="button" onClick={onHide}
                 className="inline-flex h-7 items-center gap-2 rounded-lg border border-secondary px-3 text-[12px] font-semibold text-error hover:bg-error-fill">
@@ -144,15 +146,53 @@ function RequestRow({ r, last, onHide }: { r: ServiceRequest; last: boolean; onH
             )}
           </div>
         </div>
-        <Link to="/services/history" className="pb-1 pt-2 text-[14.5px] leading-[21.75px] text-foreground hover:text-primary">
+        <Link to="/services/history" className="pb-1 pt-2 text-[14.5px] leading-[22px] text-foreground hover:text-primary">
           {isAr ? r.titleAr : r.title}
         </Link>
-        <div className="flex items-center gap-2 ps-1 text-[12.5px] text-foreground">
-          <User className="size-3 text-foreground" />
+        <div className="flex items-center gap-2 ps-1 text-[12.5px] leading-[19px] text-muted-foreground">
+          <User className="size-3 text-muted-foreground" />
           {isAr ? r.requesterAr : r.requester}
         </div>
       </div>
-      <Stepper steps={stepsFor(r).map(o)} current={r.step} tone={done ? "success" : "gold"} />
+      <Stepper steps={stepsFor(r).map(o)} current={r.step} tone={done ? "success" : "gold"} wideEnd={r.flow === "hospitality"} />
     </article>
+  )
+}
+
+/** A list with the design's own 4px scroll track on the inline end (Figma 3039:5171):
+ *  Shape/Fill/Secondary track, Shape/Icons thumb, 24px from the content. */
+function ScrollTrackList({ children, maxHeight, className }: { children: React.ReactNode; maxHeight: number; className?: string }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [thumb, setThumb] = React.useState({ top: 0, size: 1 })
+  const sync = React.useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    const size = el.scrollHeight > 0 ? Math.min(1, el.clientHeight / el.scrollHeight) : 1
+    const top = el.scrollHeight > el.clientHeight ? (el.scrollTop / el.scrollHeight) : 0
+    setThumb({ top, size })
+  }, [])
+  React.useLayoutEffect(() => {
+    sync()
+    const el = ref.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [sync])
+  const scrolls = thumb.size < 1
+  return (
+    <div className={cn("flex gap-6", className)}>
+      <div ref={ref} onScroll={sync} style={{ maxHeight }}
+        className="min-w-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div>{children}</div>
+      </div>
+      {scrolls && (
+        <div aria-hidden className="relative w-1 shrink-0 rounded-full bg-secondary">
+          <span className="absolute inset-x-0 rounded-full bg-[var(--icon,var(--muted-foreground))]"
+            style={{ top: `${thumb.top * 100}%`, height: `${thumb.size * 100}%` }} />
+        </div>
+      )}
+    </div>
   )
 }

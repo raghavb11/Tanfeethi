@@ -9,7 +9,7 @@ export type ViolationStatus = "opened" | "needs-evidence" | "investigating" | "c
 
 export const statusOptions: Record<ViolationStatus, Option> = {
   opened: { en: "Request opened", ar: "تم فتح الطلب" },
-  "needs-evidence": { en: "Needs additional evidence", ar: "بحاجة إلى أدلة إضافية" },
+  "needs-evidence": { en: "Additional evidence needed", ar: "بحاجة إلى أدلة إضافية" },
   investigating: { en: "Under investigation", ar: "قيد التحقيق" },
   closed: { en: "Closed", ar: "مُغلق" },
 }
@@ -30,11 +30,11 @@ export const reasons: (Option & { id: string; sub: Option[] })[] = [
 ]
 
 export const departments: (Option & { id: string })[] = [
-  { id: "hr", en: "Human Resources department", ar: "إدارة الموارد البشرية" },
-  { id: "audit", en: "Internal Audit department", ar: "إدارة التدقيق الداخلي" },
-  { id: "safety", en: "Safety department", ar: "إدارة السلامة" },
-  { id: "quality", en: "Quality department", ar: "إدارة الجودة" },
-  { id: "legal", en: "Legal department", ar: "الإدارة القانونية" },
+  { id: "hr", en: "Human Resources Department", ar: "إدارة الموارد البشرية" },
+  { id: "audit", en: "Internal Audit Department", ar: "إدارة التدقيق الداخلي" },
+  { id: "safety", en: "Safety Department", ar: "إدارة السلامة" },
+  { id: "quality", en: "Quality Department", ar: "إدارة الجودة" },
+  { id: "legal", en: "Legal Department", ar: "الإدارة القانونية" },
 ]
 
 export const people: (Option & { id: string; initial: string })[] = [
@@ -57,7 +57,7 @@ export const ME = { id: "khalid-m", en: "Khalid Mahmoudi", ar: "خالد محم�
 export const ANONYMOUS: Option = { en: "Anonymous reporter", ar: "مُبلِّغ مجهول الهوية" }
 
 export type Folder = { id: string; name: Option; parent: string | null }
-export type Doc = { id: string; folderId: string; name: string; type: "PDF" | "IMG" | "DOC"; ownerId: string; sizeKb: number; uploaded: Option; uploadedOrder: number }
+export type Doc = { id: string; folderId: string; name: string; /** English display name for seeded files. */ nameEn?: string; type: "PDF" | "IMG" | "DOC"; ownerId: string; sizeKb: number; uploaded: Option; uploadedOrder: number }
 export type Comment = { id: string; authorId: string; text: Option; time: Option; unread?: boolean }
 
 export type ViolationReport = {
@@ -87,25 +87,25 @@ export type ViolationReport = {
 const baseFolders = (): Folder[] => [
   { id: "root", name: { en: "Report files", ar: "ملفات البلاغ" }, parent: null },
   { id: "evidence", name: { en: "Evidence", ar: "الأدلة" }, parent: "root" },
-  { id: "work", name: { en: "Work folders", ar: "مجلدات العمل" }, parent: "evidence" },
+  { id: "work", name: { en: "Work Folders", ar: "مجلدات العمل" }, parent: "evidence" },
 ]
 
 const seedComments: Comment[] = [
-  { id: "c1", authorId: "noura", text: { en: "Violation accepted and self-assigned.", ar: "تم قبول المخالفة وأسندها إلى نفسه." }, time: { en: "Yesterday", ar: "أمس" } },
+  { id: "c1", authorId: "noura", text: { en: "Accepted the violation and assigned it to themself.", ar: "تم قبول المخالفة وأسندها إلى نفسه." }, time: { en: "Yesterday", ar: "أمس" } },
   { id: "c2", authorId: "khalid-s", text: { en: "Have the documents been verified?", ar: "هل تم التحقق من المستندات؟" }, time: { en: "08:10", ar: "08:10" } },
   { id: "c3", authorId: "mohammed", text: { en: "Any update on the evidence?", ar: "أي تحديث بخصوص الأدلة؟" }, time: { en: "08:42", ar: "08:42" }, unread: true },
 ]
 
 const report = (id: string, patch: Partial<ViolationReport>): ViolationReport => ({
   id,
-  title: { en: "Report on an employee's conduct", ar: "إبلاغ عن تعامل احد الموظفين" },
+  title: { en: "Report an employee's conduct", ar: "إبلاغ عن تعامل احد الموظفين" },
   description: { en: "Repeated disrespectful conduct towards colleagues in the Riyadh office during September.", ar: "تعامل غير لائق ومتكرر مع الزملاء في مكتب الرياض خلال شهر سبتمبر." },
   reasonId: "hr", subCategory: "Employee conduct", accusedId: "fawaz", accusedDeptId: "quality",
   hasEvidence: "yes", reportedToManager: "no", openedOn: "09/09/2026",
   createdBy: { en: ME.en, ar: ME.ar }, anonymous: false, mine: true,
   status: "opened", assignedDeptId: "hr", assignedToId: "ali", legalConsultation: "no",
   folders: baseFolders(),
-  docs: [{ id: `${id}-d1`, folderId: "evidence", name: "أدلة", type: "PDF", ownerId: "fawaz", sizeKb: 820, uploaded: { en: "Yesterday", ar: "أمس" }, uploadedOrder: 2 }],
+  docs: [{ id: `${id}-d1`, folderId: "evidence", name: "أدلة", nameEn: "Evidence", type: "PDF", ownerId: "fawaz", sizeKb: 820, uploaded: { en: "Yesterday", ar: "أمس" }, uploadedOrder: 2 }],
   comments: seedComments.map((c) => ({ ...c, id: `${id}-${c.id}` })),
   ...patch,
 })

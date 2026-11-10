@@ -41,7 +41,7 @@ export function CardTitle({ icon: Icon = LayoutGrid, children, className }: {
 }) {
   return (
     <div className={cn("inline-flex flex-col items-start gap-2", className)}>
-      <h2 className="flex items-center gap-2 text-[17px] font-medium leading-[25.5px] text-foreground">
+      <h2 className="flex h-[26px] items-center gap-2 text-[17px] font-medium leading-[25.5px] text-foreground">
         <Icon className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
         {children}
       </h2>
@@ -144,13 +144,13 @@ export function ServiceTile({ icon, title, description, meta, actionLabel, to, o
           <IconTile icon={icon} />
           {meta && <span className="text-[12px] leading-[18px] text-foreground">{meta}</span>}
         </div>
-        <div className="min-h-[44px]">
+        <div className="min-h-[44.5px]">
           <div className="text-[14.5px] leading-[21.75px] text-foreground">{title}</div>
-          {description && <p className="mt-0.5 text-[12.5px] leading-[18.75px] text-muted-foreground">{description}</p>}
+          {description && <p className="mt-1 text-[12.5px] leading-[18.75px] text-muted-foreground">{description}</p>}
         </div>
       </div>
-      <div className="mt-auto flex items-center justify-between gap-3 border-t border-secondary px-4 py-3">
-        <span className="text-[10px] font-medium text-primary">{actionLabel}</span>
+      <div className="mt-auto flex h-[38px] items-center justify-between gap-3 border-t border-secondary px-4">
+        <span className="text-[10px] font-medium leading-[13px] text-primary">{actionLabel}</span>
         <OpenArrow className="size-[11px]" />
       </div>
     </>
@@ -195,14 +195,14 @@ export function KpiTile({ icon: Icon, value, label, className, inset }: {
 }) {
   return (
     <div className={cn(
-      "flex min-h-20 items-center gap-3 rounded-xl px-[18px] py-4",
+      "flex h-20 items-center gap-3 rounded-xl px-[18px] py-4",
       inset ? "bg-background" : "panel",
       className,
     )}>
       <Icon className="size-6 shrink-0 text-primary" strokeWidth={1.6} />
       <div className="min-w-0 space-y-0.5">
         <div className="text-[24px] font-bold leading-[31px] text-foreground">{value}</div>
-        <div className="text-[11.5px] text-muted-foreground">{label}</div>
+        <div className="text-[11.5px] leading-[15px] text-muted-foreground">{label}</div>
       </div>
     </div>
   )
@@ -226,22 +226,25 @@ export function CategoryChip({ tone, children }: { tone: CategoryTone; children:
   )
 }
 
-// ── stepper: 12px dots, 6px bars, 12.5px labels under the dots ──────────────
-export function Stepper({ steps, current, tone }: {
+// ── stepper (Figma 3039:5192): 51px tall, 8px side padding, 12px dots at y5,
+//    6px bars 12px from each dot, 12.5px labels centred under the dots at y24 ──
+export function Stepper({ steps, current, tone, wideEnd }: {
   steps: string[]; current: number; tone: "gold" | "success"
+  /** The last label is long ("تم التوصيل"): the design keeps 24px on that side. */
+  wideEnd?: boolean
 }) {
-  const fill = tone === "success" ? "bg-success" : "bg-primary"
+  // Status/Succes/Progress bar (#1aad70 @90% dark, #067647 @70% light).
+  const fill = tone === "success" ? "bg-[rgba(6,118,71,0.7)] dark:bg-[rgba(26,173,112,0.9)]" : "bg-primary"
   return (
-    <ol className="flex items-start ps-2 pe-6 pb-2 pt-2" aria-label="progress">
+    <ol className={cn("flex h-[51px] items-start ps-2 pt-[5px]", wideEnd ? "pe-6" : "pe-2")} aria-label="progress">
       {steps.map((s, i) => {
         const reached = i <= current
         return (
           <React.Fragment key={i}>
             <li className="relative flex w-3 shrink-0 flex-col items-center" aria-current={i === current ? "step" : undefined}>
-              <span className={cn("size-3 rounded-full", reached ? fill : "bg-muted-foreground/60")} />
+              <span className={cn("size-3 rounded-full", reached ? fill : "bg-muted-foreground/80")} />
               <span className={cn(
-                "absolute top-[18px] whitespace-nowrap text-[12.5px] leading-[18.75px]",
-                i === 0 ? "start-0" : i === steps.length - 1 ? "end-0" : "start-1/2 -translate-x-1/2 rtl:translate-x-1/2",
+                "absolute left-1/2 top-[19px] -translate-x-1/2 whitespace-nowrap text-[12.5px] leading-[18.75px]",
                 reached ? "text-foreground" : "text-muted-foreground",
                 i === current && tone === "gold" && "font-medium",
               )}>{s}</span>
@@ -329,7 +332,7 @@ export function AttachmentsButton({ files, onChange, className }: {
     <div className={cn("flex flex-col items-start gap-2", className)}>
       <GoldButton onClick={() => ref.current?.click()} className="w-[208px] max-w-full">
         <Upload className="size-3.5" />
-        {t("Upload attachments", "رفع مرفقات")}
+        {t("Upload Attachments", "رفع مرفقات")}
       </GoldButton>
       <input ref={ref} type="file" multiple hidden onChange={(e) => onChange([...files, ...Array.from(e.target.files ?? [])])} />
       {files.length > 0 && (
@@ -372,7 +375,7 @@ export function FormActions({ onSubmit, onCancel, submitLabel, disabled }: {
   const { t } = useT()
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <GoldButton onClick={onSubmit} disabled={disabled}>{submitLabel ?? t("Submit request", "إرسال الطلب")}</GoldButton>
+      <GoldButton onClick={onSubmit} disabled={disabled}>{submitLabel ?? t("Submit Request", "إرسال الطلب")}</GoldButton>
       <OutlineButton onClick={onCancel} className="min-w-[84px]">{t("Cancel", "إلغاء")}</OutlineButton>
     </div>
   )

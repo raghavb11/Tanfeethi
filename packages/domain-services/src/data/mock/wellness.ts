@@ -12,7 +12,7 @@ export const homeTiles: HealthTile[] = [
   { kind: "stat", icon: "steps", value: "10", valueAr: "10", label: "Steps", labelAr: "خطوات" },
   { kind: "stat", icon: "calories", value: "4", valueAr: "4", label: "Calories", labelAr: "سعرات حرارية" },
   { kind: "stat", icon: "streak", value: "4 weeks in a row", valueAr: "4 أسابيع متتالية", label: "In the top 10", labelAr: "ضمن أفضل 10" },
-  { kind: "nudge", tone: "error", icon: "down", title: "Start walking", titleAr: "ابدأ بالمشي", hint: "Your step count dropped", hintAr: "انخفاض عدد الخطوات" },
+  { kind: "nudge", tone: "error", icon: "down", title: "Start Walking", titleAr: "ابدأ بالمشي", hint: "Step count dropped", hintAr: "انخفاض عدد الخطوات" },
 ]
 
 /** Leaderboard page tiles per tab (2×2 grid: steps, calories, streak, nudge). */
@@ -21,19 +21,19 @@ export const periodTiles: Record<Period, HealthTile[]> = {
     { kind: "stat", icon: "steps", value: "10", valueAr: "10", label: "Steps", labelAr: "خطوات" },
     { kind: "stat", icon: "calories", value: "4", valueAr: "4", label: "Calories", labelAr: "سعرات حرارية" },
     { kind: "nudge", tone: "neutral", icon: "streak", title: "4 weeks in a row", titleAr: "4 أسابيع متتالية", hint: "In the top 10", hintAr: "ضمن أفضل 10" },
-    { kind: "nudge", tone: "success", icon: "check", title: "You hit today's goal", titleAr: "حققت هدف اليوم", hint: "Over 7,000 steps", hintAr: "حققت أكثر من 7000 خطوة" },
+    { kind: "nudge", tone: "success", icon: "check", title: "You hit today's goal", titleAr: "حققت هدف اليوم", hint: "You walked more than 7,000 steps", hintAr: "حققت أكثر من 7000 خطوة" },
   ],
   weekly: [
     { kind: "stat", icon: "steps", value: "10", valueAr: "10", label: "Steps", labelAr: "خطوات" },
     { kind: "stat", icon: "calories", value: "4", valueAr: "4", label: "Calories", labelAr: "سعرات حرارية" },
-    { kind: "nudge", tone: "neutral", icon: "streak", title: "Your streak broke", titleAr: "انقطعت سلسلتك", hint: "Walk today to rejoin the top 10", hintAr: "امشِ اليوم لتنضم ضمن أفضل 10 من جديد" },
+    { kind: "nudge", tone: "neutral", icon: "streak", title: "Your streak was broken", titleAr: "انقطعت سلسلتك", hint: "Walk today to rejoin the top 10", hintAr: "امشِ اليوم لتنضم ضمن أفضل 10 من جديد" },
     { kind: "nudge", tone: "gold", icon: "up", title: "You're on track", titleAr: "أنت على المسار الصحيح", hint: "Keep walking", hintAr: "استمر في المشي" },
   ],
   daily: [
     { kind: "stat", icon: "steps", value: "10", valueAr: "10", label: "Steps", labelAr: "خطوات" },
     { kind: "stat", icon: "calories", value: "4", valueAr: "4", label: "Calories", labelAr: "سعرات حرارية" },
-    { kind: "nudge", tone: "neutral", icon: "streak", title: "Start a walking streak", titleAr: "ابدأ سلسلة المشي", hint: "Walk today to make the top 10", hintAr: "امشِ اليوم لتتصدر ضمن أفضل 10 موظفين" },
-    { kind: "nudge", tone: "error", icon: "down", title: "Step it up", titleAr: "زد من خطواتك", hint: "Your step count dropped", hintAr: "انخفاض عدد الخطوات" },
+    { kind: "nudge", tone: "neutral", icon: "streak", title: "Start a walking streak", titleAr: "ابدأ سلسلة المشي", hint: "Walk today to rank among the top 10 employees", hintAr: "امشِ اليوم لتتصدر ضمن أفضل 10 موظفين" },
+    { kind: "nudge", tone: "error", icon: "down", title: "Increase your steps", titleAr: "زد من خطواتك", hint: "Step count dropped", hintAr: "انخفاض عدد الخطوات" },
   ],
 }
 
@@ -46,7 +46,7 @@ export const stepReports: Partial<Record<Period, {
   changePct: number; compare: string; compareAr: string; compareSteps: number
 }>> = {
   monthly: {
-    title: "Your progress this year", titleAr: "تقدمك هذه السنة", total: 380357,
+    title: "Your progress this year", titleAr: "تقدّمك هذه السنة", total: 380357,
     changePct: 18, compare: "vs last month", compareAr: "عن الشهر الماضي", compareSteps: 31420,
     bars: [
       { label: "Jan", labelAr: "يناير", value: 100, status: "met" },
@@ -64,16 +64,16 @@ export const stepReports: Partial<Record<Period, {
     ],
   },
   weekly: {
-    title: "Your progress this week", titleAr: "تقدمك هذا الأسبوع", total: 134806,
+    title: "Your Progress This Week", titleAr: "تقدّمك هذا الأسبوع", total: 134806,
     changePct: 18, compare: "vs last week", compareAr: "عن الأسبوع الماضي", compareSteps: 24265,
     bars: [
-      { label: "Sun", labelAr: "ح", value: 100, status: "met" },
-      { label: "Mon", labelAr: "ن", value: 72, status: "partial" },
-      { label: "Tue", labelAr: "ث", value: 100, status: "met" },
-      { label: "Wed", labelAr: "ر", value: 45, status: "low" },
-      { label: "Thu", labelAr: "خ", value: 100, status: "met" },
-      { label: "Fri", labelAr: "ج", value: 76, status: "met" },
-      { label: "Sat", labelAr: "س", value: 63, status: "partial", current: true },
+      { label: "S", labelAr: "ح", value: 100, status: "met" },
+      { label: "N", labelAr: "ن", value: 72, status: "partial" },
+      { label: "T", labelAr: "ث", value: 100, status: "met" },
+      { label: "W", labelAr: "ر", value: 45, status: "low" },
+      { label: "T", labelAr: "خ", value: 100, status: "met" },
+      { label: "F", labelAr: "ج", value: 76, status: "met" },
+      { label: "S", labelAr: "س", value: 63, status: "partial", current: true },
     ],
   },
 }
@@ -85,12 +85,12 @@ export type LeaderRow = {
 
 const monthlyBoard: LeaderRow[] = [
   { rank: 1, name: "Faisal Mansour Al-Tamimi", nameAr: "فيصل منصور التميمي", initials: "FT", steps: 337428, calories: 16858 },
-  { rank: 2, name: "Linda Fahad Al-Jabri", nameAr: "ليندا فهد الجابري", initials: "LJ", steps: 320912, calories: 15642 },
+  { rank: 2, name: "Linda Fahd Al-Jabri", nameAr: "ليندا فهد الجابري", initials: "LJ", steps: 320912, calories: 15642 },
   { rank: 3, name: "Rami Khaled Al-Harbi", nameAr: "رامي خالد الحربي", initials: "RH", steps: 298765, calories: 14903 },
-  { rank: 4, name: "Sarah Yousef Al-Qahtani", nameAr: "سارة يوسف القحطاني", initials: "SQ", steps: 285430, calories: 13457 },
+  { rank: 4, name: "Sara Yousef Al-Qahtani", nameAr: "سارة يوسف القحطاني", initials: "SQ", steps: 285430, calories: 13457 },
   { rank: 5, name: "Mohammed Nasser Al-Zahrani", nameAr: "محمد ناصر الزهراني", initials: "MZ", steps: 270112, calories: 12891, me: true },
   { rank: 6, name: "Huda Abdullah Al-Shammari", nameAr: "هدى عبد الله الشمري", initials: "HS", steps: 256784, calories: 11670 },
-  { rank: 100, name: "Reem Fahad Al-Hashimi", nameAr: "ريم فهد الهاشمي", initials: "RH", steps: 250784, calories: 10670 },
+  { rank: 100, name: "Reem Fahd Al-Hashemi", nameAr: "ريم فهد الهاشمي", initials: "RH", steps: 250784, calories: 10670 },
 ]
 
 /** The design reuses one board for every tab; weekly/daily scale it down. */

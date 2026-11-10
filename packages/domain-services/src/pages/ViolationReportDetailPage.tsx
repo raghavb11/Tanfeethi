@@ -37,7 +37,7 @@ function Detail({ r, mode }: { r: ViolationReport; mode: "reporter" | "investiga
       {saved && <Toast>{t("Changes saved and logged in the comments.", "تم حفظ التعديلات وتسجيلها في التعليقات.")}</Toast>}
       {mode === "reporter" && r.status === "needs-evidence" && (
         <div role="status" className="rounded-xl bg-warning-fill px-4 py-3 text-[12.5px] text-warning">
-          {t("The investigator asked for more evidence — upload it under “Evidence & violation documents”.",
+          {t("The investigator asked for more evidence — upload it under “Manage Evidence Documents & Violations”.",
             "طلب المحقق أدلة إضافية — ارفعها في «إدارة المستندات الأدلة والمخالفات».")}
         </div>
       )}
@@ -89,28 +89,28 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
     <section className="panel rounded-xl px-4 py-5">
       <CardTitle icon={Info}>{t("Details", "التفاصيل")}</CardTitle>
       <div className="mb-6 mt-[18px] overflow-hidden rounded-lg bg-background">
-        {row(t("Report title", "عنوان البلاغ"), o(r.title))}
+        {row(t("Report Title", "عنوان البلاغ"), o(r.title))}
         {row(t("Description", "وصف"), o(r.description))}
-        {row(t("Report number", "رقم البلاغ"), <span dir="ltr">#{r.id}</span>)}
-        {row(t("Opened on", "تم فتح الطلب في"), <span dir="ltr">{r.openedOn}</span>)}
-        {row(t("Created by", "تم إنشاء الطلب بواسطة"), r.anonymous
+        {row(t("Report No.", "رقم البلاغ"), <span dir="ltr">#{r.id}</span>)}
+        {row(t("Request opened on", "تم فتح الطلب في"), <span dir="ltr">{r.openedOn}</span>)}
+        {row(t("Request created by", "تم إنشاء الطلب بواسطة"), r.anonymous
           ? <span className="text-muted-foreground">{o(ANONYMOUS)}</span>
           : o(r.createdBy))}
         {edit
-          ? row(t("Request status", "حالة الطلب"), control(
+          ? row(t("Request Status", "حالة الطلب"), control(
               <SelectInput value={status} onChange={(v) => setStatus(v as ViolationStatus)} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
                 options={(Object.keys(statusOptions) as ViolationStatus[]).map((s) => ({ value: s, label: o(statusOptions[s]) }))} />))
-          : row(t("Request status", "حالة الطلب"), o(statusOptions[r.status]))}
+          : row(t("Request Status", "حالة الطلب"), o(statusOptions[r.status]))}
         {edit
-          ? row(t("Assigned department", "مسند للإدارة"), control(
+          ? row(t("Assigned to Department", "مسند للإدارة"), control(
               <SelectInput value={dept} onChange={setDept} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
                 options={departments.map((d) => ({ value: d.id, label: o(d) }))} />))
-          : row(t("Assigned department", "مسند للإدارة"), o(deptById(r.assignedDeptId)))}
+          : row(t("Assigned to Department", "مسند للإدارة"), o(deptById(r.assignedDeptId)))}
         {edit
-          ? row(t("Assigned employee", "مسند للموظف"), control(
+          ? row(t("Assigned to Employee", "مسند للموظف"), control(
               <SelectInput value={to} onChange={setTo} prefix={reassign} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
                 options={people.map((p) => ({ value: p.id, label: o(p) }))} />))
-          : row(t("Assigned employee", "مسند للموظف"), o(personById(r.assignedToId)))}
+          : row(t("Assigned to Employee", "مسند للموظف"), o(personById(r.assignedToId)))}
         {edit
           ? row(t("Is legal consultation needed?", "هل يوجد حاجة للاستشارة القانونية"), control(
               <SelectInput value={legal} onChange={(v) => setLegal(v as "yes" | "no")} className="[&_select]:bg-card [&_select]:text-[12.5px] [&_select]:font-medium"
@@ -119,7 +119,7 @@ function DetailsCard({ r, mode, onSaved }: { r: ViolationReport; mode: "reporter
       </div>
       {edit && (
         <div className="flex flex-wrap items-center gap-4">
-          <GoldButton onClick={save} disabled={!dirty}>{t("Save changes", "حفظ التعديلات")}</GoldButton>
+          <GoldButton onClick={save} disabled={!dirty}>{t("Save Changes", "حفظ التعديلات")}</GoldButton>
           <OutlineButton className="min-w-[84px]" onClick={() => navigate("/services/violations/queue")}>{t("Cancel", "إلغاء")}</OutlineButton>
         </div>
       )}
@@ -172,13 +172,13 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
   return (
     <section className={cn("panel rounded-xl px-6 py-5 transition-shadow", highlight && "shadow-[inset_0_0_0_1px_var(--primary)]")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <CardTitle icon={FolderOpen}>{t("Evidence & violation documents", "إدارة المستندات الأدلة والمخالفات")}</CardTitle>
+        <CardTitle icon={FolderOpen}>{t("Manage Evidence Documents & Violations", "إدارة المستندات الأدلة والمخالفات")}</CardTitle>
         <div className="flex items-center gap-3">
           <OutlineButton size="sm" className="w-[108px]" onClick={() => fileRef.current?.click()}>
-            <FileUp className="size-3.5" />{t("Upload", "رفع مستند")}
+            <FileUp className="size-3.5" />{t("Upload Document", "رفع مستند")}
           </OutlineButton>
           <GoldButton size="sm" className="w-[108px] px-2" onClick={() => setNewFolder("")}>
-            <Plus className="size-3" />{t("New folder", "مجلد جديد")}
+            <Plus className="size-3" />{t("New Folder", "مجلد جديد")}
           </GoldButton>
           <input ref={fileRef} type="file" multiple hidden
             onChange={(e) => { const f = Array.from(e.target.files ?? []); if (f.length) addDocuments(r.id, f, folder, byReporter); e.target.value = "" }} />
@@ -250,10 +250,10 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
               <thead>
                 <tr className="border-b border-secondary text-[11.5px] text-muted-foreground">
                   <th className="w-12" />
-                  <th className="py-3 text-start font-normal">{t("File name", "اسم الملف")}</th>
+                  <th className="py-3 text-start font-normal">{t("File Name", "اسم الملف")}</th>
                   <th className="py-3 text-start font-normal">{t("Owner", "المالك")}</th>
-                  <th className="py-3 text-start font-normal">{t("File size", "حجم الملف")}</th>
-                  <th className="py-3 text-start font-normal">{t("Uploaded", "تاريخ الرفع")}</th>
+                  <th className="py-3 text-start font-normal">{t("File Size", "حجم الملف")}</th>
+                  <th className="py-3 text-start font-normal">{t("Upload Date", "تاريخ الرفع")}</th>
                   <th className="w-[126px]" />
                 </tr>
               </thead>
@@ -279,7 +279,7 @@ function Documents({ r, byReporter, autoUpload }: { r: ViolationReport; byReport
 function DocRow({ d, size, confirming, onDelete, onCancel, onConfirm }: {
   d: Doc; size: string; confirming: boolean; onDelete: () => void; onCancel: () => void; onConfirm: () => void
 }) {
-  const { t, o } = useT()
+  const { t, o, isAr } = useT()
   const tile = "grid size-[34px] place-items-center rounded-lg border border-secondary text-foreground transition-colors hover:bg-secondary/60"
   return (
     <tr className="text-foreground">
@@ -287,7 +287,7 @@ function DocRow({ d, size, confirming, onDelete, onCancel, onConfirm }: {
         <span className={cn("inline-flex h-[31px] w-9 items-center justify-center rounded text-[10px] font-semibold",
           d.type === "PDF" ? "bg-error/25 text-error" : d.type === "IMG" ? "bg-success-fill text-success" : "bg-info-fill text-info")}>{d.type}</span>
       </td>
-      <td className="py-3 text-[11.5px]">{d.name}</td>
+      <td className="py-3 text-[11.5px]">{isAr ? d.name : d.nameEn ?? d.name}</td>
       <td className="py-3 text-[10.9px]">{o(authorOf(d.ownerId))}</td>
       <td className="py-3 text-[12px]"><span dir="ltr">{size}</span></td>
       <td className="py-3 text-[10.7px]">{o(d.uploaded)}</td>

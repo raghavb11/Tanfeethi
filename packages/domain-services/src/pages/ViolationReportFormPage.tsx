@@ -48,11 +48,11 @@ export default function ViolationReportFormPage() {
       {done && (
         <Toast>
           {t(`Report #${done} submitted. You can follow it up at any time.`, `تم إرسال البلاغ #${done}. يمكنك متابعته في أي وقت.`)}
-          <Link to="/services/violations/reports" className="font-semibold underline underline-offset-2">{t("Follow up on reports", "متابعة طلبات الإبلاغ")}</Link>
+          <Link to="/services/violations/reports" className="font-semibold underline underline-offset-2">{t("Track report requests", "متابعة طلبات الإبلاغ")}</Link>
         </Toast>
       )}
       <Card className="px-4">
-        <CardHeader icon={LayoutGrid} title={t("Violation reporting system service", "خدمة نظام الإبلاغ عن المخالفات")} />
+        <CardHeader icon={LayoutGrid} title={t("Violation Reporting System Service", "خدمة نظام الإبلاغ عن المخالفات")} />
         <div className="mb-6 mt-[18px] flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("Reason for the report", "سبب الإبلاغ")} required htmlFor="v-reason">
@@ -65,7 +65,7 @@ export default function ViolationReportFormPage() {
             </Field>
           </div>
 
-          {section(t("Who, in your opinion, committed the violation?", "من هم في رأيك الأشخاص المخالفين ؟"))}
+          {section(t("Who do you believe are the violators?", "من هم في رأيك الأشخاص المخالفين ؟"))}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Field label={t("Name", "الاسم")} required htmlFor="v-name">
               <SelectInput id="v-name" value={v.accused} onChange={set("accused")} placeholder={choose} invalid={bad("accused")}
@@ -95,7 +95,7 @@ export default function ViolationReportFormPage() {
             </Field>
           </div>
 
-          {section(t("Any additional details you would like to add to the report?", "هل يوجد أي تفاصيل إضافية تود/ين إضافتها حول البلاغ ؟"))}
+          {section(t("Are there any additional details you would like to add about the report?", "هل يوجد أي تفاصيل إضافية تود/ين إضافتها حول البلاغ ؟"))}
           <AttachmentsButton files={files} onChange={setFiles} />
 
           {/* whistleblower protection — not in the design */}
@@ -109,14 +109,14 @@ export default function ViolationReportFormPage() {
           </div>
 
           <div className="border-t border-secondary pt-3.5 text-[13px] leading-[21px] text-foreground">
-            {t("To review the policy, please follow this link: ", "لاستعراض السياسة يرجى الضغط على الرابط التالي ")}
+            {t("To review the policy, please click the following link: ", "لاستعراض السياسة يرجى الضغط على الرابط التالي ")}
             <Link to="/policies" className="font-semibold text-primary underline underline-offset-2">
-              {t("Employee violation reporting policy", "سياسة الإبلاغ عن المخالفات للموظفين")}
+              {t("Employee Violation Reporting Policy", "سياسة الإبلاغ عن المخالفات للموظفين")}
             </Link>
           </div>
           <div className="pb-3.5 pt-1">
             <Checkbox id="v-policy" checked={policy} onChange={setPolicy}>
-              {t("I have read the employee violation reporting policy and agree to comply with it.", "لقد اطلعت على سياسة الإبلاغ عن المخالفات للموظفين وأوافق على الالتزام بها.")}
+              {t("I have read the Employee Violation Reporting Policy and agree to comply with it.", "لقد اطلعت على سياسة الإبلاغ عن المخالفات للموظفين وأوافق على الالتزام بها.")}
             </Checkbox>
           </div>
           {tried && (missing.length > 0 || !policy) && (

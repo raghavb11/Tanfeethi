@@ -33,7 +33,7 @@ export default function StepsLeaderboardPage() {
     <PageBody>
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <CardTitle icon={HeartPulse}>{t("My health", "صحتي")}</CardTitle>
+          <CardTitle icon={HeartPulse}>{t("My Health", "صحتي")}</CardTitle>
           {/* period tabs: 36px, 3px padding, radius 9 */}
           <div role="tablist" className="inline-flex h-9 items-center gap-0.5 rounded-[9px] bg-card p-[3px] shadow-[inset_0_0_0_1px_var(--card-ring)]">
             {tabs.map((tab) => (
@@ -72,7 +72,7 @@ export default function StepsLeaderboardPage() {
                   <div className="flex h-[151px] items-end justify-between gap-2.5 px-0 sm:px-6" role="img"
                     aria-label={t("Steps per period", "الخطوات لكل فترة")}>
                     {report.bars.map((b) => (
-                      <div key={b.label} className="flex h-full min-w-0 max-w-[46px] flex-1 flex-col items-center gap-2" title={`${isAr ? b.labelAr : b.label}`}>
+                      <div key={`${b.label}-${b.labelAr}`} className="flex h-full min-w-0 max-w-[46px] flex-1 flex-col items-center gap-2" title={`${isAr ? b.labelAr : b.label}`}>
                         <div className={cn("relative w-full flex-1 overflow-hidden rounded-md", b.current ? "bg-primary/25" : "bg-secondary")}>
                           <div
                             className={cn("absolute inset-x-0 bottom-0 rounded-md",
@@ -137,7 +137,7 @@ function LeaderItem({ r }: { r: LeaderRow }) {
           </span>
           <span className="inline-flex items-center gap-2">
             <Flame className="size-3.5 text-error" />
-            {fmt(r.calories)} {t("cal", "سعرة حرارية")}
+            {fmt(r.calories)} {t("kcal", "سعرة حرارية")}
           </span>
         </div>
       </div>

@@ -20,7 +20,7 @@ export default function ViolationFollowUpPage({ mode = "reporter" }: { mode?: "r
   return (
     <PageBody>
       <Card>
-        <CardHeader icon={CircleAlert} title={t("Follow up on reports", "متابعة طلبات الإبلاغ")} />
+        <CardHeader icon={CircleAlert} title={t("Track report requests", "متابعة طلبات الإبلاغ")} />
         <div className="mt-2">
           {rows.length === 0 ? (
             <div className="pt-4">
@@ -30,8 +30,8 @@ export default function ViolationFollowUpPage({ mode = "reporter" }: { mode?: "r
             </div>
           ) : (
             <DataTable head={[
-              t("No.", "ترقيم"), t("Report title", "عنوان البلاغ"), t("Report number", "رقم البلاغ"),
-              t("Assigned department", "مسند للإدارة"), t("Assigned employee", "مسند للموظف"), t("Status", "الحالة"),
+              t("No.", "ترقيم"), t("Report Title", "عنوان البلاغ"), t("Report No.", "رقم البلاغ"),
+              t("Assigned to Department", "مسند للإدارة"), t("Assigned to Employee", "مسند للموظف"), t("Status", "الحالة"),
               ...(mode === "investigator" ? [""] : []),
             ]}>
               {rows.map((r, i) => (
@@ -50,7 +50,7 @@ export default function ViolationFollowUpPage({ mode = "reporter" }: { mode?: "r
                       <span>{o(statusOptions[r.status])}</span>
                       {mode === "reporter" && r.status === "needs-evidence" && (
                         <GoldButton className="h-[34px] px-3 text-[13px] font-medium" onClick={() => navigate(`${base}/${r.id}?evidence=1`)}>
-                          {t("Add evidence", "إضافة دليل")}
+                          {t("Add Evidence", "إضافة دليل")}
                         </GoldButton>
                       )}
                     </div>

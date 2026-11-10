@@ -18,7 +18,7 @@ export default function TechnicalServicesPage() {
     <PageBody>
       <div className="grid items-start gap-5 lg:grid-cols-[397px_minmax(0,1fr)]">
         <Card>
-          <CardHeader icon={LayoutGrid} title={t("Request a technical service", "طلب خدمة تقنية")} />
+          <CardHeader icon={LayoutGrid} title={t("Request an IT service", "طلب خدمة تقنية")} />
           <div className="mt-8 flex flex-col gap-2">
             {technicalGroups.map((g) => (
               <GroupRow

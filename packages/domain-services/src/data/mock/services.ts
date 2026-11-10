@@ -26,7 +26,7 @@ export type ServiceCategory = {
 
 export const categories: ServiceCategory[] = [
   {
-    id: "it", name: "IT & Permissions", nameAr: "تقنية المعلومات والصلاحيات",
+    id: "it", name: "IT & Access", nameAr: "تقنية المعلومات والصلاحيات",
     description: "Devices, single sign-on, permissions, software.",
     descriptionAr: "الأجهزة، الدخول الموحد، الصلاحيات، البرامج.",
     icon: "laptop", tone: "neutral", open: 6, to: "/services/catalog/it",
@@ -39,25 +39,25 @@ export const categories: ServiceCategory[] = [
   },
   {
     id: "finance", name: "Finance", nameAr: "المالية",
-    description: "Purchase requests, invoices, expense triage.",
+    description: "Purchase requests, invoices, expense sorting.",
     descriptionAr: "طلبات الشراء، الفواتير، فرز المصاريف.",
     icon: "finance", tone: "success", open: 1, to: "/services/catalog/finance",
   },
   {
     id: "facilities", name: "Facilities", nameAr: "المرافق",
-    description: "Moves, badges, bookings, incidents.",
+    description: "Transfers, cards, bookings, incidents.",
     descriptionAr: "الانتقالات، البطاقات، الحجوزات، الحوادث.",
     icon: "facilities", tone: "rose", open: 1, to: "/services/catalog/facilities",
   },
   {
     id: "hospitality", name: "Hospitality", nameAr: "الضيافة",
-    description: "Tea, coffee and water served to your office or meeting room.",
+    description: "Tea, coffee and water served to your office or meeting room",
     descriptionAr: "شاي وقهوة ومياه تُقدَّم إلى مكتبك أو قاعة الاجتماعات",
     icon: "hospitality", tone: "violet", open: 0, to: "/services/catalog/hospitality",
   },
   {
-    id: "violations", name: "Violation reporting system", nameAr: "نظام الإبلاغ عن المخالفات",
-    description: "Report audit, HR, safety and quality violations.",
+    id: "violations", name: "Violation Reporting System", nameAr: "نظام الإبلاغ عن المخالفات",
+    description: "For reporting audit, HR, safety and quality violations",
     descriptionAr: "للإبلاغ عن مخالفات التدقيق، الموارد البشرية و السلامة و الجودة",
     icon: "violation", tone: "error", open: 0, to: "/services/violations",
   },
@@ -78,7 +78,7 @@ export const catalogKpis: Record<string, { open: number; inProgress: number; avg
   facilities: { open: 1, inProgress: 0, avgMinutes: 245 },
 }
 
-/** "1 hour 40 min" / "ساعة و 40 دقيقة". */
+/** "1 h 40 min" / "ساعة و 40 دقيقة" (Figma copy). */
 export function formatDuration(min: number, isAr: boolean) {
   const d = Math.floor(min / 1440)
   const h = Math.floor((min % 1440) / 60)
@@ -92,7 +92,7 @@ export function formatDuration(min: number, isAr: boolean) {
   }
   const parts: string[] = []
   if (d) parts.push(`${d} day${d === 1 ? "" : "s"}`)
-  if (h) parts.push(`${h} hour${h === 1 ? "" : "s"}`)
+  if (h) parts.push(`${h} h`)
   if (m) parts.push(`${m} min`)
   return parts.join(" ") || "—"
 }
@@ -116,38 +116,38 @@ export type CatalogService = {
 
 export const catalogServices: Record<string, CatalogService[]> = {
   it: [
-    { id: "report-fault", name: "Report a fault", nameAr: "الإبلاغ عن عطل",
-      description: "Something not working as it should? Log a report and we'll follow up with you.",
+    { id: "report-fault", name: "Report an issue", nameAr: "الإبلاغ عن عطل",
+      description: "Something not working? Log a report and we'll follow up with you.",
       descriptionAr: "شيء لا يعمل كما ينبغي؟ سجّل بلاغًا وسنتابعه معك.",
       icon: "fault", action: "open", to: "/services/catalog/it/report-fault" },
-    { id: "technical", name: "Request a technical service", nameAr: "طلب خدمة تقنية",
-      description: "Browse the service guide and request what you need: a device, a permission or software.",
+    { id: "technical", name: "Request an IT service", nameAr: "طلب خدمة تقنية",
+      description: "Browse the service catalogue and request what you need: a device, access or software.",
       descriptionAr: "تصفّح دليل الخدمات واطلب ما تحتاجه: جهاز، صلاحية، أو برنامج.",
       icon: "laptop", action: "open", to: "/services/catalog/it/technical" },
-    { id: "development", name: "Request development or a new service", nameAr: "طلب تطوير أو خدمة جديدة",
-      description: "Suggest an improvement to an existing service, or a service that isn't available yet.",
+    { id: "development", name: "Request an enhancement or new service", nameAr: "طلب تطوير أو خدمة جديدة",
+      description: "Suggest an improvement to an existing service or a service not yet available.",
       descriptionAr: "اقترح تحسينًا على خدمة حالية أو خدمة غير متوفرة بعد.",
       icon: "development", action: "open", to: "/services/request/development" },
     { id: "change", name: "Change request", nameAr: "طلب تغيير",
-      description: "A change to an existing system or service, with an impact review before it's made.",
+      description: "A change to an existing system or service, with impact review before implementation.",
       descriptionAr: "تعديل على نظام أو خدمة قائمة، مع مراجعة الأثر قبل التنفيذ.",
       icon: "change", action: "open", to: "/services/request/change" },
-    { id: "health-report", name: "Systems health report", nameAr: "تقرير سلامة الأنظمة",
-      description: "Ask for a periodic check of the state of systems and technical services.",
+    { id: "health-report", name: "Systems Health Report", nameAr: "تقرير سلامة الأنظمة",
+      description: "Request a periodic check of systems and technical services.",
       descriptionAr: "اطلب فحصًا دوريًا لحالة الأنظمة والخدمات التقنية.",
       icon: "health", action: "open", to: "/services/request/health-report" },
-    { id: "knowledge", name: "Knowledge base", nameAr: "قاعدة المعرفة",
+    { id: "knowledge", name: "Knowledge Base", nameAr: "قاعدة المعرفة",
       description: "Search articles and ready-made solutions.",
       descriptionAr: "ابحث في المقالات والحلول الجاهزة.",
       icon: "knowledge", action: "open", to: "/documents" },
   ],
   hospitality: [
-    { id: "menu", name: "Order menu", nameAr: "قائمة الطلبات",
-      description: "Tea, coffee and water served to your office or meeting room.",
+    { id: "menu", name: "Orders List", nameAr: "قائمة الطلبات",
+      description: "Tea, coffee and water served to your office or meeting room",
       descriptionAr: "شاي وقهوة ومياه تُقدَّم إلى مكتبك أو قاعة الاجتماعات",
       icon: "menu", action: "open", to: "/cafeteria" },
-    { id: "waiter", name: "Request a waiter", nameAr: "طلب النادل",
-      description: "To customise your order.", descriptionAr: "لتخصيص طلبك",
+    { id: "waiter", name: "Call Waiter", nameAr: "طلب النادل",
+      description: "to customize your order", descriptionAr: "لتخصيص طلبك",
       icon: "waiter", action: "open", to: "/services/hospitality/waiter" },
   ],
   hr: [
@@ -175,10 +175,10 @@ export type ServiceGroup = { id: string; name: string; nameAr: string; items: st
 
 export const technicalGroups: ServiceGroup[] = [
   { id: "account-email", name: "Account & email services", nameAr: "خدمات الحساب والبريد الإلكتروني", items: ["new-account", "mailbox"] },
-  { id: "surveillance", name: "Security surveillance system", nameAr: "نظام المراقبة الأمنية", items: ["cctv-access"] },
+  { id: "surveillance", name: "Security monitoring system", nameAr: "نظام المراقبة الأمنية", items: ["cctv-access"] },
   { id: "database", name: "Database", nameAr: "قاعدة بيانات", items: ["db-access"] },
   { id: "devices", name: "Device services", nameAr: "خدمات الأجهزة", items: ["devices", "printers"] },
-  { id: "permissions", name: "Permissions management", nameAr: "إدارة الصلاحيات", items: ["app-permission"] },
+  { id: "permissions", name: "Access management", nameAr: "إدارة الصلاحيات", items: ["app-permission"] },
   { id: "infosec", name: "Information security", nameAr: "أمن المعلومات", items: ["usb-exception"] },
   { id: "network", name: "Network services", nameAr: "خدمات الشبكة", items: ["vpn"] },
   { id: "software", name: "Software services", nameAr: "خدمات البرامج", items: ["software-install"] },
@@ -247,7 +247,7 @@ export const serviceItems: ServiceItem[] = [
     requester, { key: "software", kind: "text", label: "Software", labelAr: "البرنامج" }, location,
   ] },
   // catalog-level services that open a form directly
-  { id: "development", name: "Request development or a new service", nameAr: "طلب تطوير أو خدمة جديدة", fields: [
+  { id: "development", name: "Request an enhancement or new service", nameAr: "طلب تطوير أو خدمة جديدة", fields: [
     requester, { key: "title", kind: "text", label: "Idea title", labelAr: "عنوان الفكرة" },
     requestType([{ en: "Improve an existing service", ar: "تحسين خدمة حالية" }, { en: "New service", ar: "خدمة جديدة" }]),
   ] },
@@ -255,7 +255,7 @@ export const serviceItems: ServiceItem[] = [
     requester, { key: "system", kind: "text", label: "System", labelAr: "النظام" },
     requestType([{ en: "Standard", ar: "اعتيادي" }, { en: "Urgent", ar: "عاجل" }]),
   ] },
-  { id: "health-report", name: "Systems health report", nameAr: "تقرير سلامة الأنظمة", fields: [
+  { id: "health-report", name: "Systems Health Report", nameAr: "تقرير سلامة الأنظمة", fields: [
     requester, { key: "system", kind: "text", label: "System", labelAr: "النظام" },
     requestType([{ en: "One-off", ar: "مرة واحدة" }, { en: "Monthly", ar: "شهري" }, { en: "Quarterly", ar: "ربع سنوي" }]),
   ] },
@@ -332,15 +332,27 @@ export const isComplete = (r: ServiceRequest) => r.step >= stepsFor(r).length - 
 /** Request numbers are unique (the design reused #REQ-10412 three times). */
 export const activeRequests: ServiceRequest[] = [
   { id: "REQ-10412", categoryId: "it", title: "New laptop · M3 Pro", titleAr: "لابتوب جديد · M3 Pro",
-    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "27 Aug", dateAr: "27 أغسطس", iso: "2026/08/27", step: 1, flow: "standard" },
-  { id: "REQ-10431", categoryId: "finance", title: "National Day events", titleAr: "فعاليات يوم الوطني",
-    requester: "Faisal Al-Harbi", requesterAr: "فيصل الحربي", date: "5 Aug", dateAr: "5 أغسطس", iso: "2026/08/05", step: 0, flow: "standard" },
-  { id: "REQ-10489", categoryId: "hospitality", title: "Iced coffee", titleAr: "قهوة باردة",
-    requester: "Fadi", requesterAr: "فادي", date: "1 Aug", dateAr: "1 أغسطس", iso: "2026/08/01", step: 2, flow: "hospitality" },
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "27 August", dateAr: "27 أغسطس", iso: "2026/08/27", step: 1, flow: "standard" },
+  { id: "REQ-10431", categoryId: "finance", title: "National Day Events", titleAr: "فعاليات يوم الوطني",
+    requester: "Faisal Al-Harbi", requesterAr: "فيصل الحربي", date: "5 August", dateAr: "5 أغسطس", iso: "2026/08/05", step: 0, flow: "standard" },
+  { id: "REQ-10489", categoryId: "hospitality", title: "Cold Coffee", titleAr: "قهوة باردة",
+    requester: "Fadi", requesterAr: "فادي", date: "1 August", dateAr: "1 أغسطس", iso: "2026/08/01", step: 2, flow: "hospitality" },
   { id: "REQ-10414", categoryId: "hr", title: "New employee training", titleAr: "تدريب الموظفين الجدد",
-    requester: "Huda Al-Zahrani", requesterAr: "هدى الزهراني", date: "7 Aug", dateAr: "7 أغسطس", iso: "2026/08/07", step: 3, flow: "standard" },
-  { id: "REQ-10398", categoryId: "facilities", title: "Badge renewal · Building C", titleAr: "تجديد البطاقة · المبنى C",
-    requester: "Hind Al-Zahrani", requesterAr: "هند الزهراني", date: "1 Aug", dateAr: "1 أغسطس", iso: "2026/08/01", step: 3, flow: "standard" },
+    requester: "Huda Al-Zahrani", requesterAr: "هدى الزهراني", date: "7 August", dateAr: "7 أغسطس", iso: "2026/08/07", step: 3, flow: "standard" },
+  { id: "REQ-10398", categoryId: "facilities", title: "Card renewal · Building C", titleAr: "تجديد البطاقة · المبنى C",
+    requester: "Hind Al-Zahrani", requesterAr: "هند الزهراني", date: "1 August", dateAr: "1 أغسطس", iso: "2026/08/01", step: 3, flow: "standard" },
+  // Older open requests below the fold — the KPI counts 10 open requests and the
+  // design's list scrolls (its scrollbar thumb covers about half the track).
+  { id: "REQ-10371", categoryId: "it", title: "Adobe Creative Cloud licence", titleAr: "ترخيص Adobe Creative Cloud",
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "29 July", dateAr: "29 يوليو", iso: "2026/07/29", step: 1, flow: "standard" },
+  { id: "REQ-10366", categoryId: "hr", title: "Salary certificate", titleAr: "شهادة راتب",
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "27 July", dateAr: "27 يوليو", iso: "2026/07/27", step: 2, flow: "standard" },
+  { id: "REQ-10359", categoryId: "facilities", title: "Meeting room booking · Floor 4", titleAr: "حجز قاعة اجتماعات · الطابق 4",
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "24 July", dateAr: "24 يوليو", iso: "2026/07/24", step: 1, flow: "standard" },
+  { id: "REQ-10347", categoryId: "finance", title: "Expense claim · client visit", titleAr: "مطالبة مصاريف · زيارة عميل",
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "20 July", dateAr: "20 يوليو", iso: "2026/07/20", step: 0, flow: "standard" },
+  { id: "REQ-10340", categoryId: "it", title: "Second monitor", titleAr: "شاشة إضافية",
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "18 July", dateAr: "18 يوليو", iso: "2026/07/18", step: 2, flow: "standard" },
 ]
 
 /** Submitted services log — the history table (newest first). */
@@ -349,9 +361,9 @@ export const requestHistory: ServiceRequest[] = [
   activeRequests[3],
   activeRequests[4],
   { id: "REQ-10377", categoryId: "it", title: "VPN access extension", titleAr: "تمديد الوصول عبر VPN",
-    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "21 Jul", dateAr: "21 يوليو", iso: "2026/07/21", step: 3, flow: "standard" },
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "21 July", dateAr: "21 يوليو", iso: "2026/07/21", step: 3, flow: "standard" },
   { id: "REQ-10352", categoryId: "finance", title: "Conference travel advance", titleAr: "سلفة سفر لمؤتمر",
-    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "9 Jul", dateAr: "9 يوليو", iso: "2026/07/09", step: 2, flow: "standard" },
+    requester: "Saud Al-Dosari", requesterAr: "سعود الدوسري", date: "9 July", dateAr: "9 يوليو", iso: "2026/07/09", step: 2, flow: "standard" },
 ]
 
 /** Status label used by the history table. */
@@ -364,9 +376,9 @@ export function statusOf(r: ServiceRequest): Option & { tone: "progress" | "done
 
 // ── assets (Services home → الأصول) ─────────────────────────────────────────
 export const assets: { id: string; name: string; nameAr: string; date: string; dateAr: string }[] = [
-  { id: "AS-883", name: "MacBook Pro 16\"", nameAr: "ماك بوك برو 16", date: "Aug 2027", dateAr: "أغسطس 2027" },
-  { id: "AS-902", name: "iPhone 15 Pro Max", nameAr: "آيفون 15 برو ماكس", date: "Sep 2027", dateAr: "سبتمبر 2027" },
-  { id: "AS-771", name: "YubiKey · Level 2", nameAr: "يوبي كي · المستوى الثاني", date: "Jul 2025", dateAr: "يوليو 2025" },
+  { id: "AS-883", name: "MacBook Pro 16", nameAr: "ماك بوك برو 16", date: "August 2027", dateAr: "أغسطس 2027" },
+  { id: "AS-902", name: "iPhone 15 Pro Max", nameAr: "آيفون 15 برو ماكس", date: "September 2027", dateAr: "سبتمبر 2027" },
+  { id: "AS-771", name: "YubiKey · Level 2", nameAr: "يوبي كي · المستوى الثاني", date: "July 2025", dateAr: "يوليو 2025" },
 ]
 
 // ── live store: requests raised in this session join the lists ──────────────
@@ -384,7 +396,7 @@ const nextNumber = () => {
 
 export function addRequest(r: Omit<ServiceRequest, "id" | "date" | "dateAr" | "iso" | "step">): ServiceRequest {
   const d = new Date()
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
   const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"]
   const req: ServiceRequest = {
     ...r, id: nextNumber(), step: 0,

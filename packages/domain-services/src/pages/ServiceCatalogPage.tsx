@@ -6,6 +6,9 @@ import { useT } from "../components/i18n"
 import { ClipboardClock, serviceIcons } from "../components/icons"
 import { catalogKpis, catalogServices, categoryById, formatDuration } from "../data/mock/services"
 
+/** English card titles as drawn in the EN frames (5233:24866, 5233:25971). */
+const browseTitleEn: Record<string, string> = { it: "Browse IT & access services", hospitality: "Selected service" }
+
 /** Catalog level 1 — Figma 3039:5370 (IT & Permissions) and 4915:18256 (Hospitality).
  *  Route: /services/catalog/:catalogId */
 export default function ServiceCatalogPage({ catalogId: fixed }: { catalogId?: string }) {
@@ -26,7 +29,7 @@ export default function ServiceCatalogPage({ catalogId: fixed }: { catalogId?: s
         sideWidth={250}
         main={
           <Card className="px-4">
-            <CardHeader icon={LayoutGrid} title={t(`Browse ${name} services`, `تصفّح خدمات ${name}`)} />
+            <CardHeader icon={LayoutGrid} title={isAr ? `تصفّح خدمات ${name}` : (browseTitleEn[catalogId] ?? `Browse ${name} services`)} />
             <div className="mt-[18px]">
               {services.length === 0 ? (
                 <EmptyState icon={LayoutGrid} title={t("No services in this catalog yet", "لا توجد خدمات في هذا الكتالوج بعد")} />
@@ -54,7 +57,7 @@ export default function ServiceCatalogPage({ catalogId: fixed }: { catalogId?: s
             <KpiTile
               icon={ClipboardClock}
               value={<span className="text-[16px]">{formatDuration(kpi.avgMinutes, isAr)}</span>}
-              label={t("Average response time", "متوسط الاستجابة للطلبات")}
+              label={t("Avg. request response time", "متوسط الاستجابة للطلبات")}
             />
           </>
         }

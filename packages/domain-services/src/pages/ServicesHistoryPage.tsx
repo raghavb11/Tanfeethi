@@ -13,7 +13,7 @@ export default function ServicesHistoryPage() {
   return (
     <PageBody>
       <Card>
-        <CardHeader icon={Wrench} title={t("Submitted services log", "سجل الخدمات المرفوعة")} />
+        <CardHeader icon={Wrench} title={t("Submitted Services History", "سجل الخدمات المرفوعة")} />
         <div className="mt-2">
           {rows.length === 0 ? (
             <div className="pt-4">
@@ -22,8 +22,8 @@ export default function ServicesHistoryPage() {
             </div>
           ) : (
             <DataTable head={[
-              t("No.", "ترقيم"), t("Request type", "نوع الطلب"), t("From department", "من قسم"),
-              t("Request date", "تاريخ طلب الخدمة"), t("Request number", "رقم الطلب"), t("Status", "الحالة"),
+              t("No.", "ترقيم"), t("Request Type", "نوع الطلب"), t("From Department", "من قسم"),
+              t("Request Date", "تاريخ طلب الخدمة"), t("Request No.", "رقم الطلب"), t("Status", "الحالة"),
             ]}>
               {rows.map((r, i) => {
                 const cat = categoryById(r.categoryId)

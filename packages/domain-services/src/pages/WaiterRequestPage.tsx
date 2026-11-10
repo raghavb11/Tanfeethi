@@ -43,7 +43,7 @@ export default function WaiterRequestPage() {
         </Toast>
       )}
       <Card className="px-4">
-        <CardHeader icon={LayoutGrid} title={t("Waiter request service", "خدمة طلب النادل")} />
+        <CardHeader icon={LayoutGrid} title={t("Waiter Request Service", "خدمة طلب النادل")} />
         <div className="mb-6 mt-[18px] grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Field label={t("Floor", "دور")} required htmlFor="w-floor">
             <SelectInput id="w-floor" value={floor} onChange={(v) => { setFloor(v); setPlace("") }} placeholder={choose}

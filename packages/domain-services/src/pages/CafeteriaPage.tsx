@@ -1,7 +1,7 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import {
-  Bookmark, BookmarkCheck, ClipboardList, Clock, Coffee, ConciergeBell, Cookie, CupSoda, Heart, LayoutGrid, MapPin,
+  Bookmark, BookmarkCheck, ChevronDown, ClipboardList, Clock, Coffee, ConciergeBell, Cookie, CupSoda, Heart, LayoutGrid, MapPin,
   Minus, Plus, RotateCcw, Search, Send, ShieldCheck, ShoppingBag, Star, Trash2, UtensilsCrossed, X, type LucideIcon,
 } from "lucide-react"
 import { cn } from "@reach/shared-core"
@@ -32,10 +32,19 @@ export default function CafeteriaPage() {
 
   const [group, setGroup] = React.useState<MenuGroupId | "all">("all")
   const [query, setQuery] = React.useState("")
-  const [lines, setLines] = React.useState<OrderLine[]>([])
+  // ?basket=demo opens the page with the basket drawn in Figma 4915:17913 (for review/capture).
+  const [params] = useSearchParams()
+  const [lines, setLines] = React.useState<OrderLine[]>(() => params.get("basket") === "demo"
+    ? [
+        { itemId: "m-macchiato", qty: 1, sugar: "medium" },
+        { itemId: "m-iced-latte", qty: 2, sugar: "medium" },
+        { itemId: "m-memories-wafer", qty: 1 },
+      ]
+    : [])
   /** Sugar chosen on a card before the item is in the basket. */
   const [pendingSugar, setPendingSugar] = React.useState<Record<string, SugarLevel>>({})
   const [locationId, setLocationId] = React.useState(prefs.locationId)
+  const [deliveryOpen, setDeliveryOpen] = React.useState(false)
   const [locQuery, setLocQuery] = React.useState("")
   const [slotId, setSlotId] = React.useState(slots[0].id)
   const [note, setNote] = React.useState("")
@@ -91,6 +100,11 @@ export default function CafeteriaPage() {
     return !cq || l.name.toLowerCase().includes(cq) || l.nameAr.includes(confirmQuery.trim())
   })
 
+  const loc = locations.find((l) => l.id === locationId)
+  const locName = loc ? (isAr ? loc.nameAr : loc.name) : undefined
+  const slot = slots.find((x) => x.id === slotId)
+  const slotName = slot ? (isAr ? slot.labelAr : slot.label) : ""
+
   const totalItems = lines.reduce((n, l) => n + l.qty, 0)
   const canSubmit = totalItems > 0 && !!locationId && !!slotId
   const mine = orders.filter((o) => o.by === "Khalid Al-Saadi" && (o.status === "Received" || o.status === "Accepted"))
@@ -118,7 +132,7 @@ export default function CafeteriaPage() {
   const applyUsual = (u: SavedUsual) => { setLines(u.lines.map((l) => ({ ...l }))); setLocationId(prefs.locationId); setNote(u.note ?? "") }
   const keepSaved = () => { setSavedUsual(true); window.setTimeout(() => setSavedUsual(false), 2400) }
 
-  const countLabel = (n: number) => (isAr ? `${n} طلبات` : `${n} item${n === 1 ? "" : "s"}`)
+  const countLabel = (n: number) => (isAr ? `${n} طلبات` : `${n} request${n === 1 ? "" : "s"}`)
   const label = (s: string) => <div className="mb-2 px-1 text-[13px] font-semibold text-foreground">{s}</div>
 
   return (
@@ -137,7 +151,7 @@ export default function CafeteriaPage() {
         <div className="space-y-6 lg:sticky lg:top-4">
           <Card>
             <div className="flex items-start justify-between gap-3">
-              <CardTitle icon={ShoppingBag}>{t("Orders", "الطلبات")}</CardTitle>
+              <CardTitle icon={ShoppingBag}>{t("Requests", "الطلبات")}</CardTitle>
               <span className="text-[12px] leading-[18px] text-foreground">{countLabel(totalItems)}</span>
             </div>
 
@@ -176,54 +190,68 @@ export default function CafeteriaPage() {
                 )
               })}
 
-              {/* delivery — kept from the existing ordering flow */}
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                  <span className="text-[13px] font-semibold text-foreground">{t("Deliver to", "التوصيل إلى")}</span>
-                  {locationId && locationId !== prefs.locationId && (
-                    <button type="button" onClick={() => setPrefs({ locationId })} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
-                      <Star className="size-3" />{t("Make this my default", "اجعله الافتراضي")}
-                    </button>
-                  )}
-                </div>
-                <div className="relative mb-2">
-                  <MapPin className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-icon" />
-                  <TextInput value={locQuery} onChange={(e) => setLocQuery(e.target.value)} placeholder={t("Search locations…", "ابحث عن الموقع…")} className="ps-8" />
-                </div>
-                <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg bg-background p-1 [scrollbar-width:thin]">
-                  {locOptions.map((l) => (
-                    <button key={l.id} type="button" onClick={() => setLocationId(l.id)}
-                      className={cn("flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-start text-[12px] transition-colors",
-                        locationId === l.id ? "bg-soft-accent font-semibold text-primary" : "text-foreground hover:bg-secondary/60")}>
-                      {isAr ? l.nameAr : l.name}
-                      {l.id === prefs.locationId && <Star className="size-3 shrink-0 fill-primary/30 text-primary" />}
-                    </button>
-                  ))}
-                  {locOptions.length === 0 && <p className="px-2.5 py-3 text-center text-[12px] text-muted-foreground">{t("No matching location", "لا يوجد موقع مطابق")}</p>}
-                </div>
-              </div>
-              <div>
-                {label(t("When", "الوقت"))}
-                <div className="flex flex-wrap gap-1.5">
-                  {slots.map((s) => (
-                    <button key={s.id} type="button" onClick={() => setSlotId(s.id)}
-                      className={cn("inline-flex h-7 items-center gap-1 rounded-full px-3 text-[11.5px] font-medium transition-colors",
-                        slotId === s.id ? "bg-soft-accent text-primary" : "bg-background text-foreground hover:bg-secondary/60")}>
-                      {s.id === "now" && <Clock className="size-3" />}
-                      {isAr ? s.labelAr : s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                {label(t("Note for the team", "ملاحظة للفريق"))}
-                <TextArea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
-                  placeholder={t("Extra cups, deliver before the meeting…", "أكواب إضافية، التوصيل قبل الاجتماع…")} />
-              </div>
-
               <GoldButton className="w-full" disabled={!canSubmit} onClick={submit}>
-                <Send className="size-3.5" />{t("Place order", "تقديم الطلب")}
+                <Send className="size-3.5" />{t("Submit Request", "تقديم الطلب")}
               </GoldButton>
+
+              {/* Delivery place, time and note — kept from the existing ordering flow, folded
+                  below the submit button so the basket matches Figma 4915:17913. */}
+              <details className="group rounded-[10px] bg-background px-3 py-2.5" open={deliveryOpen || !locationId}
+                onToggle={(e) => setDeliveryOpen((e.currentTarget as HTMLDetailsElement).open)}>
+                <summary className="flex cursor-pointer list-none items-center gap-2 text-[12px] text-foreground [&::-webkit-details-marker]:hidden">
+                  <MapPin className="size-3.5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {t("Deliver to", "التوصيل إلى")}: {locName ?? t("Choose a place", "اختر المكان")} · {slotName}
+                  </span>
+                  <ChevronDown className="size-3.5 shrink-0 text-icon transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="mt-3 flex flex-col gap-5">
+                {/* delivery — kept from the existing ordering flow */}
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                    <span className="text-[13px] font-semibold text-foreground">{t("Deliver to", "التوصيل إلى")}</span>
+                    {locationId && locationId !== prefs.locationId && (
+                      <button type="button" onClick={() => setPrefs({ locationId })} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
+                        <Star className="size-3" />{t("Make this my default", "اجعله الافتراضي")}
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative mb-2">
+                    <MapPin className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-icon" />
+                    <TextInput value={locQuery} onChange={(e) => setLocQuery(e.target.value)} placeholder={t("Search locations…", "ابحث عن الموقع…")} className="ps-8" />
+                  </div>
+                  <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg bg-background p-1 [scrollbar-width:thin]">
+                    {locOptions.map((l) => (
+                      <button key={l.id} type="button" onClick={() => setLocationId(l.id)}
+                        className={cn("flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-start text-[12px] transition-colors",
+                          locationId === l.id ? "bg-soft-accent font-semibold text-primary" : "text-foreground hover:bg-secondary/60")}>
+                        {isAr ? l.nameAr : l.name}
+                        {l.id === prefs.locationId && <Star className="size-3 shrink-0 fill-primary/30 text-primary" />}
+                      </button>
+                    ))}
+                    {locOptions.length === 0 && <p className="px-2.5 py-3 text-center text-[12px] text-muted-foreground">{t("No matching location", "لا يوجد موقع مطابق")}</p>}
+                  </div>
+                </div>
+                <div>
+                  {label(t("When", "الوقت"))}
+                  <div className="flex flex-wrap gap-1.5">
+                    {slots.map((s) => (
+                      <button key={s.id} type="button" onClick={() => setSlotId(s.id)}
+                        className={cn("inline-flex h-7 items-center gap-1 rounded-full px-3 text-[11.5px] font-medium transition-colors",
+                          slotId === s.id ? "bg-soft-accent text-primary" : "bg-background text-foreground hover:bg-secondary/60")}>
+                        {s.id === "now" && <Clock className="size-3" />}
+                        {isAr ? s.labelAr : s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  {label(t("Note for the team", "ملاحظة للفريق"))}
+                  <TextArea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
+                    placeholder={t("Extra cups, deliver before the meeting…", "أكواب إضافية، التوصيل قبل الاجتماع…")} />
+                </div>
+                </div>
+              </details>
 
               {/* keep this basket under a name — up to four */}
               {lines.length > 0 && (
@@ -360,7 +388,7 @@ export default function CafeteriaPage() {
           </div>
 
           {group === "all" && favourites.length > 0 && (
-            <MenuSection title={t("Browse favourites", "تصفّح قائمة المفضلة")}>
+            <MenuSection title={t("Browse favorites", "تصفّح قائمة المفضلة")}>
               {favourites.map((m) => (
                 <ProductCard key={`fav-${m.id}`} m={m} line={lineOf(m.id)} sugar={sugarOf(m)} fav
                   onFav={() => toggleFavorite(m.id)} onAdd={() => bump(m.id, 1)} onMinus={() => bump(m.id, -1)}
@@ -429,7 +457,7 @@ function ProductCard({ m, line, sugar, fav, onFav, onAdd, onMinus, onRemove, onS
           </div>
         ) : (
           <GoldButton size="sm" className="h-8 shrink-0 px-5 font-medium" disabled={!m.available} onClick={onAdd}>
-            {isDrink ? t("Order the drink", "طلب المشروب") : t("Order", "طلب")}
+            {isDrink ? t("Order Drink", "طلب المشروب") : t("Order", "طلب")}
           </GoldButton>
         )}
       </div>

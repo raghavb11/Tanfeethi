@@ -40,9 +40,9 @@ export type MenuItem = {
 export type SugarLevel = "none" | "light" | "medium" | "sweet"
 export const SUGAR: { id: SugarLevel; label: string; labelAr: string }[] = [
   { id: "none", label: "No sugar", labelAr: "بدون سكر" },
-  { id: "light", label: "Light", labelAr: "سكر خفيف" },
-  { id: "medium", label: "Medium", labelAr: "سكر وسط" },
-  { id: "sweet", label: "Sweet", labelAr: "سكر زيادة" },
+  { id: "light", label: "Light sugar", labelAr: "سكر خفيف" },
+  { id: "medium", label: "Medium sugar", labelAr: "سكر وسط" },
+  { id: "sweet", label: "Extra sugar", labelAr: "سكر زيادة" },
 ]
 export const sugarLabel = (id: SugarLevel, isAr: boolean) => {
   const x = SUGAR.find((v) => v.id === id)
@@ -69,7 +69,7 @@ export let menu: MenuItem[] = [
   // cold drinks
   { id: "m-water", group: "cold", name: "Water", nameAr: "ماء", note: "Still or sparkling", noteAr: "عادي أو فوار", popular: true, available: true },
   { id: "m-iced-coffee", group: "cold", name: "Iced coffee", nameAr: "قهوة مثلجة", popular: true, available: true, takesSugar: true },
-  { id: "m-iced-latte", group: "cold", name: "Iced latte", nameAr: "ايس لاتيه", popular: true, available: true, takesSugar: true },
+  { id: "m-iced-latte", group: "cold", name: "Iced Latte", nameAr: "ايس لاتيه", popular: true, available: true, takesSugar: true },
   { id: "m-fresh-juice", group: "cold", name: "Fresh juice", nameAr: "عصير طازج", note: "Orange, mango or mixed", noteAr: "برتقال، مانجو أو مشكّل", available: true },
   { id: "m-lemon-mint", group: "cold", name: "Lemon & mint", nameAr: "ليمون بالنعناع", popular: true, available: true },
   { id: "m-laban", group: "cold", name: "Laban", nameAr: "لبن", available: true },
@@ -85,7 +85,7 @@ export let menu: MenuItem[] = [
   { id: "m-biscuits", group: "snacks", name: "Biscuits", nameAr: "بسكويت", available: true },
   { id: "m-cake", group: "snacks", name: "Cake slice", nameAr: "قطعة كيك", available: true },
   { id: "m-kitco-chips", group: "snacks", name: "Kitco Nice – ketchup crisps", nameAr: "كيتكو نايس - بطاطس بنكهة الكاتشب", available: true },
-  { id: "m-memories-wafer", group: "snacks", name: "Memories Joy – cocoa cream wafers", nameAr: "ميموريز جوي - بسكويت الويفر بكريمة الكاكاو", available: true },
+  { id: "m-memories-wafer", group: "snacks", name: "Memories Joy – Cocoa Cream Wafer Biscuits", nameAr: "ميموريز جوي - بسكويت الويفر بكريمة الكاكاو", available: true },
 
   // meals
   { id: "m-sandwich", group: "meals", servedScope: "sites", servedSites: ["Headquarters", "Terminal 1", "Terminal 2"], name: "Sandwich", nameAr: "ساندويتش", note: "Chicken, cheese or vegetable", noteAr: "دجاج، جبن أو خضار", popular: true, available: true },
