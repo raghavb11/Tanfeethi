@@ -14,9 +14,12 @@ import { ChevronLeft, ChevronRight, CircleX, Landmark, MessageSquareText, Phone,
  * ───────────────────────────────────────────────────────────────────────── */
 
 function Overlay({
-  open, onClose, label, children, className, scrim = true,
+  open, onClose, label, children, className, scrim = true, designTop,
 }: {
   open: boolean
+  /** Figma y of the dialog (e.g. 346 for the employee card). Used when the
+   *  window is tall enough; on shorter windows the dialog centres instead. */
+  designTop?: number
   /** Dim the page behind (Figma's employee card 4263:19954 draws none). */
   scrim?: boolean
   onClose: () => void
@@ -40,9 +43,24 @@ function Overlay({
     }
   }, [open, onClose])
 
+  // Figma's offset when the window has room for it, otherwise centred.
+  const [top, setTop] = React.useState<number | null>(null)
+  React.useLayoutEffect(() => {
+    if (!open || !designTop) return
+    const place = () => {
+      const h = ref.current?.offsetHeight ?? 0
+      setTop(Math.round(Math.min(designTop, Math.max(16, (window.innerHeight - h) / 2))))
+    }
+    place()
+    window.addEventListener("resize", place)
+    const ro = new ResizeObserver(place)
+    if (ref.current) ro.observe(ref.current)
+    return () => { window.removeEventListener("resize", place); ro.disconnect() }
+  }, [open, designTop])
+
   if (typeof document === "undefined" || !open) return null
   return createPortal(
-    <div className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto p-4">
+    <div className={cn("fixed inset-0 z-[60] grid overflow-y-auto p-4", designTop ? "items-start justify-items-center" : "place-items-center")}>
           <motion.div
             className={cn("fixed inset-0", scrim && "bg-black/45")}
             initial={{ opacity: 0 }}
@@ -58,6 +76,7 @@ function Overlay({
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={designTop && top != null ? { marginTop: top - 16 } : undefined}
             className={cn("relative w-full rounded-xl bg-secondary text-foreground shadow-[0_30px_80px_-24px_rgba(0,0,0,0.7)] outline-none", className)}
           >
             {children}
@@ -215,6 +234,7 @@ export function EmployeeCardDialog({
       label={t("Profile", "الملف التعريفي")}
       className={tab === "org" ? "max-w-[816px]" : "max-w-[728px]"}
       scrim={false}
+      designTop={346}
     >
       {e && (
         <div className="relative flex max-h-[calc(100svh-32px)] flex-col gap-4 overflow-y-auto px-5 py-6 sm:px-8">

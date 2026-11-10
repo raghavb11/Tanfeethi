@@ -80,7 +80,10 @@ export function AppShell() {
           crumbs={crumbs}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
-        <main className="relative min-h-0 flex-1 overflow-y-auto">
+        {/* Figma 315:680: the top bar keeps its full width; the assistant docks
+            beneath it, beside the page. */}
+        <div className="flex min-h-0 flex-1">
+        <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 6 }}
@@ -95,8 +98,9 @@ export function AppShell() {
             </ErrorBoundary>
           </motion.div>
         </main>
+        <AIAssistantPanel />
+        </div>
       </div>
-      <AIAssistantPanel />
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   )

@@ -128,10 +128,10 @@ export function AIAssistantPanel() {
     <aside
       aria-label={isAr ? "المساعد الشخصي" : "Personal assistant"}
       style={{ width }}
-      className="relative h-svh shrink-0 overflow-hidden pt-20"
+      className="relative h-full shrink-0 overflow-hidden"
     >
-      {/* 80px top offset = the top bar; the card is Figma's 516×737 frame. */}
-      <div className="flex h-[min(737px,calc(100svh-104px))] flex-col rounded-b-xl border border-background bg-card-elevated shadow-[0_12px_40px_-20px_rgba(0,0,0,0.5)]">
+      {/* Docked under the full-width top bar; the card is Figma's 516×737 frame. */}
+      <div className="flex h-[min(737px,calc(100%-24px))] flex-col rounded-b-xl border border-background bg-card-elevated shadow-[0_12px_40px_-20px_rgba(0,0,0,0.5)]">
         {body}
       </div>
     </aside>
