@@ -30,7 +30,12 @@ export type Task = {
   createdISO?: string
   /** What shipped, how it was checked, and how to roll it back. */
   releaseNote?: string
+  /** "المهام الفرعية" — the task's own checklist (Figma Subtasks card). */
+  subtasks?: SubTask[]
 }
+
+/** One line of a task's checklist: tick box, title, due label. */
+export type SubTask = { id: string; title: string; titleAr: string; dueISO?: string; done: boolean }
 
 /** "Today" for the prototype — drives the overdue calculation. */
 export const TASK_TODAY_ISO = "2026-08-12"
@@ -192,7 +197,30 @@ const linked = (list: Seed[]): Task[] =>
     sprint: t.sprint ?? (BOARD_IDS.has(t.id) ? "s24"
       : t.status === "completed" || t.dueISO < TASK_TODAY_ISO ? "s23" : "s25"),
     createdISO: t.createdISO ?? shiftISO(t.dueISO, -10),
+    subtasks: t.subtasks ?? SEED_SUBTASKS[t.id],
   }))
+
+/** The checklist drawn on the task detail (Figma "المهام الفرعية"), seeded on the
+ *  Sprint 24 board rows so the card has content; other tasks start empty. */
+const sub = (id: string, title: string, titleAr: string, dueISO: string, done = false): SubTask => ({ id, title, titleAr, dueISO, done })
+const SEED_SUBTASKS: Record<string, SubTask[]> = {
+  w1: [
+    sub("w1-s1", "Approve the summer operations plan", "اعتماد خطة التشغيل الصيفية", "2026-08-12"),
+    sub("w1-s2", "Review hospitality partners' proposal", "مراجعة عرض شركاء الضيافة", "2026-08-13"),
+    sub("w1-s3", "Sign limousine contract addendum", "توقيع ملحق عقد الليموزين", "2026-08-15"),
+    sub("w1-s4", "Board briefing", "إحاطة مجلس الإدارة", "2026-08-17"),
+  ],
+  w3: [
+    sub("w3-s1", "Export the supplier list from the finance system", "تصدير قائمة الموردين من النظام المالي", "2026-08-12", true),
+    sub("w3-s2", "Merge duplicate supplier records", "دمج سجلات الموردين المكررة", "2026-08-14"),
+    sub("w3-s3", "Confirm bank details with procurement", "تأكيد البيانات البنكية مع المشتريات", "2026-08-16"),
+  ],
+  w7: [
+    sub("w7-s1", "Pull the figures from the finance dashboard", "سحب الأرقام من لوحة المالية", "2026-08-12"),
+    sub("w7-s2", "Draft the key indicators section", "صياغة قسم المؤشرات الرئيسية", "2026-08-13"),
+    sub("w7-s3", "Write the recommendations", "كتابة التوصيات", "2026-08-13"),
+  ],
+}
 
 let tasks: Task[] = linked([...BOARD_SEED, ...SEED, ...TEAM_SEED])
 const listeners = new Set<() => void>()
@@ -252,6 +280,19 @@ export function removeTask(id: string) {
   events = events.filter((e) => e.taskId !== id)
   emit()
 }
+/** Subtasks — edits to a task's checklist (no status change on the task itself). */
+const patchSubtasks = (taskId: string, fn: (list: SubTask[]) => SubTask[]) => {
+  tasks = tasks.map((t) => (t.id === taskId ? { ...t, subtasks: fn(t.subtasks ?? []) } : t))
+  emit()
+}
+export function addSubtask(taskId: string, title: string, dueISO?: string) {
+  const id = `${taskId}-s${Date.now().toString(36)}`
+  patchSubtasks(taskId, (l) => [...l, { id, title, titleAr: title, dueISO, done: false }])
+}
+export const toggleSubtask = (taskId: string, subId: string) =>
+  patchSubtasks(taskId, (l) => l.map((x) => (x.id === subId ? { ...x, done: !x.done } : x)))
+export const removeSubtask = (taskId: string, subId: string) =>
+  patchSubtasks(taskId, (l) => l.filter((x) => x.id !== subId))
 /** A project was deleted: its tasks stay, keeping the project's name. */
 export function unlinkProject(projectId: string) {
   tasks = tasks.map((t) => (t.projectId === projectId ? { ...t, projectId: undefined, milestoneId: undefined } : t))

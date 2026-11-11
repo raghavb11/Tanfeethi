@@ -41,6 +41,7 @@ type Draft = {
   startISO: string
   endISO: string
   goal: string        // in the current language
+  goalAlt: string     // in the other language (optional)
 }
 
 function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
@@ -66,12 +67,13 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
   const code = create ? blank!.code : sprint?.code ?? ""
   const loadDraft = (): Draft | undefined => {
     if (create && blank) {
-      return { name: isAr ? blank.nameAr : blank.name, nameAlt: isAr ? blank.name : blank.nameAr, startISO: blank.startISO, endISO: blank.endISO, goal: "" }
+      return { name: isAr ? blank.nameAr : blank.name, nameAlt: isAr ? blank.name : blank.nameAr, startISO: blank.startISO, endISO: blank.endISO, goal: "", goalAlt: "" }
     }
     if (!sprint) return undefined
     return {
       name: isAr ? sprint.nameAr : sprint.name, nameAlt: isAr ? sprint.name : sprint.nameAr,
       startISO: sprint.startISO, endISO: sprint.endISO, goal: (isAr ? sprint.goalAr : sprint.goal) ?? "",
+      goalAlt: (isAr ? sprint.goal : sprint.goalAr) ?? "",
     }
   }
   const [draft, setDraft] = React.useState<Draft | undefined>(loadDraft)
@@ -126,14 +128,18 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
     const en = isAr ? alt : main
     const ar = isAr ? main : alt
     const goal = d.goal.trim() || undefined
+    // an empty other-language goal takes the main one
+    const goalAlt = d.goalAlt.trim() || goal
+    const goalEn = isAr ? goalAlt : goal
+    const goalAr = isAr ? goal : goalAlt
     if (create) {
       const newId = newSprintId()
-      addSprint({ id: newId, code, name: en, nameAr: ar, startISO: d.startISO, endISO: d.endISO, goal, goalAr: goal })
+      addSprint({ id: newId, code, name: en, nameAr: ar, startISO: d.startISO, endISO: d.endISO, goal: goalEn, goalAr })
       navigate(`/sprints/${newId}`, { replace: true })
       return
     }
     if (!sprint) return
-    updateSprint(sprint.id, { name: en, nameAr: ar, startISO: d.startISO, endISO: d.endISO, [isAr ? "goalAr" : "goal"]: goal })
+    updateSprint(sprint.id, { name: en, nameAr: ar, startISO: d.startISO, endISO: d.endISO, goal: goalEn, goalAr })
     setTried(false)
     setEditing(false)
   }
@@ -219,9 +225,23 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
                     err("name") ? "border-error" : "border-input focus:border-primary/70")}
                 />
                 {err("name") && <p role="alert" className="text-[12px] text-error">{err("name")}</p>}
+                {/* the same name in the other language, directly beneath it */}
+                <label className="mt-3 flex max-w-[640px] flex-col gap-1">
+                  <span className="text-[12px] text-muted-foreground">{t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}</span>
+                  <input
+                    value={d.nameAlt} onChange={(e) => patch({ nameAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
+                    placeholder={t("اسم السبرنت", "Sprint name")}
+                    className="h-[30px] w-full border-b border-dashed border-input bg-transparent text-[18px] leading-[30px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
+                  />
+                </label>
               </div>
             ) : (
-              <h1 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{view.name}</h1>
+              <div className="flex flex-col gap-0.5">
+                <h1 className="text-[27px] font-normal leading-[38px] tracking-[-0.27px]">{view.name}</h1>
+                {sprint && (isAr ? sprint.name : sprint.nameAr) !== view.name && (
+                  <p dir={isAr ? "ltr" : "rtl"} className="text-start text-[16px] leading-6 text-muted-foreground">{isAr ? sprint.name : sprint.nameAr}</p>
+                )}
+              </div>
             )}
             <div className="flex flex-wrap items-center gap-2.5 text-[13.5px]">
               <span className="accent-chip inline-flex h-[26px] items-center rounded-full px-2.5 text-[12px] tabular-nums">{code}</span>
@@ -276,6 +296,15 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
                     className="min-h-[110px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground"
                   />
                   <TextCounter text={d.goal} isAr={isAr} />
+                  {/* the same goal in the other language, directly beneath it */}
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[12px] text-muted-foreground">{t("Goal in Arabic", "الهدف بالإنجليزية")} · {t("optional", "اختياري")}</span>
+                    <textarea
+                      value={d.goalAlt} onChange={(e) => patch({ goalAlt: e.target.value })}
+                      rows={3} dir={isAr ? "ltr" : "rtl"}
+                      className="min-h-[90px] w-full resize-none rounded-[8px] border border-input bg-background p-4 text-[13.5px] leading-[20.25px] outline-none focus:border-primary/70"
+                    />
+                  </label>
                 </div>
               ) : goalText ? (
                 <>
@@ -332,18 +361,6 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
             <CardHeader icon={Info} title={t("Details", "التفاصيل")} />
             <dl className="mt-[18px] overflow-hidden rounded-lg bg-background/60">
               <Row label={t("Reference", "الرمز")} edit={false} view={<span className="tabular-nums">{code}</span>} />
-              {editing && d ? (
-                <Row edit view={null} label={t("Name in Arabic", "الاسم بالإنجليزية")}
-                  control={
-                    <input
-                      value={d.nameAlt} onChange={(e) => patch({ nameAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
-                      placeholder={t("Optional", "اختياري")} aria-label={t("Name in Arabic", "الاسم بالإنجليزية")}
-                      className="h-9 w-full max-w-[265px] rounded-lg bg-[var(--card-elevated)] px-3 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[var(--card-ring)] placeholder:font-normal placeholder:text-muted-foreground focus:ring-primary"
-                    />
-                  } />
-              ) : sprint && (
-                <Row edit={false} label={t("Name in Arabic", "الاسم بالإنجليزية")} view={<span dir={isAr ? "ltr" : "rtl"}>{isAr ? sprint.name : sprint.nameAr}</span>} />
-              )}
               <Row label={t("Start date", "تاريخ البدء")} edit={editing} required error={err("start")}
                 view={shortDate(view.startISO, isAr)}
                 control={d && <DateField value={d.startISO} onChange={(v) => patch({ startISO: v })} label={t("Start date", "تاريخ البدء")} required invalid={!!err("start")} />} />

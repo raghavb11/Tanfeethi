@@ -22,6 +22,7 @@ type Draft = {
   startISO: string
   dueISO: string
   description: string
+  descriptionAlt: string  // in the other language (optional)
   mode: Mode
   reason: string
 }
@@ -59,6 +60,7 @@ export default function MilestoneEditorPage() {
     startISO: milestone?.startISO ?? project?.startISO ?? "",
     dueISO: milestone?.dueISO ?? "",
     description: (milestone ? (isAr ? milestone.descriptionAr ?? milestone.description : milestone.description ?? milestone.descriptionAr) : "") ?? "",
+    descriptionAlt: (milestone ? (isAr ? milestone.description : milestone.descriptionAr) : "") ?? "",
     mode: milestone?.ragOverride ?? "auto",
     reason: milestone?.ragReason ?? "",
   }))
@@ -128,25 +130,22 @@ export default function MilestoneEditorPage() {
     const main = draft.name.trim()
     const alt = draft.nameAlt.trim() || main
     const description = draft.description.trim() || undefined
+    // an empty other-language description takes the main one
+    const descriptionAlt = draft.descriptionAlt.trim() || description
     const fields = {
       name: isAr ? alt : main, nameAr: isAr ? main : alt,
+      description: isAr ? descriptionAlt : description, descriptionAr: isAr ? description : descriptionAlt,
       startISO: draft.startISO, dueISO: draft.dueISO,
       ragOverride: draft.mode === "auto" ? undefined : draft.mode,
       ragReason: draft.mode === "auto" ? undefined : draft.reason.trim(),
     }
     if (milestone) {
-      // the description is edited in the current language; an empty other side is filled too
-      const descKey = isAr ? "descriptionAr" : "description"
-      const otherKey = isAr ? "description" : "descriptionAr"
-      updateMilestone(milestone.id, {
-        ...fields, [descKey]: description,
-        ...(milestone[otherKey] ? {} : { [otherKey]: description }),
-      })
+      updateMilestone(milestone.id, fields)
       navigate(backHref)
       return
     }
     const newId = newMilestoneId()
-    addMilestone({ id: newId, projectId, code, ...fields, description, descriptionAr: description, createdISO: TASK_TODAY_ISO })
+    addMilestone({ id: newId, projectId, code, ...fields, createdISO: TASK_TODAY_ISO })
     navigate(returnTo ? `${returnTo}${returnTo.includes("?") ? "&" : "?"}milestone=${newId}` : backHref)
   }
 
@@ -201,6 +200,15 @@ export default function MilestoneEditorPage() {
                   err("name") ? "border-error" : "border-input focus:border-primary/70")}
               />
               {err("name") ? <p className="text-[12px] text-error">{err("name")}</p> : <TextCounter text={draft.name} isAr={isAr} />}
+              {/* the same name in the other language, directly beneath it */}
+              <label className="mt-3 flex max-w-[640px] flex-col gap-1">
+                <span className="text-[12px] text-muted-foreground">{t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}</span>
+                <input
+                  value={draft.nameAlt} onChange={(e) => patch({ nameAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
+                  placeholder={t("اسم المعلم", "Milestone name")}
+                  className="h-[30px] w-full border-b border-dashed border-input bg-transparent text-[18px] leading-[30px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
+                />
+              </label>
             </div>
             <div className="flex flex-wrap items-center gap-2.5 text-[14px]">
               <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">{code}</span>
@@ -226,6 +234,15 @@ export default function MilestoneEditorPage() {
                 className="min-h-[135px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground"
               />
               <TextCounter text={draft.description} isAr={isAr} />
+              {/* the same description in the other language, directly beneath it */}
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12px] text-muted-foreground">{t("Description in Arabic", "الوصف بالإنجليزية")} · {t("optional", "اختياري")}</span>
+                <textarea
+                  value={draft.descriptionAlt} onChange={(e) => patch({ descriptionAlt: e.target.value })}
+                  rows={4} dir={isAr ? "ltr" : "rtl"}
+                  className="min-h-[108px] w-full resize-none rounded-[8px] border border-input bg-background p-4 text-[13.5px] leading-[20.25px] outline-none focus:border-primary/70"
+                />
+              </label>
             </div>
           </Panel>
 
@@ -272,14 +289,6 @@ export default function MilestoneEditorPage() {
               <Row label={t("Created", "تاريخ الإنشاء")} edit={false}
                 view={shortDate((create ? TASK_TODAY_ISO : milestone?.createdISO) ?? "", isAr) || "—"} />
               {!create && <Row label={t("Tasks", "المهام")} edit={false} view={<span className="tabular-nums">{msTasks.length}</span>} />}
-              <Row edit view={null} label={t("Name in Arabic", "الاسم بالإنجليزية")}
-                control={
-                  <input
-                    value={draft.nameAlt} onChange={(e) => patch({ nameAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
-                    placeholder={t("Optional", "اختياري")} aria-label={t("Name in Arabic", "الاسم بالإنجليزية")}
-                    className="h-9 w-full max-w-[265px] rounded-lg bg-[var(--card-elevated)] px-3 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[var(--card-ring)] placeholder:font-normal placeholder:text-muted-foreground focus:ring-primary"
-                  />
-                } />
             </dl>
           </Panel>
         </div>

@@ -18,9 +18,9 @@ import {
   STATUS_META, STATUS_ORDER, type CategoryId, type TaskPriority, type TaskStatus,
 } from "../data/meta"
 import {
-  addAiEvent, addCreatedEvent, addTask, addTaskComment, ME, newTaskId, prettyDate, prettyDateAr, relativeDue,
-  removeTask, shortDate, TASK_TODAY_ISO, type Task, type TaskEvent, toggleComplete, unlinkProject,
-  updateTask, useTaskEvents, useTasks,
+  addAiEvent, addCreatedEvent, addSubtask, addTask, addTaskComment, ME, newTaskId, prettyDate, prettyDateAr, relativeDue,
+  removeSubtask, removeTask, shortDate, TASK_TODAY_ISO, type SubTask, type Task, type TaskEvent, toggleComplete,
+  toggleSubtask, unlinkProject, updateTask, useTaskEvents, useTasks,
 } from "../data/tasks"
 import {
   addProject, getProjectById, newProjectId, nextProjectCode, removeProject, STATUS_LABEL,
@@ -45,14 +45,15 @@ type Fields = {
   // project-only extras kept from the earlier project editor
   startISO?: string
   projectStatus?: ProjectStatus
-  // create mode only — what the old routed editors asked for
   title?: string           // in the current language
-  titleAlt?: string        // in the other language (optional)
+  titleAlt?: string        // in the other language (optional) — sits right under the title
+  descriptionAlt?: string  // in the other language (optional) — sits right under the description
+  // create mode only — what the old routed editors asked for
   projectId?: string
   milestoneId?: string
   status?: TaskStatus
   releaseNote?: string
-  subtasks?: string[]      // a new project's first tasks
+  subtasks?: string[]      // a new project's first tasks, or a new task's checklist
 }
 
 const ownerName = (id: string, isAr: boolean) => {
@@ -75,7 +76,7 @@ const clearDraft = () => { try { sessionStorage.removeItem(DRAFT_KEY) } catch { 
 function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
   if (kind === "project") {
     return {
-      title: "", titleAlt: "", description: "", releaseNote: "", subtasks: [],
+      title: "", titleAlt: "", description: "", descriptionAlt: "", releaseNote: "", subtasks: [],
       category: "operations", sprint: currentSprintId(), ownerId: "me", priority: "medium",
       startISO: TASK_TODAY_ISO, dueISO: "", projectStatus: "active",
     }
@@ -84,7 +85,7 @@ function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
   const p = getProjectById(pid)
   const st = params.get("status")
   const d: Fields = {
-    title: "", titleAlt: "", description: "", releaseNote: "",
+    title: "", titleAlt: "", description: "", descriptionAlt: "", releaseNote: "", subtasks: [],
     category: p?.category ?? "operations", sprint: currentSprintId(),
     ownerId: params.get("assignee") ?? (params.get("from") === "manager" ? team[0].id : "me"),
     dueISO: TASK_TODAY_ISO, priority: "medium",
@@ -155,12 +156,14 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
   const loaded: Fields | undefined = task
     ? { category: task.category, sprint: task.sprint, ownerId: task.assigneeId ?? "me", dueISO: task.dueISO,
         priority: task.priority, description: (isAr ? task.descriptionAr : task.description) ?? "",
-        title: isAr ? task.titleAr : task.title }
+        title: isAr ? task.titleAr : task.title, titleAlt: isAr ? task.title : task.titleAr,
+        descriptionAlt: (isAr ? task.description : task.descriptionAr) ?? "" }
     : project
       ? { category: project.category, sprint: project.sprint, ownerId: project.ownerId, dueISO: project.dueISO,
           priority: project.priority ?? "medium", description: (isAr ? project.descriptionAr : project.description) ?? "",
           startISO: project.startISO, projectStatus: project.status,
-          title: isAr ? project.nameAr : project.name }
+          title: isAr ? project.nameAr : project.name, titleAlt: isAr ? project.name : project.nameAr,
+          descriptionAlt: (isAr ? project.description : project.descriptionAr) ?? "" }
       : undefined
 
   const [draft, setDraft] = React.useState<Fields | undefined>(() => (create ? blankDraft(kind, params) : loaded))
@@ -250,21 +253,25 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
     if (invalid) { setTried(true); revealFirstInvalid(); return }
     if (draft.ownerId !== loaded.ownerId) assign(draft.ownerId)
     const descKey = isAr ? "descriptionAr" : "description"
+    const altDescKey = isAr ? "description" : "descriptionAr"
     const newName = draft.title?.trim()
+    const altName = draft.titleAlt?.trim() || newName
+    const desc = draft.description.trim() || undefined
+    const altDesc = draft.descriptionAlt?.trim() || desc
     if (task) {
       updateTask(task.id, {
-        ...(newName ? { [isAr ? "titleAr" : "title"]: newName } : {}),
+        ...(newName ? { [isAr ? "titleAr" : "title"]: newName, [isAr ? "title" : "titleAr"]: altName } : {}),
         category: draft.category, sprint: draft.sprint, dueISO: draft.dueISO, priority: draft.priority,
-        [descKey]: draft.description.trim() || undefined,
+        [descKey]: desc, [altDescKey]: altDesc,
       })
     } else if (project) {
       updateProject(project.id, {
-        ...(newName ? { [isAr ? "nameAr" : "name"]: newName } : {}),
+        ...(newName ? { [isAr ? "nameAr" : "name"]: newName, [isAr ? "name" : "nameAr"]: altName } : {}),
         category: draft.category, sprint: draft.sprint, priority: draft.priority,
         dueISO: draft.dueISO, due: prettyDate(draft.dueISO),
         startISO: draft.startISO, start: draft.startISO ? prettyDate(draft.startISO) : project.start,
         status: draft.projectStatus ?? project.status,
-        [descKey]: draft.description.trim() || undefined,
+        [descKey]: desc, [altDescKey]: altDesc,
       })
     }
     setTried(false)
@@ -280,6 +287,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
     const en = isAr ? alt : main
     const ar = isAr ? main : alt
     const description = draft.description.trim() || undefined
+    const descriptionAlt = draft.descriptionAlt?.trim() || description
+    const descEn = isAr ? descriptionAlt : description
+    const descAr = isAr ? description : descriptionAlt
     const releaseNote = draft.releaseNote?.trim() || undefined
     if (isTask) {
       const m = memberById(draft.ownerId)
@@ -294,7 +304,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
         category: draft.category, sprint: draft.sprint, createdISO: TASK_TODAY_ISO,
         assigneeId: m?.id, assignee: m?.name, assigneeAr: m?.nameAr,
         assignedBy: m ? MANAGER.name : "Self", assignedByAr: m ? MANAGER.nameAr : "شخصي",
-        description, descriptionAr: description, releaseNote,
+        description: descEn, descriptionAr: descAr, releaseNote,
+        subtasks: (draft.subtasks ?? []).map((x) => x.trim()).filter(Boolean)
+          .map((x, i) => ({ id: `${newId}-s${i + 1}`, title: x, titleAr: x, dueISO: draft.dueISO, done: false })),
       })
       addCreatedEvent(newId, m ? { en: m.name, ar: m.nameAr } : undefined)
       clearDraft()
@@ -307,7 +319,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
         status: draft.projectStatus ?? "active", category: draft.category, sprint: draft.sprint, priority: draft.priority,
         start: prettyDate(draft.startISO ?? TASK_TODAY_ISO), startISO: draft.startISO ?? TASK_TODAY_ISO,
         due: prettyDate(draft.dueISO), dueISO: draft.dueISO,
-        description, descriptionAr: description, createdISO: TASK_TODAY_ISO, releaseNote,
+        description: descEn, descriptionAr: descAr, createdISO: TASK_TODAY_ISO, releaseNote,
       })
       // the first subtasks, in the order they were typed (addTask puts new rows on top)
       ;[...(draft.subtasks ?? []).map((x) => x.trim()).filter(Boolean)].reverse().forEach((s, i) => addTask({
@@ -454,6 +466,17 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     err("title") ? "border-error" : "border-input focus:border-primary/70")}
                 />
                 {err("title") ? <p className="text-[12px] text-error">{err("title")}</p> : <TextCounter text={draft.title ?? ""} isAr={isAr} />}
+                {/* the same name in the other language, directly beneath it */}
+                <label className="mt-3 flex max-w-[640px] flex-col gap-1">
+                  <span className="text-[12px] text-muted-foreground">
+                    {isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}
+                  </span>
+                  <input
+                    value={draft.titleAlt ?? ""} onChange={(e) => patch({ titleAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
+                    placeholder={isTask ? t("عنوان المهمة", "Task title") : t("اسم المشروع", "Project name")}
+                    className="h-[30px] w-full border-b border-dashed border-input bg-transparent text-[18px] leading-[30px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
+                  />
+                </label>
               </div>
             ) : (
               <h1 className={cn("text-[27px] font-normal leading-[38px] tracking-[-0.27px]", task?.status === "completed" && "text-muted-foreground line-through")}>{title}</h1>
@@ -492,6 +515,15 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     className="min-h-[135px] w-full resize-none rounded-[8px] border border-primary/70 bg-background p-4 text-[13.5px] leading-[20.25px] outline-none placeholder:text-muted-foreground"
                   />
                   <TextCounter text={draft.description} isAr={isAr} />
+                  {/* the same description in the other language, directly beneath it */}
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[12px] text-muted-foreground">{t("Description in Arabic", "الوصف بالإنجليزية")} · {t("optional", "اختياري")}</span>
+                    <textarea
+                      value={draft.descriptionAlt ?? ""} onChange={(e) => patch({ descriptionAlt: e.target.value })}
+                      rows={4} dir={isAr ? "ltr" : "rtl"}
+                      className="min-h-[108px] w-full resize-none rounded-[8px] border border-input bg-background p-4 text-[13.5px] leading-[20.25px] outline-none focus:border-primary/70"
+                    />
+                  </label>
                 </div>
               ) : (
                 <p className="text-[13.5px] leading-[20.25px] text-foreground">
@@ -514,13 +546,12 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
           )}
 
           {project && <SubTasks project={project} tasks={projectTasks} isAr={isAr} t={t} />}
-          {create && isProject && draft && (
-            <DraftSubTasks items={draft.subtasks ?? []} onChange={(subtasks) => patch({ subtasks })} isAr={isAr} t={t} />
+          {task && <TaskSubTasks task={task} isAr={isAr} t={t} />}
+          {create && draft && (
+            <DraftSubTasks items={draft.subtasks ?? []} onChange={(subtasks) => patch({ subtasks })} forTask={isTask} isAr={isAr} t={t} />
           )}
-          {/* nothing has happened yet on a new task/project — no Activity card while creating */}
-          {!create && <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} />}
 
-          {/* kept from the earlier project page; below the drawn cards */}
+          {/* not in the drawn frame; sits with the project's work, above Activity, so it is found */}
           {project && <Milestones project={project} tasks={allTasks} isAr={isAr} t={t} />}
           {create && isProject && (
             <Panel>
@@ -528,6 +559,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
               <Empty icon={CalendarClock} text={t("Milestones can be added once the project is created.", "يمكن إضافة المعالم بعد إنشاء المشروع.")} />
             </Panel>
           )}
+
+          {/* nothing has happened yet on a new task/project — no Activity card while creating */}
+          {!create && <Activity subjectId={id} isAr={isAr} t={t} asManager={asManager} task={task} />}
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
@@ -651,18 +685,6 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                   } />
               )}
               {task && <Row label={t("Assigned by", "أُسندت من")} edit={false} view={isAr ? task.assignedByAr : task.assignedBy} />}
-              {create && draft && (
-                <Row edit view={null}
-                  label={isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")}
-                  control={
-                    <input
-                      value={draft.titleAlt ?? ""} onChange={(e) => patch({ titleAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
-                      placeholder={t("Optional", "اختياري")}
-                      aria-label={isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")}
-                      className="h-9 w-full max-w-[265px] rounded-lg bg-[var(--card-elevated)] px-3 text-[12.5px] font-medium outline-none ring-1 ring-inset ring-[var(--card-ring)] placeholder:font-normal placeholder:text-muted-foreground focus:ring-primary"
-                    />
-                  } />
-              )}
             </dl>
             {task && !editing && (
               <button
@@ -811,9 +833,85 @@ function SubTasks({ project, tasks, isAr, t }: { project: Project; tasks: Task[]
   )
 }
 
-/** "المهام الفرعية" on a new project: "مهمة جديدة" adds an editable row (focused);
- *  Enter adds the next one. Rows are created with the project; blank rows are dropped. */
-function DraftSubTasks({ items, onChange, isAr, t }: { items: string[]; onChange: (v: string[]) => void; isAr: boolean; t: TFn }) {
+/** "المهام الفرعية" on a task — its own checklist. "مهمة جديدة" opens a row to type in;
+ *  Enter keeps it and opens the next, Escape or an empty row drops it. */
+function TaskSubTasks({ task, isAr, t }: { task: Task; isAr: boolean; t: TFn }) {
+  const [adding, setAdding] = React.useState(false)
+  const [text, setText] = React.useState("")
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
+  React.useEffect(() => { if (adding) { inputRef.current?.focus(); inputRef.current?.scrollIntoView({ block: "nearest" }) } }, [adding])
+  const items: SubTask[] = task.subtasks ?? []
+  const doneCount = items.filter((x) => x.done).length
+  const commit = (keepOpen: boolean) => {
+    const v = text.trim()
+    if (v) addSubtask(task.id, v, task.dueISO)
+    setText("")
+    setAdding(keepOpen && !!v)
+  }
+  return (
+    <Panel>
+      <CardHeader icon={ListChecks} title={t("Subtasks", "المهام الفرعية")}
+        actions={
+          <div className="flex items-center gap-3">
+            {items.length > 0 && <span className="text-[12px] tabular-nums text-muted-foreground">{doneCount}/{items.length}</span>}
+            <button type="button" onClick={() => setAdding(true)}
+              className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
+              <Plus className="size-3.5" />{t("New task", "مهمة جديدة")}
+            </button>
+          </div>
+        } />
+      {/* six rows show, as drawn; longer lists scroll inside the card */}
+      <ul className="mt-[18px] max-h-[300px] overflow-y-auto [scrollbar-width:thin]">
+        {items.map((x) => {
+          const due = x.dueISO ? relativeDue(x.dueISO, isAr) : undefined
+          return (
+            <li key={x.id} className="group flex min-h-[50px] items-center gap-3 border-b border-input py-2 last:border-b-0">
+              <button type="button" onClick={() => toggleSubtask(task.id, x.id)} aria-pressed={x.done}
+                aria-label={x.done ? t("Reopen", "إعادة فتح") : t("Mark complete", "وضع علامة مكتمل")}
+                className={cn("inline-flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors",
+                  x.done ? "border-success bg-success text-background" : "border-foreground/70 hover:border-primary")}>
+                {x.done && <Check className="size-3" strokeWidth={3} />}
+              </button>
+              <span className={cn("min-w-0 flex-1 truncate text-[14px]", x.done && "text-muted-foreground line-through")}>
+                {isAr ? x.titleAr : x.title}
+              </span>
+              <span className={cn("shrink-0 text-[12.5px] font-medium",
+                x.done || !due ? "text-muted-foreground" : due.tone === "error" ? "text-error" : due.tone === "warning" ? "text-warning" : "text-muted-foreground")}>
+                {x.done ? t("Done", "منجزة") : due?.text}
+              </span>
+              <button type="button" onClick={() => removeSubtask(task.id, x.id)} aria-label={t("Remove", "إزالة")}
+                className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-icon opacity-0 hover:bg-foreground/5 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100">
+                <X className="size-3.5" />
+              </button>
+            </li>
+          )
+        })}
+        {adding && (
+          <li className="flex min-h-[50px] items-center gap-3 border-t border-input py-2 first:border-t-0">
+            <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-foreground/70" />
+            <input
+              ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); commit(true) }
+                if (e.key === "Escape") { e.preventDefault(); setText(""); setAdding(false) }
+              }}
+              onBlur={() => commit(false)}
+              placeholder={t("Subtask title", "عنوان المهمة الفرعية")}
+              aria-label={t("New subtask", "مهمة فرعية جديدة")}
+              className="h-9 min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground"
+            />
+          </li>
+        )}
+      </ul>
+      {items.length === 0 && !adding && <Empty icon={ListChecks} text={t("No subtasks on this task yet.", "لا توجد مهام فرعية لهذه المهمة بعد.")} />}
+    </Panel>
+  )
+}
+
+/** "المهام الفرعية" on a create screen: "مهمة جديدة" adds an editable row (focused);
+ *  Enter adds the next one. Rows are created with the project (as its tasks) or the
+ *  task (as its checklist); blank rows are dropped. */
+function DraftSubTasks({ items, onChange, forTask, isAr, t }: { items: string[]; onChange: (v: string[]) => void; forTask?: boolean; isAr: boolean; t: TFn }) {
   const refs = React.useRef<(HTMLInputElement | null)[]>([])
   const [focusIndex, setFocusIndex] = React.useState<number | null>(null)
   React.useEffect(() => {
@@ -870,14 +968,16 @@ function DraftSubTasks({ items, onChange, isAr, t }: { items: string[]; onChange
             <button type="button" onClick={() => addAt(0)}
               className="flex min-h-[50px] w-full items-center gap-3 py-2 text-start text-[13px] text-muted-foreground hover:text-foreground">
               <span className="inline-flex size-5 shrink-0 rounded-full border-[1.5px] border-dashed border-foreground/40" />
-              {t("Add the project's first tasks — they are created with it", "أضف أول مهام المشروع — تُنشأ مع المشروع")}
+              {forTask
+                ? t("Break the task into steps — they are created with it", "قسّم المهمة إلى خطوات — تُنشأ مع المهمة")
+                : t("Add the project's first tasks — they are created with it", "أضف أول مهام المشروع — تُنشأ مع المشروع")}
             </button>
           </li>
         )}
       </ul>
       {filled > 0 && (
         <p className="mt-2 text-[12px] text-muted-foreground">
-          {isAr ? `${filled} مهمة فرعية ستُنشأ مع المشروع` : `${filled} subtask${filled === 1 ? "" : "s"} will be created with the project`}
+          {isAr ? `${filled} مهمة فرعية ستُنشأ مع ${forTask ? "المهمة" : "المشروع"}` : `${filled} subtask${filled === 1 ? "" : "s"} will be created with the ${forTask ? "task" : "project"}`}
         </p>
       )}
     </Panel>
@@ -896,7 +996,12 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
   return (
     <Panel>
       <CardHeader icon={CalendarClock} title={t("Milestones", "المعالم")}
-        actions={<Btn className="h-7 px-3 text-[12.5px]" onClick={() => navigate(`/projects/${project.id}/milestones/new`)}><Plus className="size-3.5" />{t("Milestone", "معلم")}</Btn>} />
+        actions={
+          <button type="button" onClick={() => navigate(`/projects/${project.id}/milestones/new`)}
+            className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
+            <Plus className="size-3.5" />{t("New milestone", "معلم جديد")}
+          </button>
+        } />
       <div className="mt-[18px] flex flex-col">
         {ms.map((m) => {
           const h = milestoneHealth(m, tasks)
