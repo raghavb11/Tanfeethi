@@ -270,6 +270,7 @@ export default function App() {
         <Route path="projects/:id" element={<ProjectDetailPage />} />
         <Route path="projects/:id/edit" element={<ProjectEditorPage />} />
         <Route path="projects/:id/milestones/new" element={<MilestoneEditorPage />} />
+        <Route path="projects/:id/milestones/:mid" element={<MilestoneEditorPage />} />
         <Route path="projects/:id/milestones/:mid/edit" element={<MilestoneEditorPage />} />
         <Route path="manager/approvals/:id" element={<ApprovalDetailPage />} />
         <Route path="leave" element={<LeaveBalancesPage />} />

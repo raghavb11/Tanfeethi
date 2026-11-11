@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { reportedProgress, type Task, TASK_TODAY_ISO } from "./tasks"
+import { getTaskById, reportedProgress, setTaskMilestone, type Task, TASK_TODAY_ISO } from "./tasks"
 
 /** Milestones break a project into dated checkpoints. Tasks sit under one, and
  *  each milestone reports red, amber or green — worked out from its tasks and
@@ -208,6 +208,24 @@ export const countHealth = (projectId: string, allTasks: Task[]) => {
 export type MilestoneLog = { id: string; milestoneId: string; action: string; detail: string; at: string }
 let log: MilestoneLog[] = []
 export const useMilestoneLog = () => React.useSyncExternalStore(subscribe, () => log)
+/** Put an existing task of the project under this milestone (moving it out of any other). */
+export function linkTask(milestoneId: string, taskId: string) {
+  const task = getTaskById(taskId)
+  if (!task || task.milestoneId === milestoneId) return
+  const from = task.milestoneId ? getMilestone(task.milestoneId) : undefined
+  setTaskMilestone(taskId, milestoneId)
+  record(milestoneId, "task linked", from ? `${task.title} (moved from ${from.code})` : task.title)
+  if (from) record(from.id, "task unlinked", `${task.title} (moved to ${getMilestone(milestoneId)?.code ?? ""})`)
+  emit()
+}
+/** Take a task out of the milestone; it stays in the project. */
+export function unlinkTask(milestoneId: string, taskId: string) {
+  const task = getTaskById(taskId)
+  if (!task || task.milestoneId !== milestoneId) return
+  setTaskMilestone(taskId, "")
+  record(milestoneId, "task unlinked", task.title)
+  emit()
+}
 function record(milestoneId: string, action: string, detail: string) {
   log = [{
     id: `ml-${Date.now().toString(36)}-${log.length}`, milestoneId, action, detail,

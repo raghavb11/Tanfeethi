@@ -453,28 +453,31 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className={cn("flex min-w-0 flex-col gap-3", create && "lg:flex-1")}>
+          <div className={cn("flex min-w-0 flex-col gap-3", editing && "lg:flex-1")}>
             {editing && draft ? (
-              <div className="flex flex-col gap-1">
-                <input
-                  ref={titleRef} autoFocus={create} value={draft.title ?? ""} onChange={(e) => patch({ title: e.target.value })}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (create) createRecord(); else save() } }}
-                  placeholder={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
-                  aria-label={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
-                  aria-invalid={!!err("title")}
-                  className={cn("h-[38px] w-full max-w-[640px] border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
-                    err("title") ? "border-error" : "border-input focus:border-primary/70")}
-                />
-                {err("title") ? <p className="text-[12px] text-error">{err("title")}</p> : <TextCounter text={draft.title ?? ""} isAr={isAr} />}
-                {/* the same name in the other language, directly beneath it */}
-                <label className="mt-3 flex max-w-[640px] flex-col gap-1">
+              <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="text-[12px] text-muted-foreground">{isTask ? t("Title", "العنوان") : t("Name", "الاسم")}<RequiredMark /></span>
+                  <input
+                    ref={titleRef} autoFocus={create} value={draft.title ?? ""} onChange={(e) => patch({ title: e.target.value })}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (create) createRecord(); else save() } }}
+                    placeholder={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
+                    aria-label={isTask ? t("Task title", "عنوان المهمة") : t("Project name", "اسم المشروع")}
+                    aria-invalid={!!err("title")}
+                    className={cn("h-[38px] w-full border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
+                      err("title") ? "border-error" : "border-input focus:border-primary/70")}
+                  />
+                  {err("title") ? <p className="text-[12px] text-error">{err("title")}</p> : <TextCounter text={draft.title ?? ""} isAr={isAr} />}
+                </div>
+                {/* the same name in the other language, beside it */}
+                <label className="flex min-w-0 flex-col gap-1">
                   <span className="text-[12px] text-muted-foreground">
                     {isTask ? t("Title in Arabic", "العنوان بالإنجليزية") : t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}
                   </span>
                   <input
                     value={draft.titleAlt ?? ""} onChange={(e) => patch({ titleAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
                     placeholder={isTask ? t("عنوان المهمة", "Task title") : t("اسم المشروع", "Project name")}
-                    className="h-[30px] w-full border-b border-dashed border-input bg-transparent text-[18px] leading-[30px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
+                    className="h-[38px] w-full border-b border-dashed border-input bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
                   />
                 </label>
               </div>
@@ -1009,7 +1012,8 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
             <div key={m.id} className="flex flex-col gap-2 border-b border-input py-3 last:border-b-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">{m.code}</span>
-                <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{isAr ? m.nameAr : m.name}</span>
+                <button onClick={() => navigate(`/projects/${project.id}/milestones/${m.id}`)}
+                  className="min-w-0 flex-1 truncate text-start text-[14px] font-medium hover:text-primary">{isAr ? m.nameAr : m.name}</button>
                 <HealthPill health={h.health} isAr={isAr} overridden={h.overridden} size="sm" />
                 <button onClick={() => navigate(`/projects/${project.id}/milestones/${m.id}/edit`)} aria-label={t("Edit milestone", "تعديل المعلم")}
                   className="inline-flex size-7 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
