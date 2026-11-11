@@ -56,11 +56,20 @@ export default function MasterRowEditorPage() {
   // document tags
   const [scope, setScope] = React.useState<NonNullable<MasterRow["scope"]>>(existing?.scope ?? "all")
 
+  // shift types
+  const [startTime, setStartTime] = React.useState(existing?.startTime ?? "08:00")
+  const [endTime, setEndTime] = React.useState(existing?.endTime ?? "16:00")
+  const [breakMinutes, setBreakMinutes] = React.useState(String(existing?.breakMinutes ?? 30))
+  const [isOff, setIsOff] = React.useState(existing?.isOff ?? false)
+  const shiftCodeTaken = list === "shift-types" && code.trim() !== ""
+    && rowsIn("shift-types").some((r) => r.id !== existing?.id && (r.code ?? "").toUpperCase() === code.trim().toUpperCase())
+
   const proposedId = editing ? existing.id : slugify(name)
   const clash = !editing && rowsIn(list).some((r) => r.id === proposedId)
   const num = (v: string) => Math.max(0, Math.round(Number(v) || 0))
   const canSave = name.trim() !== "" && !clash
     && (list !== "request-categories" || routeTo.trim() !== "")
+    && (list !== "shift-types" || (code.trim() !== "" && !shiftCodeTaken && (isOff || (startTime !== "" && endTime !== ""))))
 
   const save = () => {
     if (!canSave) return
@@ -81,6 +90,10 @@ export default function MasterRowEditorPage() {
         ? { rank: num(rank) || 1, responseHours: num(responseHours) }
       : list === "document-tags"
         ? { scope }
+      : list === "shift-types"
+        ? { code: code.trim().toUpperCase(), isOff,
+            startTime: isOff ? undefined : startTime, endTime: isOff ? undefined : endTime,
+            breakMinutes: isOff ? undefined : num(breakMinutes) }
         : {}
 
     if (editing) updateMasterRow(list, existing.id, { ...base, ...extra })
@@ -223,6 +236,46 @@ export default function MasterRowEditorPage() {
                        onChange={(e) => setResponseHours(e.target.value)} />
               </div>
             </div>
+          )}
+
+          {list === "shift-types" && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  {label(t("Roster code", "رمز الجدول"), true)}
+                  <Input aria-required value={code} maxLength={3} onChange={(e) => setCode(e.target.value)} className="uppercase" />
+                  <p className="mt-1.5 text-[11px] text-muted-foreground/75">
+                    {t("One to three letters, shown in each roster cell.", "حرف إلى ثلاثة أحرف، تظهر في كل خانة من الجدول.")}
+                  </p>
+                  {shiftCodeTaken && (
+                    <p className="mt-1.5 text-[12px] font-medium text-error">{t("Another shift type uses this code.", "يستخدم نوع مناوبة آخر هذا الرمز.")}</p>
+                  )}
+                </div>
+              </div>
+              <Toggle checked={isOff} onChange={setIsOff}
+                      title={t("Rest day", "يوم راحة")}
+                      body={t("Counts as time off: no hours, and it breaks a run of working days.",
+                              "يُحتسب راحة: بلا ساعات، ويقطع سلسلة أيام العمل.")} />
+              {!isOff && (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div>
+                    {label(t("Starts", "تبدأ"), true)}
+                    <Input type="time" aria-required value={startTime} onChange={(e) => setStartTime(e.target.value)} dir="ltr" />
+                  </div>
+                  <div>
+                    {label(t("Ends", "تنتهي"), true)}
+                    <Input type="time" aria-required value={endTime} onChange={(e) => setEndTime(e.target.value)} dir="ltr" />
+                    {endTime !== "" && startTime !== "" && endTime <= startTime && (
+                      <p className="mt-1.5 text-[11px] text-muted-foreground/75">{t("Ends the next morning.", "تنتهي صباح اليوم التالي.")}</p>
+                    )}
+                  </div>
+                  <div>
+                    {label(t("Break (minutes)", "الاستراحة (دقائق)"))}
+                    <Input type="number" min={0} max={240} value={breakMinutes} onChange={(e) => setBreakMinutes(e.target.value)} />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {list === "document-tags" && (

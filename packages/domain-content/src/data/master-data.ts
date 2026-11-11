@@ -9,7 +9,7 @@ import * as React from "react"
 
 // ── the lists ────────────────────────────────────────────────────────────────
 export type MasterListId =
-  | "holiday-types" | "leave-types" | "request-categories" | "priorities" | "document-tags"
+  | "holiday-types" | "leave-types" | "request-categories" | "priorities" | "document-tags" | "shift-types"
 
 export const MASTER_LISTS: {
   id: MasterListId
@@ -32,6 +32,9 @@ export const MASTER_LISTS: {
   { id: "document-tags", label: "Document tags", labelAr: "وسوم المستندات",
     desc: "Labels on library documents, and who they are visible to.", descAr: "وسوم مستندات المكتبة ومن يراها.",
     singular: "tag", singularAr: "وسم" },
+  { id: "shift-types", label: "Shift types", labelAr: "أنواع المناوبات",
+    desc: "The shifts a roster is built from — hours, break and colour.", descAr: "المناوبات التي يُبنى منها الجدول — الساعات والاستراحة واللون.",
+    singular: "shift type", singularAr: "نوع مناوبة" },
 ]
 export const masterList = (id: MasterListId) => MASTER_LISTS.find((l) => l.id === id)!
 
@@ -90,6 +93,15 @@ export type MasterRow = {
 
   // ── document tags ──
   scope?: "all" | "department" | "restricted"
+
+  // ── shift types (code is shared with leave types) ──
+  /** "06:00" — 24-hour clock. An end at or before the start runs past midnight. */
+  startTime?: string
+  endTime?: string
+  /** Unpaid break inside the shift. */
+  breakMinutes?: number
+  /** A rest day: counts as time off, not as a shift. */
+  isOff?: boolean
 }
 
 export const SCOPES: { id: NonNullable<MasterRow["scope"]>; en: string; ar: string }[] = [
@@ -165,9 +177,51 @@ const SEED: MasterRow[] = [
   { id: "template", list: "document-tags", name: "Template", nameAr: "قالب", tone: "violet", active: true, scope: "department" },
   { id: "confidential", list: "document-tags", name: "Confidential", nameAr: "سري", tone: "rose", active: true, system: true, scope: "restricted",
     description: "Only the roles named on the folder can open it.", descriptionAr: "لا يفتحه إلا الأدوار المحددة على المجلد." },
+
+  // ── shift types ──
+  { id: "morning", list: "shift-types", name: "Morning", nameAr: "صباحية", tone: "amber", active: true, system: true,
+    code: "M", startTime: "06:00", endTime: "14:00", breakMinutes: 30 },
+  { id: "evening", list: "shift-types", name: "Evening", nameAr: "مسائية", tone: "violet", active: true, system: true,
+    code: "E", startTime: "14:00", endTime: "22:00", breakMinutes: 30 },
+  { id: "night", list: "shift-types", name: "Night", nameAr: "ليلية", tone: "sky", active: true, system: true,
+    code: "N", startTime: "22:00", endTime: "06:00", breakMinutes: 45,
+    description: "Runs past midnight; the next shift must leave 11 hours' rest.", descriptionAr: "تمتد بعد منتصف الليل، ويجب أن تترك 11 ساعة راحة قبل المناوبة التالية." },
+  { id: "office", list: "shift-types", name: "Office day", nameAr: "دوام مكتبي", tone: "emerald", active: true,
+    code: "D", startTime: "08:00", endTime: "17:00", breakMinutes: 60 },
+  { id: "off", list: "shift-types", name: "Day off", nameAr: "راحة", tone: "slate", active: true, system: true,
+    code: "O", isOff: true },
 ]
 
 let rows: MasterRow[] = SEED
+
+// ── what the shift roster reads ─────────────────────────────────────────────
+export type ShiftTypeRow = MasterRow
+export function useShiftTypes(): ShiftTypeRow[] {
+  const all = useMasterRows()
+  return React.useMemo(() => all.filter((r) => r.list === "shift-types"), [all])
+}
+export const getShiftType = (id: string) => getMasterRow("shift-types", id)
+const toMin = (hhmm?: string) => {
+  const [h, m] = (hhmm ?? "00:00").split(":").map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+/** Minutes from midnight the shift starts, and how long it runs (past midnight allowed). */
+export function shiftSpan(row: Pick<MasterRow, "startTime" | "endTime" | "isOff">): { start: number; length: number } | undefined {
+  if (row.isOff || !row.startTime || !row.endTime) return undefined
+  const start = toMin(row.startTime)
+  let end = toMin(row.endTime)
+  if (end <= start) end += 24 * 60
+  return { start, length: end - start }
+}
+export const isOvernight = (row: Pick<MasterRow, "startTime" | "endTime" | "isOff">) => {
+  const s = shiftSpan(row)
+  return !!s && s.start + s.length > 24 * 60
+}
+/** Paid hours of one shift (length less the break). */
+export const shiftHours = (row: MasterRow) => {
+  const s = shiftSpan(row)
+  return s ? Math.max(0, s.length - (row.breakMinutes ?? 0)) / 60 : 0
+}
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l) }

@@ -4,7 +4,7 @@ import { Badge, Button, Card } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  ArrowLeft, CalendarDays, Clock, FileText, Lock, Pencil, Plane, Plus, Power,
+  ArrowLeft, CalendarDays, CalendarRange, Clock, FileText, Lock, Pencil, Plane, Plus, Power,
   Tags, Ticket, Trash2,
 } from "lucide-react"
 
@@ -20,6 +20,7 @@ const ICON: Record<MasterListId, typeof Tags> = {
   "request-categories": Ticket,
   priorities: Clock,
   "document-tags": FileText,
+  "shift-types": CalendarRange,
 }
 
 /** Master data — every configurable list in one place. */
@@ -239,6 +240,17 @@ function Facts({ row, t }: {
       <>
         <span>{t(`Rank ${row.rank}`, `الترتيب ${row.rank}`)}</span>
         <span>{t(`Respond within ${row.responseHours}h`, `الاستجابة خلال ${row.responseHours} ساعة`)}</span>
+      </>
+    )
+  }
+  if (row.list === "shift-types") {
+    if (row.isOff) return <span>{t("Rest day", "يوم راحة")}</span>
+    const overnight = !!row.startTime && !!row.endTime && row.endTime <= row.startTime
+    return (
+      <>
+        <span dir="ltr">{row.startTime} – {row.endTime}</span>
+        {overnight && <span>{t("Overnight", "تمتد لليوم التالي")}</span>}
+        {!!row.breakMinutes && <span>{t(`${row.breakMinutes} min break`, `استراحة ${row.breakMinutes} دقيقة`)}</span>}
       </>
     )
   }
