@@ -134,15 +134,16 @@ export default function MasterRowEditorPage() {
 
       <Card className="rounded-[12px] p-5">
         <div className="space-y-5">
-          <div>
-            {label(t("Name", "الاسم"), true)}
-            <Input aria-required value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-
-          <div>
-            {label(t("Name in Arabic", "الاسم بالعربية"))}
-            <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
-                   placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              {label(t("Name", "الاسم"), true)}
+              <Input aria-required value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div>
+              {label(t("Name in Arabic", "الاسم بالعربية"))}
+              <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
+                     placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+            </div>
           </div>
 
           <div>

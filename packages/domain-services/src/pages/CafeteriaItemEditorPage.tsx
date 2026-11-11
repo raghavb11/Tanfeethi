@@ -119,18 +119,19 @@ export default function CafeteriaItemEditorPage({ kind }: { kind: "item" | "plac
 
       <Card className="p-5">
         <div className="space-y-5">
-          <div>
-            {label(kind === "item" ? t("Item name", "اسم الصنف") : t("Place name", "اسم الموقع"), true)}
-            <Input aria-required value={name} onChange={(e) => setName(e.target.value)}
-                   placeholder={kind === "item"
-                     ? t("Karak tea, Fresh juice…", "شاي كرك، عصير طازج…")
-                     : t("HQ · Level 14 · Boardroom", "المقر · الطابق 14 · قاعة المجلس")} />
-          </div>
-
-          <div>
-            {label(t("Name in Arabic", "الاسم بالعربية"))}
-            <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
-                   placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              {label(kind === "item" ? t("Item name", "اسم الصنف") : t("Place name", "اسم الموقع"), true)}
+              <Input aria-required value={name} onChange={(e) => setName(e.target.value)}
+                     placeholder={kind === "item"
+                       ? t("Karak tea, Fresh juice…", "شاي كرك، عصير طازج…")
+                       : t("HQ · Level 14 · Boardroom", "المقر · الطابق 14 · قاعة المجلس")} />
+            </div>
+            <div>
+              {label(t("Name in Arabic", "الاسم بالعربية"))}
+              <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
+                     placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+            </div>
           </div>
 
           {kind === "item" ? (

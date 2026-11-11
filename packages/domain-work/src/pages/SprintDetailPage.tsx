@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
+import { RequiredMark } from "@reach/shared-ui"
 import { usePageTitle } from "@reach/shell-context"
 import {
   AlertTriangle, Archive, ArchiveRestore, ArrowLeft, CalendarRange, CheckCircle2, Clock, Flag, Info,
@@ -215,23 +216,26 @@ function SprintScreen({ id, canManage }: { id?: string; canManage: boolean }) {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className={cn("flex min-w-0 flex-col gap-3", editing && "lg:flex-1")}>
             {editing && d ? (
-              <div className="flex flex-col gap-1">
-                <input
-                  ref={nameRef} autoFocus={create} value={d.name} onChange={(e) => patch({ name: e.target.value })}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save() } }}
-                  placeholder={t("Sprint name", "اسم السبرنت")} aria-label={t("Sprint name", "اسم السبرنت")}
-                  aria-invalid={!!err("name")}
-                  className={cn("h-[38px] w-full max-w-[640px] border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
-                    err("name") ? "border-error" : "border-input focus:border-primary/70")}
-                />
-                {err("name") && <p role="alert" className="text-[12px] text-error">{err("name")}</p>}
-                {/* the same name in the other language, directly beneath it */}
-                <label className="mt-3 flex max-w-[640px] flex-col gap-1">
+              <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="text-[12px] text-muted-foreground">{t("Name", "الاسم")}<RequiredMark /></span>
+                  <input
+                    ref={nameRef} autoFocus={create} value={d.name} onChange={(e) => patch({ name: e.target.value })}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save() } }}
+                    placeholder={t("Sprint name", "اسم السبرنت")} aria-label={t("Sprint name", "اسم السبرنت")}
+                    aria-invalid={!!err("name")}
+                    className={cn("h-[38px] w-full border-b border-dashed bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60",
+                      err("name") ? "border-error" : "border-input focus:border-primary/70")}
+                  />
+                  {err("name") && <p role="alert" className="text-[12px] text-error">{err("name")}</p>}
+                </div>
+                {/* the same name in the other language, beside it */}
+                <label className="flex min-w-0 flex-col gap-1">
                   <span className="text-[12px] text-muted-foreground">{t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}</span>
                   <input
                     value={d.nameAlt} onChange={(e) => patch({ nameAlt: e.target.value })} dir={isAr ? "ltr" : "rtl"}
                     placeholder={t("اسم السبرنت", "Sprint name")}
-                    className="h-[30px] w-full border-b border-dashed border-input bg-transparent text-[18px] leading-[30px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
+                    className="h-[38px] w-full border-b border-dashed border-input bg-transparent text-[27px] font-normal leading-[38px] tracking-[-0.27px] outline-none placeholder:text-muted-foreground/60 focus:border-primary/70"
                   />
                 </label>
               </div>

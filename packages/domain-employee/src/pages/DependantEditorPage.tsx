@@ -136,16 +136,17 @@ export default function DependantEditorPage() {
                 </p>
               </div>
 
-              <div>
-                {label(t("Full name", "الاسم الكامل"), true)}
-                <Input aria-required className={fieldClass} value={name} onChange={(e) => setName(e.target.value)}
-                       placeholder={t("As it appears on the ID", "كما يظهر في الهوية")} />
-              </div>
-
-              <div>
-                {label(t("Full name in Arabic", "الاسم بالعربية"))}
-                <Input className={fieldClass} value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
-                       placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  {label(t("Full name", "الاسم الكامل"), true)}
+                  <Input aria-required className={fieldClass} value={name} onChange={(e) => setName(e.target.value)}
+                         placeholder={t("As it appears on the ID", "كما يظهر في الهوية")} />
+                </div>
+                <div>
+                  {label(t("Full name in Arabic", "الاسم بالعربية"))}
+                  <Input className={fieldClass} value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl"
+                         placeholder={t("Optional — falls back to the English name", "اختياري — يُستخدم الاسم الإنجليزي إن تُرك فارغًا")} />
+                </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
