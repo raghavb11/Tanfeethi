@@ -78,6 +78,22 @@ const titlesEn: Record<string, string> = {
   "/services/violations/reports": "Follow up on reports",
   "/services/violations/queue": "Follow up on reports",
   "/cafeteria": "Order menu",
+  "/cafeteria/orders": "My orders",
+  "/cafeteria/admin": "Cafeteria queue",
+  "/config": "Administration",
+  "/config/rules": "Approval rules",
+  "/config/holidays/new": "New holiday",
+  "/config/cafeteria/items/new": "New menu item",
+  "/config/cafeteria/places/new": "New delivery place",
+  "/admin/permission-groups": "Permission groups",
+  "/admin/permission-groups/new": "New permission group",
+  "/admin/faq-categories": "FAQ topics",
+  "/announcements/new": "New announcement",
+  "/documents/new": "Upload a file",
+  "/events/new": "New event",
+  "/faqs/new": "New FAQ",
+  "/policies/new": "New policy",
+  "/knowledge": "Knowledge center",
 }
 
 const titlesAr: Record<string, string> = {
@@ -158,6 +174,22 @@ const titlesAr: Record<string, string> = {
   "/services/violations/reports": "متابعة طلبات الإبلاغ",
   "/services/violations/queue": "متابعة طلبات الإبلاغ",
   "/cafeteria": "قائمة الطلبات",
+  "/cafeteria/orders": "طلباتي",
+  "/cafeteria/admin": "قائمة الكافتيريا",
+  "/config": "الإدارة",
+  "/config/rules": "قواعد الموافقات",
+  "/config/holidays/new": "إجازة جديدة",
+  "/config/cafeteria/items/new": "صنف جديد",
+  "/config/cafeteria/places/new": "موقع توصيل جديد",
+  "/admin/permission-groups": "مجموعات الصلاحيات",
+  "/admin/permission-groups/new": "مجموعة صلاحيات جديدة",
+  "/admin/faq-categories": "مواضيع الأسئلة",
+  "/announcements/new": "إعلان جديد",
+  "/documents/new": "رفع ملف",
+  "/events/new": "فعالية جديدة",
+  "/faqs/new": "سؤال جديد",
+  "/policies/new": "سياسة جديدة",
+  "/knowledge": "مركز المعرفة",
 }
 
 /** Service catalog names — mirror of domain-services data/mock/services.ts. */
@@ -200,6 +232,27 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (pathname.startsWith("/corporate-performance/objectives/")) return ar ? "هدف استراتيجي" : "Strategic objective"
   if (pathname.startsWith("/corporate-performance/kpis/")) return ar ? "تفاصيل المؤشر" : "KPI detail"
   if (pathname.startsWith("/corporate-performance/departments/")) return ar ? "بطاقة أداء الإدارة" : "Department scorecard"
+  // Detail and editor routes (record pages reached from a list)
+  if (pathname.startsWith("/admin/permission-groups/edit/")) return ar ? "تحرير المجموعة" : "Edit permission group"
+  if (pathname.startsWith("/admin/permission-groups/")) return ar ? "أعضاء المجموعة" : "Group members"
+  if (pathname.startsWith("/benefits/partners/")) return ar ? "تفاصيل العرض" : "Offer details"
+  if (pathname.startsWith("/partner/offers/")) return ar ? "تعديل العرض" : "Edit offer"
+  if (/^\/config\/partners\/[^/]+\/edit$/.test(pathname)) return ar ? "تعديل الشريك" : "Edit partner"
+  if (pathname.startsWith("/config/rules/")) return ar ? "تعديل القاعدة" : "Edit approval rule"
+  if (pathname.startsWith("/config/holidays/")) return ar ? "تعديل الإجازة" : "Edit holiday"
+  if (/^\/config\/master-data\/[^/]+\/new$/.test(pathname)) return ar ? "إضافة قيمة" : "New entry"
+  if (pathname.startsWith("/config/master-data/")) return ar ? "تعديل القيمة" : "Edit entry"
+  if (pathname.startsWith("/config/cafeteria/items/")) return ar ? "تعديل صنف" : "Edit menu item"
+  if (pathname.startsWith("/config/cafeteria/places/")) return ar ? "تعديل موقع التوصيل" : "Edit delivery place"
+  if (pathname.startsWith("/employee/dependants/")) return ar ? "تعديل بيانات المعال" : "Edit dependant"
+  if (pathname.startsWith("/manager/approvals/")) return ar ? "تفاصيل الطلب" : "Request details"
+  if (pathname.startsWith("/events/edit/")) return ar ? "تحرير الفعالية" : "Edit event"
+  if (pathname.startsWith("/events/")) return ar ? "تفاصيل الفعالية" : "Event details"
+  if (pathname.startsWith("/faqs/edit/")) return ar ? "تحرير السؤال" : "Edit FAQ"
+  if (pathname.startsWith("/policies/edit/")) return ar ? "تحرير السياسة" : "Edit policy"
+  if (pathname.startsWith("/policies/")) return ar ? "السياسة" : "Policy"
+  if (pathname.startsWith("/documents/")) return ar ? "معاينة المستند" : "Document preview"
+  if (/^\/surveys\/[^/]+\/respond$/.test(pathname)) return ar ? "المشاركة في الاستبيان" : "Take the survey"
   return ar ? "وجهة" : "WIJHA"
 }
 

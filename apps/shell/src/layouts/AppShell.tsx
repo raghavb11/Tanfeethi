@@ -71,12 +71,19 @@ export function AppShell() {
     crumbs.push(...intermediateCrumbs(location.pathname, locale))
   }
 
+  const title = pageTitle ? (isAr ? pageTitle.ar : pageTitle.en) : titleForPath(location.pathname, locale)
+  // Browser tab: "<page> | WIJHA" in English, "<page> | وجهة" in Arabic.
+  React.useEffect(() => {
+    const brand = titleForPath("/__none__", locale)
+    document.title = title && title !== brand ? `${title} | ${brand}` : brand
+  }, [title, locale])
+
   return (
     <div className="isolate flex h-svh bg-background text-foreground">
       <Sidebar mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />
       <div className="ambient-page flex min-w-0 flex-1 flex-col">
         <TopBar
-          title={pageTitle ? (isAr ? pageTitle.ar : pageTitle.en) : titleForPath(location.pathname, locale)}
+          title={title}
           crumbs={crumbs}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
