@@ -137,7 +137,12 @@ export default function MyTasksPage() {
         </div>
         <span aria-hidden className="hidden w-[2.5px] self-stretch lg:my-px bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
         <div className="flex items-center justify-center gap-8 lg:w-[300px] lg:justify-between">
-          <Legend rows={(["open", "on-hold", "in-progress"] as const).map((s) => ({
+          {/* each status opens the list filtered to it, as the cards do; the active one clears it */}
+          <Legend
+            active={view === "list" && tab !== "all" ? tab : undefined}
+            onSelect={(s) => setQuery(view === "list" && tab === s ? { view: "list", tab: undefined } : { view: "list", tab: s })}
+            rows={(["open", "on-hold", "in-progress"] as const).map((s) => ({
+            key: s,
             label: s === "open" ? t("Pending", "قيد الانتظار") : isAr ? STATUS_META[s].ar : STATUS_META[s].en, value: count(s), dot: STATUS_META[s].dot,
           }))} />
           <Donut

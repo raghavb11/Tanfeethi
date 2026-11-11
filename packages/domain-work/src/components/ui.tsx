@@ -117,17 +117,37 @@ export function Donut({ slices, total, label, size = 124, stroke = 16, mirror }:
   )
 }
 
-/** Status legend beside a donut: dot · label … count. */
-export function Legend({ rows }: { rows: { label: string; value: number; dot: string }[] }) {
+/** Status legend beside a donut: dot · label … count. With `onSelect`, each row is
+ *  a filter: clicking it filters the list below, clicking the active one clears it. */
+export function Legend({ rows, onSelect, active }: {
+  rows: { label: string; value: number; dot: string; key?: string }[]
+  onSelect?: (key: string) => void
+  active?: string
+}) {
   return (
     <ul className="flex min-w-[110px] flex-col gap-[10px]">
-      {rows.map((r) => (
-        <li key={r.label} className="flex items-center gap-2 text-[11.5px] leading-[15px]">
-          <span className={cn("size-2 shrink-0 rounded-full", r.dot)} />
-          <span className="flex-1 text-foreground">{r.label}</span>
-          <span className="ms-6 font-medium tabular-nums">{r.value}</span>
-        </li>
-      ))}
+      {rows.map((r) => {
+        const body = (
+          <>
+            <span className={cn("size-2 shrink-0 rounded-full", r.dot)} />
+            <span className="flex-1 text-start text-foreground">{r.label}</span>
+            <span className="ms-6 font-medium tabular-nums">{r.value}</span>
+          </>
+        )
+        if (!onSelect || !r.key) {
+          return <li key={r.label} className="flex items-center gap-2 text-[11.5px] leading-[15px]">{body}</li>
+        }
+        const on = active === r.key
+        return (
+          <li key={r.label}>
+            <button type="button" onClick={() => onSelect(r.key!)} aria-pressed={on}
+              className={cn("-mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded-md px-2 py-1 -my-1 text-[11.5px] leading-[15px] transition-colors hover:bg-foreground/[0.06]",
+                on && "bg-soft-accent ring-1 ring-inset ring-primary/40")}>
+              {body}
+            </button>
+          </li>
+        )
+      })}
     </ul>
   )
 }

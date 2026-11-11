@@ -1,9 +1,9 @@
 import * as React from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { cn } from "@reach/shared-core"
-import { AlertTriangle, ChevronRight, Clock, FolderKanban, Plus, Search } from "lucide-react"
+import { AlertTriangle, CalendarClock, ChevronRight, CirclePause, CirclePlay, Clock, FolderKanban, Plus, Search } from "lucide-react"
 
-import { CategoryChip, Empty, Initials, Page, Skeleton, useFirstPaint, useT } from "../components/ui"
+import { CategoryChip, Donut, Empty, Initials, Legend, Page, Skeleton, useFirstPaint, useT } from "../components/ui"
 import { HealthPill } from "../components/HealthPill"
 import { STATUS_LABEL, type ProjectStatus, useProjects } from "../data/projects"
 import { projectHealth, useMilestones } from "../data/milestones"
@@ -19,8 +19,19 @@ const FILTERS: { id: "all" | ProjectStatus; en: string; ar: string }[] = [
   { id: "done", en: "Completed", ar: "مكتمل" },
 ]
 
+/** Project status in the hero: colours follow the status chips; the hint sits under the count. */
+const HERO_STATUS: Record<ProjectStatus, { dot: string; color: string; tone: string; hint: string; hintAr: string }> = {
+  planned: { dot: "bg-foreground/70", color: "color-mix(in oklab, var(--foreground) 75%, transparent)", tone: "text-foreground", hint: "Not started yet", hintAr: "لم يبدأ بعد" },
+  active: { dot: "bg-info", color: "var(--info)", tone: "text-info", hint: "Being delivered now", hintAr: "قيد التسليم الآن" },
+  "on-hold": { dot: "bg-warning", color: "var(--warning)", tone: "text-warning", hint: "Paused, waiting on a decision", hintAr: "متوقف بانتظار قرار" },
+  done: { dot: "bg-success", color: "color-mix(in oklab, var(--success) 70%, var(--background))", tone: "text-success", hint: "Delivered", hintAr: "تم التسليم" },
+}
+const HERO_CARDS = ["planned", "active", "on-hold"] as const
+const DONUT_ORDER: ProjectStatus[] = ["planned", "active", "on-hold", "done"]
+
 /** The project master. No Figma screen — drawn in the Tasks screens' language:
- *  hero card, segmented filter, cards with a status bar per project. */
+ *  the Tasks hero (2015:9895: title, three status cards, divider, legend +
+ *  donut), segmented filter, cards with a status bar per project. */
 export default function ProjectsPage() {
   const { isAr, t } = useT()
   const navigate = useNavigate()
@@ -42,29 +53,40 @@ export default function ProjectsPage() {
       (isAr ? p.nameAr : p.name).toLowerCase().includes(q.toLowerCase()) ||
       p.code.toLowerCase().includes(q.toLowerCase()))
 
-  const activeCount = projects.filter((p) => p.status === "active").length
+  const countOf = (s: ProjectStatus) => projects.filter((p) => p.status === s).length
   const overdueTotal = tasks.filter((x) => x.projectId && isOverdue(x)).length
 
   return (
     <Page>
-      <section className="highlight-card hl-green flex flex-col gap-6 rounded-2xl px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:ps-6 lg:pe-14 lg:py-10">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-[28px] font-medium leading-[38px]">{t("Projects", "المشاريع")}</h1>
-          <p className="text-[14px] text-muted-foreground">
-            {t(`${projects.length} projects · ${activeCount} active · ${overdueTotal} overdue tasks across them.`,
-               `${projects.length} مشروعًا · ${activeCount} قيد التنفيذ · ${overdueTotal} مهمة متأخرة.`)}
-          </p>
+      {/* ── hero, as the Tasks board's ─────────────────────────────────── */}
+      <section className="highlight-card hl-green flex flex-col gap-8 rounded-[16px] px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:ps-6 lg:pe-14 lg:py-10">
+        <div className="flex min-w-0 flex-col justify-between gap-5 lg:min-h-[163px] lg:w-[693px] lg:gap-[15px]">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-[28px] font-medium leading-[38px] tracking-tight">{t("Projects", "المشاريع")}</h1>
+            <p className="text-[14px] text-muted-foreground">
+              {t(`Every project with its health and progress — ${overdueTotal} overdue tasks across them.`,
+                 `كل مشاريعك مع حالتها وتقدّمها — ${overdueTotal} مهمة متأخرة فيها.`)}
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3 lg:flex lg:gap-6">
+            {HERO_CARDS.map((s) => (
+              <ProjectStatusCard key={s} status={s} value={countOf(s)} isAr={isAr} onClick={() => setFilter(s)} />
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-4 lg:gap-6">
-          {([["active", t("Active", "قيد التنفيذ"), activeCount], ["planned", t("Planned", "مخطط"), projects.filter((p) => p.status === "planned").length],
-             ["done", t("Completed", "مكتمل"), projects.filter((p) => p.status === "done").length]] as const).map(([id, label, n]) => (
-            <button key={id} onClick={() => setFilter(id)}
-              className="flex h-[81px] min-w-[180px] items-center gap-3 rounded-xl bg-[var(--card-elevated)] px-[18px] text-start ring-1 ring-inset ring-[var(--card-ring)] hover:ring-primary/40">
-              <FolderKanban className="size-7 shrink-0 text-primary" />
-              <span className="flex-1 text-[16px] font-semibold">{n} {label}</span>
-              <ChevronRight className={cn("size-4 text-icon", isAr && "rotate-180")} />
-            </button>
-          ))}
+        <span aria-hidden className="hidden w-[2.5px] self-stretch lg:my-px bg-gradient-to-b from-transparent via-[#1c331c] to-transparent lg:block" />
+        <div className="flex items-center justify-center gap-8 lg:w-[300px] lg:justify-between">
+          {/* each status filters the projects below; the active one clears it */}
+          <Legend
+            rows={DONUT_ORDER.map((s) => ({ key: s, label: isAr ? STATUS_LABEL[s].ar : STATUS_LABEL[s].en, value: countOf(s), dot: HERO_STATUS[s].dot }))}
+            active={filter === "all" ? undefined : filter}
+            onSelect={(s) => setFilter(filter === s ? "all" : s)}
+          />
+          <Donut
+            mirror={!isAr}
+            total={projects.length} label={t("Projects", "مشاريع")}
+            slices={DONUT_ORDER.map((s) => ({ value: countOf(s), color: HERO_STATUS[s].color }))}
+          />
         </div>
       </section>
 
@@ -154,5 +176,24 @@ export default function ProjectsPage() {
           action={<button onClick={() => navigate("/projects/new")} className="btn-primary-grad inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-[13px] font-medium"><Plus className="size-4" />{t("New project", "مشروع جديد")}</button>} />
       )}
     </Page>
+  )
+}
+
+/** Hero selector card, as the Tasks board's ("Work Card Selector"): 81 high, radius 12, icon 32. */
+function ProjectStatusCard({ status, value, isAr, onClick }: { status: (typeof HERO_CARDS)[number]; value: number; isAr: boolean; onClick: () => void }) {
+  const Icon = status === "planned" ? CalendarClock : status === "on-hold" ? CirclePause : CirclePlay
+  const m = HERO_STATUS[status]
+  return (
+    <button
+      onClick={onClick}
+      className="group flex min-h-[81px] items-center gap-3 rounded-[12px] bg-card px-[18px] py-4 text-start ring-1 ring-inset ring-[var(--card-ring)] transition-colors hover:ring-primary/40 lg:w-[215px]"
+    >
+      <Icon className={cn("size-8 shrink-0 stroke-[1.6]", m.tone)} />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[16px] font-semibold leading-8">{value} {isAr ? STATUS_LABEL[status].ar : STATUS_LABEL[status].en.toLowerCase()}</span>
+        <span className="text-[11.5px] leading-[13px] text-muted-foreground">{isAr ? m.hintAr : m.hint}</span>
+      </span>
+      <ChevronRight className={cn("size-4 shrink-0 text-icon transition-transform", isAr && "rotate-180")} />
+    </button>
   )
 }
