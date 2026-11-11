@@ -119,6 +119,9 @@ const CalendarEventEditorPage = lazy(() => import("@reach/domain-work").then((m)
 const ProfilePage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ProfilePage })))
 const AssetsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.AssetsPage })))
 const ShiftsPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.ShiftsPage })))
+const RostersPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.RostersPage })))
+const RosterNewPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.RosterNewPage })))
+const RosterEditorPage = lazy(() => import("@reach/domain-employee").then((m) => ({ default: m.RosterEditorPage })))
 const OperationsHubPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.OperationsHubPage })))
 const ChecklistRunPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.ChecklistRunPage })))
 const DelegationRequestPage = lazy(() => import("@reach/domain-operations").then((m) => ({ default: m.DelegationRequestPage })))
@@ -249,6 +252,9 @@ export default function App() {
         <Route path="employee/card" element={<BusinessCardPage />} />
         <Route path="employee/assets" element={<AssetsPage />} />
         <Route path="employee/shifts" element={<ShiftsPage />} />
+        <Route path="employee/rosters" element={<RostersPage />} />
+        <Route path="employee/rosters/new" element={<RosterNewPage />} />
+        <Route path="employee/rosters/:id" element={<RosterEditorPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="employee/dependants" element={<DependantsPage />} />
         <Route path="employee/dependants/new" element={<DependantEditorPage />} />

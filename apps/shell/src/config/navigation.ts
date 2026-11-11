@@ -241,6 +241,7 @@ export const railGroups: RailItem[][] = [
         { title: "Business card", titleAr: "بطاقة العمل", path: "/employee/card" },
         { title: "Assets", titleAr: "الأصول", path: "/employee/assets" },
         { title: "Shift roster", titleAr: "جدول المناوبات", path: "/employee/shifts" },
+        { title: "Shift rosters (manage)", titleAr: "إدارة جداول المناوبات", path: "/employee/rosters" },
         { title: "Profile", titleAr: "الملف الشخصي", path: "/profile" },
       ],
     },

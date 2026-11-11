@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@reach/domain-content": "*",
     "@reach/shared-mocks": "*",
     "@reach/shared-ui": "*",
     "framer-motion": "^12.41.0",

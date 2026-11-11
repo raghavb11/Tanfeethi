@@ -47,6 +47,8 @@ const titlesEn: Record<string, string> = {
   "/profile": "Profile",
   "/employee/assets": "Assets",
   "/employee/shifts": "Shift roster",
+  "/employee/rosters": "Shift rosters",
+  "/employee/rosters/new": "New roster",
   "/employee/card": "Business card",
   "/leave/request": "Leave request",
   "/attendance": "My Attendance",
@@ -143,6 +145,8 @@ const titlesAr: Record<string, string> = {
   "/profile": "الملف الشخصي",
   "/employee/assets": "الأصول",
   "/employee/shifts": "جدول المناوبات",
+  "/employee/rosters": "جداول المناوبات",
+  "/employee/rosters/new": "جدول جديد",
   "/employee/card": "بطاقة العمل",
   "/leave/request": "طلب إجازة",
   "/attendance": "حضوري",
@@ -244,6 +248,7 @@ export function titleForPath(pathname: string, locale: "en" | "ar" = "en"): stri
   if (pathname.startsWith("/config/master-data/")) return ar ? "تعديل القيمة" : "Edit entry"
   if (pathname.startsWith("/config/cafeteria/items/")) return ar ? "تعديل صنف" : "Edit menu item"
   if (pathname.startsWith("/config/cafeteria/places/")) return ar ? "تعديل موقع التوصيل" : "Edit delivery place"
+  if (pathname.startsWith("/employee/rosters/")) return ar ? "الجدول" : "Roster"
   if (pathname.startsWith("/employee/dependants/")) return ar ? "تعديل بيانات المعال" : "Edit dependant"
   if (pathname.startsWith("/manager/approvals/")) return ar ? "تفاصيل الطلب" : "Request details"
   if (pathname.startsWith("/events/edit/")) return ar ? "تحرير الفعالية" : "Edit event"
