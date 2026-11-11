@@ -5,6 +5,7 @@ import { TONE_CHIP, TONE_DOT, type ShiftTypeRow } from "@reach/domain-content/ma
 import { ChevronDown } from "lucide-react"
 
 import { fieldClass } from "./wijha"
+import { rotationText } from "../data/rosters"
 
 /* Small pieces shared by the roster screens. */
 
@@ -85,6 +86,32 @@ export function PickField({ value, onChange, options, placeholder, isAr, invalid
   )
 }
 
+/** Seven Sunday-first day toggles — weekly days off. */
+export function WeekdayPills({ value, onToggle, isAr, disabled, label }: {
+  value: number[]; onToggle: (day: number) => void; isAr: boolean; disabled?: boolean; label: string
+}) {
+  const names = isAr ? ["ح", "ن", "ث", "ر", "خ", "ج", "س"] : ["S", "M", "T", "W", "T", "F", "S"]
+  const full = isAr ? ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"] : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  return (
+    <div role="group" aria-label={label} className="inline-flex gap-1">
+      {names.map((n, d) => {
+        const on = value.includes(d)
+        return (
+          <button key={d} type="button" disabled={disabled} onClick={() => onToggle(d)} aria-pressed={on}
+            title={`${full[d]} — ${on ? (isAr ? "راحة" : "day off") : (isAr ? "عمل" : "working")}`}
+            aria-label={`${full[d]}${on ? (isAr ? " (راحة)" : " (day off)") : ""}`}
+            className={cn("grid size-7 place-items-center rounded-md text-[11.5px] font-medium transition-colors disabled:cursor-default",
+              // a highlighted day is a day off — that is what is being picked
+              on ? "bg-soft-accent text-primary ring-1 ring-inset ring-primary/50" : "bg-background text-muted-foreground ring-1 ring-inset ring-border",
+              !disabled && "hover:ring-primary/60")}>
+            {n}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 /** Delete confirmation — the one place a dialog is allowed. */
 export function ConfirmDelete({ open, title, body, confirm, cancel, onConfirm, onCancel }: {
   open: boolean; title: string; body?: string; confirm: string; cancel: string
@@ -107,6 +134,41 @@ export function ConfirmDelete({ open, title, body, confirm, cancel, onConfirm, o
           <button onClick={onConfirm} autoFocus className="h-9 rounded-lg bg-error px-4 text-[13.5px] font-medium text-white hover:brightness-110">{confirm}</button>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** Tap shifts in the order people move through them at rollover; tap again to take one out. */
+export function RotationPicker({ value, onChange, options, isAr, t, disabled }: {
+  value: string[]
+  onChange: (v: string[]) => void
+  options: ShiftTypeRow[]
+  isAr: boolean
+  t: (en: string, ar: string) => string
+  disabled?: boolean
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {options.map((s) => {
+          const at = value.indexOf(s.id)
+          return (
+            <button key={s.id} type="button" disabled={disabled} aria-pressed={at >= 0}
+              onClick={() => onChange(at >= 0 ? value.filter((x) => x !== s.id) : [...value, s.id])}
+              className={cn("inline-flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] ring-1 ring-inset transition-colors disabled:cursor-default",
+                at >= 0 ? "bg-soft-accent ring-primary/50" : "bg-background ring-border hover:bg-secondary/60")}>
+              {at >= 0 && <span className="grid size-5 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground tabular-nums">{at + 1}</span>}
+              {isAr ? s.nameAr : s.name}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-[12px] text-muted-foreground">
+        {value.length > 1
+          ? `${rotationText(value, isAr)} ${isAr ? "← " : "→ "}${rotationText([value[0]], isAr)}`
+          : t("Pick at least two shifts for people to rotate between; a shift left out stays the same at rollover.",
+              "اختر مناوبتين على الأقل للتناوب بينهما؛ المناوبة غير المختارة تبقى كما هي عند الترحيل.")}
+      </p>
     </div>
   )
 }

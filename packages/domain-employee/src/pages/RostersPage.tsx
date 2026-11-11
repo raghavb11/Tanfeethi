@@ -8,8 +8,8 @@ import {
 } from "lucide-react"
 
 import {
-  coverageGaps, departments, liveRosters, periodLabel, restoreRoster, type Roster, rosterIssues, rosterName,
-  ROSTER_TODAY_ISO, unplannedCount, useCanManageRosters, useRosters,
+  dayCount, departments, gapDays, liveRosters, periodLabel, publishBlockers, restoreRoster, type Roster, rosterIssues,
+  rosterName, ROSTER_TODAY_ISO, useCanManageRosters, useRosters,
 } from "../data/rosters"
 import { Chip, Empty, GoldButton, OutlineButton, Page, SectionCard, fieldClass } from "../components/wijha"
 import { PickField, Segmented } from "../components/RosterBits"
@@ -17,7 +17,7 @@ import { PickField, Segmented } from "../components/RosterBits"
 const PAGE_SIZE = 10
 type StatusFilter = "all" | "draft" | "published" | "deleted"
 
-/** Shift rosters — every team's week or month, newest first. Managers and admins. */
+/** Shift rosters — every team's roster periods, newest first. Managers and admins. */
 export default function RostersPage() {
   const { locale, role } = useShell()
   const isAr = locale === "ar"
@@ -66,11 +66,11 @@ export default function RostersPage() {
         <div className="min-w-0">
           <h1 className="text-[24px] font-normal leading-[34px]">{t("Shift rosters", "جداول المناوبات")}</h1>
           <p className="mt-1 max-w-2xl text-[13.5px] text-muted-foreground">
-            {t("Plan who works which shift, check rest and cover, then publish it to the team.",
-               "خطّط لمن يعمل في أي مناوبة، وتحقّق من الراحة والتغطية، ثم انشر الجدول للفريق.")}
+            {t("Each period gives every person one shift and their weekly days off. At the end of a period, roll it over: the next shifts are suggested for you to confirm.",
+               "تمنح كل فترة كل موظف مناوبة واحدة وأيام راحته الأسبوعية. في نهاية الفترة رحّلها: تُقترح المناوبات التالية لتؤكدها.")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[12.5px]">
-            <Chip tone="success">{t(`${thisWeek} live this week`, `${thisWeek} سارية هذا الأسبوع`)}</Chip>
+            <Chip tone="success">{t(`${thisWeek} running now`, `${thisWeek} سارية الآن`)}</Chip>
             <Chip tone="warning">{t(`${drafts} drafts`, `${drafts} مسودات`)}</Chip>
           </div>
         </div>
@@ -142,9 +142,9 @@ export default function RostersPage() {
 }
 
 function RosterRow({ r, isAr, t, onOpen }: { r: Roster; isAr: boolean; t: (en: string, ar: string) => string; onOpen: () => void }) {
-  const issues = rosterIssues(r).length
-  const gaps = coverageGaps(r).length
-  const open = unplannedCount(r)
+  const issues = rosterIssues(r).filter((x) => x.kind !== "leave").length
+  const gaps = gapDays(r)
+  const { toConfirm, noShift } = publishBlockers(r)
   const current = r.startISO <= ROSTER_TODAY_ISO && ROSTER_TODAY_ISO <= r.endISO
   return (
     <li className="flex flex-col gap-3 rounded-[10px] bg-background p-4 ring-1 ring-border ring-inset sm:flex-row sm:items-center sm:justify-between">
@@ -152,16 +152,17 @@ function RosterRow({ r, isAr, t, onOpen }: { r: Roster; isAr: boolean; t: (en: s
         <span className="flex flex-wrap items-center gap-2">
           <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">{r.code}</span>
           <span className="truncate text-[14.5px] font-medium hover:text-primary">{rosterName(r, isAr)}</span>
-          {current && !r.deleted && <Chip tone="accent">{t("This week", "هذا الأسبوع")}</Chip>}
+          {current && !r.deleted && <Chip tone="accent">{t("Running now", "سارٍ الآن")}</Chip>}
         </span>
         <span className="text-[12.5px] text-muted-foreground">
-          {isAr ? r.departmentAr : r.department} · {periodLabel(r, isAr)} · {t(`${r.memberIds.length} people`, `${r.memberIds.length} موظفين`)}
+          {isAr ? r.departmentAr : r.department} · {periodLabel(r, isAr)} ({t(`${dayCount(r.startISO, r.endISO)} days`, `${dayCount(r.startISO, r.endISO)} يومًا`)}) · {t(`${r.memberIds.length} people`, `${r.memberIds.length} موظفين`)}
         </span>
       </button>
       <div className="flex flex-wrap items-center gap-2">
+        {toConfirm > 0 && <Chip tone="warning">{t(`${toConfirm} to confirm`, `${toConfirm} للتأكيد`)}</Chip>}
+        {noShift > 0 && <Chip>{t(`${noShift} without a shift`, `${noShift} بدون مناوبة`)}</Chip>}
         {issues > 0 && <Chip tone="warning" icon={AlertTriangle}>{t(`${issues} to check`, `${issues} للمراجعة`)}</Chip>}
-        {gaps > 0 && <Chip tone="error">{t(`${gaps} cover gaps`, `${gaps} نقص تغطية`)}</Chip>}
-        {open > 0 && <Chip>{t(`${open} days unplanned`, `${open} أيام غير مخططة`)}</Chip>}
+        {gaps > 0 && <Chip tone="error">{t(`${gaps} days short`, `${gaps} أيام نقص`)}</Chip>}
         {r.deleted ? (
           <OutlineButton size="sm" onClick={() => restoreRoster(r.id)}><RotateCcw className="size-3.5" />{t("Restore", "استعادة")}</OutlineButton>
         ) : r.status === "published" ? (

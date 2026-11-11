@@ -4,15 +4,19 @@ import { useNavigate } from "react-router-dom"
 
 import { cn } from "@reach/shared-core"
 import { searchEmployees } from "@reach/shared-mocks"
+import { matchesSearch } from "@reach/shared-ui"
+import {
+  liveRosters, periodLabel, rosterName, rosterSearchText, useCanManageRosters, useRosters,
+} from "@reach/domain-employee/rosters"
 import { commandNav, previewNav } from "@/config/navigation"
 import { EmployeeCardDialog } from "@/pages/shell-dialogs"
 import { TopSearchIcon } from "@/components/layout/shell-icons"
 import {
-  BadgeCheck, Briefcase, Building2, ClipboardList, CornerDownLeft, FileText, Link2, Search, Sparkles,
-  TrendingUp, User, Wallet, X,
+  BadgeCheck, Briefcase, Building2, CalendarClock, CalendarRange, ClipboardList, CornerDownLeft, FileText, Link2,
+  Search, Sparkles, TrendingUp, User, Wallet, X,
 } from "lucide-react"
 
-type ResultGroup = "employees" | "navigate" | "suggestions"
+type ResultGroup = "employees" | "rosters" | "navigate" | "suggestions"
 type IconT = React.ComponentType<{ className?: string; strokeWidth?: number }>
 
 type Result = {
@@ -29,6 +33,7 @@ type Result = {
 
 const GROUP_LABEL: Record<ResultGroup, { en: string; ar: string }> = {
   employees: { en: "Employees", ar: "الموظفين" },
+  rosters: { en: "Rosters", ar: "جداول المناوبات" },
   navigate: { en: "Navigate", ar: "تنقل" },
   suggestions: { en: "Suggestions", ar: "اقتراحات" },
 }
@@ -53,6 +58,14 @@ const ACTIONS: Result[] = [
   { id: "act:request", label: "Submit a service request", labelAr: "تقديم طلب خدمة", group: "navigate", icon: ClipboardList, path: "/services", keywords: "service request submit طلب خدمة" },
   { id: "act:task", label: "Create a task", labelAr: "إنشاء مهمة", group: "navigate", icon: Briefcase, path: "/tasks/new", keywords: "task create new مهمة جديدة" },
   { id: "act:payslip", label: "View payslip", labelAr: "عرض كشف الراتب", group: "navigate", icon: FileText, path: "/payslip", keywords: "payslip salary راتب كشف" },
+  { id: "act:shifts", label: "My shifts", labelAr: "مناوباتي", group: "navigate", icon: CalendarClock, path: "/employee/shifts", keywords: "my shifts roster duty schedule مناوباتي مناوبة جدول المناوبات دوام" },
+]
+
+/** Roster pages for the people who build rosters (managers and admins). */
+const ROSTER_PAGES: Result[] = [
+  { id: "ros:list", label: "Shift rosters", labelAr: "جداول المناوبات", group: "navigate", icon: CalendarRange, path: "/employee/rosters", keywords: "shift rosters schedule rota rollover جداول المناوبات مناوبة ترحيل" },
+  { id: "ros:new", label: "New roster", labelAr: "جدول مناوبات جديد", group: "navigate", icon: CalendarRange, path: "/employee/rosters/new", keywords: "new roster create shift schedule جدول جديد إنشاء مناوبة" },
+  { id: "ros:types", label: "Shift types", labelAr: "أنواع المناوبات", group: "navigate", icon: CalendarRange, path: "/config/master-data?list=shift-types", keywords: "shift types morning evening night master data أنواع المناوبات صباحية مسائية ليلية" },
 ]
 
 const thinScroll =
@@ -82,6 +95,8 @@ export function InlineSearch({
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const t = (en: string, ar: string) => (isAr ? ar : en)
+  const rosters = useRosters()
+  const canManageRosters = useCanManageRosters()
 
   // Everything the typed query can reach: the curated shortcuts plus the full
   // command navigation, preview hubs and quick actions (kept from v1).
@@ -91,9 +106,13 @@ export function InlineSearch({
       ...commandNav.map((n) => ({ id: `nav:${n.path}`, label: n.label, group: "navigate" as const, icon: Search as IconT, path: n.path, keywords: `${n.label} ${n.path}` })),
       ...previewNav.map((p) => ({ id: `preview:${p.path}`, label: `${p.title} hub`, group: "navigate" as const, icon: p.icon as IconT, path: p.path, keywords: `${p.title} preview hub` })),
       ...ACTIONS,
-    ].filter((r) => (r.path && !seen.has(r.path) ? (seen.add(r.path), true) : false))
-    return [...SHORTCUTS, ...extra]
-  }, [])
+      ...(canManageRosters ? ROSTER_PAGES : []),
+    ]
+    // a bilingual entry beats the plain command-nav one for the same page
+    const byPath = new Map<string, Result>()
+    for (const r of extra) if (r.path && !seen.has(r.path) && (!byPath.has(r.path) || r.labelAr)) byPath.set(r.path, r)
+    return [...SHORTCUTS, ...byPath.values()]
+  }, [canManageRosters])
 
   const results = React.useMemo<Result[]>(() => {
     const q = query.trim().toLowerCase()
@@ -101,6 +120,18 @@ export function InlineSearch({
     const people: Result[] = searchEmployees(q).slice(0, 4).map((e) => ({
       id: `emp:${e.id}`, label: e.name, labelAr: e.nameAr, group: "employees", icon: User, employeeId: e.id,
     }))
+    // rosters: by code, name, department, period, or anyone on them (managers and admins only)
+    const rosterHits: Result[] = canManageRosters
+      ? liveRosters(rosters)
+          .filter((r) => matchesSearch(query.trim(), ...rosterSearchText(r)))
+          .sort((a, b) => b.startISO.localeCompare(a.startISO))
+          .slice(0, 4)
+          .map((r) => ({
+            id: `roster:${r.id}`, group: "rosters" as const, icon: CalendarRange, path: `/employee/rosters/${r.id}`,
+            label: `${r.code} · ${rosterName(r, false)} · ${periodLabel(r, false)}`,
+            labelAr: `${r.code} · ${rosterName(r, true)} · ${periodLabel(r, true)}`,
+          }))
+      : []
     const words = (r: Result) => `${r.label} ${r.labelAr ?? ""} ${r.keywords ?? ""}`.toLowerCase()
     const nav = navPool
       .filter((r) => (q.length < 3 ? words(r).split(/\s+/).some((w) => w.startsWith(q) || w.startsWith(`ال${q}`)) : words(r).includes(q)))
@@ -111,11 +142,11 @@ export function InlineSearch({
       { id: "ai:ask", label: `Ask WIJHA: “${raw}”`, labelAr: `اسأل وجهة: «${raw}»`, icon: Sparkles, group: "suggestions", prompt: { en: raw, ar: raw } },
       ...SUGGESTIONS.filter((s) => `${s.label} ${s.labelAr}`.toLowerCase().includes(q)),
     ]
-    return [...people, ...nav, ...ask]
-  }, [query, navPool])
+    return [...people, ...rosterHits, ...nav, ...ask]
+  }, [query, navPool, rosters, canManageRosters])
 
   const grouped = React.useMemo(() => {
-    const order: ResultGroup[] = ["employees", "navigate", "suggestions"]
+    const order: ResultGroup[] = ["employees", "rosters", "navigate", "suggestions"]
     return order
       .map((g) => ({ group: g, items: results.filter((r) => r.group === g) }))
       .filter((g) => g.items.length > 0)

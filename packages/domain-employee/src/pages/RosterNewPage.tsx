@@ -3,23 +3,22 @@ import { useNavigate } from "react-router-dom"
 import { cn } from "@reach/shared-core"
 import { matchesSearch } from "@reach/shared-ui"
 import { useShell, usePageTitle } from "@reach/shell-context"
-import { getShiftType, useShiftTypes } from "@reach/domain-content/master-data"
-import {
-  ArrowLeft, CalendarRange, Check, Copy, Eraser, Repeat, Search, ShieldCheck, Undo2, Users,
-} from "lucide-react"
+import { useShiftTypes } from "@reach/domain-content/master-data"
+import { AlertTriangle, ArrowLeft, CalendarRange, Check, CircleCheck, Copy, Eraser, Repeat, Search, ShieldCheck, Users, Wand2 } from "lucide-react"
 
 import {
-  addPattern, addRoster, cellKey, daysBetween, departments, fillTeam, latestRosterFor, liveRosters, monthEnd,
-  monthStart, peopleIn, periodLabel, type RosterPeriod, rosterDays, ROSTER_TODAY_ISO, rosterName,
-  useCanManageRosters, usePatterns, useRosters, weekStart, addDays, fullDate,
+  addDays, addRoster, type Assignment, assignmentOf, autoAssign, datesProblem, dayCount, DEFAULT_DAYS_OFF, departments, peopleNeeded,
+  latestRosterFor, liveRosters, monthEnd, monthStart, nextInRotation, peopleIn, periodLabel, rolloverDates, ROSTER_TODAY_ISO,
+  rosterName, rotationText, useCanManageRosters, useRosters,
 } from "../data/rosters"
-import { Empty, FieldLabel, GoldButton, Initials, OutlineButton, Page, SectionCard, Toggle, fieldClass } from "../components/wijha"
-import { PickField, Segmented, ShiftCode, ShiftLabel } from "../components/RosterBits"
+import { Empty, FieldLabel, GoldButton, Initials, OutlineButton, Page, SectionCard, fieldClass } from "../components/wijha"
+import { PickField, RotationPicker, Segmented, ShiftCode, WeekdayPills } from "../components/RosterBits"
 
-type Start = "blank" | "copy" | "pattern"
+type Start = "rollover" | "copy" | "auto" | "blank"
 
-/** New roster — a full routed page. Team and period first, then who is on it,
- *  then what it starts from; the grid itself is edited on the roster page. */
+/** New roster — a full routed page. Team and dates first, then who is on it,
+ *  then where each person's shift comes from. Each person keeps one shift and
+ *  their weekly days off for the whole period; both are set on the roster page. */
 export default function RosterNewPage() {
   const { locale } = useShell()
   const isAr = locale === "ar"
@@ -27,48 +26,49 @@ export default function RosterNewPage() {
   const navigate = useNavigate()
   const canManage = useCanManageRosters()
   const rosters = useRosters()
-  const patterns = usePatterns()
   const shiftTypes = useShiftTypes()
   const working = shiftTypes.filter((s) => s.active && !s.isOff)
   usePageTitle("New roster", "جدول جديد")
 
   const back = "/employee/rosters"
+  // a two-month period from next month, by default
+  const firstOfNext = monthStart(addDays(monthEnd(ROSTER_TODAY_ISO), 1))
   const [dept, setDept] = React.useState("")
   const [name, setName] = React.useState("")
   const [nameAlt, setNameAlt] = React.useState("")
-  const [period, setPeriod] = React.useState<RosterPeriod>("week")
-  // next week by default — this week is usually already planned
-  const [startISO, setStartISO] = React.useState(addDays(weekStart(ROSTER_TODAY_ISO), 7))
+  const [startISO, setStartISO] = React.useState(firstOfNext)
+  const [endISO, setEndISO] = React.useState(monthEnd(addDays(monthEnd(firstOfNext), 1)))
   const [members, setMembers] = React.useState<string[]>([])
   const [peopleQ, setPeopleQ] = React.useState("")
-  const [start, setStart] = React.useState<Start>("pattern")
-  const [patternId, setPatternId] = React.useState(patterns[0]?.id ?? "")
-  const [custom, setCustom] = React.useState<string[]>([])
-  const [useCustom, setUseCustom] = React.useState(false)
-  const [savePattern, setSavePattern] = React.useState(false)
-  const [patternName, setPatternName] = React.useState("")
+  const [start, setStart] = React.useState<Start>("blank")
+  const [defaultOff, setDefaultOff] = React.useState<number[]>(DEFAULT_DAYS_OFF)
+  const [rotation, setRotation] = React.useState<string[]>(working.filter((s) => s.id !== "office").map((s) => s.id))
   const [minCover, setMinCover] = React.useState<Record<string, number>>({})
   const [coverWeekends, setCoverWeekends] = React.useState(true)
   const [tried, setTried] = React.useState(false)
 
   const source = dept ? latestRosterFor(rosters, dept) : undefined
-  const range = period === "week"
-    ? { startISO: weekStart(startISO), endISO: addDays(weekStart(startISO), 6) }
-    : { startISO: monthStart(startISO), endISO: monthEnd(startISO) }
-  const days = daysBetween(range.startISO, range.endISO)
-  const clash = dept ? liveRosters(rosters).find((r) => r.department === dept && r.startISO <= range.endISO && range.startISO <= r.endISO) : undefined
-  const pattern = useCustom ? { sequence: custom, stagger: true } : patterns.find((p) => p.id === patternId)
+  const dateIssue = datesProblem(rosters, dept, startISO, endISO)
+  const clash = dept && startISO && endISO ? liveRosters(rosters).find((r) => r.department === dept && r.startISO <= endISO && startISO <= r.endISO) : undefined
+  const presets = [1, 2, 3].map((n) => {
+    const to = monthEnd(addDays(firstOfNext, 31 * (n - 1)))
+    return { label: n === 1 ? t("Next month", "الشهر القادم") : t(`Next ${n} months`, `الأشهر الـ${n} القادمة`), from: firstOfNext, to }
+  })
 
-  // picking a department fills the team from its last roster, and its names and cover
+  // a department brings its last roster's team, names, rotation and cover; the new period follows it
   const pickDept = (d: string) => {
     setDept(d)
     const last = latestRosterFor(rosters, d)
     setMembers(last ? last.memberIds : [])
-    setMinCover(last ? last.minCover : {})
-    setCoverWeekends(last ? last.coverWeekends : true)
-    if (last) { setName(isAr ? last.nameAr : last.name); setNameAlt(isAr ? last.name : last.nameAr) }
-    else { setName(""); setNameAlt("") }
-    setStart(last ? "copy" : "pattern")
+    if (last) {
+      setName(isAr ? last.nameAr : last.name); setNameAlt(isAr ? last.name : last.nameAr)
+      setRotation(last.rotation); setMinCover(last.minCover); setCoverWeekends(last.coverWeekends)
+      const next = rolloverDates(last)
+      setStartISO(next.startISO); setEndISO(next.endISO)
+      setStart("rollover")
+    } else {
+      setName(""); setNameAlt(""); setStart("blank")
+    }
   }
 
   const people = dept ? peopleIn(dept) : []
@@ -77,11 +77,8 @@ export default function RosterNewPage() {
 
   const errors = {
     dept: !dept && t("Choose the department", "اختر الإدارة"),
+    dates: !!dateIssue && (isAr ? dateIssue.ar : dateIssue.en),
     people: members.length === 0 && t("Choose at least one person", "اختر موظفًا واحدًا على الأقل"),
-    clash: !!clash && t(`${clash.code} already covers ${periodLabel(clash, false)} for this department`,
-      `الجدول ${clash.code} يغطي ${periodLabel(clash, true)} لهذه الإدارة`),
-    pattern: start === "pattern" && (!pattern || pattern.sequence.length === 0) && t("Choose or build a pattern", "اختر نمطًا أو أنشئ نمطًا"),
-    patternName: start === "pattern" && useCustom && savePattern && !patternName.trim() && t("Name the pattern to save it", "سمِّ النمط لحفظه"),
   }
   const invalid = Object.values(errors).some(Boolean)
 
@@ -94,37 +91,29 @@ export default function RosterNewPage() {
     const deptRow = departments().find((d) => d.name === dept)!
     const main = name.trim() || (isAr ? deptRow.nameAr : deptRow.name)
     const alt = nameAlt.trim() || main
-    let cells: Record<string, string> = {}
-    let how = { en: "Created a blank roster", ar: "أنشأ جدولًا فارغًا" }
-    if (start === "copy" && source) {
-      // day n of the new period takes day n of the last one (wrapping for a longer period)
-      const src = rosterDays(source)
-      for (const pid of members) {
-        if (!source.memberIds.includes(pid)) continue
-        days.forEach((iso, i) => {
-          const v = source.cells[cellKey(pid, src[i % src.length])]
-          if (v) cells[cellKey(pid, iso)] = v
-        })
+    const assignments: Record<string, Assignment> = {}
+    let how = { en: `Created the roster for ${periodLabel({ startISO, endISO }, false)}`, ar: `أنشأ الجدول للفترة ${periodLabel({ startISO, endISO }, true)}` }
+    for (const pid of members) {
+      const before = source && source.memberIds.includes(pid) ? assignmentOf(source, pid) : undefined
+      if (start === "rollover" && before?.shiftId) {
+        assignments[pid] = { shiftId: nextInRotation(rotation, before.shiftId), daysOff: before.daysOff, suggestedFrom: before.shiftId, previousShiftId: before.shiftId }
+      } else if (start === "copy" && before) {
+        assignments[pid] = { shiftId: before.shiftId, daysOff: before.daysOff, previousShiftId: before.shiftId || undefined }
+      } else {
+        // blank or auto: no shift yet; last period's shift still governs when a new one may start
+        assignments[pid] = { shiftId: "", daysOff: before?.daysOff ?? defaultOff, previousShiftId: before?.shiftId || undefined }
       }
-      how = { en: `Copied from ${source.code}`, ar: `نسخ الجدول من ${source.code}` }
-    } else if (start === "pattern" && pattern) {
-      cells = fillTeam(members, days, pattern)
-      let label = useCustom ? custom.map((id) => getShiftType(id)?.code ?? id).join(" ") : ""
-      let labelAr = label
-      if (!useCustom) {
-        const p = patterns.find((x) => x.id === patternId)!
-        label = p.name; labelAr = p.nameAr
-      } else if (savePattern) {
-        addPattern({ name: patternName.trim(), nameAr: patternName.trim(), sequence: custom, stagger: true })
-        label = labelAr = patternName.trim()
-      }
-      how = { en: `Created the roster from ${label}`, ar: `أنشأ الجدول من نمط ${labelAr}` }
     }
+    if (start === "rollover" && source) how = { en: `Rolled over from ${source.code} — next shifts suggested from ${rotationText(rotation, false)}`, ar: `رُحّل من ${source.code} — اقتُرحت المناوبات التالية حسب ${rotationText(rotation, true)}` }
+    if (start === "copy" && source) how = { en: `Copied the shifts from ${source.code}`, ar: `نسخ المناوبات من ${source.code}` }
+    if (start === "auto") how = { en: `Created the roster for ${periodLabel({ startISO, endISO }, false)}, to be assigned automatically`, ar: `أنشأ الجدول للفترة ${periodLabel({ startISO, endISO }, true)} للتوزيع التلقائي` }
     const id = addRoster({
       name: isAr ? alt : main, nameAr: isAr ? main : alt,
       department: deptRow.name, departmentAr: deptRow.nameAr,
-      period, ...range, memberIds: members, cells, minCover, coverWeekends,
+      startISO, endISO, memberIds: members, assignments, rotation, minCover, coverWeekends,
+      previousId: start === "rollover" ? source?.id : undefined,
     }, how)
+    if (start === "auto") autoAssign(id)
     navigate(`/employee/rosters/${id}`, { replace: true })
   }
 
@@ -156,8 +145,8 @@ export default function RosterNewPage() {
         </div>
       </div>
 
-      {/* 1 · team and period */}
-      <SectionCard icon={CalendarRange} title={t("Team and period", "الفريق والفترة")}>
+      {/* 1 · team and dates */}
+      <SectionCard icon={CalendarRange} title={t("Team and dates", "الفريق والتواريخ")}>
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <FieldLabel required htmlFor="ros-dept">{t("Department", "الإدارة")}</FieldLabel>
@@ -167,36 +156,41 @@ export default function RosterNewPage() {
             {err("dept") && <p className="mt-1.5 text-[12px] text-error">{err("dept")}</p>}
           </div>
           <div>
-            <FieldLabel>{t("Period", "الفترة")}</FieldLabel>
-            <div className="flex flex-wrap items-center gap-3">
-              <Segmented<RosterPeriod> ariaLabel={t("Period", "الفترة")} value={period} onChange={setPeriod}
-                options={[{ value: "week", label: t("Week", "أسبوع") }, { value: "month", label: t("Month", "شهر") }]} />
-              {period === "week" ? (
-                <input type="date" value={startISO} onChange={(e) => e.target.value && setStartISO(e.target.value)}
-                  aria-label={t("Any day in the week", "أي يوم في الأسبوع")} className={cn(fieldClass, "w-auto")} dir="ltr" />
-              ) : (
-                <input type="month" value={startISO.slice(0, 7)} onChange={(e) => e.target.value && setStartISO(`${e.target.value}-01`)}
-                  aria-label={t("Month", "الشهر")} className={cn(fieldClass, "w-auto")} dir="ltr" />
-              )}
+            {/* start and end share a row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <FieldLabel required htmlFor="ros-start">{t("Start date", "تاريخ البداية")}</FieldLabel>
+                <input id="ros-start" type="date" value={startISO} aria-required aria-invalid={!!err("dates") || undefined}
+                  onChange={(e) => { const v = e.target.value; setStartISO(v); if (v && endISO && endISO < v) setEndISO(v) }}
+                  className={cn(fieldClass, err("dates") && "border-error")} dir="ltr" />
+              </div>
+              <div>
+                <FieldLabel required htmlFor="ros-end">{t("End date", "تاريخ النهاية")}</FieldLabel>
+                <input id="ros-end" type="date" value={endISO} min={startISO || undefined} aria-required aria-invalid={!!err("dates") || undefined}
+                  onChange={(e) => setEndISO(e.target.value)} className={cn(fieldClass, err("dates") && "border-error")} dir="ltr" />
+              </div>
             </div>
-            <p className="mt-1.5 text-[12px] text-muted-foreground">
-              {fullDate(range.startISO, isAr)} – {fullDate(range.endISO, isAr)} · {t(`${days.length} days`, `${days.length} يومًا`)}
-            </p>
-            {err("clash") && (
-              <p className="mt-1.5 text-[12px] text-error" aria-invalid="true">
-                {err("clash")}{" "}
-                <button className="underline" onClick={() => navigate(`/employee/rosters/${clash!.id}`)}>{t("Open it", "افتحه")}</button>
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
+              {dayCount(startISO, endISO) > 0 && <span className="text-muted-foreground">{t(`${dayCount(startISO, endISO)} days`, `${dayCount(startISO, endISO)} يومًا`)}</span>}
+              {presets.map((p) => (
+                <button key={p.label} type="button" onClick={() => { setStartISO(p.from); setEndISO(p.to) }} className="text-primary hover:underline">{p.label}</button>
+              ))}
+            </div>
+            {err("dates") && (
+              <p className="mt-1.5 text-[12px] text-error">
+                {err("dates")}{" "}
+                {clash && <button className="underline" onClick={() => navigate(`/employee/rosters/${clash.id}`)}>{t("Open it", "افتحه")}</button>}
               </p>
             )}
           </div>
-          <div className="md:col-span-2">
+          <div>
             <FieldLabel htmlFor="ros-name">{t("Roster name", "اسم الجدول")}</FieldLabel>
             <input id="ros-name" value={name} onChange={(e) => setName(e.target.value)} className={fieldClass}
               placeholder={dept ? (isAr ? departments().find((d) => d.name === dept)?.nameAr : dept) : t("e.g. Terminal 5 lounge", "مثال: صالة المبنى ٥")} />
-            {/* the same name in the other language, directly beneath it */}
-            <FieldLabel htmlFor="ros-name-alt" className="mt-3 text-[12px] font-normal text-muted-foreground">
-              {t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}
-            </FieldLabel>
+          </div>
+          {/* the same name in the other language, beside it */}
+          <div>
+            <FieldLabel htmlFor="ros-name-alt">{t("Name in Arabic", "الاسم بالإنجليزية")} · {t("optional", "اختياري")}</FieldLabel>
             <input id="ros-name-alt" value={nameAlt} onChange={(e) => setNameAlt(e.target.value)} className={fieldClass} dir={isAr ? "ltr" : "rtl"} />
           </div>
         </div>
@@ -243,69 +237,70 @@ export default function RosterNewPage() {
         )}
       </SectionCard>
 
-      {/* 3 · starting point */}
-      <SectionCard icon={Repeat} title={t("Start from", "البداية من")}>
-        <div className="grid gap-3 md:grid-cols-3">
-          <StartCard on={start === "pattern"} onPick={() => setStart("pattern")} icon={Repeat}
-            title={t("A rotation pattern", "نمط تناوب")} body={t("Repeat a sequence of shifts, staggered across the team.", "كرّر تسلسل مناوبات موزعًا على الفريق.")} />
+      {/* 3 · where the shifts come from */}
+      <SectionCard icon={Repeat} title={t("Shifts", "المناوبات")}>
+        <p className="mb-4 text-[12.5px] text-muted-foreground">
+          {t("Each person keeps one shift and their weekly days off for the whole period.", "يحتفظ كل موظف بمناوبة واحدة وأيام راحته الأسبوعية طوال الفترة.")}
+        </p>
+        <div role="radiogroup" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <StartCard on={start === "rollover"} onPick={() => source && setStart("rollover")} icon={Repeat} disabled={!source}
+            title={t("Roll over the last roster", "ترحيل الجدول السابق")}
+            body={source
+              ? t(`Next shift suggested for each person from ${source.code}; you confirm them one by one.`, `يُقترح لكل موظف مناوبته التالية من ${source.code}، وتؤكدها واحدًا تلو الآخر.`)
+              : t("No earlier roster for this department.", "لا يوجد جدول سابق لهذه الإدارة.")} />
           <StartCard on={start === "copy"} onPick={() => source && setStart("copy")} icon={Copy} disabled={!source}
-            title={t("Copy the last period", "نسخ الفترة السابقة")}
+            title={t("Keep the same shifts", "الإبقاء على المناوبات نفسها")}
             body={source ? `${source.code} · ${rosterName(source, isAr)} · ${periodLabel(source, isAr)}` : t("No earlier roster for this department.", "لا يوجد جدول سابق لهذه الإدارة.")} />
+          <StartCard on={start === "auto"} onPick={() => setStart("auto")} icon={Wand2}
+            title={t("Assign automatically", "التوزيع التلقائي")}
+            body={t("Shifts are filled to meet the minimum cover below; you confirm them on the next page.", "تُوزَّع المناوبات بما يحقق الحد الأدنى للتغطية أدناه، وتؤكدها في الصفحة التالية.")} />
           <StartCard on={start === "blank"} onPick={() => setStart("blank")} icon={Eraser}
-            title={t("Blank", "فارغ")} body={t("Every day unplanned; fill it in on the grid.", "كل الأيام غير مخططة؛ املأها في الجدول.")} />
+            title={t("Assign on the roster", "التعيين في الجدول")} body={t("Everyone starts without a shift; pick one per person on the next page.", "يبدأ الجميع بدون مناوبة؛ اختر لكل موظف في الصفحة التالية.")} />
         </div>
 
-        {start === "pattern" && (
-          <div className="mt-5 flex flex-col gap-4">
-            <Segmented<"saved" | "custom"> ariaLabel={t("Pattern", "النمط")} value={useCustom ? "custom" : "saved"} onChange={(v) => setUseCustom(v === "custom")}
-              options={[{ value: "saved", label: t("Saved pattern", "نمط محفوظ") }, { value: "custom", label: t("Build one", "أنشئ نمطًا") }]} />
-            {!useCustom ? (
-              <div className="max-w-xl">
-                <PickField isAr={isAr} value={patternId} onChange={setPatternId} ariaLabel={t("Pattern", "النمط")} placeholder={t("Choose a pattern", "اختر نمطًا")}
-                  options={patterns.map((p) => ({ value: p.id, label: isAr ? p.nameAr : p.name, alt: isAr ? p.name : p.nameAr }))} />
-                {pattern && <Sequence ids={pattern.sequence} />}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <p className="text-[12.5px] text-muted-foreground">{t("Tap shifts in the order one person works them; the team starts at different steps.", "اضغط المناوبات بالترتيب الذي يعمل به الموظف؛ يبدأ كل فرد من خطوة مختلفة.")}</p>
-                <div className="flex flex-wrap gap-2">
-                  {shiftTypes.filter((s) => s.active).map((s) => (
-                    <button key={s.id} type="button" onClick={() => setCustom((c) => [...c, s.id])}
-                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-[13px] hover:bg-secondary">
-                      <ShiftCode shift={s} className="h-6 min-w-6" /><ShiftLabel shift={s} isAr={isAr} compact />
-                    </button>
-                  ))}
-                  <button type="button" onClick={() => setCustom((c) => c.slice(0, -1))} disabled={!custom.length}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] text-muted-foreground hover:bg-secondary disabled:opacity-40">
-                    <Undo2 className="size-4" />{t("Undo", "تراجع")}
-                  </button>
-                </div>
-                <Sequence ids={custom} empty={t("No steps yet.", "لا توجد خطوات بعد.")} />
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Toggle checked={savePattern} onChange={setSavePattern} label={t("Save for reuse", "حفظه لإعادة الاستخدام")} />
-                  {savePattern && (
-                    <input value={patternName} onChange={(e) => setPatternName(e.target.value)} aria-invalid={!!err("patternName") || undefined}
-                      placeholder={t("Pattern name", "اسم النمط")} className={cn(fieldClass, "sm:w-72", err("patternName") && "border-error")} />
-                  )}
-                </div>
-              </div>
-            )}
-            {err("pattern") && <p className="text-[12px] text-error" aria-invalid="true">{err("pattern")}</p>}
+        {(start === "blank" || start === "auto") && (
+          <div className="mt-5">
+            <FieldLabel>{t("Weekly days off to start with", "أيام الراحة الأسبوعية المبدئية")}</FieldLabel>
+            <WeekdayPills value={defaultOff} isAr={isAr} label={t("Weekly days off", "أيام الراحة الأسبوعية")}
+              onToggle={(d) => setDefaultOff((v) => (v.includes(d) ? v.filter((x) => x !== d) : [...v, d].sort()))} />
+            <p className="mt-1.5 text-[12px] text-muted-foreground">{t("Change them per person on the roster.", "يمكن تغييرها لكل موظف في الجدول.")}</p>
           </div>
         )}
+
+        <div className="mt-5">
+          <FieldLabel>{t("Rotation order at rollover", "ترتيب التناوب عند الترحيل")}</FieldLabel>
+          <RotationPicker value={rotation} onChange={setRotation} options={working} isAr={isAr} t={t} />
+        </div>
       </SectionCard>
 
       {/* 4 · minimum cover */}
       <SectionCard icon={ShieldCheck} title={t("Minimum cover", "الحد الأدنى للتغطية")}>
         <p className="mb-4 text-[12.5px] text-muted-foreground">
-          {t("The fewest people each shift needs on a day. Days below it are flagged on the roster. Leave at 0 for no minimum.",
-             "أقل عدد من الموظفين تحتاجه كل مناوبة في اليوم. تُعلَّم الأيام الأقل منه في الجدول. اتركه 0 إن لم يكن هناك حد.")}
+          {t("The fewest people each shift needs on a day, after days off and leave. Leave at 0 for no minimum.",
+             "أقل عدد من الموظفين تحتاجه كل مناوبة في اليوم بعد أيام الراحة والإجازات. اتركه 0 إن لم يكن هناك حد.")}
         </p>
         <div className="mb-4">
           <Segmented<"all" | "weekdays"> ariaLabel={t("Minimum applies on", "يُطبَّق الحد الأدنى في")}
             value={coverWeekends ? "all" : "weekdays"} onChange={(v) => setCoverWeekends(v === "all")}
             options={[{ value: "all", label: t("Every day", "كل الأيام") }, { value: "weekdays", label: t("Sunday–Thursday only", "من الأحد إلى الخميس فقط") }]} />
         </div>
+        {(() => {
+          // the people these minimums need, against the people chosen
+          const off = source ? (source.memberIds.map((pid) => assignmentOf(source, pid).daysOff)[0] ?? defaultOff) : defaultOff
+          const need = peopleNeeded(minCover, coverWeekends, off)
+          if (!need) return null
+          const ok = members.length >= need
+          return (
+            <div className={cn("mb-4 flex items-start gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px]", ok ? "bg-success-fill text-success" : "bg-error-fill text-error")}>
+              {ok ? <CircleCheck className="mt-0.5 size-4 shrink-0" /> : <AlertTriangle className="mt-0.5 size-4 shrink-0" />}
+              <span>
+                {ok ? t(`Enough people: these minimums need at least ${need}; ${members.length} chosen.`, `العدد كافٍ: تحتاج هذه الحدود الدنيا إلى ${need} على الأقل؛ واخترت ${members.length}.`)
+                  : t(`Not enough people: these minimums need at least ${need}; ${members.length} chosen. Add ${need - members.length} more, or lower a minimum.`,
+                      `العدد غير كافٍ: تحتاج هذه الحدود الدنيا إلى ${need} على الأقل؛ واخترت ${members.length}. أضف ${need - members.length}، أو خفّض أحد الحدود.`)}
+              </span>
+            </div>
+          )
+        })()}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {working.map((s) => (
             <label key={s.id} className="flex items-center justify-between gap-3 rounded-[10px] bg-background p-3 ring-1 ring-border ring-inset">
@@ -331,15 +326,5 @@ function StartCard({ on, onPick, icon: Icon, title, body, disabled }: {
       <span className="flex items-center gap-2 text-[14px] font-medium"><Icon className="size-4 text-primary" />{title}</span>
       <span className="text-[12.5px] text-muted-foreground">{body}</span>
     </button>
-  )
-}
-
-function Sequence({ ids, empty }: { ids: string[]; empty?: string }) {
-  if (!ids.length) return empty ? <p className="text-[12.5px] text-muted-foreground">{empty}</p> : null
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-1.5" dir="ltr">
-      {ids.map((id, i) => <ShiftCode key={i} shift={getShiftType(id)} className="h-7 min-w-7" />)}
-      <span className="ms-1 text-[12px] text-muted-foreground">↻</span>
-    </div>
   )
 }

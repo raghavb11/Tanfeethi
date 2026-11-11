@@ -6,7 +6,7 @@ import { CalendarClock, CalendarDays, CalendarRange } from "lucide-react"
 
 import { ROTATIONS } from "../data/mock/hub"
 import {
-  addDays, dayMonth, myShiftOn, rosterName, ROSTER_TODAY_ISO, useCanManageRosters, useRosters, weekdayLong, weekStart,
+  addDays, dayMonth, fullDate, myShiftOn, rosterName, ROSTER_TODAY_ISO, useCanManageRosters, useRosters, weekdayLong, weekStart,
 } from "../data/rosters"
 import { Empty, OutlineButton, Page, SectionCard } from "../components/wijha"
 import { RotationCard } from "../components/RotationCard"
@@ -47,7 +47,11 @@ export default function ShiftsPage() {
                     <span className={cn("text-[12px]", today ? "font-medium text-primary" : "text-muted-foreground")}>
                       {today ? t("Today", "اليوم") : weekdayLong(iso, isAr)} · {dayMonth(iso, isAr)}
                     </span>
-                    {s ? (
+                    {hit?.leave ? (
+                      <span className="text-[14px] font-medium text-info">{t("On leave", "في إجازة")}</span>
+                    ) : hit?.off ? (
+                      <span className="text-[14px] font-medium text-muted-foreground">{t("Day off", "راحة")}</span>
+                    ) : s ? (
                       <>
                         <span className="flex items-center gap-1.5 text-[14px] font-medium">
                           <span className={cn("size-2 rounded-full", TONE_DOT[s.tone])} />{isAr ? s.nameAr : s.name}
@@ -55,13 +59,17 @@ export default function ShiftsPage() {
                         <ShiftHours shift={s} isAr={isAr} className="text-[12.5px] text-muted-foreground" />
                       </>
                     ) : (
-                      <span className="text-[13px] text-muted-foreground">{hit ? t("Not planned", "غير مخطط") : t("No roster", "لا يوجد جدول")}</span>
+                      <span className="text-[13px] text-muted-foreground">{hit ? t("No shift yet", "لم تُحدَّد مناوبة") : t("No roster", "لا يوجد جدول")}</span>
                     )}
                   </li>
                 )
               })}
             </ul>
-            {source && <p className="mt-3 text-[12px] text-muted-foreground">{t("From", "من")} {source.code} · {rosterName(source, isAr)}</p>}
+            {source && (
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                {t("From", "من")} {source.code} · {rosterName(source, isAr)} · {t("same shift until", "المناوبة نفسها حتى")} {fullDate(source.endISO, isAr)}
+              </p>
+            )}
           </>
         )}
       </SectionCard>
