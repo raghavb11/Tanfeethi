@@ -5,7 +5,7 @@ import { usePageTitle } from "@reach/shell-context"
 import { RequiredMark } from "@reach/shared-ui"
 import {
   ArrowLeft, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList,
-  FileText, Info, ListChecks, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
+  FileText, Info, ListChecks, Lock, MessagesSquare, NotebookPen, Pencil, Plus, RotateCcw,
   Sparkles, Trash2, UserRoundCog, X,
 } from "lucide-react"
 
@@ -23,8 +23,8 @@ import {
   toggleSubtask, unlinkProject, updateTask, useTaskEvents, useTasks,
 } from "../data/tasks"
 import {
-  addProject, getProjectById, newProjectId, nextProjectCode, removeProject, STATUS_LABEL,
-  type Project, type ProjectStatus, updateProject, useProjects,
+  addProject, getProjectById, milestonesLocked, newProjectId, nextProjectCode, removeProject, STATUS_LABEL, TYPE_LABEL,
+  type Project, type ProjectStatus, type ProjectType, updateProject, useProjects,
 } from "../data/projects"
 import { MANAGER, memberById, team } from "../data/team"
 import { dismissSuggestion, draftProjectIdeas, useSuggestions } from "../data/suggestions"
@@ -45,6 +45,7 @@ type Fields = {
   // project-only extras kept from the earlier project editor
   startISO?: string
   projectStatus?: ProjectStatus
+  projectType?: ProjectType  // chosen when the project is created, fixed after
   title?: string           // in the current language
   titleAlt?: string        // in the other language (optional) — sits right under the title
   descriptionAlt?: string  // in the other language (optional) — sits right under the description
@@ -79,6 +80,7 @@ function blankDraft(kind: "task" | "project", params: URLSearchParams): Fields {
       title: "", titleAlt: "", description: "", descriptionAlt: "", releaseNote: "", subtasks: [],
       category: "operations", sprint: currentSprintId(), ownerId: "me", priority: "medium",
       startISO: TASK_TODAY_ISO, dueISO: "", projectStatus: "active",
+      projectType: params.get("type") === "strategic" ? "strategic" : "pmo",
     }
   }
   const pid = params.get("project") ?? ""
@@ -161,7 +163,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
     : project
       ? { category: project.category, sprint: project.sprint, ownerId: project.ownerId, dueISO: project.dueISO,
           priority: project.priority ?? "medium", description: (isAr ? project.descriptionAr : project.description) ?? "",
-          startISO: project.startISO, projectStatus: project.status,
+          startISO: project.startISO, projectStatus: project.status, projectType: project.type,
           title: isAr ? project.nameAr : project.name, titleAlt: isAr ? project.name : project.nameAr,
           descriptionAlt: (isAr ? project.description : project.descriptionAr) ?? "" }
       : undefined
@@ -316,7 +318,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
       addProject({
         id: newId, code, name: en, nameAr: ar,
         ownerId: draft.ownerId, owner: ownerName(draft.ownerId, false), ownerAr: ownerName(draft.ownerId, true),
-        status: draft.projectStatus ?? "active", category: draft.category, sprint: draft.sprint, priority: draft.priority,
+        status: draft.projectStatus ?? "active", type: draft.projectType ?? "pmo", category: draft.category, sprint: draft.sprint, priority: draft.priority,
         start: prettyDate(draft.startISO ?? TASK_TODAY_ISO), startISO: draft.startISO ?? TASK_TODAY_ISO,
         due: prettyDate(draft.dueISO), dueISO: draft.dueISO,
         description: descEn, descriptionAr: descAr, createdISO: TASK_TODAY_ISO, releaseNote,
@@ -486,6 +488,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
             )}
             <div className="flex flex-wrap items-center gap-2.5 text-[14px]">
               {isTask && <><CategoryChip id={fields.category} isAr={isAr} className="h-[30px] px-2.5 text-[13px]" /><span className="text-muted-foreground">·</span></>}
+              {isProject && fields.projectType && <><TypeChip type={fields.projectType} isAr={isAr} /><span className="text-muted-foreground">·</span></>}
               <Initials text={ownerInitials(fields.ownerId)} className="size-6 text-[9px]" />
               <span className="text-muted-foreground">{ownerName(fields.ownerId, isAr)}</span>
             </div>
@@ -559,7 +562,9 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
           {create && isProject && (
             <Panel>
               <CardHeader icon={CalendarClock} title={t("Milestones", "المعالم")} />
-              <Empty icon={CalendarClock} text={t("Milestones can be added once the project is created.", "يمكن إضافة المعالم بعد إنشاء المشروع.")} />
+              <Empty icon={CalendarClock} text={draft?.projectType === "strategic"
+                ? t("Milestones can be added once the project is created. On a strategic project they are then fixed.", "يمكن إضافة المعالم بعد إنشاء المشروع، وفي المشروع الاستراتيجي تصبح بعدها ثابتة.")
+                : t("Milestones can be added once the project is created.", "يمكن إضافة المعالم بعد إنشاء المشروع.")} />
             </Panel>
           )}
 
@@ -640,6 +645,19 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                       options={(Object.keys(STATUS_LABEL) as ProjectStatus[]).map((s) => ({ value: s, label: isAr ? STATUS_LABEL[s].ar : STATUS_LABEL[s].en }))} />
                   )} />
               )}
+              {isProject && (
+                <Row label={t("Project type", "نوع المشروع")} edit={create}
+                  view={fields.projectType && <TypeChip type={fields.projectType} isAr={isAr} />}
+                  control={draft && (
+                    <FilterSelect className="w-full max-w-[265px]" value={draft.projectType ?? "pmo"}
+                      onChange={(v) => patch({ projectType: v as ProjectType })}
+                      options={(Object.keys(TYPE_LABEL) as ProjectType[]).map((k) => ({
+                        value: k, label: isAr ? TYPE_LABEL[k].ar : TYPE_LABEL[k].en,
+                        lead: <span className={cn("size-2 rounded-full", TYPE_LABEL[k].dot)} />,
+                        hint: k === "strategic" ? t("Milestones locked", "المعالم ثابتة") : undefined,
+                      }))} />
+                  )} />
+              )}
               {isProject && <Row label={t("Reference", "الرقم المرجعي")} edit={false} view={<span className="tabular-nums">{create ? code : project?.code}</span>} />}
               {isTask && (
                 <Row label={t("Project", "المشروع")} edit={create}
@@ -664,7 +682,7 @@ export function WorkItemDetail({ kind, id = "", create = false }: { kind: "task"
                     <div className="w-full max-w-[265px]">
                       <MilestonePicker projectId={draft.projectId ?? ""} value={draft.milestoneId ?? ""} isAr={isAr} t={t}
                         onChange={(mid) => patch({ milestoneId: mid })}
-                        onCreate={draft.projectId ? createMilestoneFromTask : undefined} />
+                        onCreate={draft.projectId && !milestonesLocked(draft.projectId) ? createMilestoneFromTask : undefined} />
                     </div>
                   } />
               )}
@@ -996,15 +1014,29 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
   const endIso = [project.dueISO, ...ms.map((m) => m.dueISO)].sort().slice(-1)[0]
   const span = Math.max(1, at(endIso) - at(startIso))
   const pos = (iso: string) => ((at(iso) - at(startIso)) / span) * 100
+  // a strategic project's milestones come from the strategy office: shown, never changed
+  const locked = project.type === "strategic"
   return (
     <Panel>
       <CardHeader icon={CalendarClock} title={t("Milestones", "المعالم")}
-        actions={
+        actions={locked ? (
+          <span tabIndex={0} className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-soft-accent px-2.5 text-[12px] font-medium text-primary outline-none"
+            data-tip={t("Strategic project milestones cannot be changed", "لا يمكن تغيير معالم المشروع الاستراتيجي")}>
+            <Lock className="size-3.5" />{t("Locked", "ثابتة")}
+          </span>
+        ) : (
           <button type="button" onClick={() => navigate(`/projects/${project.id}/milestones/new`)}
             className="btn-primary-grad inline-flex h-7 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-medium">
             <Plus className="size-3.5" />{t("New milestone", "معلم جديد")}
           </button>
-        } />
+        )} />
+      {locked && (
+        <p className="mt-4 flex items-start gap-2 rounded-lg bg-soft-accent/60 px-3 py-2.5 text-[12.5px] leading-[18px] text-foreground/85">
+          <Lock className="mt-0.5 size-3.5 shrink-0 text-primary" />
+          {t("This is a strategic project. Its milestones are set by the strategy office and cannot be added, renamed, re-dated or removed here. Tasks can still be added under them, and their health still updates.",
+             "هذا مشروع استراتيجي. يحدد مكتب الاستراتيجية معالمه، ولا يمكن إضافتها أو إعادة تسميتها أو تغيير تواريخها أو حذفها من هنا. يمكن مع ذلك إضافة مهام تحتها، وتتحدّث حالتها تلقائيًا.")}
+        </p>
+      )}
       <div className="mt-[18px] flex flex-col">
         {ms.map((m) => {
           const h = milestoneHealth(m, tasks)
@@ -1015,10 +1047,17 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
                 <button onClick={() => navigate(`/projects/${project.id}/milestones/${m.id}`)}
                   className="min-w-0 flex-1 truncate text-start text-[14px] font-medium hover:text-primary">{isAr ? m.nameAr : m.name}</button>
                 <HealthPill health={h.health} isAr={isAr} overridden={h.overridden} size="sm" />
-                <button onClick={() => navigate(`/projects/${project.id}/milestones/${m.id}/edit`)} aria-label={t("Edit milestone", "تعديل المعلم")}
-                  className="inline-flex size-7 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
-                  <Pencil className="size-3.5" />
-                </button>
+                {locked ? (
+                  <span role="img" aria-label={t("Locked — strategic milestone", "ثابت — معلم استراتيجي")} tabIndex={0}
+                    className="inline-flex size-7 items-center justify-center rounded-md text-primary/80 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <Lock className="size-3.5" />
+                  </span>
+                ) : (
+                  <button onClick={() => navigate(`/projects/${project.id}/milestones/${m.id}/edit`)} aria-label={t("Edit milestone", "تعديل المعلم")}
+                    className="inline-flex size-7 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
+                    <Pencil className="size-3.5" />
+                  </button>
+                )}
                 <button onClick={() => navigate(`/tasks/new?project=${project.id}&milestone=${m.id}&from=project`)} aria-label={t("Add a task to this milestone", "إضافة مهمة إلى هذا المعلم")}
                   className="inline-flex size-7 items-center justify-center rounded-md text-icon hover:bg-foreground/5 hover:text-foreground">
                   <Plus className="size-3.5" />
@@ -1042,7 +1081,9 @@ function Milestones({ project, tasks, isAr, t }: { project: Project; tasks: Task
         })}
       </div>
       {ms.length === 0 && (
-        <Empty icon={CalendarClock} text={t("Break the project into milestones to track it red, amber or green.", "قسّم المشروع إلى معالم لمتابعة حالته.")} />
+        <Empty icon={CalendarClock} text={locked
+          ? t("The strategy office has not set milestones for this project yet.", "لم يحدد مكتب الاستراتيجية معالم لهذا المشروع بعد.")
+          : t("Break the project into milestones to track it red, amber or green.", "قسّم المشروع إلى معالم لمتابعة حالته.")} />
       )}
     </Panel>
   )
@@ -1207,5 +1248,15 @@ function ActivityRow({ e, isAr, t }: { e: TaskEvent; isAr: boolean; t: TFn }) {
       </div>
       <span className="shrink-0 text-[12px] tabular-nums text-muted-foreground">{when}</span>
     </li>
+  )
+}
+
+/** Strategic / PMO chip — the strategic one carries the lock its milestones are under. */
+export function TypeChip({ type, isAr }: { type: ProjectType; isAr: boolean }) {
+  return (
+    <span className={cn("inline-flex h-[26px] items-center gap-1.5 rounded-full px-2.5 text-[12px] font-medium", TYPE_LABEL[type].chip)}>
+      {type === "strategic" ? <Lock className="size-3" /> : <span className={cn("size-1.5 rounded-full", TYPE_LABEL[type].dot)} />}
+      {isAr ? TYPE_LABEL[type].ar : TYPE_LABEL[type].en}
+    </span>
   )
 }

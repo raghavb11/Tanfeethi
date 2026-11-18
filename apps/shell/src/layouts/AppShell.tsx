@@ -4,6 +4,7 @@ import { Outlet, useLocation } from "react-router-dom"
 
 import { CommandPalette } from "@/components/command-palette"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { HoverTips } from "@/components/HoverTips"
 import { AIAssistantPanel } from "@/components/layout/AIAssistantPanel"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
@@ -109,6 +110,7 @@ export function AppShell() {
         </div>
       </div>
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      <HoverTips />
     </div>
   )
 }

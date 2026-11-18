@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { cn } from "@reach/shared-core"
 import { usePageTitle } from "@reach/shell-context"
 import {
-  Archive, ArrowLeft, CalendarClock, ChevronLeft, ChevronRight, FileText, Hand, History, Info, Link2, ListChecks, Pencil, Plus,
+  Archive, ArrowLeft, CalendarClock, ChevronLeft, ChevronRight, FileText, Hand, History, Info, Link2, ListChecks, Lock, Pencil, Plus,
   Sparkles, Unlink, X,
 } from "lucide-react"
 import { RequiredMark, SearchableSelect } from "@reach/shared-ui"
@@ -87,6 +87,21 @@ function MilestoneScreen() {
     create ? "New milestone" : milestone ? `Milestone: ${milestone.name}` : undefined,
     create ? "معلم جديد" : milestone ? `المعلم: ${milestone.nameAr}` : undefined,
   )
+
+  // strategic projects: milestones are fixed by the strategy office
+  const locked = project?.type === "strategic"
+  if (project && locked && editing) {
+    return (
+      <Page>
+        <Empty
+          icon={Lock}
+          text={t("This is a strategic project. Its milestones are set by the strategy office and cannot be added or changed.",
+            "هذا مشروع استراتيجي. يحدد مكتب الاستراتيجية معالمه، ولا يمكن إضافتها أو تغييرها.")}
+          action={<Btn onClick={() => navigate(milestone ? viewHref : backHref)}>{milestone ? t("Back to the milestone", "العودة إلى المعلم") : backLabel}</Btn>}
+        />
+      </Page>
+    )
+  }
 
   if (!project || (!create && !milestone)) {
     return (
@@ -199,7 +214,12 @@ function MilestoneScreen() {
           </button>
 
           <div className="flex flex-wrap items-center gap-2">
-            {!editing ? (
+            {!editing && locked ? (
+              <span tabIndex={0} data-tip={t("Strategic project milestones cannot be changed", "لا يمكن تغيير معالم المشروع الاستراتيجي")}
+                className="inline-flex h-[34px] items-center gap-2 rounded-[8px] bg-soft-accent px-3 text-[13px] font-medium text-primary outline-none">
+                <Lock className="size-[14px]" />{t("Strategic milestone · locked", "معلم استراتيجي · ثابت")}
+              </span>
+            ) : !editing ? (
               <>
                 <Btn className="rounded-[8px] bg-foreground/[0.08] px-3 font-normal" onClick={() => navigate(`${viewHref}/edit`)}>
                   <Pencil className="size-[14px]" /><span>{t("Edit", "تعديل")}</span>

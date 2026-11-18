@@ -266,6 +266,7 @@ export default function App() {
         <Route path="sprints/new" element={<SprintDetailPage />} />
         <Route path="sprints/:id" element={<SprintDetailPage />} />
         <Route path="projects" element={<ProjectsPage />} />
+        <Route path="portfolio" element={<Navigate to="/projects?view=roadmap" replace />} />
         <Route path="projects/new" element={<ProjectEditorPage />} />
         <Route path="projects/:id" element={<ProjectDetailPage />} />
         <Route path="projects/:id/edit" element={<ProjectEditorPage />} />

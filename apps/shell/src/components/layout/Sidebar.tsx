@@ -102,7 +102,8 @@ function DesktopSidebar() {
           <div className="flex h-[72px] shrink-0 items-center justify-center">
             <WijhaLockup />
           </div>
-          <ScrollArea className="min-h-0 flex-1">
+          {/* the scrollbar only shows while the pointer is on the rail — Figma draws none */}
+          <ScrollArea className={cn("min-h-0 flex-1", quietScrollbar)}>
             <RailNav isAr={isAr} />
           </ScrollArea>
         </>
@@ -114,6 +115,14 @@ function DesktopSidebar() {
 }
 
 // ─── Minimize state: the rail ────────────────────────────────────────────────
+
+/** Hide the scroll thumb until the rail is hovered, so the rail reads as the
+ *  flat Figma column from top to bottom (management feedback, 18 Nov 2026). */
+const quietScrollbar =
+  "[&_[data-slot=scroll-area-scrollbar]]:opacity-0 [&_[data-slot=scroll-area-scrollbar]]:transition-opacity hover:[&_[data-slot=scroll-area-scrollbar]]:opacity-100"
+/* Laptop screens shorter than 940px get the same tiles with less air (the
+   [@media(max-height:940px)] classes below), so the whole rail fits without
+   scrolling; taller screens keep the Figma spacing exactly. */
 
 function visibleGroups(isAdmin: boolean) {
   return railGroups.map((g) => g.filter((i) => !i.adminOnly || isAdmin))
@@ -136,7 +145,7 @@ function RailNav({ isAr }: { isAr: boolean }) {
   // Figma Side Bar 2010:4015 — Container: pt 24, pb 80, gap 4 between the
   // groups and the dividers; groups after the first have pt 4.
   return (
-    <nav aria-label={isAr ? "التنقل الرئيسي" : "Main navigation"} className="flex flex-col items-center gap-1 pt-6 pb-20">
+    <nav aria-label={isAr ? "التنقل الرئيسي" : "Main navigation"} className="flex flex-col items-center gap-1 pt-6 pb-20 [@media(max-height:940px)]:gap-0.5 [@media(max-height:940px)]:pt-2 [@media(max-height:940px)]:pb-4">
       <div className="flex flex-col">{tiles(main ?? [])}</div>
       <RailDivider />
       <div className="flex flex-col pt-1">{tiles(discover ?? [])}</div>
@@ -163,7 +172,7 @@ function RailNav({ isAr }: { isAr: boolean }) {
 /* Figma "Minimized Sidebar Tabs": 85 wide, padding 12.5/8, gap 8, radius 4,
    15px icon over a 12.5px label (15px line box). */
 const tileClass =
-  "relative flex w-[85px] flex-col items-center gap-2 rounded-[4px] px-2 py-[12.5px] text-center text-[12.5px] leading-[15px] outline-none ltr:px-1 transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+  "relative flex w-[85px] flex-col items-center gap-2 rounded-[4px] px-2 py-[12.5px] text-center text-[12.5px] leading-[15px] outline-none ltr:px-1 transition-colors focus-visible:ring-2 focus-visible:ring-ring [@media(max-height:940px)]:gap-1 [@media(max-height:940px)]:py-[6px]"
 
 function RailTile({
   item,
@@ -345,7 +354,7 @@ function ExpandedSidebarBody({ isAr, onNavigate }: { isAr: boolean; onNavigate?:
       <div className="flex h-[72px] shrink-0 items-center px-5">
         <WijhaLockup />
       </div>
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea className={cn("min-h-0 flex-1", quietScrollbar)}>
         <ExpandedNav isAr={isAr} onNavigate={onNavigate} />
         <div className="mt-16 flex items-center gap-3 px-5 pt-4 pb-20">
           <ProfileAvatar isAr={isAr} className="border-[#8f743e]" />

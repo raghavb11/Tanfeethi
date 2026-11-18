@@ -1,18 +1,28 @@
 import * as React from "react"
 import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@reach/shared-ui"
 import { cn } from "@reach/shared-core"
 import { useShell } from "@reach/shell-context"
 import {
-  Building2, ChevronRight, Contact, LayoutGrid, List, Mail, MapPin, Network, Phone,
-  Search, SlidersHorizontal, Users, X,
+  Building2, ChevronRight, Contact, LayoutGrid, List, Mail, MapPin, MessagesSquare, Network, Phone,
+  PhoneCall, Search, SlidersHorizontal, Users, Video, X,
 } from "lucide-react"
 
 import { childrenOf, deptColor, deptCounts, ORG, type OrgPerson, personById } from "../data/mock/org"
 import { Chip, Empty, OutlineButton, Page, SectionCard, fieldClass } from "../components/wijha"
 
 type View = "grid" | "list"
+
+/** Ways to reach someone from the directory (management feedback, 18 Nov 2026):
+ *  call and chat open Microsoft Teams on the person's work account (the
+ *  Teams deep links take the UPN, which here is the work email); email opens the
+ *  mail client. A real build would check presence through Graph first. */
+const teamsChat = (p: OrgPerson) => `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(p.email)}`
+const teamsCall = (p: OrgPerson, video = false) =>
+  `https://teams.microsoft.com/l/call/0/0?users=${encodeURIComponent(p.email)}${video ? "&withVideo=true" : ""}`
+const mailTo = (p: OrgPerson) => `mailto:${p.email}`
+const telTo = (phone: string) => `tel:${phone.replace(/\s/g, "")}`
 
 export default function DirectoryPage() {
   const { locale } = useShell()
@@ -24,7 +34,12 @@ export default function DirectoryPage() {
   const [depts, setDepts] = React.useState<string[]>([])
   const [location, setLocation] = React.useState("all")
   const [view, setView] = React.useState<View>("grid")
-  const [selectedId, setSelectedId] = React.useState<string | null>(null)
+  // ?person=<id> opens someone's contact card straight away
+  const [params] = useSearchParams()
+  const [selectedId, setSelectedId] = React.useState<string | null>(() => {
+    const id = params.get("person")
+    return id && personById(id) ? id : null
+  })
 
   const allDepts = deptCounts()
   // filter on the English value but label it in the active locale
@@ -211,8 +226,7 @@ function PersonCard({ p, i, selected, isAr, t, onSelect }: {
 
       <div className="card-separator mt-3" />
       <div className="mt-2.5 flex items-center gap-1.5">
-        <IconLink href={`mailto:${p.email}`} label={t("Email", "بريد")} icon={Mail} />
-        {p.phone && <IconLink href={`tel:${p.phone.replace(/\s/g, "")}`} label={t("Call", "اتصال")} icon={Phone} />}
+        <QuickActions p={p} t={t} />
         <span className="ms-auto inline-flex items-center gap-1 text-[12px] text-primary">
           {t("Details", "التفاصيل")}<ChevronRight className="size-3 rtl:rotate-180" />
         </span>
@@ -221,11 +235,38 @@ function PersonCard({ p, i, selected, isAr, t, onSelect }: {
   )
 }
 
-function IconLink({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }) {
+function IconLink({ href, label, icon: Icon, external }: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; external?: boolean }) {
   return (
     <a href={href} onClick={(e) => e.stopPropagation()} aria-label={label}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className="grid size-8 place-items-center rounded-lg bg-secondary text-primary transition-colors hover:bg-soft-accent">
       <Icon className="size-3.5" />
+    </a>
+  )
+}
+
+/** Chat and call in Teams, then email — on cards and list rows. Nobody calls themself. */
+function QuickActions({ p, t }: { p: OrgPerson; t: (en: string, ar: string) => string }) {
+  const name = p.name.split(" ")[0]
+  return (
+    <>
+      {!p.isMe && <IconLink href={teamsChat(p)} external label={t(`Chat with ${name} in Teams`, "محادثة عبر Teams")} icon={MessagesSquare} />}
+      {!p.isMe && <IconLink href={teamsCall(p)} external label={t(`Call ${name} on Teams`, "اتصال عبر Teams")} icon={PhoneCall} />}
+      <IconLink href={mailTo(p)} label={t(`Email ${name}`, "إرسال بريد")} icon={Mail} />
+    </>
+  )
+}
+
+/** The contact card's labelled actions. */
+function ActionButton({ href, icon: Icon, label, external, primary }: {
+  href: string; icon: React.ComponentType<{ className?: string }>; label: string; external?: boolean; primary?: boolean
+}) {
+  return (
+    <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className={cn("flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-2.5 text-[12px] font-medium transition-colors",
+        primary ? "btn-primary-grad" : "bg-secondary text-foreground hover:bg-soft-accent hover:text-primary")}>
+      <Icon className="size-4" />
+      <span className="truncate">{label}</span>
     </a>
   )
 }
@@ -265,10 +306,7 @@ function PersonTable({ rows, selectedId, isAr, t, onSelect }: {
                 <td className="px-4 py-3"><DeptChip p={p} isAr={isAr} /></td>
                 <td className="px-4 py-3 text-muted-foreground">{isAr ? p.locationAr : p.location}</td>
                 <td className="px-4 py-3">
-                  <span className="flex items-center gap-1.5">
-                    <IconLink href={`mailto:${p.email}`} label={t("Email", "بريد")} icon={Mail} />
-                    {p.phone && <IconLink href={`tel:${p.phone.replace(/\s/g, "")}`} label={t("Call", "اتصال")} icon={Phone} />}
-                  </span>
+                  <span className="flex items-center gap-1.5"><QuickActions p={p} t={t} /></span>
                 </td>
               </tr>
             ))}
@@ -300,9 +338,28 @@ function ContactCard({ p, isAr, t, onOrgChart, onSelect }: {
         </span>
       </div>
 
+      {/* reach them: Teams call, Teams chat, email */}
+      <div className="flex gap-2 px-4 pb-4">
+        {!p.isMe && <ActionButton href={teamsCall(p)} external primary icon={PhoneCall} label={t("Call", "اتصال")} />}
+        {!p.isMe && <ActionButton href={teamsChat(p)} external icon={MessagesSquare} label={t("Chat in Teams", "محادثة Teams")} />}
+        <ActionButton href={mailTo(p)} icon={Mail} label={t("Email", "بريد")} primary={p.isMe} />
+      </div>
+      {!p.isMe && (
+        <div className="-mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 px-4 pb-4 text-[12px]">
+          {p.phone && (
+            <a href={telTo(p.phone)} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary">
+              <Phone className="size-3.5" />{t("Phone call", "اتصال هاتفي")}
+            </a>
+          )}
+          <a href={teamsCall(p, true)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary">
+            <Video className="size-3.5" />{t("Video call", "مكالمة فيديو")}
+          </a>
+        </div>
+      )}
+
       <div className="space-y-2.5 border-t border-border p-4">
-        <DetailRow icon={Mail} value={p.email} href={`mailto:${p.email}`} ltr />
-        {p.phone && <DetailRow icon={Phone} value={p.phone} href={`tel:${p.phone.replace(/\s/g, "")}`} ltr />}
+        <DetailRow icon={Mail} value={p.email} href={mailTo(p)} ltr />
+        {p.phone && <DetailRow icon={Phone} value={p.phone} href={telTo(p.phone)} ltr />}
         <DetailRow icon={MapPin} value={isAr ? p.locationAr : p.location} />
         <DetailRow icon={Building2} value={isAr ? p.departmentAr : p.department} />
       </div>

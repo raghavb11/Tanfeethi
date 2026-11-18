@@ -8,6 +8,11 @@ import type { CategoryId, TaskPriority } from "./meta"
 
 export type ProjectStatus = "planned" | "active" | "on-hold" | "done"
 
+/** Strategic projects carry the corporate strategy's commitments: their
+ *  milestones are set by the strategy office and cannot be changed here.
+ *  PMO projects are run by the PMO and their milestones stay editable. */
+export type ProjectType = "strategic" | "pmo"
+
 export type Project = {
   id: string
   code: string
@@ -16,6 +21,7 @@ export type Project = {
   ownerId: string
   owner: string; ownerAr: string
   status: ProjectStatus
+  type: ProjectType
   start: string; startISO: string
   due: string; dueISO: string
   description?: string; descriptionAr?: string
@@ -29,7 +35,7 @@ export type Project = {
 
 const KH = { ownerId: "me", owner: "Khalid Al-Qahtani", ownerAr: "خالد القحطاني" }
 
-const SEED: Project[] = [
+const SEED: Omit<Project, "type">[] = [
   { id: "p1", code: "PRJ-001", name: "Digital Workplace", nameAr: "بيئة العمل الرقمية", ...KH, status: "active", start: "Jan 12, 2026", startISO: "2026-01-12", due: "Dec 20, 2026", dueISO: "2026-12-20",
     description: "The Reach employee portal — phases 1 to 5, web and mobile.", descriptionAr: "بوابة الموظفين «وجهة» — المراحل من 1 إلى 5، ويب وجوال." },
   { id: "p2", code: "PRJ-002", name: "Operations · Q3", nameAr: "العمليات · الربع الثالث", ownerId: "r2", owner: "Mohammad Iqbal", ownerAr: "محمد إقبال", status: "active", start: "Jul 1, 2026", startISO: "2026-07-01", due: "Sep 30, 2026", dueISO: "2026-09-30",
@@ -68,9 +74,11 @@ const DETAIL: Record<string, Partial<Project>> = {
   p9: { category: "hr", priority: "low" },
   p11: { category: "finance" },
 }
+/** The strategy office's projects; the rest are PMO projects. */
+const STRATEGIC = new Set(["p1", "p4", "p6", "p7", "p10"])
 let projects: Project[] = SEED.map((p) => ({
   category: "operations" as CategoryId, sprint: "s24", priority: "medium" as TaskPriority,
-  createdISO: p.startISO, ...p, ...DETAIL[p.id],
+  createdISO: p.startISO, type: (STRATEGIC.has(p.id) ? "strategic" : "pmo") as ProjectType, ...p, ...DETAIL[p.id],
 }))
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((l) => l())
@@ -127,3 +135,11 @@ export const STATUS_LABEL: Record<ProjectStatus, { en: string; ar: string; chip:
   "on-hold": { en: "On hold", ar: "متوقف", chip: "border-transparent bg-warning-fill text-warning" },
   done: { en: "Completed", ar: "مكتمل", chip: "border-transparent bg-success-fill text-success" },
 }
+
+export const TYPE_LABEL: Record<ProjectType, { en: string; ar: string; chip: string; dot: string }> = {
+  strategic: { en: "Strategic", ar: "استراتيجي", chip: "border-transparent bg-soft-accent text-primary", dot: "bg-primary" },
+  pmo: { en: "PMO", ar: "مكتب إدارة المشاريع", chip: "border-transparent bg-secondary text-foreground/80", dot: "bg-info" },
+}
+
+/** Milestones of a strategic project are fixed: no adding, renaming, re-dating or removing. */
+export const milestonesLocked = (projectId: string) => getProjectById(projectId)?.type === "strategic"

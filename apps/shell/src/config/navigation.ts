@@ -46,6 +46,7 @@ import {
   RailPerformanceIcon,
   RailServicesIcon,
   RailWorkIcon,
+  RailNewsIcon,
 } from "@/components/layout/shell-icons"
 
 /** Shell navigation contract. Grouped to match the ALTANFEETHI Figma design
@@ -120,6 +121,8 @@ export const commandNav: { label: string; path: string; group: string }[] = [
   { label: "New task", path: "/tasks/new", group: "Core" },
   { label: "Team tasks", path: "/tasks?scope=team", group: "Core" },
   { label: "Projects", path: "/projects", group: "Core" },
+  { label: "Portfolio roadmap", path: "/projects?view=roadmap", group: "Core" },
+  { label: "Strategic projects", path: "/projects?type=strategic", group: "Core" },
   { label: "Sprints", path: "/sprints", group: "Core" },
   { label: "New sprint", path: "/sprints/new", group: "Core" },
   { label: "Holiday calendar", path: "/config/holidays", group: "Core" },
@@ -219,10 +222,11 @@ export const railGroups: RailItem[][] = [
     },
     {
       key: "work", title: "Work", titleAr: "العمل", path: "/tasks", icon: RailWorkIcon, module: "work",
-      match: ["/work", "/tasks", "/projects", "/sprints", "/manager"],
+      match: ["/work", "/tasks", "/projects", "/portfolio", "/sprints", "/manager"],
       children: [
         { title: "Tasks", titleAr: "المهام", path: "/tasks" },
         { title: "Projects", titleAr: "المشاريع", path: "/projects" },
+        { title: "Portfolio roadmap", titleAr: "خارطة طريق المحفظة", path: "/portfolio" },
         { title: "Sprints", titleAr: "السبرنتات", path: "/sprints" },
         { title: "Work hub", titleAr: "مركز العمل", path: "/work" },
         { title: "Manager dashboard", titleAr: "لوحة المدير", path: "/manager" },
@@ -275,10 +279,9 @@ export const railGroups: RailItem[][] = [
     {
       key: "knowledge", title: "Knowledge Center", titleAr: "المعرفة", path: "/documents", icon: RailKnowledgeIcon, module: "knowledge",
       // Figma breadcrumbs put news and announcement details under المعرفة.
-      match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs", "/news", "/announcements"],
+      match: ["/documents", "/policies", "/faqs", "/knowledge", "/links", "/hubs", "/announcements"],
       children: [
         { title: "Document library", titleAr: "مكتبة المستندات", path: "/documents" },
-        { title: "News", titleAr: "الأخبار", path: "/news" },
         { title: "Announcements", titleAr: "التعاميم", path: "/announcements" },
         { title: "Policies", titleAr: "السياسات", path: "/policies" },
         { title: "FAQs", titleAr: "الأسئلة الشائعة", path: "/faqs" },
@@ -286,6 +289,8 @@ export const railGroups: RailItem[][] = [
         { title: "Quick links", titleAr: "روابط سريعة", path: "/links" },
       ],
     },
+    // Not a Figma item: management asked for News to be reachable from the side bar (18 Nov 2026).
+    { key: "news", title: "News", titleAr: "الأخبار", path: "/news", icon: RailNewsIcon, module: "knowledge" },
     { key: "learning", title: "Altanfeethi Academy", titleAr: "التعلم", path: "/learning", icon: RailLearningIcon, module: "learning" },
   ],
   [

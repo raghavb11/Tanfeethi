@@ -1,9 +1,11 @@
 /** News list — phone 3667:8144 ("الأخبار" card of story cards) on the web
- *  Knowledge-card language. Create / edit open the Figma popup (2485:3150). */
+ *  Knowledge-card language. Create / edit open the Figma popup (2485:3150).
+ *  The web list has no Figma frame: the newest story leads as a wide feature,
+ *  the rest follow in a three-column grid (management feedback, 18 Nov 2026). */
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { useShell } from "@reach/shell-context"
-import { CalendarDays, FileText, History, Newspaper, Plus, Search, Trash2 } from "lucide-react"
+import { ArrowRight, CalendarDays, Expand, FileText, History, Newspaper, Plus, Search, Trash2 } from "lucide-react"
 
 import { CardHead, DeletePopup, EmptyState, IconTile, Skeleton, Tag, toneForCategory, useFakeLoading, WButton, WCard, WPage, arNum } from "./_wijha"
 import { Chips, StatCard } from "./_ui"
@@ -74,34 +76,92 @@ export default function NewsPage() {
         </div>
 
         {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[340px]" />)}</div>
+          <div className="flex flex-col gap-5">
+            <Skeleton className="h-[300px]" />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[300px]" />)}</div>
+          </div>
         ) : filtered.length === 0 ? (
           <EmptyState icon={Newspaper} title={t("No news matches this filter", "لا توجد أخبار تطابق هذا التصفية")} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {filtered.map(({ n, s }) => (
-              <article key={n.id} className="flex flex-col gap-3.5 rounded-[8px] bg-background p-4">
-                {n.img ? (
-                  <button type="button" onClick={() => setZoom(n.img)} aria-label={t("View image", "عرض الصورة")} className="overflow-hidden rounded-[8px]">
-                    <img src={n.img} alt="" loading="lazy" className="aspect-[358/201] w-full object-cover transition-transform duration-300 hover:scale-[1.02]" />
-                  </button>
-                ) : <div className="grid aspect-[358/201] place-items-center rounded-[8px] bg-secondary text-icon"><Newspaper className="size-8" /></div>}
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <Tag tone={toneForCategory(n.category)}>{newsCatLabel(n.category, isAr)}</Tag>
-                  <span className="text-[11px] text-muted-foreground">{isAr ? `${n.dateAr ?? n.date} · قراءة ${n.readMin ?? 2} د` : `${n.date} · ${n.readMin ?? 2} min read`}</span>
-                  {isAdmin && s !== "Published" && <Tag tone={STATUS_TONE[s]}>{isAr ? STATUS_AR[s] : s}</Tag>}
-                </div>
-                <h3 className="text-[13px] font-medium leading-[22px]">{isAr ? n.titleAr : n.title}</h3>
-                <p className="line-clamp-3 text-[11.3px] leading-5">{isAr ? n.excerptAr ?? n.excerpt : n.excerpt}</p>
-                <div className="mt-auto flex flex-wrap gap-2 pt-1">
-                  <WButton className="w-32" onClick={() => navigate(`/news/${n.id}`)}>{t("View details", "عرض التفاصيل")}</WButton>
-                  {isAdmin && <>
-                    <WButton variant="outline" className="w-[84px]" onClick={() => setModal({ edit: n })}>{t("Edit", "تعديل")}</WButton>
-                    <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(n)}><Trash2 />{t("Delete", "حذف")}</WButton>
-                  </>}
-                </div>
-              </article>
-            ))}
+          <div className="flex flex-col gap-5">
+            {/* the lead story */}
+            {(() => {
+              const { n, s } = filtered[0]!
+              return (
+                <article className="group grid overflow-hidden rounded-[12px] bg-background ring-1 ring-inset ring-[var(--card-ring)] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+                  <div className="relative overflow-hidden lg:h-[340px]">
+                    {n.img ? (
+                      <img src={n.img} alt="" className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:aspect-auto lg:h-full" />
+                    ) : <div className="grid aspect-[16/9] w-full place-items-center bg-secondary text-icon lg:aspect-auto lg:h-full"><Newspaper className="size-10" /></div>}
+                    {n.img && (
+                      <button type="button" onClick={() => setZoom(n.img)} aria-label={t("Enlarge image", "تكبير الصورة")}
+                        className="absolute end-3 top-3 grid size-8 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition-colors hover:bg-black/65">
+                        <Expand className="size-4" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-3.5 p-6">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-primary">{t("Latest", "الأحدث")}</span>
+                      <Tag tone={toneForCategory(n.category)}>{newsCatLabel(n.category, isAr)}</Tag>
+                      <span className="text-[11.5px] text-muted-foreground">{isAr ? `${n.dateAr ?? n.date} · قراءة ${n.readMin ?? 2} د` : `${n.date} · ${n.readMin ?? 2} min read`}</span>
+                      {isAdmin && s !== "Published" && <Tag tone={STATUS_TONE[s]}>{isAr ? STATUS_AR[s] : s}</Tag>}
+                    </div>
+                    <h2 className="text-[22px] font-medium leading-[30px] tracking-[-0.2px]">{isAr ? n.titleAr : n.title}</h2>
+                    <p className="line-clamp-4 text-[13.5px] leading-[22px] text-muted-foreground">{isAr ? n.excerptAr ?? n.excerpt : n.excerpt}</p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                      <WButton className="w-36" onClick={() => navigate(`/news/${n.id}`)}>{t("Read the story", "اقرأ الخبر")}</WButton>
+                      {isAdmin && <>
+                        <WButton variant="outline" className="w-[84px]" onClick={() => setModal({ edit: n })}>{t("Edit", "تعديل")}</WButton>
+                        <WButton variant="danger" className="w-[84px]" onClick={() => setConfirm(n)}><Trash2 />{t("Delete", "حذف")}</WButton>
+                      </>}
+                    </div>
+                  </div>
+                </article>
+              )
+            })()}
+
+            {/* everything after it */}
+            {filtered.length > 1 && (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filtered.slice(1).map(({ n, s }) => (
+                  <article key={n.id} className="group flex flex-col overflow-hidden rounded-[12px] bg-background ring-1 ring-inset ring-[var(--card-ring)] transition-[box-shadow,transform] hover:-translate-y-0.5 hover:ring-primary/35">
+                    <div className="relative overflow-hidden">
+                      {n.img ? (
+                        <img src={n.img} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                      ) : <div className="grid aspect-[16/9] place-items-center bg-secondary text-icon"><Newspaper className="size-8" /></div>}
+                      {n.img && (
+                        <button type="button" onClick={() => setZoom(n.img)} aria-label={t("Enlarge image", "تكبير الصورة")}
+                          className="absolute end-2.5 top-2.5 grid size-7 place-items-center rounded-full bg-black/45 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/65 focus-visible:opacity-100 group-hover:opacity-100">
+                          <Expand className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2.5 p-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Tag tone={toneForCategory(n.category)}>{newsCatLabel(n.category, isAr)}</Tag>
+                        <span className="text-[11px] text-muted-foreground">{isAr ? `${n.dateAr ?? n.date} · قراءة ${n.readMin ?? 2} د` : `${n.date} · ${n.readMin ?? 2} min read`}</span>
+                        {isAdmin && s !== "Published" && <Tag tone={STATUS_TONE[s]}>{isAr ? STATUS_AR[s] : s}</Tag>}
+                      </div>
+                      <h3 className="line-clamp-2 text-[15px] font-medium leading-[22px]">
+                        <button type="button" onClick={() => navigate(`/news/${n.id}`)} className="text-start hover:text-primary">{isAr ? n.titleAr : n.title}</button>
+                      </h3>
+                      <p className="line-clamp-2 text-[12.5px] leading-5 text-muted-foreground">{isAr ? n.excerptAr ?? n.excerpt : n.excerpt}</p>
+                      <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
+                        <button type="button" onClick={() => navigate(`/news/${n.id}`)}
+                          className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-primary hover:underline">
+                          {t("Read more", "اقرأ المزيد")}<ArrowRight className="size-3.5 rtl:rotate-180" />
+                        </button>
+                        {isAdmin && <span className="ms-auto flex gap-1.5">
+                          <WButton variant="outline" size="sm" onClick={() => setModal({ edit: n })}>{t("Edit", "تعديل")}</WButton>
+                          <WButton variant="danger" size="sm" onClick={() => setConfirm(n)}><Trash2 />{t("Delete", "حذف")}</WButton>
+                        </span>}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </WCard>

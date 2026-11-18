@@ -117,6 +117,18 @@ export function RailKnowledgeIcon(props: P) {
   )
 }
 
+/* Not in the Figma icon set — drawn on the same 15px grid, filled, currentColor,
+   for the News tile management asked for (feedback round 1, 18 Nov 2026). */
+export function RailNewsIcon(props: P) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden focusable="false" {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M2.6 1.2C2.6 0.85 2.88 0.6 3.2 0.6H13.8C14.15 0.6 14.4 0.85 14.4 1.2V12.6C14.4 13.48 13.68 14.2 12.8 14.2H2.2C1.32 14.2 0.6 13.48 0.6 12.6V4.4C0.6 4.07 0.87 3.8 1.2 3.8H2.6V1.2ZM3.68 13.08H12.8C13.06 13.08 13.28 12.86 13.28 12.6V1.72H3.72V12.6C3.72 12.77 3.7 12.93 3.68 13.08ZM2.6 4.92H1.72V12.6C1.72 12.86 1.94 13.08 2.2 13.08C2.42 13.08 2.6 12.88 2.6 12.6V4.92Z" fill="currentColor"/>
+      <path d="M5.2 3.3H11.8V6.7H5.2V3.3Z" fill="currentColor" opacity="0.9"/>
+      <path d="M5.2 8.1H11.8V9.15H5.2V8.1ZM5.2 10.45H9.9V11.5H5.2V10.45Z" fill="currentColor"/>
+    </svg>
+  )
+}
+
 export function RailPerformanceIcon(props: P) {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden focusable="false" {...props}>
